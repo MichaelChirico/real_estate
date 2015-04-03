@@ -1,7 +1,7 @@
 #Data Analysis
 #Philadelphia Real Estate Tax Evasion
 #Michael Chirico
-#January 22, 2015
+#April 3, 2015
 rm(list=ls(all=T))
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 library(data.table)
