@@ -165,41 +165,55 @@ cycle_info[,opa_no:=paste(0,opa_no,sep="")]
 cycle_info[,opa_no:=substr(opa_no,nchar(opa_no)-8,nchar(opa_no))]
 
 ###2014 TREATMENT GROUP INCLUDES ONLY CYCLES 33-47
-cycle_info<-cycle_info[cycle %in% 33:47,]
+###  Include cycles 31,32 as leave-out samples for robustness
+cycle_info<-cycle_info[cycle %in% 31:47,]
 
 ###APPROXIMATE MAILING DAYS BY CYCLE
 ####APPROACH: ADD 5 DAYS, ROUND TO NEAREST MONDAY
-mail_days<-as.Date(c(paste0("2014-11-",
-                            c(10,12,13,14,17,17,
-                              18,19,20,21,24,24,25)),
-                     rep("2014-12-01",2)))
-cycle_mail_day<-data.table(cycle=33:47,mailing_day=mail_days)
-setkey(cycle_info,cycle)[cycle_mail_day,mailing_day:=mailing_day]
-rm(mail_days,cycle_mail_day)
+####Specifically
+####CYCLE-CAL. DAY-WKDY-MAILING DAY $CYCLE-CAL. DAY-WKDY-MAILING DAY $
+#### 31    Oct. 31  F    Nov. 5     $ 40    Nov. 14  M    Nov. 19    $
+#### 32    Nov. 3   M    Nov. 10    $ 41    Nov. 17  M    Nov. 20    $ 
+#### 33    Nov. 4   M    Nov. 10    $ 42    Nov. 18  M    Nov. 21    $
+#### 34    Nov. 5   M    Nov. 12    $ 43    Nov. 19  M    Nov. 24    $
+#### 35    Nov. 6   M    Nov. 13    $ 44    Nov. 20  M    Nov. 24    $ 
+#### 36    Nov. 7   M    Nov. 14    $ 45    Nov. 21  M    Nov. 25    $
+#### 37    Nov. 11  M    Nov. 17    $ 46    Nov. 24  M    Dec. 1     $
+#### 38    Nov. 12  M    Nov. 17    $ 47    Nov. 25  M    Dec. 1     $
+#### 39    Nov. 13  M    Nov. 18    $
+setkey(cycle_info,cycle)[data.table(cycle=31:47,
+                                    mailing_day=
+                                      as.Date(c(paste0("2014-11-",
+                                                       c(5,10,10,12,13,14,17,17,
+                                                         18,19,20,21,24,24,25)),
+                                                rep("2014-12-01",2)))),
+                         mailing_day:=mailing_day]
 
 ###INTENDED TREATMENTS WERE AS FOLLOWS
 levels_int<-c()
+levels_int[c(31,32)]="Leave-Out"
 levels_int[c(35,37,44)]="Threat"
 levels_int[c(33,40,41,47)]="Moral"
 levels_int[c(34,38,43,46)]="Peer"
 levels_int[c(36,39,42,45)]="Control"
-cycle_treatment_int<-data.table(cycle=1:47,
-                                treatment_int=as.factor(levels_int)
-                                )[cycle>=33,]
-setkey(cycle_info,cycle)[cycle_treatment_int,treatment_int:=treatment_int]
-rm(levels_int,cycle_treatment_int)
+setkey(cycle_info,cycle)[data.table(cycle=31:47,
+                                    treatment_int=
+                                      as.factor(levels_int[!is.na(levels_int)])),
+                         treatment_int:=treatment_int]
+rm(levels_int)
 
 ###ACTUAL TREATMENTS WERE AS FOLLOWS
 levels_act<-c()
+levels_act[c(31,32)]="Leave-Out"
 levels_act[c(35,36,44)]="Threat"
 levels_act[c(33,40,41,42,47)]="Moral"
 levels_act[c(34,37,38,43,46)]="Peer"
 levels_act[c(39,45)]="Control"
-cycle_treatment_act<-data.table(cycle=1:47,
-                                treatment_act=as.factor(levels_act)
-                                )[cycle>=33,]
-cycle_info[cycle_treatment_act,treatment_act:=treatment_act]
-rm(levels_act,cycle_treatment_act)
+setkey(cycle_info,cycle)[data.table(cycle=31:47,
+                                    treatment_act=
+                                      as.factor(levels_act[!is.na(levels_act)])),
+                         treatment_act:=treatment_act]
+rm(levels_act)
 
 ###TREATMENT FIDELITY WAS HIGHLY COMPROMISED (>20%) FOR FLAGGED CYCLES
 cycle_info[,fidelity_flag:=0]

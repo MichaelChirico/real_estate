@@ -204,6 +204,16 @@ extract.zelig<-function (model, include.aic = TRUE, include.bic = TRUE, include.
 }
 setMethod("extract", signature = className("zelig", "Zelig"),definition = extract.zelig)
 
+dol_form<-function(x){paste0("$",prettyNum(x,big.mark=","))}
+
+get_treats<-function(x){if(comment(x)[1]=="act_leave_out")
+                          c("Threat","Moral","Peer","Control","Leave-Out")
+                        else c("Threat","Moral","Peer","Control")}
+
+get_treats_col<-function(x){if(comment(x)[1]=="act_leave_out")
+                              c("red","blue","green","black","orange")
+                            else c("red","blue","green","black")}
+
 #Set up Analysis Data Sets ####
 analysis_data<-fread("analysis_file.csv",colClasses=c(date_of_first_payment="character"))[fidelity_flag==0,]
 #CLUSTERS DEFINED AT THE OWNER LEVEL
@@ -213,7 +223,7 @@ setkey(setkey(analysis_data,legal_name,mail_address
               )[,I:=.I],cluster_id:=I],opa_no,posting_rel)
 
 ###tidying up data classifications
-factors<-c("cycle","treatment_int","treatment_act","category","exterior",
+factors<-c("treatment_int","treatment_act","category","exterior",
            "abate_exempt_code","bldg_group","bldg_category","council",
            "case_status2")
 analysis_data[,(factors):=lapply(.SD,as.factor),.SDcols=factors]
@@ -238,8 +248,14 @@ analysis_data[,rooms_cut:=cut(rooms,breaks=c(0,5,6,20),
                               include.lowest=T,labels=c("0-5","6",">6"))]
 
 ##DEFINE DATA SETS FOR THE SUBSAMPLES
+###LEAVE-OUT SAMPLE (2 DAYS PRIOR TO TREATMENT)
+analysis_data_lout<-analysis_data
+###MAIN SAMPLE
+#### (reset factor levels once leave-out sample is eliminated)
+analysis_data<-analysis_data[cycle>=33,][,treatment:=factor(treatment)]
 ###NONCOMMERCIAL PROPERTIES
-analysis_data_ncomm<-analysis_data[commercial==0,]
+#### (reset factor levels once commercial properties are eliminated)
+analysis_data_ncomm<-analysis_data[commercial==0,][,category:=factor(category)]
 ###SINGLE OWNER PORcodPERTIES--NO MATCH ON LEGAL_NAME/MAILING_ADDRESS
 analysis_data_sown<-analysis_data[,count:=.N,by=.(legal_name,mail_address)
                                   ][count-min(count)==0,][,count:=NULL]
@@ -247,10 +263,11 @@ analysis_data[,count:=NULL]
 
 ###Tags & data descriptions for file naming for each data set
 comment(analysis_data)<-c("act","Empirical Treatment","analysis_data")
+comment(analysis_data_lout)<-c("act_leave_out","Empirical Treatment, Including Leave-Out Sample","analysis_data_lout")
 comment(analysis_data_ncomm)<-c("act_non_commercial","Empirical Treatment, Non-Commercial Properties","analysis_data_ncomm")
 comment(analysis_data_sown)<-c("act_single_owner","Empirical Treatment, Single-Owner Properties","analysis_data_sown")
 
-for (dt in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
+for (dt in list(analysis_data,analysis_data_lout,analysis_data_ncomm,analysis_data_sown)){
   ##Define the sample-specific variables:
   ## total_due_at_mailing_grp: total due by properties
   ##                           in each group at mailing
@@ -265,7 +282,7 @@ for (dt in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   dummy[,area_quartile:=create_quantiles(land_area,4)]
   
   assign(comment(dt)[3],dummy)
-}
+}; rm(dt)
 
 #Tests of Randomness ####
 
@@ -351,6 +368,8 @@ print.xtable(
                     c("Threat","Moral","Peer","Control","$p$-value"))),
     caption="Tests of Sample Balance on Observables II",label="table:balanceII"),
   hline.after=c(4,9,16,17),sanitize.text.function=identity,table.placement="htbp")
+rm(p_exp,list=ls(pattern="test"))
+
 
 ### Fidelity check--did we assign the right day as "start of treatment"?
 graphics.off()
@@ -538,7 +557,7 @@ dev.off(which=dev.list()["pdf"])
 rm(x)
 
 #Time Series Plots ####
-for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
+for (data in list(analysis_data,analysis_data_lout,analysis_data_ncomm,analysis_data_sown)){
   ##Cumulative Payments by Treatment (normalized by group size)
   graphics.off()
   dev.new()
@@ -546,15 +565,18 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
              "/time_series_average_payments_",comment(data)[1],".pdf"))
   dev.set(which=dev.list()["RStudioGD"])
   matplot(0:max_length,
-          dcast.data.table(data[posting_rel>=0,mean(cum_treated_pmts),
-                                by=c("posting_rel","treatment")],
-                           posting_rel~treatment,value.var="V1")[,!"posting_rel",with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),
+          setcolorder(dcast.data.table(
+            data[posting_rel>=0,mean(cum_treated_pmts),
+                 by=c("posting_rel","treatment")],
+            posting_rel~treatment,value.var="V1")[,!"posting_rel",with=F],
+            get_treats(data)),
+          type="l",lty=1,
+          col=get_treats_col(data),
           xlab="Days Since Mailing",ylab="$",lwd=2,
           main=paste("Cumulative Average Payments Since Mail Date \n",
                      "By",comment(data)[2]))
-  legend("topleft",c("Threat","Moral","Peer","Control"),lty=1,lwd=2,
-         col=c("red","blue","green","black"),bg="aliceblue")
+  legend("topleft",get_treats(data),lty=1,lwd=2,
+         col=get_treats_col(data),bg="aliceblue")
   dev.copy(which=dev.list()["pdf"])
   dev.off(which=dev.list()["pdf"])
   
@@ -565,16 +587,19 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
              "/time_series_debt_paydown_",comment(data)[1],".pdf"))
   dev.set(which=dev.list()["RStudioGD"])
   matplot(0:max_length,
-          dcast.data.table(data[posting_rel>=0,
-                                sum(100*current_balance/total_due_at_mailing_grp),
-                                by=c("posting_rel","treatment")],
-                           posting_rel~treatment,value.var="V1")[,!"posting_rel",with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),
+          setcolorder(dcast.data.table(
+            data[posting_rel>=0,
+                 sum(100*current_balance/total_due_at_mailing_grp),
+                 by=c("posting_rel","treatment")],
+            posting_rel~treatment,value.var="V1")[,!"posting_rel",with=F],
+            get_treats(data)),
+          type="l",lty=1,
+          col=get_treats_col(data),
           xlab="Days Since Mailing",ylab="%",lwd=2,
           main=paste("Percentage of Mailing Day Debt Owed \n",
                      "By",comment(data)[2]))
-  legend("bottomleft",c("Threat","Moral","Peer","Control"),lty=1,
-         col=c("red","blue","green","black"),bg="aliceblue")
+  legend("bottomleft",get_treats(data),lty=1,lwd=2,
+         col=get_treats_col(data),bg="aliceblue")
   dev.copy(which=dev.list()["pdf"])
   dev.off(which=dev.list()["pdf"])
   
@@ -582,18 +607,21 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   graphics.off()
   dev.new()
   pdf(paste0("./papers_presentations/images/analysis/",comment(data)[1],
-             "/time_series_debt_paydown_",comment(data)[1],".pdf"))
+             "/time_series_ever_paid_",comment(data)[1],".pdf"))
   dev.set(which=dev.list()["RStudioGD"])
   matplot(0:max_length,
-          dcast.data.table(data[posting_rel>=0,mean(100*ever_paid),
-                                by=c("posting_rel","treatment")],
-                           posting_rel~treatment,value.var="V1")[,!"posting_rel",with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),
+          setcolorder(dcast.data.table(
+            data[posting_rel>=0,mean(100*ever_paid),
+                 by=c("posting_rel","treatment")],
+            posting_rel~treatment,value.var="V1")[,!"posting_rel",with=F],
+            get_treats(data)),
+          type="l",lty=1,
+          col=get_treats_col(data),
           xlab="Days Since Mailing",ylab="%",lwd=2,
           main=paste("Percent of Group Ever Having Paid",
                      "\n By",comment(data)[2]))
-  legend("topleft",legend=c("Threat","Moral","Peer","Control"),
-         lwd=2,col=c("red","blue","green","black"),bg="aliceblue")
+  legend("topleft",get_treats(data),lty=1,lwd=2,
+         col=get_treats_col(data),bg="aliceblue")
   dev.copy(which=dev.list()["pdf"])
   dev.off(which=dev.list()["pdf"])
   
@@ -601,18 +629,21 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   graphics.off()
   dev.new()
   pdf(paste0("./papers_presentations/images/analysis/",comment(data)[1],
-             "/time_series_debt_paydown_",comment(data)[1],".pdf"))
+             "/time_series_paid_full_",comment(data)[1],".pdf"))
   dev.set(which=dev.list()["RStudioGD"])
   matplot(0:max_length,
-          dcast.data.table(data[posting_rel>=0,mean(100*paid_full),
-                                by=c("posting_rel","treatment")],
-                           posting_rel~treatment,value.var="V1")[,!"posting_rel",with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),
+          setcolorder(dcast.data.table(
+            data[posting_rel>=0,mean(100*paid_full),
+                 by=c("posting_rel","treatment")],
+            posting_rel~treatment,value.var="V1")[,!"posting_rel",with=F],
+            get_treats(data)),
+          type="l",lty=1,
+          col=get_treats_col(data),
           xlab="Days Since Mailing",ylab="%",lwd=2,
           main=paste("Percent of Group Having Paid in Full",
                      "\n By",comment(data)[2]))
-  legend("topleft",legend=c("Threat","Moral","Peer","Control"),
-         lwd=2,col=c("red","blue","green","black"),bg="aliceblue")
+  legend("topleft",get_treats(data),lty=1,lwd=2,
+         col=get_treats_col(data),bg="aliceblue")
   dev.copy(which=dev.list()["pdf"])
   dev.off(which=dev.list()["pdf"])
   
@@ -620,42 +651,35 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   graphics.off()
   dev.new()
   pdf(paste0("./papers_presentations/images/analysis/",comment(data)[1],
-             "/time_series_debt_paydown_",comment(data)[1],".pdf"))
+             "/time_series_paid_full_given_paid_",comment(data)[1],".pdf"))
   dev.set(which=dev.list()["RStudioGD"])
   matplot(0:max_length,
-          dcast.data.table(data[posting_rel>=0&ever_paid==1,mean(100*paid_full),
-                                by=c("posting_rel","treatment")],
-                           posting_rel~treatment,value.var="V1")[,!"posting_rel",with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),
+          setcolorder(dcast.data.table(
+            data[posting_rel>=0&ever_paid==1,mean(100*paid_full),
+                 by=c("posting_rel","treatment")],
+            posting_rel~treatment,value.var="V1")[,!"posting_rel",with=F],
+            get_treats(data)),
+          type="l",lty=1,
+          col=get_treats_col(data),
           xlab="Days Since Mailing",ylab="%",lwd=2,
           main=paste("Percent of Group Having Paid in Full Given Some Payment",
                      "\n By",comment(data)[2]))
-  legend("bottomright",legend=c("Threat","Moral","Peer","Control"),
-         lwd=2,col=c("red","blue","green","black"),bg="aliceblue")
+  legend("topleft",get_treats(data),lty=1,lwd=2,
+         col=get_treats_col(data),bg="aliceblue")
   dev.copy(which=dev.list()["pdf"])
   dev.off(which=dev.list()["pdf"])
-}
+}; rm(data)
 
 #Main Regressions, Tables, and Associated Predictions ####
-regs<-list(reg1_act="",reg1_act_non_commercial="",reg1_act_single_owner="",
-           reg1c_act="",reg1c_act_non_commercial="",reg1c_act_single_owner="",
-           reg2_act="",reg2_act_non_commercial="",reg2_act_single_owner="",
-           reg2c_act="",reg2c_act_non_commercial="",reg2c_act_single_owner="")
-for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
+regs<-list(reg1_act="",reg1_act_non_commercial="",reg1_act_single_owner="",reg1_act_leave_out="",
+           reg1c_act="",reg1c_act_non_commercial="",reg1c_act_single_owner="",reg1c_act_leave_out="",
+           reg2_act="",reg2_act_non_commercial="",reg2_act_single_owner="",reg2_act_leave_out="",
+           reg2c_act="",reg2c_act_non_commercial="",reg2c_act_single_owner="",reg2c_act_leave_out="")
+for (data in list(analysis_data,analysis_data_lout,analysis_data_ncomm,analysis_data_sown)){
   data_end<-data[end==1,]
 
-  #Can't include category=="Commercial" when no such properties exist
-  if (comment(data)[1]=="act_non_commercial"){
-    controls<-(~I(land_area/1e3)+I(years_count<=5)+council+
-                 I(category=="Hotels&Apts")+I(category=="Store w/ Dwelling")+
-                 I(category=="Industrial")+I(category=="Vacant")+
-                 I(exterior=="Sealed/Compromised")+I(homestead>0))
-  }else{
-    controls<-(~I(land_area/1e3)+I(years_count<=5)+council+
-                 I(category=="Hotels&Apts")+I(category=="Store w/ Dwelling")+
-                 I(category=="Commercial")+I(category=="Industrial")+I(category=="Vacant")+
-                 I(exterior=="Sealed/Compromised")+I(homestead>0))
-  }
+  controls<-(~I(land_area/1e3)+I(years_count<=5)+council+category+
+               I(exterior=="Sealed/Compromised")+I(homestead>0))
   
   #1(Ever Paid) Differs by Treatment?
   regs[[paste0("reg1_",comment(data)[1])]]<-
@@ -676,14 +700,13 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
                    relevel(treatment,ref="Control")*balance_quartile
                  +.+I(market_value/1e5)),
           data=data_end,model="logit",robust=T,cluster="cluster_id",cite=F)
-}
+}; rm(data,data_end,controls)
 
 ##Regression tables
 
 ###Table: Summary of Effectiveness by Treatment & Sample
-dol_form<-function(x){paste0("$",prettyNum(x,big.mark=","))}
 print(xtable(matrix(cbind(
-  rep(c("Full Sample","Non-Comm.","Sole Owner"),each=4),
+  rep(c("I","II","III"),each=4),
   rep(c("Threat","Moral","Peer","Control"),3),
   rep(c(1,4,2,2),3),
   as.matrix(rbind(
@@ -691,29 +714,29 @@ print(xtable(matrix(cbind(
                            round(mean(100*ever_paid)),round(mean(100*paid_full)),
                            dol_form(round(sum(cum_treated_pmts))),
                            dol_form(round(sum(cum_treated_pmts/treatment_count)))),
-                  by=treatment][c(4,2,3,1),!"treatment",with=F],
+                  by=treatment][order(treatment)][c(4,2,3,1),!"treatment",with=F],
     analysis_data_ncomm[end==1,.(prettyNum(.N,big.mark=","),dol_form(sum(total_due_at_mailing)),
                                  round(mean(100*ever_paid)),round(mean(100*paid_full)),
                                  dol_form(round(sum(cum_treated_pmts))),
                                  dol_form(round(sum(cum_treated_pmts/treatment_count)))),
-                        by=treatment][c(4,2,3,1),!"treatment",with=F],
+                        by=treatment][order(treatment)][c(4,2,3,1),!"treatment",with=F],
     analysis_data_sown[end==1,.(prettyNum(.N,big.mark=","),dol_form(sum(total_due_at_mailing)),
                                 round(mean(100*ever_paid)),round(mean(100*paid_full)),
                                 dol_form(round(sum(cum_treated_pmts))),
                                 dol_form(round(sum(cum_treated_pmts/treatment_count)))),
-                       by=treatment][c(4,2,3,1),!"treatment",with=F])),
+                       by=treatment][order(treatment)][c(4,2,3,1),!"treatment",with=F])),
   as.matrix(rbind(
     analysis_data[end==1,sum(cum_treated_pmts/treatment_count),
                   by=.(treatment,treatment_count)
-                  ][c(4,2,3,1),.(dol_form(round(V1-V1[treatment=="Control"])),
+                  ][order(treatment)][c(4,2,3,1),.(dol_form(round(V1-V1[treatment=="Control"])),
                                  dol_form(round((V1-V1[treatment=="Control"])*treatment_count)))],
     analysis_data_ncomm[end==1,sum(cum_treated_pmts/treatment_count),
                         by=.(treatment,treatment_count)
-                        ][c(4,2,3,1),.(dol_form(round(V1-V1[treatment=="Control"])),
+                        ][order(treatment)][c(4,2,3,1),.(dol_form(round(V1-V1[treatment=="Control"])),
                                        dol_form(round((V1-V1[treatment=="Control"])*treatment_count)))],
     analysis_data_sown[end==1,sum(cum_treated_pmts/treatment_count),
                        by=.(treatment,treatment_count)
-                       ][c(4,2,3,1),.(dol_form(round(V1-V1[treatment=="Control"])),
+                       ][order(treatment)][c(4,2,3,1),.(dol_form(round(V1-V1[treatment=="Control"])),
                                       dol_form(round((V1-V1[treatment=="Control"])*treatment_count)))]))),
   ncol=11,dimnames=list(1:12,
                         c("Sample","Group","Treated Days","No. Treated",
@@ -721,9 +744,10 @@ print(xtable(matrix(cbind(
                           "Percent Paid in Full","Dollars Received",
                           "Dollars Per Day Treated","Dollars above Control Per Day",
                           "Total Generated over All Days"))),
-  caption=c("Summary of Effectiveness of Treatment"),label="table:effect",
-  align=paste0("cp{1.9cm}p{1.3cm}p{1.3cm}p{1.3cm}p{1.5cm}p{1.1cm}",
-               "p{1.1cm}p{1.4cm}p{1.4cm}p{1.4cm}p{1.6cm}")),include.rownames=F)
+  caption=c("Summary of Effectiveness of Treatment"),label="table:summary",
+  align=paste0("|c|p{1.3cm}|p{1.3cm}|p{1.3cm}|p{1.3cm}|p{2cm}|p{1.4cm}|",
+               "p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.6cm}|")),
+  include.rownames=F,hline.after=c(-1,0,4,8,12),floating.environment="sidewaystable")
 
 ###Model I: Logistic of Ever-Paid
 ####Logistic Coefficients Table: Plain model
@@ -828,63 +852,13 @@ print.xtable(
                 dimnames=list(c("Control","Moral","Peer","Threat"),paste0("Q",1:4))),
          caption="Model II: Marginal Predictions of Logistic Regressions -- Paid in Full",
          label="table:modelII_marg",align="lcccc"),table.placement="htbp")
-
-# ###Predicting Total $ Amount of Effect
-# ###  Since Moral had highest apparent effect, extrapolate to
-# ###   rest of mailing cycles to estimate how much would have
-# ###   been paid back if all properties (bar those that would
-# ###   have been excluded from our sample) were in Moral.
-# full_sample<-
-#   setkey(
-#     setnames(
-#       fread("/media/data_drive/real_estate/prop2014.txt",
-#             select=c("PARCEL","MV","CAT CD","TOT AREA","EXT COND")),
-#       c("opa_no","market_value","category","land_area","exterior")),
-#     opa_no)[,market_value:=as.numeric(market_value)
-#             ][,land_area:=as.numeric(land_area)/100
-#               ][data.table(read.dbf("./gis_data/dor_data_aug_with_zoning_base_id.dbf")
-#                            )[,c("opa_no","longitude","latitude",
-#                                 "zone_district","OBJECTID"):=
-#                                list(paste0(0,opa_no),NULL,NULL,OBJECTID,NULL)
-#                              ][,opa_no:=substr(opa_no,nchar(opa_no)-8,nchar(opa_no))],
-#                 zone_district:=zone_district
-#                 ][zone_district==0,zone_district:=NA
-#                   ][land_area<100,land_area:=NA
-#                     ][,land_area_mean:=mean(land_area,na.rm=T),
-#                       by=zone_district
-#                       ][is.na(land_area),land_area:=land_area_mean
-#                         ][,land_area_mean:=NULL
-#                           ][land_area<1e6,
-#                             ][,c("category","exterior"):=lapply(.SD,as.factor),
-#                               .SDcols=c("category","exterior")
-#                               ][setkey(fread("/media/data_drive/real_estate/dor_data_15_oct_encrypted.csv"),
-#                                        opa_no)[payment_agreement=="N"&case_status==""
-#                                                &abate_exempt_code %in% c("","     ","\\    ")
-#                                                &sheriff_sale=="N"&bankruptcy=="N"
-#                                                &sequestration=="N"
-#                                                &returned_mail_flag=="NO",
-#                                                ][,.(opa_no,years_count,council,
-#                                                     homestead,calc_total_due,zip)
-#                                                  ][council=="",
-#                                                    council:=ifelse(zip=="19130","5",
-#                                                                    ifelse(zip %in% c("19125","19147"),"1",
-#                                                                           ifelse(zip=="19138","8","")))
-#                                                    ][,council:=factor(council,levels=1:10)]
-#                                 ][!is.na(market_value),][,total_due_at_mailing:=calc_total_due]
-# levels(full_sample$category)<-c("Residential","Hotels&Apts","Store w/ Dwelling",
-#                                 "Commercial","Industrial","Vacant")
-# levels(full_sample$exterior)<-c("N/A","N/A","New/Rehab","Above Average","Average",
-#                                 "Below Average","Vacant","Sealed/Compromised")
-# 
-# full_sample[,treatment:=as.factor("Moral")]
-# levels(full_sample$treatment)<-c("Threat","Moral","Peer","Control")
-# predictions_3<-predict(reg3c,newdata=full_sample)
+rm(regs,coef,list=ls(pattern="_control"))
 
 #Further analysis: ####
 
 ##Time Series Analysis by Quartile ####
 
-for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
+for (data in list(analysis_data,analysis_data_lout,analysis_data_ncomm,analysis_data_sown)){
   quartile_cutoffs<-round(data[,quantile(total_due_at_mailing,probs=c(.25,.5,.75))],-2)
   
   setkey(data,balance_quartile,treatment)
@@ -903,8 +877,8 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   par(oma=c(0,0,3,0))
   par(mar=c(0,4.1,4.1,0))
   matplot(0:max_length,
-          avg_pmts_by_q[,paste0("1_",c("Control","Moral","Peer","Threat")),with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),ylim=c(0,uplim),
+          avg_pmts_by_q[,paste0("1_",get_treats(data)),with=F],
+          type="l",lty=1,col=get_treats_col(data),ylim=c(0,uplim),
           xlab="",ylab="$",lwd=2,main="",xaxt="n")
   text(max_length/2,.9*uplim,
        paste0("1st Quartile: \n",
@@ -912,8 +886,8 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   
   par(mar=c(0,0,4.1,2.1))
   matplot(0:max_length,
-          avg_pmts_by_q[,paste0("2_",c("Control","Moral","Peer","Threat")),with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),ylim=c(0,uplim),
+          avg_pmts_by_q[,paste0("2_",get_treats(data)),with=F],
+          type="l",lty=1,col=get_treats_col(data),ylim=c(0,uplim),
           xlab="",ylab="",lwd=2,main="",yaxt="n",xaxt="n")
   text(max_length/2,.9*uplim,
        paste0("2nd Quartile: \n",
@@ -922,8 +896,8 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   
   par(mar=c(5.1,4.1,0,0))
   matplot(0:max_length,
-          avg_pmts_by_q[,paste0("3_",c("Control","Moral","Peer","Threat")),with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),ylim=c(0,uplim),
+          avg_pmts_by_q[,paste0("3_",get_treats(data)),with=F],
+          type="l",lty=1,col=get_treats_col(data),ylim=c(0,uplim),
           xlab="Days Since Mailing",ylab="$",lwd=2,main="")
   text(max_length/2,.9*uplim,
        paste0("3rd Quartile: \n",
@@ -932,8 +906,8 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   
   par(mar=c(5.1,0,0,2.1))
   matplot(0:max_length,
-          avg_pmts_by_q[,paste0("4_",c("Control","Moral","Peer","Threat")),with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),ylim=c(0,uplim),
+          avg_pmts_by_q[,paste0("4_",get_treats(data)),with=F],
+          type="l",lty=1,col=get_treats_col(data),ylim=c(0,uplim),
           xlab="Days Since Mailing",ylab="",lwd=2,main="",yaxt="n")
   text(max_length/2,.9*uplim,
        paste0("4th Quartile: \n",
@@ -941,8 +915,8 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   
   par(mar=c(0,0,0,0))
   plot(1,type="n",axes=F,xlab="",ylab="")
-  legend("top",legend=c("Threat","Moral","Peer","Control"),lty=1,lwd=2,
-         col=c("red","blue","green","black"),horiz=T,inset=0)
+  legend("top",legend=get_treats(data),lty=1,lwd=2,
+         col=get_treats_col(data),horiz=T,inset=0)
   mtext(paste("Normalized Cumulative Payments \n",
               "By Balance Quartile,",comment(data)[2]),
         side=3,line=-2,outer=T)
@@ -969,10 +943,9 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   par(oma=c(0,0,3,0))
   par(mar=c(0,4.1,4.1,2.1))
   matplot(0:max_length,
-          debt_drawdown_q[,paste0("1_",c("Control","Moral","Peer","Threat")),with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),
-          ylim=c(min(debt_drawdown_q[,paste0("1_",c("Control","Moral","Peer","Threat")),
-                                     with=F]),100),
+          debt_drawdown_q[,paste0("1_",get_treats(data)),with=F],
+          type="l",lty=1,col=get_treats_col(data),
+          ylim=c(min(debt_drawdown_q[,paste0("1_",get_treats(data)),with=F]),100),
           xlab="",ylab="%",lwd=2,main="",xaxt="n")
   text(5,sum(c(3,1)/4*par("usr")[3:4]),
        paste0("1st Quartile: \n",
@@ -980,10 +953,9 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   
   par(mar=c(0,4.1,4.1,2.1))
   matplot(0:max_length,
-          debt_drawdown_q[,paste0("2_",c("Control","Moral","Peer","Threat")),with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),
-          ylim=c(min(debt_drawdown_q[,paste0("2_",c("Control","Moral","Peer","Threat")),
-                                     with=F]),100),
+          debt_drawdown_q[,paste0("2_",get_treats(data)),with=F],
+          type="l",lty=1,col=get_treats_col(data),
+          ylim=c(min(debt_drawdown_q[,paste0("2_",get_treats(data)),with=F]),100),
           xlab="",ylab="%",lwd=2,main="",xaxt="n")
   text(5,sum(c(3,1)/4*par("usr")[3:4]),
        paste0("2nd Quartile: \n",
@@ -992,10 +964,9 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   
   par(mar=c(5.1,4.1,0,2.1))
   matplot(0:max_length,
-          debt_drawdown_q[,paste0("3_",c("Control","Moral","Peer","Threat")),with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),
-          ylim=c(min(debt_drawdown_q[,paste0("3_",c("Control","Moral","Peer","Threat")),
-                                     with=F]),100),
+          debt_drawdown_q[,paste0("3_",get_treats(data)),with=F],
+          type="l",lty=1,col=get_treats_col(data),
+          ylim=c(min(debt_drawdown_q[,paste0("3_",get_treats(data)),with=F]),100),
           xlab="Days Since Mailing",ylab="%",lwd=2,main="")
   text(5,sum(c(3,1)/4*par("usr")[3:4]),
        paste0("3rd Quartile: \n",
@@ -1004,10 +975,9 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   
   par(mar=c(5.1,4.1,0,2.1))
   matplot(0:max_length,
-          debt_drawdown_q[,paste0("4_",c("Control","Moral","Peer","Threat")),with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),
-          ylim=c(min(debt_drawdown_q[,paste0("4_",c("Control","Moral","Peer","Threat")),
-                                     with=F]),100),
+          debt_drawdown_q[,paste0("4_",get_treats(data)),with=F],
+          type="l",lty=1,col=get_treats_col(data),
+          ylim=c(min(debt_drawdown_q[,paste0("4_",get_treats(data)),with=F]),100),
           xlab="Days Since Mailing",ylab="%",lwd=2,main="")
   text(5,sum(c(3,1)/4*par("usr")[3:4]),
        paste0("4th Quartile: \n",
@@ -1015,8 +985,8 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   
   par(mar=c(0,0,0,0))
   plot(1,type="n",axes=F,xlab="",ylab="")
-  legend("top",legend=c("Threat","Moral","Peer","Control"),lty=1,lwd=2,
-         col=c("red","blue","green","black"),horiz=T,inset=0)
+  legend("top",legend=get_treats(data),lty=1,lwd=2,
+         col=get_treats_col(data),horiz=T,inset=0)
   mtext(paste("Percentage of Mailing Day Debt Owed \n",
               "By Balance Quartile,",comment(data)[2]),
         side=3,line=-2,outer=T)
@@ -1041,10 +1011,9 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   par(oma=c(0,0,3,0))
   par(mar=c(0,4.1,4.1,2.1))
   matplot(0:max_length,
-          pct_ever_paid_q[,paste0("1_",c("Control","Moral","Peer","Threat")),with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),
-          ylim=c(0,max(pct_ever_paid_q[,paste0("1_",c("Control","Moral","Peer","Threat")),
-                                       with=F])),
+          pct_ever_paid_q[,paste0("1_",get_treats(data)),with=F],
+          type="l",lty=1,col=get_treats_col(data),
+          ylim=c(0,max(pct_ever_paid_q[,paste0("1_",get_treats(data)),with=F])),
           xlab="",ylab="%",lwd=2,main="",xaxt="n")
   text(7,.75*par("usr")[4],
        paste("1st Quartile: \n",
@@ -1052,10 +1021,9 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   
   par(mar=c(0,4.1,4.1,2.1))
   matplot(0:max_length,
-          pct_ever_paid_q[,paste0("2_",c("Control","Moral","Peer","Threat")),with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),
-          ylim=c(0,max(pct_ever_paid_q[,paste0("2_",c("Control","Moral","Peer","Threat")),
-                                       with=F])),
+          pct_ever_paid_q[,paste0("2_",get_treats(data)),with=F],
+          type="l",lty=1,col=get_treats_col(data),
+          ylim=c(0,max(pct_ever_paid_q[,paste0("2_",get_treats(data)),with=F])),
           xlab="",ylab="%",lwd=2,main="",xaxt="n")
   text(7,.75*par("usr")[4],
        paste("2nd Quartile: \n",
@@ -1064,10 +1032,9 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   
   par(mar=c(5.1,4.1,0,2.1))
   matplot(0:max_length,
-          pct_ever_paid_q[,paste0("3_",c("Control","Moral","Peer","Threat")),with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),
-          ylim=c(0,max(pct_ever_paid_q[,paste0("3_",c("Control","Moral","Peer","Threat")),
-                                       with=F])),
+          pct_ever_paid_q[,paste0("3_",get_treats(data)),with=F],
+          type="l",lty=1,col=get_treats_col(data),
+          ylim=c(0,max(pct_ever_paid_q[,paste0("3_",get_treats(data)),with=F])),
           xlab="Days Since Mailing",ylab="%",lwd=2,main="")
   text(7,.75*par("usr")[4],
        paste("3rd Quartile: \n",
@@ -1076,10 +1043,9 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   
   par(mar=c(5.1,4.1,0,2.1))
   matplot(0:max_length,
-          pct_ever_paid_q[,paste0("4_",c("Control","Moral","Peer","Threat")),with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),
-          ylim=c(0,max(pct_ever_paid_q[,paste0("4_",c("Control","Moral","Peer","Threat")),
-                                       with=F])),
+          pct_ever_paid_q[,paste0("4_",get_treats(data)),with=F],
+          type="l",lty=1,col=get_treats_col(data),
+          ylim=c(0,max(pct_ever_paid_q[,paste0("4_",get_treats(data)),with=F])),
           xlab="Days Since Mailing",ylab="%",lwd=2,main="")
   text(7,.75*par("usr")[4],
        paste("4th Quartile: \n",
@@ -1087,8 +1053,8 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   
   par(mar=c(0,0,0,0))
   plot(1,type="n",axes=F,xlab="",ylab="")
-  legend("top",legend=c("Threat","Moral","Peer","Control"),lty=1,lwd=2,
-         col=c("red","blue","green","black"),horiz=T,inset=0)
+  legend("top",legend=get_treats(data),lty=1,lwd=2,
+         col=get_treats_col(data),horiz=T,inset=0)
   mtext(paste("Percent of Group Ever Having Paid \n",
               "By Balance Quartile,",comment(data)[2]),
         side=3,line=-2,outer=T)
@@ -1111,10 +1077,9 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   par(oma=c(0,0,3,0))
   par(mar=c(0,4.1,4.1,2.1))
   matplot(0:max_length,
-          pct_paid_full_q[,paste0("1_",c("Control","Moral","Peer","Threat")),with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),
-          ylim=c(0,max(pct_paid_full_q[,paste0("1_",c("Control","Moral","Peer","Threat")),
-                                       with=F])),
+          pct_paid_full_q[,paste0("1_",get_treats(data)),with=F],
+          type="l",lty=1,col=get_treats_col(data),
+          ylim=c(0,max(pct_paid_full_q[,paste0("1_",get_treats(data)),with=F])),
           xlab="",ylab="%",lwd=2,main="",xaxt="n")
   text(7,.75*par("usr")[4],
        paste("1st Quartile: \n",
@@ -1122,10 +1087,9 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   
   par(mar=c(0,4.1,4.1,2.1))
   matplot(0:max_length,
-          pct_paid_full_q[,paste0("2_",c("Control","Moral","Peer","Threat")),with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),
-          ylim=c(0,max(pct_paid_full_q[,paste0("2_",c("Control","Moral","Peer","Threat")),
-                                       with=F])),
+          pct_paid_full_q[,paste0("2_",get_treats(data)),with=F],
+          type="l",lty=1,col=get_treats_col(data),
+          ylim=c(0,max(pct_paid_full_q[,paste0("2_",get_treats(data)),with=F])),
           xlab="",ylab="%",lwd=2,main="",xaxt="n")
   text(7,.75*par("usr")[4],
        paste("2nd Quartile: \n",
@@ -1134,10 +1098,9 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   
   par(mar=c(5.1,4.1,0,2.1))
   matplot(0:max_length,
-          pct_paid_full_q[,paste0("3_",c("Control","Moral","Peer","Threat")),with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),
-          ylim=c(0,max(pct_paid_full_q[,paste0("3_",c("Control","Moral","Peer","Threat")),
-                                       with=F])),
+          pct_paid_full_q[,paste0("3_",get_treats(data)),with=F],
+          type="l",lty=1,col=get_treats_col(data),
+          ylim=c(0,max(pct_paid_full_q[,paste0("3_",get_treats(data)),with=F])),
           xlab="Days Since Mailing",ylab="%",lwd=2,main="")
   text(7,.75*par("usr")[4],
        paste("3rd Quartile: \n",
@@ -1146,10 +1109,9 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   
   par(mar=c(5.1,4.1,0,2.1))
   matplot(0:max_length,
-          pct_paid_full_q[,paste0("4_",c("Control","Moral","Peer","Threat")),with=F],
-          type="l",lty=1,col=c("black","blue","green","red"),
-          ylim=c(0,max(pct_paid_full_q[,paste0("4_",c("Control","Moral","Peer","Threat")),
-                                       with=F])),
+          pct_paid_full_q[,paste0("4_",get_treats(data)),with=F],
+          type="l",lty=1,col=get_treats_col(data),
+          ylim=c(0,max(pct_paid_full_q[,paste0("4_",get_treats(data)),with=F])),
           xlab="Days Since Mailing",ylab="%",lwd=2,main="")
   text(7,.75*par("usr")[4],
        paste("4th Quartile: \n",
@@ -1157,17 +1119,17 @@ for (data in list(analysis_data,analysis_data_ncomm,analysis_data_sown)){
   
   par(mar=c(0,0,0,0))
   plot(1,type="n",axes=F,xlab="",ylab="")
-  legend("top",legend=c("Threat","Moral","Peer","Control"),lty=1,lwd=2,
-         col=c("red","blue","green","black"),horiz=T,inset=0)
+  legend("top",legend=get_treats(data),lty=1,lwd=2,
+         col=get_treats_col(data),horiz=T,inset=0)
   mtext(paste("Percent of Group Having Paid in Full \n",
               "By Balance Quartile,",comment(data)[2]),
         side=3,line=-2,outer=T)
   dev.copy(which=dev.list()["pdf"])
   dev.off(which=dev.list()["pdf"])
   rm(pct_paid_full_q)
-}
+}; rm(dummy,quartile_cutoffs)
 
-##Analysis by Length of Debt ####
+##Analysis by Length of Debt ***** STILL NEED TO COMPLETE FOR SUBSAMPLES ****** ####
 setkey(analysis_data,years_cut,treatment)
 avg_pmts_by_y<-
   dcast.data.table(analysis_data[posting_rel>=0,mean(cum_treated_pmts),
