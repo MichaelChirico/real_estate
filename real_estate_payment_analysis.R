@@ -215,7 +215,7 @@ get_treats_col<-function(x){if(comment(x)[1]=="act_leave_out")
                             else c("red","blue","green","black")}
 
 #Set up Analysis Data Sets ####
-analysis_data<-fread("analysis_file.csv",colClasses=c(date_of_first_payment="character"))[fidelity_flag==0,]
+analysis_data<-fread("analysis_file.csv",colClasses=c(date_of_first_payment="character"))
 #CLUSTERS DEFINED AT THE OWNER LEVEL
 #OWNER DEFINED AS ANYONE WITH IDENTICAL NAME & MAILING ADDRESS
 setkey(setkey(analysis_data,legal_name,mail_address
@@ -262,10 +262,10 @@ analysis_data_sown<-analysis_data[,count:=.N,by=.(legal_name,mail_address)
 analysis_data[,count:=NULL]
 
 ###Tags & data descriptions for file naming for each data set
-comment(analysis_data)<-c("act","Empirical Treatment","analysis_data")
-comment(analysis_data_lout)<-c("act_leave_out","Empirical Treatment, Including Leave-Out Sample","analysis_data_lout")
-comment(analysis_data_ncomm)<-c("act_non_commercial","Empirical Treatment, Non-Commercial Properties","analysis_data_ncomm")
-comment(analysis_data_sown)<-c("act_single_owner","Empirical Treatment, Single-Owner Properties","analysis_data_sown")
+comment(analysis_data)<-c("act","Full Sample","analysis_data")
+comment(analysis_data_lout)<-c("act_leave_out","Including Leave-Out Sample","analysis_data_lout")
+comment(analysis_data_ncomm)<-c("act_non_commercial","Non-Commercial Properties","analysis_data_ncomm")
+comment(analysis_data_sown)<-c("act_single_owner","Single-Owner Properties","analysis_data_sown")
 
 for (dt in list(analysis_data,analysis_data_lout,analysis_data_ncomm,analysis_data_sown)){
   ##Define the sample-specific variables:
@@ -748,6 +748,30 @@ print(xtable(matrix(cbind(
   align=paste0("|c|p{1.3cm}|p{1.3cm}|p{1.3cm}|p{1.3cm}|p{2cm}|p{1.4cm}|",
                "p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.6cm}|")),
   include.rownames=F,hline.after=c(-1,0,4,8,12),floating.environment="sidewaystable")
+
+###Table: Summary of Effectiveness by Treatment & Sample, VS LEAVE-OUT SAMPLE
+print(xtable(matrix(cbind(
+  rep("IV",each=5),c("Threat","Moral","Peer","Control","Leave-Out"),c(1,4,2,2,2),
+  as.matrix(analysis_data_lout[end==1,.(prettyNum(.N,big.mark=","),
+                                        dol_form(sum(total_due_at_mailing)),
+                           round(mean(100*ever_paid)),round(mean(100*paid_full)),
+                           dol_form(round(sum(cum_treated_pmts))),
+                           dol_form(round(sum(cum_treated_pmts/treatment_count)))),
+                  by=treatment][order(treatment)][c(5,3,4,1,2),!"treatment",with=F]),
+  as.matrix(analysis_data_lout[end==1,sum(cum_treated_pmts/treatment_count),
+                               by=.(treatment,treatment_count)
+                               ][order(treatment)][c(5,3,4,1,2),.(dol_form(round(V1-V1[treatment=="Leave-Out"])),
+                                                   dol_form(round((V1-V1[treatment=="Leave-Out"])*treatment_count)))])),
+  ncol=11,dimnames=list(1:5,
+                        c("Sample","Group","Treated Days","No. Treated",
+                          "Total Debt Owed","Percent Ever Paid",
+                          "Percent Paid in Full","Dollars Received",
+                          "Dollars Per Day Treated","Dollars above Leave-Out Per Day",
+                          "Total Generated over All Days"))),
+  caption=c("Summary of Effectiveness of Treatment vs. Leave-Out Sample"),label="table:summary_leave_out",
+  align=paste0("|c|p{1.3cm}|p{1.3cm}|p{1.3cm}|p{1.3cm}|p{2cm}|p{1.4cm}|",
+               "p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.6cm}|")),
+  include.rownames=F,hline.after=c(-1,0,5),floating.environment="sidewaystable")
 
 ###Model I: Logistic of Ever-Paid
 ####Logistic Coefficients Table: Plain model

@@ -2,6 +2,7 @@
 #Philadelphia Real Estate Tax Evasion
 #Michael Chirico
 #February 12, 2015
+# PACKAGES AND CLEANUP ####
 rm(list=ls(all=T))
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 library(data.table)
@@ -15,7 +16,17 @@ library(AER)
 library(survival)
 library(reshape2)
 
-#READING IN THE DATA
+# CONVENIENT FUNCTIONS ####
+abbr_to_colClass<-function(inits,counts){
+  x<-substring(inits,1:nchar(inits),1:nchar(inits))
+  types<-ifelse(x=="c","character",
+                ifelse(x=="f","factor",
+                       ifelse(x=="i","integer",
+                              "numeric")))
+  rep(types,substring(counts,1:nchar(counts),1:nchar(counts)))
+}
+
+#READING IN THE DATA ####
 ##PAYMENTS DATA
 ###OCTOBER 1 - DECEMBER 4, 2014
 payments_nov<-fread("/media/data_drive/real_estate/payment_data_oct_encrypted.csv")
@@ -24,16 +35,25 @@ payments_nov[,c("period","valid","posting","due_date"):=lapply(.SD,as.Date,forma
              .SDcols=c("period","valid","posting","due_date")]
 
 ###DECEMBER 3 - JANUARY 6
-payments_dec<-fread("/media/data_drive/real_estate/payment_data_dec.txt",sep="|",
-                    colClasses=c("factor",rep("character",4),rep("numeric",3),
-                                 rep("factor",2),rep("character",9),rep("numeric",2)))
-setnames(payments_dec,c("tax","period","valid","posting","due_date","principal",
-                        "interest_and_penalty","other_paid","grp","tran",
-                        "ref_number","legal_name","serv","sic","naic","tpt",
-                        "opa_no","cn","bn","interest","penalty"))
+payments_dec<-setnames(fread("/media/data_drive/real_estate/payment_data_dec.txt",sep="|",
+                             colClasses=abbr_to_colClass("fcnfcn","143292")),
+                       c("tax","period","valid","posting","due_date","principal",
+                         "interest_and_penalty","other_paid","grp","tran",
+                         "ref_number","legal_name","serv","sic","naic","tpt",
+                         "opa_no","cn","bn","interest","penalty"))[,tax:=NULL]
 
-payments_dec[,tax:=NULL]
 payments_dec[,c("period","valid","posting","due_date"):=lapply(.SD,as.Date,format="%Y%m%d"),
+             .SDcols=c("period","valid","posting","due_date")]
+
+###JANUARY 1 - APRIL 20
+payments_apr<-setnames(fread("/media/data_drive/real_estate/payment_data_150101_150415.txt",sep="|",
+                             colClasses=abbr_to_colClass("fcnfcnc","1432921")),
+                       c("tax","period","valid","posting","due_date","principal",
+                         "interest_and_penalty","other_paid","grp","tran",
+                         "ref_number","legal_name","serv","sic","naic","tpt",
+                         "opa_no","cn","bn","interest","penalty","postmark"))[,c("tax","postmark"):=NULL]
+
+payments_apr[,c("period","valid","posting","due_date"):=lapply(.SD,as.Date,format="%Y%m%d"),
              .SDcols=c("period","valid","posting","due_date")]
 
 ###Combine the data sets
@@ -52,9 +72,8 @@ payments_dec[,c("period","valid","posting","due_date"):=lapply(.SD,as.Date,forma
 #### payments_overlap[,count:=.N,by=setdiff(names(payments_overlap),c("set","legal_name"))]
 ####Notice that nrow(payments_overlap[count>2,set=="NOV",])==nrow(payments_nov_overlap) --
 ####  that is, ever payment in the tail of the November data was found again in December.
-payments<-rbind(payments_nov[valid<as.Date("2014-12-01"),],payments_dec)
-rm(payments_nov,payments_dec)
-setkey(payments,opa_no,posting)
+payments<-setkey(rbind(payments_nov[valid<as.Date("2014-12-01"),],payments_dec,payments_apr),opa_no,posting)
+rm(list=ls(pattern="payments_"))
 
 ###Code to count the duplicates / duplicate-look-alikes among all payments
 # payments[,count:=.N,by=setdiff(names(payments),"legal_name")]
@@ -70,25 +89,23 @@ payments[,balance_change:=-principal-interest_and_penalty-other_paid]
 ###Aggregate the files
 ####From transcation level to posting day level
 ####  (combine all transactions posted on the same day)
-payments_by_day<-payments[,sum(balance_change),by=list(opa_no,posting)
-                          ][,c("balance_change","V1"):=list(V1,NULL)]
+### ELIMINATE ALL PAYMENTS MADE TO 2015 BALANCES--COME BACK TO THIS LATER
+payments_by_day<-payments[format(period,"%Y")!="2015",.(balance_change=sum(balance_change)),by=.(opa_no,posting)]
 
 ##DELINQUENCY DATA
 dor_data_oct<-fread("/media/data_drive/real_estate/dor_data_15_oct_encrypted.csv")
 dates<-c("date_latest_pmt","max_period","min_period")
 dor_data_oct[,(dates):=lapply(.SD,as.Date,format="%Y%m%d"),.SDcols=dates]
-setkey(dor_data_oct,opa_no)
+#Found/approximated by hand the council districts for some properties where missing
 dor_data_oct[,council_flag:=0]
-dor_data_oct[council==""&zip=="19130",               #Found/approximated by hand the council
-             c("council","council_flag"):=list("5",1)] #districts for some properties where missing
-dor_data_oct[council==""&zip %in% c("19125","19147"),
-             c("council","council_flag"):=list("1",1)]
-dor_data_oct[council==""&zip=="19138",
-             c("council","council_flag"):=list("8",1)]
+setkey(dor_data_oct,council,zip)
+setkey(dor_data_oct[.("","19130"),c("council","council_flag"):=list("5",1)],council,zip)
+setkey(dor_data_oct[.("",c("19125","19147")),c("council","council_flag"):=list("1",1)],council,zip)
+setkey(dor_data_oct[.("","19138"),c("council","council_flag"):=list("8",1)],council,zip)
 dor_data_oct[,council:=factor(council,levels=1:10)]            
 
 dor_data_oct[,owner_occ:=homestead>0]
-
+setkey(dor_data_oct,opa_no)
 ###SAMPLE RESTRICTIONS
 ### Original delinquent sample size: 134888 properties
 ####NO PAYMENT AGREEMENT
@@ -155,10 +172,8 @@ opa_data[,commercial:=category=="Commercial"]
 
 
 ##CYCLE & TREATMENT GROUP DATA
-cycle_info<-fread("/media/data_drive/real_estate/opa_cycles.csv",
-                  select=c("OPA #","Billing Cycle"))
-
-setnames(cycle_info,c("opa_no","cycle"))
+cycle_info<-setnames(fread("/media/data_drive/real_estate/opa_cycles.csv",
+                           select=c("OPA #","Billing Cycle")),c("opa_no","cycle"))
 
 #Correct coding of OPA# to match other files
 cycle_info[,opa_no:=paste(0,opa_no,sep="")]
@@ -196,10 +211,9 @@ levels_int[c(35,37,44)]="Threat"
 levels_int[c(33,40,41,47)]="Moral"
 levels_int[c(34,38,43,46)]="Peer"
 levels_int[c(36,39,42,45)]="Control"
-setkey(cycle_info,cycle)[data.table(cycle=31:47,
-                                    treatment_int=
-                                      as.factor(levels_int[!is.na(levels_int)])),
-                         treatment_int:=treatment_int]
+cycle_info[data.table(cycle=31:47,treatment_int=
+                   as.factor(levels_int[!is.na(levels_int)])),
+      treatment_int:=treatment_int]
 rm(levels_int)
 
 ###ACTUAL TREATMENTS WERE AS FOLLOWS
@@ -209,130 +223,123 @@ levels_act[c(35,36,44)]="Threat"
 levels_act[c(33,40,41,42,47)]="Moral"
 levels_act[c(34,37,38,43,46)]="Peer"
 levels_act[c(39,45)]="Control"
-setkey(cycle_info,cycle)[data.table(cycle=31:47,
-                                    treatment_act=
-                                      as.factor(levels_act[!is.na(levels_act)])),
-                         treatment_act:=treatment_act]
+cycle_info[data.table(cycle=31:47,treatment_act=
+                        as.factor(levels_act[!is.na(levels_act)])),
+           treatment_act:=treatment_act]
 rm(levels_act)
 
 ###TREATMENT FIDELITY WAS HIGHLY COMPROMISED (>20%) FOR FLAGGED CYCLES
 cycle_info[,fidelity_flag:=0]
-cycle_info[cycle %in% c(34:38,42),fidelity_flag:=1]
+cycle_info[.(c(34:38,42)),fidelity_flag:=1]
 setkey(cycle_info,opa_no)
 
 
 
 #MERGE THE DATA
 ##Add delinquency data to cycle info
-dor_cycle<-cycle_info[opa_data][dor_data_oct]
+dor_cycle<-cycle_info[fidelity_flag==0,][opa_data][dor_data_oct]
 dor_cycle[,market_value_flag:=(market_value==0)]
 dor_cycle[market_value==0,market_value:=total_assessment]
 dor_cycle[total_assessment==0,total_assessment:=market_value]
 setkey(dor_cycle,opa_no)
 
 #Eliminate mismatched observations & missing/obviously mismeasured market values
-dor_cycle_int<-dor_cycle[!is.na(cycle)&market_value>0,]
-##Get an initial sample size
-##  (will be updated below when we eliminate
-##   those who've paid off their debts prior
-##   to mailing)
-n_int<-nrow(dor_cycle_int)
-
+dor_cycle<-dor_cycle[!is.na(cycle)&market_value>0,]
 
 #Merge time-dependent payments data to the other background data
 #  Also add in blanks for each account on each unpaid day
-payments_by_day_int<-
-  payments_by_day[data.table(opa_no=rep(dor_cycle_int$opa_no,                         #These lines add blanks
+payments_by_day<-
+  payments_by_day[data.table(opa_no=rep(dor_cycle$opa_no,                             #These lines add blanks
                                         each=diff(range(payments_by_day$posting))+1), # for uncovered dates
                              posting=rep(seq(min(payments_by_day$posting),
                                              max(payments_by_day$posting),by="day"),
-                                         times=n_int),
+                                         times=nrow(dor_cycle)),
                              key=c("opa_no","posting"))
-                  ][is.na(balance_change),balance_change:=0][dor_cycle_int]
+                  ][is.na(balance_change),balance_change:=0][dor_cycle]
 
 #Compute the balance remaining on all accounts on all days
 ## In particular, current_balance is the balance due
 ##  AFTER the payment (credit) is debited (credited)
 ##  on posting
-payments_by_day_int[posting>as.Date("2014-11-03"),
+payments_by_day[posting>as.Date("2014-11-03"),
                     current_balance:=cumsum(balance_change)+
                       calc_total_due,by=opa_no]
-setorder(payments_by_day_int,opa_no,-posting)
-payments_by_day_int[posting<=as.Date("2014-11-03"),
+setorder(payments_by_day,opa_no,-posting)
+payments_by_day[posting<=as.Date("2014-11-03"),
                     current_balance:=cumsum(-balance_change)+
                       balance_change+calc_total_due,by=opa_no]
-setorder(payments_by_day_int,opa_no,posting)
+setorder(payments_by_day,opa_no,posting)
 
 #Add counter for relative time since mailing
-payments_by_day_int[,posting_rel:=posting-mailing_day]
-setkey(payments_by_day_int,opa_no,posting_rel)
+payments_by_day[,posting_rel:=posting-mailing_day]
+setkey(payments_by_day,posting_rel)
 
 #Define the total due by at mailing
 ##Use the balance from the day prior to mailing because the
 ##  day-of balance includes any day-of payments
-payments_by_day_int[payments_by_day_int[posting_rel==-1,],
-                    total_due_at_mailing:=current_balance]
+payments_by_day[payments_by_day[.(-1)],total_due_at_mailing:=current_balance]
 ###Round to the nearest two digits (some numerical problems pushing values away from 0)
-payments_by_day_int[,total_due_at_mailing:=round(max(total_due_at_mailing,na.rm=T),2),by=opa_no]
+payments_by_day[,total_due_at_mailing:=round(max(total_due_at_mailing,na.rm=T),2),by=opa_no]
 ##Now delete those properties who had paid off their debt by mailing day
 ## AND those who owed less than .607 (=exp(-.5))
-payments_by_day_int<-payments_by_day_int[total_due_at_mailing>.61,]
+payments_by_day<-payments_by_day[total_due_at_mailing>.61,]
 ##Now round up those with balances less than $1 to $1 to keep all log values nonnegative
-payments_by_day_int[total_due_at_mailing<1,total_due_at_mailing:=1]
+payments_by_day[total_due_at_mailing<1,total_due_at_mailing:=1]
 ##Update the sample size to reflect those just dropped
-n_int<-length(unique(payments_by_day_int$opa))
+n<-length(unique(payments_by_day$opa))
 
 #To get all cycles on even footing, align the analysis period
 #  by cycle (and hence by treatment)
 ##All cycles extend at least max_length_act days past mailing day
-max_length_int<-min(payments_by_day_int[,max(as.integer(posting_rel)),by=cycle]$V1)
+max_length<-payments_by_day[,max(as.integer(posting_rel)),by=cycle][,min(V1)]
 ##All cycles extend at least -min_length_act days prior to mailing day
-min_length_int<-max(payments_by_day_int[,min(as.integer(posting_rel)),by=cycle]$V1)
-payments_by_day_int<-payments_by_day_int[posting_rel>=min_length_int&posting_rel<=max_length_int,]
+min_length<-payments_by_day[,min(as.integer(posting_rel)),by=cycle][,max(V1)]
+payments_by_day<-payments_by_day[.(min_length:max_length)]
 
 #Define cumulative payments as the accumulation of
 # payments PAST mailing day
 # (i.e., cumulative RELEVANT payments)
-payments_by_day_int[posting_rel>=0,cum_treated_pmts:=cumsum(-balance_change),by=opa_no]
+payments_by_day[.(0:max_length),cum_treated_pmts:=cumsum(-balance_change),by=opa_no]
 
 ##Also aggregate payments by week for a weekly analysis file
-payments_by_day_int[posting_rel>=0,
+payments_by_day[.(0:max_length),
                     week_no:=cut(as.integer(posting_rel),
-                                 breaks=seq(0,max_length_int+7,by=7),
+                                 breaks=seq(0,max_length+6,by=7),
                                  include.lowest=T,right=F,
-                                 labels=paste0("week_",1:ceiling(max_length_int/7)))]
-payments_by_week_int<-
-  dor_cycle_int[payments_by_day_int[!is.na(week_no),
+                                 labels=paste0("week_",1:ceiling(max_length/7)))]
+payments_by_week<-
+  dor_cycle[payments_by_day[!is.na(week_no),
                                     .(total_due_at_mailing=
                                         unique(total_due_at_mailing),
                                       weekly_change=sum(balance_change),
                                       week_end_balance=current_balance[.N]),
                                     by=c("opa_no","week_no")]]
-payments_by_week_int[,cum_treated_pmts_wk:=cumsum(-weekly_change),by=opa_no]
+payments_by_week[,cum_treated_pmts_wk:=cumsum(-weekly_change),by=opa_no]
 
 #Define ever-paid indicator variable
 # (among RELEVANT payments)
-payments_by_day_int[posting_rel>=0,ever_paid:=cum_treated_pmts>0]
+payments_by_day[.(0:max_length),ever_paid:=cum_treated_pmts>0]
 
 #Define variable indicating date of first payment (NA if never)
-payments_by_day_int[posting_rel>=0&ever_paid==1,
+setkey(payments_by_day,posting_rel,ever_paid)
+payments_by_day[.(0:max_length,T),
                     date_of_first_payment:=min(posting),by=opa_no]
-payments_by_day_int[posting_rel>=0&ever_paid==1,
+payments_by_day[.(0:max_length,T),
                     date_of_first_payment_rel:=min(posting_rel),by=opa_no]
 
 #Define paid-in-full indicator variable
 # (among RELEVANT payments)
-payments_by_day_int[posting_rel>=0,paid_full:=cum_treated_pmts>=.95*total_due_at_mailing]
+payments_by_day[.(0:max_length),paid_full:=cum_treated_pmts>=.95*total_due_at_mailing]
 
 #Define indicator to get end of period
-payments_by_day_int[,end:=(posting_rel==max_length_int)]
+payments_by_day[,end:=(posting_rel==max_length)]
 
 #Finally, write the data sets to be loaded in the analysis file
-write.csv(payments_by_day_int,file="analysis_file.csv",quote=T,row.names=F)
-write.csv(payments_by_day_int[end==1&fidelity_flag==0,],file="analysis_file_end_only_act.csv",quote=T,row.names=F)
+write.csv(payments_by_day,file="analysis_file.csv",quote=T,row.names=F)
+write.csv(payments_by_day[end==1&fidelity_flag==0,],file="analysis_file_end_only_act.csv",quote=T,row.names=F)
 
 #Swing Payments by Week wide for analysis file
-write.csv(setnames(dcast.data.table(payments_by_week_int[,!c("weekly_change","week_end_balance"),with=F],
+write.csv(setnames(dcast.data.table(payments_by_week[,!c("weekly_change","week_end_balance"),with=F],
                                     opa_no+...~week_no,value.var="cum_treated_pmts_wk"
                                     )[,c("ever_paid_week_6","paid_full_week_6"):=list((week_6>0),(week_6>=.95*total_due_at_mailing))],
                    paste0("week_",1:6),paste0("cum_treated_pmts_week_",1:6)),
