@@ -683,21 +683,23 @@ for (data in list(analysis_data,analysis_data_lout,analysis_data_ncomm,analysis_
   
   #1(Ever Paid) Differs by Treatment?
   regs[[paste0("reg1_",comment(data)[1])]]<-
-    zelig(ever_paid~relevel(treatment,ref="Control"),
+    zelig(ever_paid~
+            relevel(treatment,ref=if (comment(data)[1]=="act_leave_out") "Leave-Out" else "Control"),
           data=data_end,model="logit",robust=T,cluster="cluster_id",cite=F)
   regs[[paste0("reg1c_",comment(data)[1])]]<-
     zelig(update(controls,ever_paid~
-                   relevel(treatment,ref="Control")*balance_quartile
+                   relevel(treatment,ref=if (comment(data)[1]=="act_leave_out") "Leave-Out" else "Control")*balance_quartile
                  +.+I(market_value/1e5)),
           data=data_end,model="logit",robust=T,cluster="cluster_id",cite=F)
   
   #1(Bill Paid in Full) Differs by Treatment?
   regs[[paste0("reg2_",comment(data)[1])]]<-
-    zelig(paid_full~relevel(treatment,ref="Control"),
+    zelig(paid_full~
+            relevel(treatment,ref=if (comment(data)[1]=="act_leave_out") "Leave-Out" else "Control"),
           data=data_end,model="logit",robust=T,cluster="cluster_id",cite=F)
   regs[[paste0("reg2c_",comment(data)[1])]]<-
     zelig(update(controls,I(cum_treated_pmts>=total_due_at_mailing)~
-                   relevel(treatment,ref="Control")*balance_quartile
+                   relevel(treatment,ref=if (comment(data)[1]=="act_leave_out") "Leave-Out" else "Control")*balance_quartile
                  +.+I(market_value/1e5)),
           data=data_end,model="logit",robust=T,cluster="cluster_id",cite=F)
 }; rm(data,data_end,controls)
@@ -789,18 +791,18 @@ texreg(regs[paste(rep("reg1",3),
 texreg(regs[paste(rep("reg1c",3),
                   unlist(lapply(list(analysis_data,analysis_data_ncomm,
                                      analysis_data_sown),
-                                function(x){comment(x)[1]})),sep="_")],
+                                function(x){comment(x)[1]})),sep="_")]),
        custom.model.names=c("Full Sample","Non-Commercial","Sole Owner"),
        custom.coef.names=c("Intercept","Moral","Peer","Threat",
                            paste("Balance",c("Q2","Q3","Q4")),
-                           paste0(c("Moral","Peer","Threat"),"*",
-                                  rep(paste("Balance",c("Q2","Q3","Q4")),each=3)),
                            paste0("control",
                                   c("Land Area","Owes <= 5 Years",
                                     paste("Dist.",2:10),"Hotels-Apts",
                                     "Store w. Dwelling","Commercial",
                                     "Industrial","Vacant","Sealed-Compromised",
-                                    "Homestead","Prop. Val. (\\$100k)"))),
+                                    "Homestead","Prop. Val. (\\$100k)")),
+                           paste0(c("Moral","Peer","Threat"),"*",
+                                  rep(paste("Balance",c("Q2","Q3","Q4")),each=3))),
        omit.coef="Intercept|control",reorder.coef=c(4,5,6,1,7,10,13,2,8,11,14,3,9,12,15),
        custom.note=c("%stars. Control coefficients omitted for brevity; see Appendix."),
        caption="Model I: Logistic Regressions -- Ever Paid",include.deviance=F,
@@ -850,14 +852,14 @@ texreg(regs[paste(rep("reg2c",3),
        custom.model.names=c("Full Sample","Non-Commercial","Sole Owner"),
        custom.coef.names=c("Intercept","Moral","Peer","Threat",
                            paste("Balance",c("Q2","Q3","Q4")),
-                           paste0(c("Moral","Peer","Threat"),"*",
-                                  rep(paste("Balance",c("Q2","Q3","Q4")),each=3)),
                            paste0("control",
                                   c("Land Area","Owes <= 5 Years",
                                     paste("Dist.",2:10),"Hotels-Apts",
                                     "Store w. Dwelling","Commercial",
                                     "Industrial","Vacant","Sealed-Compromised",
-                                    "Homestead","Prop. Val. (\\$100k)"))),
+                                    "Homestead","Prop. Val. (\\$100k)")),
+                           paste0(c("Moral","Peer","Threat"),"*",
+                                  rep(paste("Balance",c("Q2","Q3","Q4")),each=3))),
        omit.coef="Intercept|control",reorder.coef=c(4,5,6,1,7,10,13,2,8,11,14,3,9,12,15),
        custom.note=c("%stars. Control coefficients omitted for brevity; see Appendix."),
        caption="Model II: Logistic Regressions -- Paid in Full",include.deviance=F,
