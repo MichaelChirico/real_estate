@@ -22,10 +22,23 @@ data<-setnames(fread("/media/data_drive/real_estate/round_two_property_file.csv"
                  "interest_other","total_due","property_address"))
 
 ##Add in spatial data
-
 ### First, Sheriff's Sales info
-sheriffs_sales<-setkey(fread(paste0("/media/data_drive/real_estate/sheriffs_sales/",
-                                    "sheriffs_sales_with_zip_azav.csv")),opa_no)
+sheriffs_map_delinquent<-
+  readShapePoints("/media/data_drive/gis_data/PA/delinquent_sold_year_to_may_15_nad.shp")
+phila_zip<-
+  readShapePoly("/media/data_drive/gis_data/PA/Philadelphia_Zipcodes_Poly201302.shp")
+phila_azav<-
+  readShapePoly("/media/data_drive/gis_data/PA/Neighborhoods_Philadelphia_with_quadrants.shp")
+
+sheriffs_sales<-setkey(setkey(fread(
+  "/media/data_drive/real_estate/sheriffs_sales/delinquent_sold_year_to_may_15.csv"
+  ),opa_no)[.(as.character(sheriffs_map_delinquent@data$opa_no)),
+            `:=`(zip=(sheriffs_map_delinquent %over% phila_zip)[,"CODE"],
+                 azavea_nbhd=(sheriffs_map_delinquent %over% phila_azav)[,"LISTNAME"],
+                 azavea_quad=(sheriffs_map_delinquent %over% phila_azav)[,"quadrant"])
+            ],azavea_nbhd)[setkey(fread(paste0("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/",
+                      "azaveas_mapping_dor_shp.csv")),azavea_shp),azavea_nbhd:=i.azavea_dor]; rm(sheriffs_map_delinquent)
+
 ##Not sure what we'll do with zip codes yet
 # zip_sample<-dcast.data.table(
 #   sheriffs_sales[.(sheriffs_sales[,sample(opa_no,size=min(.N,5)),by=zip]$V1),
@@ -55,7 +68,7 @@ azavea_nbhd_quad_mapping<-
                                "azaveas_mapping_dor_shp.csv")),
                   azavea_nbhd:=i.azavea_dor][,azavea_shp:=NULL],azavea_nbhd)
 
-setkey(data,azavea_nbhd)[azavea_nbhd_quad_mapping,azavea_quad:=i.quadrant]
+setkey(data,azavea_nbhd)[azavea_nbhd_quad_mapping,azavea_quad:=i.quadrant]; rm(azavea_nbhd_quad_mapping)
 
 data[,low_density_sher:=T]
 data[sheriffs_sales[,.N,by=azavea_nbhd],low_density_sher:=!i.N>=8]
@@ -65,18 +78,18 @@ data[,azavea_sher:=ifelse(low_density_sher,as.character(azavea_quad),as.characte
 data<-rbindlist(list(setkey(data[low_density_sher==T,],azavea_quad)[azavea_quad_sample_ss],
                      setkey(data[low_density_sher==F,],azavea_nbhd)[azavea_nbhd_sample_ss,nomatch=0L]))
 
+rm(sheriffs_sales)
+
 ### Next, Amenities info
 amenities_map<-
   readShapePoints("/media/data_drive/gis_data/PA/amenities_azav_for_geocoding_nad.shp")
-phila_azav<-
-  readShapePoly("/media/data_drive/gis_data/PA/Neighborhoods_Philadelphia_with_quadrants.shp")
 
 amenities_azav<-
   setkey(as.data.table(amenities_map)[,.(amenity,address,resource)],address
          )[.(as.character(amenities_map@data$address)),
            `:=`(azavea_nbhd=(amenities_map %over% phila_azav)[,"LISTNAME"],
                 azavea_quad=(amenities_map %over% phila_azav)[,"quadrant"])
-           ][!is.na(azavea_nbhd),]; rm(amenities_map,phila_azav)
+           ][!is.na(azavea_nbhd),]; rm(amenities_map,phila_azav,phila_zip)
 #Reset names of Azavea neighborhoods to fit formatting of DoR records
 setkey(amenities_azav,azavea_nbhd
        )[setkey(fread(paste0("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/",
@@ -116,14 +129,14 @@ data[low_density_amen==F,paste0("example_amenity_",1:2):=list(get_amen_nbhd(azav
 
 # data<-rbindlist(list(setkey(data[low_density_amen==T,],azavea_quad)[amenities_azavazavea_quad_sample_amen],
 #                      setkey(data[low_density_amen==F,],azavea_nbhd)[amenities_azav,azavea_nbhd_sample_amen,nomatch=0L]))
+rm(amenities_azav)
 
 # Treatment Assignment ####
 treatments<-paste0(rep(c("Sheriff","Lien","Moral","Amenities",
                          "Peer","Duty","Control"),each=2),"_",
                    rep(c("Big_Envelope","Small_Envelope"),7))
-n_treatments<-length(treatments)
-setkey(setorder(data,-total_due)[,grp:=rep(1:ceiling(.N/n_treatments),
-                                           each=n_treatments,length.out=.N)
+setkey(setorder(data,-total_due)[,grp:=rep(1:ceiling(.N/length(treatments)),
+                                           each=length(treatments),length.out=.N)
                                  ][,treatment:=sample(treatments,size=.N),
                                    by=grp][,c("grp","treatment"):=
                                              list(NULL,as.factor(treatment))],treatment)
@@ -135,15 +148,12 @@ treatments<-paste0(rep(c("Sheriff_High","Sheriff_Low",
                          "Peer","Duty","Control"),each=2),"_",
                    rep(c("Big_Envelope","Small_Envelope"),7))
 
-data[grepl("Sheriff",treatment),treatment:=ifelse(low_density_sher,
-                                                  gsub("Sheriff","Sheriff_Low",treatment),
-                                                  gsub("Sheriff","Sheriff_High",treatment))]
-data[grepl("Lien",treatment),treatment:=ifelse(low_density_sher,
-                                                  gsub("Lien","Lien_Low",treatment),
-                                                  gsub("Lien","Lien_High",treatment))]
-data[grepl("Amenities",treatment),treatment:=ifelse(low_density_amen,
-                                                  gsub("Amenities","Amenities_Low",treatment),
-                                                  gsub("Amenities","Amenities_High",treatment))]
+data[grepl("Sheriff",treatment),treatment:=mapply(
+  gsub,"Sheriff",paste0("Sheriff_",ifelse(low_density_sher,"Low","High")),USE.NAMES = F)]
+data[grepl("Lien",treatment),treatment:=mapply(
+  gsub,"Lien",paste0("Lien_",ifelse(low_density_sher,"Low","High")),USE.NAMES = F)]
+data[grepl("Amenities",treatment),treatment:=mapply(
+  gsub,"Amenities",paste0("Amenities_",ifelse(low_density_amen,"Low","High")),USE.NAMES = F)]
 ##Need to reset factors
 setkey(data[,treatment:=factor(treatment)],treatment)
 
