@@ -96,39 +96,21 @@ setkey(amenities_azav,azavea_nbhd
                              "azaveas_mapping_dor_shp.csv")),azavea_shp),
          azavea_nbhd:=i.azavea_dor]
 
-# setkey(amenities_azav,address)
-# azavea_nbhd_sample_amen<-setkey(setnames(dcast.data.table(
-#   amenities_azav[.(amenities_azav[,sample(address,size=min(.N,2)),by=azavea_nbhd]$V1),
-#                  .(azavea_nbhd,amenity)][,I:=1:.N,by=azavea_nbhd],
-#   azavea_nbhd~I,value.var = "amenity"),
-#   c("azavea_nbhd",paste0("example_amenity_",1:2))),azavea_nbhd)
-# 
-# azavea_quad_sample_amen<-setkey(setnames(dcast.data.table(
-#   amenities_azav[.(amenities_azav[,sample(address,size=2),by=azavea_quad]$V1),
-#                  .(azavea_quad,amenity)][,I:=1:.N,by=azavea_quad],
-#   azavea_quad~I,value.var = "amenity"),
-#   c("azavea_quad",paste0("example_amenity_",1:2))),azavea_quad)
-
 data[,low_density_amen:=T]
 setkey(data,azavea_nbhd)[amenities_azav[,.N,by=azavea_nbhd],low_density_amen:=!i.N>=4]
 
 data[,azavea_amen:=ifelse(low_density_sher,as.character(azavea_quad),as.character(azavea_nbhd))]
 
-get_amen_nbhd<-function(nbhd){
-  sapply(nbhd,function(x){as.character(amenities_azav[.(x),sample(amenity,1)])})
-}
-
-get_amen_quad<-function(quad){
-  sapply(quad,function(x){as.character(amenities_azav[.(x),sample(amenity,1)])})
+get_amen<-function(kkeys,n){
+  amenities_azav[.(kkeys),sample(as.character(amenity),n,replace=T)]
 }
 
 setkey(amenities_azav,azavea_quad)
-data[low_density_amen==T,paste0("example_amenity_",1:2):=list(get_amen_quad(azavea_quad),get_amen_quad(azavea_quad))]
-setkey(amenities_azav,azavea_nbhd)
-data[low_density_amen==F,paste0("example_amenity_",1:2):=list(get_amen_nbhd(azavea_nbhd),get_amen_nbhd(azavea_nbhd))]
+data[low_density_amen==T,paste0("example_amenity_",1:2):=
+       lapply(1:2,function(x) get_amen(azavea_quad,.N)),by=azavea_quad]
+data[low_density_amen==F,paste0("example_amenity_",1:2):=
+       lapply(1:2,function(x) get_amen(azavea_nbhd,.N)),by=azavea_nbhd]
 
-# data<-rbindlist(list(setkey(data[low_density_amen==T,],azavea_quad)[amenities_azavazavea_quad_sample_amen],
-#                      setkey(data[low_density_amen==F,],azavea_nbhd)[amenities_azav,azavea_nbhd_sample_amen,nomatch=0L]))
 rm(amenities_azav)
 
 # Treatment Assignment ####
@@ -149,12 +131,12 @@ treatments<-paste0(rep(c("Sheriff_High","Sheriff_Low",
                    rep(c("Big_Envelope","Small_Envelope"),7))
 
 data[grepl("Sheriff",treatment),treatment:=mapply(
-  gsub,"Sheriff",paste0("Sheriff_",ifelse(low_density_sher,"Low","High")),USE.NAMES = F)]
+  gsub,"Sheriff",paste0("Sheriff_",ifelse(low_density_sher,"Low","High")),treatment,USE.NAMES = F)]
 data[grepl("Lien",treatment),treatment:=mapply(
-  gsub,"Lien",paste0("Lien_",ifelse(low_density_sher,"Low","High")),USE.NAMES = F)]
+  gsub,"Lien",paste0("Lien_",ifelse(low_density_sher,"Low","High")),treatment,USE.NAMES = F)]
 data[grepl("Amenities",treatment),treatment:=mapply(
-  gsub,"Amenities",paste0("Amenities_",ifelse(low_density_amen,"Low","High")),USE.NAMES = F)]
+  gsub,"Amenities",paste0("Amenities_",ifelse(low_density_amen,"Low","High")),treatment,USE.NAMES = F)]
 ##Need to reset factors
 setkey(data[,treatment:=factor(treatment)],treatment)
 
-lapply(treatments,function(x){write.csv(data[.(x)],file=paste0("round_2_sample_",tolower(x),".csv"),row.names=F)})
+lapply(treatments,function(x){write.csv(data[.(x)][sample(.N,size=10),],file=paste0("round_2_sample_",tolower(x),".csv"),row.names=F)})
