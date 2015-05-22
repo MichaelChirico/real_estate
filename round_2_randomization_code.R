@@ -16,10 +16,11 @@ library(maptools)
 set.seed(1820749)
 
 #Data Import ####
-data<-setnames(fread("/media/data_drive/real_estate/round_two_property_file.csv"),
-               c("opa_no","azavea_nbhd","zip","owner1","owner2","mail_address",
-                 "mail_city","mail_state","mail_zip","principal",
-                 "interest_other","total_due","property_address"))
+data<-setnames(fread("/media/data_drive/real_estate/round_two_property_file.csv",
+                     drop=c("OWNER2 NAME","V10","V11")),
+               c("opa_no","azavea_nbhd","zip","owner1","mail_address",
+                 "mail_city","mail_state","mail_zip","total_due",
+                 "property_address"))
 
 ##Add in spatial data
 ### First, Sheriff's Sales info
@@ -30,14 +31,15 @@ phila_zip<-
 phila_azav<-
   readShapePoly("/media/data_drive/gis_data/PA/Neighborhoods_Philadelphia_with_quadrants.shp")
 
-sheriffs_sales<-setkey(setkey(fread(
+sheriffs_sales<-setkey(setkey(setkey(fread(
   "/media/data_drive/real_estate/sheriffs_sales/delinquent_sold_year_to_may_15.csv"
   ),opa_no)[.(as.character(sheriffs_map_delinquent@data$opa_no)),
             `:=`(zip=(sheriffs_map_delinquent %over% phila_zip)[,"CODE"],
                  azavea_nbhd=(sheriffs_map_delinquent %over% phila_azav)[,"LISTNAME"],
                  azavea_quad=(sheriffs_map_delinquent %over% phila_azav)[,"quadrant"])
             ],azavea_nbhd)[setkey(fread(paste0("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/",
-                      "azaveas_mapping_dor_shp.csv")),azavea_shp),azavea_nbhd:=i.azavea_dor]; rm(sheriffs_map_delinquent)
+                      "azaveas_mapping_dor_shp.csv")),azavea_shp),azavea_nbhd:=i.azavea_dor],
+  opa_no)[,sale_date:=format(as.Date(sale_date),"%B %d, %Y")]; rm(sheriffs_map_delinquent)
 
 ##Not sure what we'll do with zip codes yet
 # zip_sample<-dcast.data.table(
@@ -123,20 +125,10 @@ setkey(setorder(data,-total_due)[,grp:=rep(1:ceiling(.N/length(treatments)),
                                    by=grp][,c("grp","treatment"):=
                                              list(NULL,as.factor(treatment))],treatment)
 
-##Separate files for low/high density amenities/disamenities
-treatments<-paste0(rep(c("Sheriff_High","Sheriff_Low",
-                         "Lien_High","Lien_Low","Moral",
-                         "Amenities_High","Amenities_Low",
-                         "Peer","Duty","Control"),each=2),"_",
-                   rep(c("Big_Envelope","Small_Envelope"),7))
+## For output, format total_due as a number with $ and commas:
+data[,total_due:=paste0("$",gsub("\\s","",formatC(total_due,format="d",big.mark=",")))]
 
-data[grepl("Sheriff",treatment),treatment:=mapply(
-  gsub,"Sheriff",paste0("Sheriff_",ifelse(low_density_sher,"Low","High")),treatment,USE.NAMES = F)]
-data[grepl("Lien",treatment),treatment:=mapply(
-  gsub,"Lien",paste0("Lien_",ifelse(low_density_sher,"Low","High")),treatment,USE.NAMES = F)]
-data[grepl("Amenities",treatment),treatment:=mapply(
-  gsub,"Amenities",paste0("Amenities_",ifelse(low_density_amen,"Low","High")),treatment,USE.NAMES = F)]
-##Need to reset factors
-setkey(data[,treatment:=factor(treatment)],treatment)
-
-lapply(treatments,function(x){write.csv(data[.(x)][sample(.N,size=10),],file=paste0("round_2_sample_",tolower(x),".csv"),row.names=F)})
+## Sort by mailing zip for convenience to print shops
+invisible(lapply(treatments,function(x){
+  write.csv(data[.(x)][order(mail_zip)],
+            file=paste0("round_2_sample_",tolower(x),".csv"),row.names=F)}))
