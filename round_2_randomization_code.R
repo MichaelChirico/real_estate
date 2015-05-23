@@ -17,10 +17,28 @@ set.seed(1820749)
 
 #Data Import
 data<-setnames(fread("/media/data_drive/real_estate/round_two_property_file.csv",
-                     drop=c("OWNER2 NAME","V10","V11")),
-               c("opa_no","azavea_nbhd","zip","owner1","mail_address",
+                     drop=c("V10","V11")),
+               c("opa_no","azavea_nbhd","zip","owner1","owner2","mail_address",
                  "mail_city","mail_state","mail_zip","total_due",
                  "property_address"))
+
+##Re-cast names in a way that's cleaner to print
+to.proper<-function(strings){
+  res<-gsub("\\b([A-Z])([A-Z]+)*","\\U\\1\\L\\2",strings,perl=T)
+  res<-gsub("\\bMc\\s","Mc",gsub("(-.)","\\U\\1",res,perl=T))
+  for (init in c("[A-Z]","Inc","Assoc","Co",
+                 "Jr","Sr","Tr","Bros")){
+    res<-gsub(paste0("\\b(",init,")\\b"),"\\1.",res)
+  }
+  for (abbr in c("[B-DF-HJ-NP-TV-XZ][b-df-hj-np-tv-xz]{2,}",
+                 "Pa","Ii","Iii","Iv","Lp","Tj",
+                 "Xiv","Ll","Yml","Us","Fxa")){
+    res<-gsub(paste0("\\b(",abbr,")\\b"),"\\U\\1",res,perl=T)
+  }
+  gsub("\\bMc([a-z])","Mc\\U\\1",res,perl=T)
+}
+
+data[,paste0("owner",1:2):=lapply(.SD,to.proper),.SDcols=paste0("owner",1:2)]
 
 #Add in spatial data
 ## Sheriff's Sales Info ####
