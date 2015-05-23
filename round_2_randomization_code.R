@@ -85,7 +85,7 @@ data[,azavea_sher:=ifelse(low_density_sher,as.character(azavea_quad),as.characte
 data<-rbindlist(list(setkey(data[low_density_sher==T,],azavea_quad)[azavea_quad_sample_ss],
                      setkey(data[low_density_sher==F,],azavea_nbhd)[azavea_nbhd_sample_ss,nomatch=0L]))
 
-rm(sheriffs_sales,azavea_quad_sample_ss,azavea_quad_sample_ss)
+rm(sheriffs_sales,azavea_nbhd_sample_ss,azavea_quad_sample_ss)
 
 ## Amenities Info ####
 amenities_map<-
