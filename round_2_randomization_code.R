@@ -26,19 +26,37 @@ data<-setnames(fread("/media/data_drive/real_estate/round_two_property_file.csv"
 to.proper<-function(strings){
   res<-gsub("\\b([A-Z])([A-Z]+)*","\\U\\1\\L\\2",strings,perl=T)
   res<-gsub("\\bMc\\s","Mc",gsub("(-.)","\\U\\1",res,perl=T))
-  for (init in c("[A-Z]","Inc","Assoc","Co",
-                 "Jr","Sr","Tr","Bros")){
+  for (init in c("[A-HJ-UW-Z]","Inc","Assoc","Co","Ch","Civ","Rev",
+                 "Corp","Prop","Apts","Assn",
+                 "Na","Eq","Med","Fed","Vet","Bus","Ltd","Res","Est",
+                 "Jr","Sr","Tr","Bros","Sc","Mg","Wm","Un","Dev")){
     res<-gsub(paste0("\\b(",init,")\\b"),"\\1.",res)
   }
-  for (abbr in c("[B-DF-HJ-NP-TV-XZ][b-df-hj-np-tv-xz]{2,}",
-                 "Pa","Ii","Iii","Iv","Lp","Tj",
-                 "Xiv","Ll","Yml","Us","Fxa")){
+  for (abbr in c("[B-DF-HJ-NP-TV-XZ][b-df-hj-np-tv-xz]{1,}",
+                 "Op","Ak","Og","Eg","Am","Er","Ir","Itr","Els",
+                 "Pa","Ii","Iii","Iv","Sas","Ro","Re","Vii","Sfi",
+                 "Ab","Us","Fxa","Fbo","Ne","Ag","Ix","Uc","Dsa",
+                 "Amh","Pje","Mod","Xii","Xiv","Xvi","Mla","Ucm",
+                 "Gma","Gly","Dja","Mis","Acb","Esb","Epr","Dab",
+                 "Vca","Gha","Has","Acm","Usa","Bes","Bta","Sma",
+                 "Tca","Jme","Gca","Anc","Abc","Foe","Tna","Fri",
+                 "Bor","Mol","Emi","Ame","Ael","Jam","Mba","Bsi",
+                 "Arc","Mef","Ams","Nur","Nua","Zlo","Igt","Ama",
+                 "Yav","Pha","Nio","Mri","Esp","Rep","Awb","Amr",
+                 "Fuh","Atm","Ald","Rko","Syg","Yml","Mmy","Roz",
+                 "Efv","Udm","Ahm","Mym","Ent","Jbe","Cme","Mda",
+                 "Acp","Bak","Epc","Hew","Nek","Gif","Epdg","Pazy")){
     res<-gsub(paste0("\\b(",abbr,")\\b"),"\\U\\1",res,perl=T)
+  }
+  for (mist in c("CH","JR","SR","TR","SC","MG",
+                 "WM","HH","NG","LTD","MT")){
+    m1<-substr(mist,1,1); m2<-substr(mist,2,2)
+    res<-gsub(paste0("\\b(",m1,")(",m2,")\\b"),"\\1\\L\\2",res,perl=T)
   }
   gsub("\\bMc([a-z])","Mc\\U\\1",res,perl=T)
 }
 
-data[,paste0("owner",1:2):=lapply(.SD,to.proper),.SDcols=paste0("owner",1:2)]
+data[,paste0("owner",1:2,"_clean"):=lapply(.SD,to.proper),.SDcols=paste0("owner",1:2)]
 
 #Add in spatial data
 ## Sheriff's Sales Info ####
