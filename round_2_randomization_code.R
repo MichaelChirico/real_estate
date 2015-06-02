@@ -24,13 +24,13 @@ data<-setnames(fread("/media/data_drive/real_estate/round_two_property_file.csv"
 
 ##Re-cast names in a way that's cleaner to print
 to.proper<-function(strings){
-  res<-gsub("\\b([A-Z])([A-Z]+)*","\\U\\1\\L\\2",strings,perl=T)
-  res<-gsub("\\bMc\\s","Mc",gsub("(-.)","\\U\\1",res,perl=T))
+  res<-gsub("(?<=\\s|^|-)([A-Z])([A-Z]+)*","\\U\\1\\L\\2",strings,perl=T)
+  res<-gsub("\\bMc\\s","Mc",res)
   for (init in c("[A-HJ-UW-Z]","Inc","Assoc","Co","Ch","Civ","Rev",
-                 "Corp","Prop","Apts","Assn",
+                 "Corp","Prop","Apts","Assn","St",
                  "Na","Eq","Med","Fed","Vet","Bus","Ltd","Res","Est",
                  "Jr","Sr","Tr","Bros","Sc","Mg","Wm","Un","Dev")){
-    res<-gsub(paste0("\\b(",init,")\\b"),"\\1.",res)
+    res<-gsub(paste0("(?<=\\s|^)(",init,")(?=\\s|$)"),"\\1.",res,perl=T)
   }
   for (abbr in c("[B-DF-HJ-NP-TV-XZ][b-df-hj-np-tv-xz]{1,}",
                  "Op","Ak","Og","Eg","Am","Er","Ir","Itr","Els",
@@ -48,17 +48,19 @@ to.proper<-function(strings){
                  "Acp","Bak","Epc","Hew","Nek","Gif","Epdg","Pazy")){
     res<-gsub(paste0("\\b(",abbr,")\\b"),"\\U\\1",res,perl=T)
   }
-  for (mist in c("CH","JR","SR","TR","SC","MG",
+  for (mist in c("CH","JR","SR","TR","SC","MG","ST",
                  "WM","HH","NG","LTD","MT")){
     m1<-substr(mist,1,1); m2<-substr(mist,2,2)
     res<-gsub(paste0("\\b(",m1,")(",m2,")\\b"),"\\1\\L\\2",res,perl=T)
   }
+  res<-gsub("(?<=[0-9])(TH|ST|ND|RD)","\\L\\1",res,perl=T)
   gsub("\\bMc([a-z])","Mc\\U\\1",res,perl=T)
 }
 
 data[,paste0("owner",1:2,"_clean"):=lapply(.SD,to.proper),.SDcols=paste0("owner",1:2)]
 
 #Add in spatial data
+
 ## Sheriff's Sales Info ####
 sheriffs_map_delinquent<-
   readShapePoints("/media/data_drive/gis_data/PA/delinquent_sold_year_to_may_15_nad.shp")
