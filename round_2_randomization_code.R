@@ -178,10 +178,11 @@ setkey(setorder(data,-total_due)[,grp:=rep(1:ceiling(.N/length(treatments)),
                                              list(NULL,as.factor(treatment))],treatment)
 
 ## For pretty output, format total_due as a number with $ and commas:
-data[,total_due:=paste0("$",gsub("\\s","",formatC(total_due,format="d",big.mark=",")))]
+data[,total_due:=paste0("$",gsub("\\s","",formatC(total_due/100,format="f",big.mark=",",digits=2)))]
 
 ## Output individual files for each treatment,
 ##   sorting by mailing zip for pre-sorting purposes
 invisible(lapply(treatments,function(x){
-  write.csv(data[.(x)][order(mail_zip)],
-            file=paste0("round_2_sample_",tolower(x),".csv"),row.names=F)}))
+  write.xlsx2(data[.(x)][order(mail_zip)],
+            file=paste0("round_2_sample_",tolower(x),".xlsx"),
+            row.names=F); gc()}))
