@@ -1,4 +1,4 @@
-#Data Analysis
+Data Analysis
 #Philadelphia Real Estate Tax Evasion
 #Michael Chirico
 #April 3, 2015
@@ -7,204 +7,28 @@
 rm(list=ls(all=T))
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 library(data.table)
-library(boot)
-library(foreach)
-library(doMC)
-registerDoMC(4)
 library(texreg)
 library(foreign)
-library(AER)
-library(erer)
-library(survival)
-library(reshape2)
 library(sandwich)
 library(xtable)
-library(rms)
 library(Zelig)
-setEPS()
 
 #Convenient Functions ####
-prop.table2<-function(...,exclude=if(useNA=="no")c(NA,NaN),useNA=c("no","ifany", "always"),
-                      dnn=list.names(...),deparse.level=1,margin=NULL){
-  list.names <- function(...) {
-    l <- as.list(substitute(list(...)))[-1L]
-    nm <- names(l)
-    fixup <- if (is.null(nm)) 
-      seq_along(l)
-    else nm == ""
-    dep <- vapply(l[fixup], function(x) switch(deparse.level + 
-                                                 1, "", if (is.symbol(x)) as.character(x) else "", 
-                                               deparse(x, nlines = 1)[1L]), "")
-    if (is.null(nm)) 
-      dep
-    else {
-      nm[fixup] <- dep
-      nm
-    }
-  }
-  if (!missing(exclude) && is.null(exclude)) 
-    useNA <- "always"
-  useNA <- match.arg(useNA)
-  prop.table(table(...,exclude=exclude,useNA=useNA,dnn=dnn,deparse.level=1),margin=margin)
+prop.table2<-function(...){
+  dots<-list(...)
+  args<-names(dots) %in% names(formals(prop.table))
+  do.call('prop.table',
+          c(list(do.call('table',if (length(args)) dots[!args] else dots)),
+            dots[args]))
 }
+
 create_quantiles<-function(x,num,right=F,include.lowest=T){
   cut(x,breaks=quantile(x,probs=seq(0,1,by=1/num)),labels=1:num,right=right,include.lowest=include.lowest)
 }
 
-extract.zelig<-function (model, include.aic = TRUE, include.bic = TRUE, include.loglik = TRUE, 
-                         include.deviance = TRUE, include.nobs = TRUE, include.rsquared = TRUE, 
-                         include.adjrs = TRUE, include.fstatistic = TRUE, ...) {
-  s <- summary(model, ...)
-  if ("relogit" %in% class(model) || "logit" %in% class(model) || 
-        "ls" %in% class(model) || "probit" %in% class(model) || 
-        "ologit" %in% class(model)) {
-    coefficient.names <- rownames(s$coef)
-    coefficients <- s$coef[, 1]
-    standard.errors <- s$coef[, 2]
-    if ("ologit" %in% class(model)) {
-      tval <- s$coef[, 3]
-      significance <- 2 * pt(-abs(tval), s$df.residual)
-    }
-    else {
-      significance <- s$coef[, 4]
-    }
-    gof <- numeric()
-    gof.names <- character()
-    gof.decimal <- logical()
-    if (include.aic == TRUE) {
-      aic <- AIC(model)
-      gof <- c(gof, aic)
-      gof.names <- c(gof.names, "AIC")
-      gof.decimal <- c(gof.decimal, TRUE)
-    }
-    if (include.bic == TRUE) {
-      bic <- BIC(model)
-      gof <- c(gof, bic)
-      gof.names <- c(gof.names, "BIC")
-      gof.decimal <- c(gof.decimal, TRUE)
-    }
-    if (include.loglik == TRUE) {
-      lik <- logLik(model)[1]
-      gof <- c(gof, lik)
-      gof.names <- c(gof.names, "Log Likelihood")
-      gof.decimal <- c(gof.decimal, TRUE)
-    }
-    if (include.deviance == TRUE) {
-      dev <- s$deviance
-      if (!is.null(dev)) {
-        gof <- c(gof, dev)
-        gof.names <- c(gof.names, "Deviance")
-        gof.decimal <- c(gof.decimal, TRUE)
-      }
-    }
-    if (include.nobs == TRUE) {
-      n <- nrow(model$data)
-      gof <- c(gof, n)
-      gof.names <- c(gof.names, "Num. obs.")
-      gof.decimal <- c(gof.decimal, FALSE)
-    }
-    if (include.rsquared == TRUE) {
-      rs <- s$r.squared
-      if (!is.null(rs)) {
-        gof <- c(gof, rs)
-        gof.names <- c(gof.names, "R$^2$")
-        gof.decimal <- c(gof.decimal, TRUE)
-      }
-    }
-    if (include.adjrs == TRUE) {
-      adj <- s$adj.r.squared
-      if (!is.null(adj)) {
-        gof <- c(gof, adj)
-        gof.names <- c(gof.names, "Adj. R$^2$")
-        gof.decimal <- c(gof.decimal, TRUE)
-      }
-    }
-    if (include.fstatistic == TRUE) {
-      fstat <- s$fstatistic[[1]]
-      if (!is.null(fstat)) {
-        gof <- c(gof, fstat)
-        gof.names <- c(gof.names, "F statistic")
-        gof.decimal <- c(gof.decimal, TRUE)
-      }
-    }
-    tr <- createTexreg(coef.names = coefficient.names, coef = coefficients, 
-                       se = standard.errors, pvalues = significance, gof.names = gof.names, 
-                       gof = gof, gof.decimal = gof.decimal)
-    return(tr)
-  }
-  else if ("mlogit" %in% class(model)) {
-    coefficient.names <- rownames(s@coef3)
-    coefficients <- s@coef3[, 1]
-    standard.errors <- s@coef3[, 2]
-    zval <- s@coef3[, 3]
-    significance <- 2 * pnorm(abs(zval), lower.tail = FALSE)
-    gof <- numeric()
-    gof.names <- character()
-    gof.decimal <- logical()
-    if (include.loglik == TRUE) {
-      lik <- logLik(model)[1]
-      gof <- c(gof, lik)
-      gof.names <- c(gof.names, "Log Likelihood")
-      gof.decimal <- c(gof.decimal, TRUE)
-    }
-    if (include.deviance == TRUE) {
-      dev <- deviance(s)
-      if (!is.null(dev)) {
-        gof <- c(gof, dev)
-        gof.names <- c(gof.names, "Deviance")
-        gof.decimal <- c(gof.decimal, TRUE)
-      }
-    }
-    if (include.nobs == TRUE) {
-      n <- nrow(model$data)
-      gof <- c(gof, n)
-      gof.names <- c(gof.names, "Num. obs.")
-      gof.decimal <- c(gof.decimal, FALSE)
-    }
-    tr <- createTexreg(coef.names = coefficient.names, coef = coefficients, 
-                       se = standard.errors, pvalues = significance, gof.names = gof.names, 
-                       gof = gof, gof.decimal = gof.decimal)
-    return(tr)
-  }
-  else if ("tobit" %in% class(model)) {
-    coefficient.names <- rownames(s$table)
-    coefficients <- s$table[,1]
-    standard.errors <- s$table[,2]
-    significance <- s$table[,5]
-    gof <- numeric()
-    gof.names <- character()
-    gof.decimal <- logical()
-    if (include.aic == TRUE) {
-      aic <- AIC(model)
-      gof <- c(gof, aic)
-      gof.names <- c(gof.names, "AIC")
-      gof.decimal <- c(gof.decimal, TRUE)
-    }
-    if (include.loglik == TRUE) {
-      lik <- logLik(model)[1]
-      gof <- c(gof, lik)
-      gof.names <- c(gof.names, "Log Likelihood")
-      gof.decimal <- c(gof.decimal, TRUE)
-    }
-    if (include.nobs == TRUE) {
-      n <- nrow(model$data)
-      gof <- c(gof, n)
-      gof.names <- c(gof.names, "Num. obs.")
-      gof.decimal <- c(gof.decimal, FALSE)
-    }
-    tr <- createTexreg(coef.names = coefficient.names, coef = coefficients, 
-                       se = standard.errors, pvalues = significance, gof.names = gof.names, 
-                       gof = gof, gof.decimal = gof.decimal)
-    return(tr)
-  }
-  else {
-    stop(paste("Only the following Zelig models are currently supported:", 
-               "logit, ls, mlogit, ologit, probit, relogit, tobit."))
-  }
-}
-setMethod("extract", signature = className("zelig", "Zelig"),definition = extract.zelig)
+dol_form<-function(x,dig=0){paste0("$",prettyNum(round(x,digits=dig),big.mark=","))}
 
-dol_form<-function(x){paste0("$",prettyNum(x,big.mark=","))}
+to.pct<-function(x,dig=0){round(100*x,digits=dig)}
 
 get_treats<-function(x){if(comment(x)[1]=="act_leave_out")
                           c("Threat","Moral","Peer","Control","Leave-Out")
@@ -223,24 +47,21 @@ setkey(setkey(analysis_data,legal_name,mail_address
               )[,I:=.I],cluster_id:=I],opa_no,posting_rel)
 
 ###tidying up data classifications
-factors<-c("treatment_int","treatment_act","category","exterior",
-           "abate_exempt_code","bldg_group","bldg_category","council",
-           "case_status2")
+factors<-c("treatment","category","exterior","council")
 analysis_data[,(factors):=lapply(.SD,as.factor),.SDcols=factors]
 #since read as strings, order is out of whack
 analysis_data[,council:=factor(council,levels=levels(council)[c(1,3:10,2)])]
 analysis_data[,category:=factor(category,levels=levels(category)[c(4,2,5,1,3,6)])]
-dates<-c("posting","mailing_day","date_latest_pmt","max_period","min_period")
-analysis_data[,(dates):=lapply(.SD,as.Date),.SDcols=dates]
-setnames(analysis_data,"treatment_act","treatment")
-rm(dates,factors)
+analysis_data[,posting:=as.Date(posting)]
+rm(factors)
 
 ##create some variables which can be defined on the main data set
 ## and passed through without change to the subsamples
-max_length<-min(analysis_data[,max(as.integer(posting_rel)),by=cycle]$V1)
-min_length<-max(analysis_data[,min(as.integer(posting_rel)),by=cycle]$V1)
+max_length<-analysis_data[,max(as.integer(posting_rel)),by=cycle][,min(V1)]
+min_length<-analysis_data[,min(as.integer(posting_rel)),by=cycle][,max(V1)]
 
-setkey(setkey(analysis_data,treatment)[unique(analysis_data,by="cycle")[,.N,by=treatment],treatment_count:=N],opa_no,posting_rel)
+analysis_data[,treatment_count:=sum(end==1),by=treatment]
+analysis_data[,treatment_days:=uniqueN(cycle),by=treatment]
 
 analysis_data[,years_cut:=cut(years_count,breaks=c(0,1,2,5,40),
                               include.lowest=T,labels=c(1:2,"3-5",">5"))]
@@ -250,16 +71,20 @@ analysis_data[,rooms_cut:=cut(rooms,breaks=c(0,5,6,20),
 ##DEFINE DATA SETS FOR THE SUBSAMPLES
 ###LEAVE-OUT SAMPLE (2 DAYS PRIOR TO TREATMENT)
 analysis_data_lout<-analysis_data
+analysis_data_lout[,smpl:="IV"]
 ###MAIN SAMPLE
 #### (reset factor levels once leave-out sample is eliminated)
-analysis_data<-analysis_data[cycle>=33,][,treatment:=factor(treatment)]
+analysis_data<-copy(analysis_data)[cycle>=33,][,treatment:=factor(treatment)]
+analysis_data[,smpl:="I"]
 ###NONCOMMERCIAL PROPERTIES
 #### (reset factor levels once commercial properties are eliminated)
 analysis_data_ncomm<-analysis_data[commercial==0,][,category:=factor(category)]
-###SINGLE OWNER PORcodPERTIES--NO MATCH ON LEGAL_NAME/MAILING_ADDRESS
+analysis_data_ncomm[,smpl:="II"]
+###SINGLE OWNER PROPERTIES--NO MATCH ON LEGAL_NAME/MAILING_ADDRESS
 analysis_data_sown<-analysis_data[,count:=.N,by=.(legal_name,mail_address)
                                   ][count-min(count)==0,][,count:=NULL]
 analysis_data[,count:=NULL]
+analysis_data_sown[,smpl:="III"]
 
 ###Tags & data descriptions for file naming for each data set
 comment(analysis_data)<-c("act","Full Sample","analysis_data")
@@ -287,7 +112,7 @@ for (dt in list(analysis_data,analysis_data_lout,analysis_data_ncomm,analysis_da
 #Tests of Randomness ####
 
 ##TESTS OF BALANCE ON OBSERVABLES
-p_exp<-prop.table2(analysis_data[!duplicated(cycle),treatment])
+p_exp<-analysis_data[!duplicated(cycle),prop.table2(treatment)]
 test_counts  <-chisq.test(analysis_data[end==1,table(treatment)],p=p_exp)
 test_years   <-chisq.test(analysis_data[end==1,table(years_cut,treatment)])
 test_council <-chisq.test(analysis_data[end==1,table(as.integer(council),treatment)])
@@ -447,7 +272,7 @@ xtable(matrix(rbind(cbind(analysis_data[,prop.table2(years_cut)],
                                         ][,c(4,2,3,1)]),
                     c(analysis_data[,mean(exterior=="Sealed/Compromised")],
                       analysis_data[,mean(exterior=="Sealed/Compromised"),
-                                    by=treatment_int]$V1[c(4,2,3,1)]),
+                                    by=treatment]$V1[c(4,2,3,1)]),
                     c(analysis_data[,mean(homestead>0)],
                       analysis_data[,mean(homestead>0),
                                     by=treatment]$V1[c(4,2,3,1)])),ncol=5,
@@ -707,73 +532,57 @@ for (data in list(analysis_data,analysis_data_lout,analysis_data_ncomm,analysis_
 ##Regression tables
 
 ###Table: Summary of Effectiveness by Treatment & Sample
-print(xtable(matrix(cbind(
-  rep(c("I","II","III"),each=4),
-  rep(c("Threat","Moral","Peer","Control"),3),
-  rep(c(1,4,2,2),3),
-  as.matrix(rbind(
-    analysis_data[end==1,.(prettyNum(.N,big.mark=","),dol_form(sum(total_due_at_mailing)),
-                           round(mean(100*ever_paid)),round(mean(100*paid_full)),
-                           dol_form(round(sum(cum_treated_pmts))),
-                           dol_form(round(sum(cum_treated_pmts/treatment_count)))),
-                  by=treatment][order(treatment)][c(4,2,3,1),!"treatment",with=F],
-    analysis_data_ncomm[end==1,.(prettyNum(.N,big.mark=","),dol_form(sum(total_due_at_mailing)),
-                                 round(mean(100*ever_paid)),round(mean(100*paid_full)),
-                                 dol_form(round(sum(cum_treated_pmts))),
-                                 dol_form(round(sum(cum_treated_pmts/treatment_count)))),
-                        by=treatment][order(treatment)][c(4,2,3,1),!"treatment",with=F],
-    analysis_data_sown[end==1,.(prettyNum(.N,big.mark=","),dol_form(sum(total_due_at_mailing)),
-                                round(mean(100*ever_paid)),round(mean(100*paid_full)),
-                                dol_form(round(sum(cum_treated_pmts))),
-                                dol_form(round(sum(cum_treated_pmts/treatment_count)))),
-                       by=treatment][order(treatment)][c(4,2,3,1),!"treatment",with=F])),
-  as.matrix(rbind(
-    analysis_data[end==1,sum(cum_treated_pmts/treatment_count),
-                  by=.(treatment,treatment_count)
-                  ][order(treatment)][c(4,2,3,1),.(dol_form(round(V1-V1[treatment=="Control"])),
-                                 dol_form(round((V1-V1[treatment=="Control"])*treatment_count)))],
-    analysis_data_ncomm[end==1,sum(cum_treated_pmts/treatment_count),
-                        by=.(treatment,treatment_count)
-                        ][order(treatment)][c(4,2,3,1),.(dol_form(round(V1-V1[treatment=="Control"])),
-                                       dol_form(round((V1-V1[treatment=="Control"])*treatment_count)))],
-    analysis_data_sown[end==1,sum(cum_treated_pmts/treatment_count),
-                       by=.(treatment,treatment_count)
-                       ][order(treatment)][c(4,2,3,1),.(dol_form(round(V1-V1[treatment=="Control"])),
-                                      dol_form(round((V1-V1[treatment=="Control"])*treatment_count)))]))),
-  ncol=11,dimnames=list(1:12,
-                        c("Sample","Group","Treated Days","No. Treated",
-                          "Total Debt Owed","Percent Ever Paid",
-                          "Percent Paid in Full","Dollars Received",
-                          "Dollars Per Day Treated","Dollars above Control Per Day",
-                          "Total Generated over All Days"))),
+ord<-c(4,2,3,1)
+print.xtable(xtable(rbindlist(lapply(list(
+  analysis_data,analysis_data_ncomm,analysis_data_sown),
+  function(x){x[end==1,.(days=treatment_days[1],.N,smpl=smpl[1],
+                         tot_due=sum(total_due_at_mailing),
+                         ev_pd=mean(ever_paid),pd_fl=mean(paid_full),
+                         tot_pmt=sum(cum_treated_pmts)),
+                by=treatment
+                ][order(treatment)
+                  ][ord,.("Sample"=smpl,"Group"=treatment,
+                          "No. Treated (Treated Days)"=
+                            paste0(prettyNum(N,big.mark=",")," (",days,")"),
+                          "Total Debt Owed"=dol_form(tot_due),
+                          "Percent Ever Paid"=to.pct(ev_pd),
+                          "Percent Paid in Full"=to.pct(pd_fl),
+                          "Dollars Received"=dol_form(tot_pmt),
+                          "Percent Debt Received"=to.pct(tot_pmt/tot_due),
+                          "Dollars above Control Per Day"=
+                            dol_form(tot_pmt/days-tot_pmt[4]/days[4]),
+                          "Total Generated over All Days"=
+                            dol_form(tot_pmt-tot_pmt[4]/days[4]*days))]})),
   caption=c("Summary of Effectiveness of Treatment"),label="table:summary",
-  align=paste0("|c|p{1.3cm}|p{1.3cm}|p{1.3cm}|p{1.3cm}|p{2cm}|p{1.4cm}|",
+  align=paste0("|c|p{1.3cm}|p{1.3cm}|p{1.3cm}|p{2cm}|p{1.4cm}|",
                "p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.6cm}|")),
-  include.rownames=F,hline.after=c(-1,0,4,8,12),floating.environment="sidewaystable")
+  include.rownames=F,hline.after=c(-1,0,4,8,12),floating.environment="sidewaystable"); rm(ord)
 
 ###Table: Summary of Effectiveness by Treatment & Sample, VS LEAVE-OUT SAMPLE
-print(xtable(matrix(cbind(
-  rep("IV",each=5),c("Threat","Moral","Peer","Control","Leave-Out"),c(1,4,2,2,2),
-  as.matrix(analysis_data_lout[end==1,.(prettyNum(.N,big.mark=","),
-                                        dol_form(sum(total_due_at_mailing)),
-                           round(mean(100*ever_paid)),round(mean(100*paid_full)),
-                           dol_form(round(sum(cum_treated_pmts))),
-                           dol_form(round(sum(cum_treated_pmts/treatment_count)))),
-                  by=treatment][order(treatment)][c(5,3,4,1,2),!"treatment",with=F]),
-  as.matrix(analysis_data_lout[end==1,sum(cum_treated_pmts/treatment_count),
-                               by=.(treatment,treatment_count)
-                               ][order(treatment)][c(5,3,4,1,2),.(dol_form(round(V1-V1[treatment=="Leave-Out"])),
-                                                   dol_form(round((V1-V1[treatment=="Leave-Out"])*treatment_count)))])),
-  ncol=11,dimnames=list(1:5,
-                        c("Sample","Group","Treated Days","No. Treated",
-                          "Total Debt Owed","Percent Ever Paid",
-                          "Percent Paid in Full","Dollars Received",
-                          "Dollars Per Day Treated","Dollars above Leave-Out Per Day",
-                          "Total Generated over All Days"))),
+ord<-c(5,3,4,1,2)
+print.xtable(xtable(
+  analysis_data_lout[end==1,.(days=treatment_days[1],.N,smpl=smpl[1],
+                              tot_due=sum(total_due_at_mailing),
+                              ev_pd=mean(ever_paid),pd_fl=mean(paid_full),
+                              tot_pmt=sum(cum_treated_pmts)),
+                     by=treatment
+                     ][order(treatment)
+                       ][ord,.("Sample"=smpl,"Group"=treatment,
+                               "No. Treated (Treated Days)"=
+                                 paste0(prettyNum(N,big.mark=",")," (",days,")"),
+                               "Total Debt Owed"=dol_form(tot_due),
+                               "Percent Ever Paid"=to.pct(ev_pd),
+                               "Percent Paid in Full"=to.pct(pd_fl),
+                               "Dollars Received"=dol_form(tot_pmt),
+                               "Percent Debt Received"=to.pct(tot_pmt/tot_due),
+                               "Dollars above Control Per Day"=
+                                 dol_form(tot_pmt/days-tot_pmt[5]/days[5]),
+                               "Total Generated over All Days"=
+                                 dol_form(tot_pmt-tot_pmt[5]/days[5]*days))],
   caption=c("Summary of Effectiveness of Treatment vs. Leave-Out Sample"),label="table:summary_leave_out",
-  align=paste0("|c|p{1.3cm}|p{1.3cm}|p{1.3cm}|p{1.3cm}|p{2cm}|p{1.4cm}|",
+  align=paste0("|c|p{1.3cm}|p{1.3cm}|p{1.3cm}|p{2cm}|p{1.4cm}|",
                "p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.6cm}|")),
-  include.rownames=F,hline.after=c(-1,0,5),floating.environment="sidewaystable")
+  include.rownames=F,hline.after=c(-1,0,5),floating.environment="sidewaystable"); rm(ord)
 
 ###Model I: Logistic of Ever-Paid
 ####Logistic Coefficients Table: Plain model
@@ -791,7 +600,7 @@ texreg(regs[paste(rep("reg1",3),
 texreg(regs[paste(rep("reg1c",3),
                   unlist(lapply(list(analysis_data,analysis_data_ncomm,
                                      analysis_data_sown),
-                                function(x){comment(x)[1]})),sep="_")]),
+                                function(x){comment(x)[1]})),sep="_")],
        custom.model.names=c("Full Sample","Non-Commercial","Sole Owner"),
        custom.coef.names=c("Intercept","Moral","Peer","Threat",
                            paste("Balance",c("Q2","Q3","Q4")),

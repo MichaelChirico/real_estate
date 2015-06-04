@@ -45,17 +45,6 @@ payments_dec<-setnames(fread("/media/data_drive/real_estate/payment_data_dec.txt
 payments_dec[,c("period","valid","posting","due_date"):=lapply(.SD,as.Date,format="%Y%m%d"),
              .SDcols=c("period","valid","posting","due_date")]
 
-###JANUARY 1 - APRIL 20
-payments_apr<-setnames(fread("/media/data_drive/real_estate/payment_data_150101_150415.txt",sep="|",
-                             colClasses=abbr_to_colClass("fcnfcnc","1432921")),
-                       c("tax","period","valid","posting","due_date","principal",
-                         "interest_and_penalty","other_paid","grp","tran",
-                         "ref_number","legal_name","serv","sic","naic","tpt",
-                         "opa_no","cn","bn","interest","penalty","postmark"))[,c("tax","postmark"):=NULL]
-
-payments_apr[,c("period","valid","posting","due_date"):=lapply(.SD,as.Date,format="%Y%m%d"),
-             .SDcols=c("period","valid","posting","due_date")]
-
 ###Combine the data sets
 ###Note: There is some overlap between the November and December payments files.
 ###      In particular, it seems every payment from 12/1 in the November file
@@ -72,7 +61,7 @@ payments_apr[,c("period","valid","posting","due_date"):=lapply(.SD,as.Date,forma
 #### payments_overlap[,count:=.N,by=setdiff(names(payments_overlap),c("set","legal_name"))]
 ####Notice that nrow(payments_overlap[count>2,set=="NOV",])==nrow(payments_nov_overlap) --
 ####  that is, ever payment in the tail of the November data was found again in December.
-payments<-setkey(rbind(payments_nov[valid<as.Date("2014-12-01"),],payments_dec,payments_apr),opa_no,posting)
+payments<-setkey(rbind(payments_nov,payments_dec),opa_no,posting)
 rm(list=ls(pattern="payments_"))
 
 ###Code to count the duplicates / duplicate-look-alikes among all payments
@@ -89,8 +78,7 @@ payments[,balance_change:=-principal-interest_and_penalty-other_paid]
 ###Aggregate the files
 ####From transcation level to posting day level
 ####  (combine all transactions posted on the same day)
-### ELIMINATE ALL PAYMENTS MADE TO 2015 BALANCES--COME BACK TO THIS LATER
-payments_by_day<-payments[format(period,"%Y")!="2015",.(balance_change=sum(balance_change)),by=.(opa_no,posting)]
+payments_by_day<-payments[,.(balance_change=sum(balance_change)),by=.(opa_no,posting)]
 
 ##DELINQUENCY DATA
 dor_data_oct<-fread("/media/data_drive/real_estate/dor_data_15_oct_encrypted.csv")
@@ -223,9 +211,9 @@ levels_act[c(35,36,44)]="Threat"
 levels_act[c(33,40,41,42,47)]="Moral"
 levels_act[c(34,37,38,43,46)]="Peer"
 levels_act[c(39,45)]="Control"
-cycle_info[data.table(cycle=31:47,treatment_act=
+cycle_info[data.table(cycle=31:47,treatment=
                         as.factor(levels_act[!is.na(levels_act)])),
-           treatment_act:=treatment_act]
+           treatment:=treatment]
 rm(levels_act)
 
 ###TREATMENT FIDELITY WAS HIGHLY COMPROMISED (>20%) FOR FLAGGED CYCLES
