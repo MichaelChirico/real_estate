@@ -554,9 +554,10 @@ print.xtable(xtable(rbindlist(lapply(list(
                           "Total Generated over All Days"=
                             dol_form(tot_pmt-tot_pmt[4]/days[4]*days))]})),
   caption=c("Summary of Effectiveness of Treatment"),label="table:summary",
-  align=paste0("|c|p{1.3cm}|p{1.3cm}|p{1.3cm}|p{2cm}|p{1.4cm}|",
-               "p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.6cm}|")),
-  include.rownames=F,hline.after=c(-1,0,4,8,12),floating.environment="sidewaystable"); rm(ord)
+  align=paste0("|c|p{1.3cm}|p{1.3cm}|p{1.4cm}|p{2cm}|p{1.4cm}|",
+               "p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.6cm}|"),
+  digits=c(rep(0,8),1,0,0)),include.rownames=F,hline.after=c(-1,0,4,8,12),
+  floating.environment="sidewaystable"); rm(ord)
 
 ###Table: Summary of Effectiveness by Treatment & Sample, VS LEAVE-OUT SAMPLE
 ord<-c(5,3,4,1,2)
@@ -580,9 +581,10 @@ print.xtable(xtable(
                                "Total Generated over All Days"=
                                  dol_form(tot_pmt-tot_pmt[5]/days[5]*days))],
   caption=c("Summary of Effectiveness of Treatment vs. Leave-Out Sample"),label="table:summary_leave_out",
-  align=paste0("|c|p{1.3cm}|p{1.3cm}|p{1.3cm}|p{2cm}|p{1.4cm}|",
-               "p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.6cm}|")),
-  include.rownames=F,hline.after=c(-1,0,5),floating.environment="sidewaystable"); rm(ord)
+  align=paste0("|c|p{1.3cm}|p{1.3cm}|p{1.4cm}|p{2cm}|p{1.4cm}|",
+               "p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.6cm}|"),
+  digits=c(rep(0,8),1,0,0)),include.rownames=F,hline.after=c(-1,0,5),
+  floating.environment="sidewaystable"); rm(ord)
 
 ###Model I: Logistic of Ever-Paid
 ####Logistic Coefficients Table: Plain model
