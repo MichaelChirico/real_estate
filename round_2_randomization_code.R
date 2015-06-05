@@ -18,9 +18,9 @@ set.seed(1820749)
 #Data Import
 data<-setnames(fread("/media/data_drive/real_estate/round_two_property_file.csv",
                      drop=c("V10","V11")),
-               c("opa_no","azavea_nbhd","zip","owner1","owner2","mail_address",
-                 "mail_city","mail_state","mail_zip","total_due",
-                 "property_address"))
+               c("opa_no","azavea_nbhd","zip","owner1","owner2",
+                 "mail_address","mail_city","mail_state","mail_zip",
+                 "total_due","property_address"))
 
 ##Re-cast names in a way that's cleaner to print
 to.proper<-function(strings){
@@ -171,11 +171,13 @@ treatments<-paste0(rep(c("Sheriff","Lien","Moral","Amenities",
                    rep(c("Big_Envelope","Small_Envelope"),7))
 ## Block randomization on balance due--sort on balance due and
 ##   assign treatments at random evenly in blocks of n_treatments
-setkey(setorder(data,-total_due)[,grp:=rep(1:ceiling(.N/length(treatments)),
-                                           each=length(treatments),length.out=.N)
-                                 ][,treatment:=sample(treatments,size=.N),
-                                   by=grp][,c("grp","treatment"):=
-                                             list(NULL,as.factor(treatment))],treatment)
+setkey(setkey(data,owner1)[data[,sum(total_due),by=owner1][order(-V1)][
+  ,grp:=rep(1:ceiling(.N/length(treatments)),
+            each=length(treatments),length.out=.N)
+  ][,treatment:=sample(treatments,size=.N),
+    by=grp][,c("grp","treatment"):=
+              list(NULL,as.factor(treatment))],treatment:=as.factor(i.treatment)],
+  treatment)
 
 ## For pretty output, format total_due as a number with $ and commas:
 data[,total_due:=paste0("$",gsub("\\s","",formatC(total_due/100,format="f",big.mark=",",digits=2)))]
