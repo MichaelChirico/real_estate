@@ -27,7 +27,7 @@ data_old<-setnames(fread("/media/data_drive/real_estate/round_two_property_file.
                          select=c("BRT NUMBER","AZAVEA NEIGHBORHOOD","ZIP CODE")),
                    c("opa_no","azavea_nbhd","zip"))
 
-data<-setkey(data_old,opa_no)[setkey(data_final,opa_no)]; rm(data_final,data_old)
+data<-setkey(data_old,opa_no)[setkey(data_final,opa_no)][,total_due:=total_due/100]; rm(data_final,data_old)
 
 #Hand-code Azavea & Zip for new properties (3)
 data["632196220",c("azavea_nbhd","zip"):=list("Bustleton",19115L)]
@@ -38,9 +38,9 @@ data["881035640",c("azavea_nbhd","zip"):=list("Logan Square",19103L)]
 holdout_size<-3000L
 holdout<-sample(nrow(data),holdout_size)
 
-write.csv(data[holdout],file="holdout_sample.csv",row.names=F)
+write.xlsx2(data[holdout],file="holdout_sample.xlsx",row.names=F)
 
-data<-data[!holdout]
+data<-data[!holdout]; rm(holdout,holdout_size)
 
 ##Re-cast names in a way that's cleaner to print
 to.proper<-function(strings){
@@ -200,11 +200,11 @@ setkey(setkey(data,owner1)[data[,sum(total_due),by=owner1][order(-V1)][
   treatment)
 
 ## For pretty output, format total_due as a number with $ and commas:
-data[,total_due:=paste0("$",gsub("\\s","",formatC(total_due/100,format="f",big.mark=",",digits=2)))]
+data[,total_due:=paste0("$",gsub("\\s","",formatC(total_due,format="f",big.mark=",",digits=2)))]
 
 ## Output individual files for each treatment,
 ##   sorting by mailing zip for pre-sorting purposes
 invisible(lapply(treatments,function(x){
   write.xlsx2(data[.(x)][order(mail_zip)],
             file=paste0("round_2_sample_",tolower(x),".xlsx"),
-            row.names=F); gc()}))
+            row.names=F); gc()})); rm(treatments)
