@@ -2,7 +2,7 @@
 # Michael Chirico
 # May 15, 2015
 
-#Setup: Packages, Working Directory, Set Random Seed ####
+# Setup: Packages, Working Directory, Set Random Seed ####
 rm(list=ls(all=T))
 gc()
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
@@ -15,7 +15,7 @@ library(maptools)
 ## of a Banana Republic coupon code I found on my desk: 1729749
 set.seed(1820749)
 
-#Data Import
+# Data Import ####
 data_final<-setnames(fread("/media/data_drive/real_estate/2015 Delinquent.csv",
                            colClasses=c(rep("character",7),rep("numeric",3),"character"),
                            drop=c("V8","V9")),
@@ -29,12 +29,12 @@ data_old<-setnames(fread("/media/data_drive/real_estate/round_two_property_file.
 
 data<-setkey(data_old,opa_no)[setkey(data_final,opa_no)][,total_due:=total_due/100]; rm(data_final,data_old)
 
-#Hand-code Azavea & Zip for new properties (3)
+# Hand-code Azavea & Zip for new properties (3)
 data["632196220",c("azavea_nbhd","zip"):=list("Bustleton",19115L)]
 data["661068112",c("azavea_nbhd","zip"):=list("Morrell Park",19114L)]
 data["881035640",c("azavea_nbhd","zip"):=list("Logan Square",19103L)]
 
-#Extract hold-out sample for DoR
+# Extract hold-out sample for DoR
 holdout_size<-3000L
 holdout<-sample(nrow(data),holdout_size)
 
@@ -198,6 +198,9 @@ setkey(setkey(data,owner1)[data[,sum(total_due),by=owner1][order(-V1)][
     by=grp][,c("grp","treatment"):=
               list(NULL,as.factor(treatment))],treatment:=as.factor(i.treatment)],
   treatment)
+
+## Output full data file for future analysis
+write.csv(data,file="round_2_full_data.csv",row.names=F)
 
 ## For pretty output, format total_due as a number with $ and commas:
 data[,total_due:=paste0("$",gsub("\\s","",formatC(total_due,format="f",big.mark=",",digits=2)))]
