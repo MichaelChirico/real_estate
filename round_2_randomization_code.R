@@ -16,11 +16,31 @@ library(maptools)
 set.seed(1820749)
 
 #Data Import
-data<-setnames(fread("/media/data_drive/real_estate/round_two_property_file.csv",
-                     drop=c("V10","V11")),
-               c("opa_no","azavea_nbhd","zip","owner1","owner2",
-                 "mail_address","mail_city","mail_state","mail_zip",
-                 "total_due","property_address"))
+data_final<-setnames(fread("/media/data_drive/real_estate/2015 Delinquent.csv",
+                           colClasses=c(rep("character",7),rep("numeric",3),"character"),
+                           drop=c("V8","V9")),
+                     c("opa_no","owner1","owner2",
+                       paste0("mail_",c("address","city","state","zip")),
+                       "total_due","property_address"))
+
+data_old<-setnames(fread("/media/data_drive/real_estate/round_two_property_file.csv",
+                         select=c("BRT NUMBER","AZAVEA NEIGHBORHOOD","ZIP CODE")),
+                   c("opa_no","azavea_nbhd","zip"))
+
+data<-setkey(data_old,opa_no)[setkey(data_final,opa_no)]; rm(data_final,data_old)
+
+#Hand-code Azavea & Zip for new properties (3)
+data["632196220",c("azavea_nbhd","zip"):=list("Bustleton",19115L)]
+data["661068112",c("azavea_nbhd","zip"):=list("Morrell Park",19114L)]
+data["881035640",c("azavea_nbhd","zip"):=list("Logan Square",19103L)]
+
+#Extract hold-out sample for DoR
+holdout_size<-3000L
+holdout<-sample(nrow(data),holdout_size)
+
+write.csv(data[holdout],file="holdout_sample.csv",row.names=F)
+
+data<-data[!holdout]
 
 ##Re-cast names in a way that's cleaner to print
 to.proper<-function(strings){
