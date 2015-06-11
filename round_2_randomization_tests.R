@@ -32,20 +32,13 @@ data[,tmt:=paste0(substr(treatment,1,1),
 
 # Graphic Tests
 rand_path<-"./images/randomization_tests/"
-## Bar Plot: Dollar Value of Debt by Treatment
+## Bar Plot: (Log) Dollar Value of Debt by Treatment
 pdf2(paste0(rand_path,"avg_due_by_trt_bar.pdf"))
-invisible(
-  data[,mean(total_due),by=tmt
-       ][,barplot(V1,names.arg=tmt,
-                  main="Average Due by Treatment",ylab="$",las=3,
-                  col=rep(c("yellow","blue","darkgreen","red",
-                            "cyan","orange","orchid"),each=2),
-                  ylim=c(0,data[,mean(total_due)+qnorm(.975)*
-                                  sd(total_due/sqrt(.N/uniqueN(treatment)))]))])
-invisible(lapply(c(-1,0,1),function(x){
-  abline(h=data[,mean(total_due)+x*qnorm(.975)*sd(total_due)/
-                  sqrt(.N/uniqueN(treatment))],
-         lty=2,lwd=if (x==0) 3 else 1)}))
+data[,mean(log(total_due)),by=tmt
+     ][,barplot(V1,names.arg=tmt,
+                main="Average Log Due by Treatment",ylab="Log $",las=3,
+                col=rep(c("yellow","blue","darkgreen","red",
+                          "cyan","orange","orchid"),each=2))]
 dev.off2()
 
 ## Box Plot: Dollar Value of Debt by Treatment
@@ -65,6 +58,16 @@ boxplot(log(total_due)~substr(tmt,1,1),data=data,
               "cyan","orange","orchid"),notch=T,
         horizontal=T,las=1,xlab="Log $")
 dev.off2()
+### Finally, 14 Treatments (Unique Owner)
+pdf2(paste0(rand_path,"dist_due_by_trt_14_unq_own_box.pdf"))
+boxplot(log(total_due)~tmt,
+        data=data[opa_no %in% data[,if (.N==1) opa_no,by=owner1]$V1],
+        xlab="Log $",
+        main="Box Plots of Log Debt\nBy Treatment, Unique Owners",
+        col=rep(c("yellow","blue","darkgreen","red",
+                  "cyan","orange","orchid"),each=2),
+        horizontal=T,las=1,notch=T)
+dev.off2()
 
 ## Bar Plot: Number of Properties and Owners by Treatment
 pdf2(paste0(rand_path,"number_prop_own_by_trt_bar.pdf"))
@@ -76,6 +79,15 @@ data[,.(.N,uniqueN(owner1)),by=tmt
                 density=rep(c(-1,20),.N),
                 ylim=c(0,1.3*max(N)))]
 legend("topleft",legend=c("# Properties","# Owners"),density=c(-1,20),bty="n")
+dev.off2()
+
+## Bar Plot: Number of Properties and Owners by Treatment (among Unique Owners)
+pdf2(paste0(rand_path,"number_prop_own_by_trt_unq_own_bar.pdf"))
+data[opa_no %in% data[,if (.N==1) opa_no,by=owner1]$V1,.N,,by=tmt
+     ][,barplot(N,names.arg=tmt,las=3,
+                main="Numbers of Properties\nBy Treatment, Unique Owners",
+                col=rep(c("yellow","blue","darkgreen","red",
+                          "cyan","orange","orchid"),each=2))]
 dev.off2()
 
 ## Map: Number of Properties by Neighborhood by Treatment
