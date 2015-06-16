@@ -92,7 +92,12 @@ setkey(dor_data_oct[.("",c("19125","19147")),c("council","council_flag"):=list("
 setkey(dor_data_oct[.("","19138"),c("council","council_flag"):=list("8",1)],council,zip)
 dor_data_oct[,council:=factor(council,levels=1:10)]            
 
+#Add flags for owner occupancy (as proxied by whether a
+#  homestead exemption is taken) and residential zoning 
 dor_data_oct[,owner_occ:=homestead>0]
+dor_data_oct[,residential:=bldg_group %in% c("apartmentLarge","apartmentSmall","condo",
+                                             "house","house ","miscResidential","")]
+
 setkey(dor_data_oct,opa_no)
 ###SAMPLE RESTRICTIONS
 ### Original delinquent sample size: 134888 properties
@@ -155,10 +160,6 @@ levels(opa_data$category)<-c("Residential","Hotels&Apts","Store w/ Dwelling",
                              "Commercial","Industrial","Vacant")
 levels(opa_data$exterior)<-c("N/A","N/A","New/Rehab","Above Average","Average",
                              "Below Average","Vacant","Sealed/Compromised")
-
-opa_data[,residential:=bldg_group %in% c("apartmentLarge","apartmentSmall","condo",
-                                         "house","house ","miscResidential","")]
-
 
 ##CYCLE & TREATMENT GROUP DATA
 cycle_info<-setnames(fread("/media/data_drive/real_estate/opa_cycles.csv",
