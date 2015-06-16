@@ -156,7 +156,8 @@ levels(opa_data$category)<-c("Residential","Hotels&Apts","Store w/ Dwelling",
 levels(opa_data$exterior)<-c("N/A","N/A","New/Rehab","Above Average","Average",
                              "Below Average","Vacant","Sealed/Compromised")
 
-opa_data[,commercial:=category=="Commercial"]
+opa_data[,residential:=bldg_group %in% c("apartmentLarge","apartmentSmall","condo",
+                                         "house","house ","miscResidential","")]
 
 
 ##CYCLE & TREATMENT GROUP DATA
@@ -196,8 +197,8 @@ setkey(cycle_info,cycle)[data.table(cycle=31:47,
 levels_int<-c()
 levels_int[c(31,32)]="Leave-Out"
 levels_int[c(35,37,44)]="Threat"
-levels_int[c(33,40,41,47)]="Moral"
-levels_int[c(34,38,43,46)]="Peer"
+levels_int[c(33,40,41,47)]="Service"
+levels_int[c(34,38,43,46)]="Civic"
 levels_int[c(36,39,42,45)]="Control"
 cycle_info[data.table(cycle=31:47,treatment_int=
                    as.factor(levels_int[!is.na(levels_int)])),
@@ -208,8 +209,8 @@ rm(levels_int)
 levels_act<-c()
 levels_act[c(31,32)]="Leave-Out"
 levels_act[c(35,36,44)]="Threat"
-levels_act[c(33,40,41,42,47)]="Moral"
-levels_act[c(34,37,38,43,46)]="Peer"
+levels_act[c(33,40,41,42,47)]="Service"
+levels_act[c(34,37,38,43,46)]="Civic"
 levels_act[c(39,45)]="Control"
 cycle_info[data.table(cycle=31:47,treatment=
                         as.factor(levels_act[!is.na(levels_act)])),
