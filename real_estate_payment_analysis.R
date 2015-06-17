@@ -1,10 +1,11 @@
-Data Analysis
+#Data Analysis
 #Philadelphia Real Estate Tax Evasion
 #Michael Chirico
 #April 3, 2015
 
 #Setup: Packages, Working Directory, Etc.####
 rm(list=ls(all=T))
+gc()
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 library(data.table)
 library(texreg)
@@ -14,12 +15,28 @@ library(xtable)
 library(Zelig)
 
 #Convenient Functions ####
-prop.table2<-function(...){
+table2<-function(...,dig=NULL,prop=F,ord=F,pct=F){
   dots<-list(...)
   args<-names(dots) %in% names(formals(prop.table))
-  do.call('prop.table',
-          c(list(do.call('table',if (length(args)) dots[!args] else dots)),
-            dots[args]))
+  tab<-if (prop) do.call(
+    'prop.table',c(list(
+      do.call('table',if (length(args)) dots[!args] else dots)),
+      dots[args])) else do.call('table',list(...))
+  if (ord) tab<-tab[order(tab)]
+  if (pct) tab<-100*tab
+  if (is.null(dig)) tab else round(tab,digits=dig)
+}
+
+pdf2<-function(...){
+  graphics.off()
+  dev.new()
+  do.call('pdf',list(...))
+  dev.set(which=dev.list()["RStudioGD"])
+}
+
+dev.off2<-function(){
+  dev.copy(which=dev.list()["pdf"])
+  invisible(dev.off(which=dev.list()["pdf"]))
 }
 
 create_quantiles<-function(x,num,right=F,include.lowest=T){
@@ -31,68 +48,72 @@ dol_form<-function(x,dig=0){paste0("$",prettyNum(round(x,digits=dig),big.mark=",
 to.pct<-function(x,dig=0){round(100*x,digits=dig)}
 
 get_treats<-function(x){if(comment(x)[1]=="act_leave_out")
-                          c("Threat","Moral","Peer","Control","Leave-Out")
-                        else c("Threat","Moral","Peer","Control")}
+  c("Threat","Service","Civic","Control","Leave-Out")
+  else c("Threat","Service","Civic","Control")}
 
 get_treats_col<-function(x){if(comment(x)[1]=="act_leave_out")
-                              c("red","blue","green","black","orange")
-                            else c("red","blue","green","black")}
+  c("red","blue","green","black","orange")
+  else c("red","blue","green","black")}
 
 #Set up Analysis Data Sets ####
-analysis_data<-fread("analysis_file.csv",colClasses=c(date_of_first_payment="character"))
+analysis_data_main<-fread("analysis_file.csv",colClasses=c(date_of_first_payment="character"))
 #CLUSTERS DEFINED AT THE OWNER LEVEL
 #OWNER DEFINED AS ANYONE WITH IDENTICAL NAME & MAILING ADDRESS
-setkey(setkey(analysis_data,legal_name,mail_address
-              )[unique(analysis_data,by=c("legal_name","mail_address")
-              )[,I:=.I],cluster_id:=I],opa_no,posting_rel)
+setkey(setkey(analysis_data_main,legal_name,mail_address
+              )[unique(analysis_data_main,by=c("legal_name","mail_address")
+                       )[,I:=.I],cluster_id:=i.I],opa_no,posting_rel)
 
 ###tidying up data classifications
 factors<-c("treatment","category","exterior","council")
-analysis_data[,(factors):=lapply(.SD,as.factor),.SDcols=factors]
+analysis_data_main[,(factors):=lapply(.SD,as.factor),.SDcols=factors]
+analysis_data_main[,treatment:=
+                     factor(treatment,levels(treatment)[c(3,2,5,4,1)])]
 #since read as strings, order is out of whack
-analysis_data[,council:=factor(council,levels=levels(council)[c(1,3:10,2)])]
-analysis_data[,category:=factor(category,levels=levels(category)[c(4,2,5,1,3,6)])]
-analysis_data[,posting:=as.Date(posting)]
+analysis_data_main[,council:=factor(council,levels=levels(council)[c(1,3:10,2)])]
+analysis_data_main[,category:=factor(category,levels=levels(category)[c(4,2,5,1,3,6)])]
+analysis_data_main[,posting:=as.Date(posting)]
 rm(factors)
 
 ##create some variables which can be defined on the main data set
 ## and passed through without change to the subsamples
-max_length<-analysis_data[,max(as.integer(posting_rel)),by=cycle][,min(V1)]
-min_length<-analysis_data[,min(as.integer(posting_rel)),by=cycle][,max(V1)]
+max_length<-min(analysis_data_main[,max(as.integer(posting_rel)),by=cycle]$V1)
+min_length<-max(analysis_data_main[,min(as.integer(posting_rel)),by=cycle]$V1)
 
-analysis_data[,treatment_count:=sum(end==1),by=treatment]
-analysis_data[,treatment_days:=uniqueN(cycle),by=treatment]
+analysis_data_main[,treatment_count:=uniqueN(opa_no),by=treatment]
+analysis_data_main[,treatment_days :=uniqueN(cycle), by=treatment]
 
-analysis_data[,years_cut:=cut(years_count,breaks=c(0,1,2,5,40),
-                              include.lowest=T,labels=c(1:2,"3-5",">5"))]
-analysis_data[,rooms_cut:=cut(rooms,breaks=c(0,5,6,20),
-                              include.lowest=T,labels=c("0-5","6",">6"))]
+analysis_data_main[,years_cut:=cut(years_count,breaks=c(0,1,2,5,40),
+                                   include.lowest=T,labels=c(1:2,"3-5",">5"))]
+analysis_data_main[,rooms_cut:=cut(rooms,breaks=c(0,5,6,20),
+                                   include.lowest=T,labels=c("0-5","6",">6"))]
 
 ##DEFINE DATA SETS FOR THE SUBSAMPLES
 ###LEAVE-OUT SAMPLE (2 DAYS PRIOR TO TREATMENT)
-analysis_data_lout<-analysis_data
+analysis_data_lout<-analysis_data_main
 analysis_data_lout[,smpl:="IV"]
 ###MAIN SAMPLE
 #### (reset factor levels once leave-out sample is eliminated)
-analysis_data<-copy(analysis_data)[cycle>=33,][,treatment:=factor(treatment)]
-analysis_data[,smpl:="I"]
-###NONCOMMERCIAL PROPERTIES
-#### (reset factor levels once commercial properties are eliminated)
-analysis_data_ncomm<-analysis_data[commercial==0,][,category:=factor(category)]
-analysis_data_ncomm[,smpl:="II"]
-###SINGLE OWNER PROPERTIES--NO MATCH ON LEGAL_NAME/MAILING_ADDRESS
-analysis_data_sown<-analysis_data[,count:=.N,by=.(legal_name,mail_address)
-                                  ][count-min(count)==0,][,count:=NULL]
-analysis_data[,count:=NULL]
-analysis_data_sown[,smpl:="III"]
+analysis_data_main<-copy(analysis_data_main)[cycle>=33,][,treatment:=factor(treatment)]
+analysis_data_main[,smpl:="I"]
+###RESIDENTIAL PROPERTIES
+#### (reset factor levels once nonresidential properties are eliminated)
+analysis_data_resd<-analysis_data_main[residential==T,][,category:=factor(category)]
+analysis_data_resd[,smpl:="II"]
+###SINGLE RESIDENTIAL OWNER PROPERTIES--NO MATCH ON LEGAL_NAME/MAILING_ADDRESS
+#### (reset factor levels once nonresidential properties are eliminated)
+analysis_data_sres<-
+  analysis_data_main[residential==T,if (uniqueN(opa_no)==1) .SD,
+                     by=.(legal_name,mail_address)][,category:=factor(category)]
+analysis_data_sres[,smpl:="III"]
 
 ###Tags & data descriptions for file naming for each data set
-comment(analysis_data)<-c("act","Full Sample","analysis_data")
-comment(analysis_data_lout)<-c("act_leave_out","Including Leave-Out Sample","analysis_data_lout")
-comment(analysis_data_ncomm)<-c("act_non_commercial","Non-Commercial Properties","analysis_data_ncomm")
-comment(analysis_data_sown)<-c("act_single_owner","Single-Owner Properties","analysis_data_sown")
+comment(analysis_data_main)<-c("main","Full Sample","analysis_data_main")
+comment(analysis_data_lout)<-c("leave_out","Including Leave-Out Sample","analysis_data_lout")
+comment(analysis_data_resd)<-c("residential","Residential Properties","analysis_data_resd")
+comment(analysis_data_sres)<-
+  c("residential_single_owner","Unique-Owner Residential Properties","analysis_data_sres")
 
-for (dt in list(analysis_data,analysis_data_lout,analysis_data_ncomm,analysis_data_sown)){
+for (dt in list(analysis_data_main,analysis_data_lout,analysis_data_resd,analysis_data_sres)){
   ##Define the sample-specific variables:
   ## total_due_at_mailing_grp: total due by properties
   ##                           in each group at mailing
@@ -109,180 +130,29 @@ for (dt in list(analysis_data,analysis_data_lout,analysis_data_ncomm,analysis_da
   assign(comment(dt)[3],dummy)
 }; rm(dt)
 
-#Tests of Randomness ####
-
-##TESTS OF BALANCE ON OBSERVABLES
-p_exp<-analysis_data[!duplicated(cycle),prop.table2(treatment)]
-test_counts  <-chisq.test(analysis_data[end==1,table(treatment)],p=p_exp)
-test_years   <-chisq.test(analysis_data[end==1,table(years_cut,treatment)])
-test_council <-chisq.test(analysis_data[end==1,table(as.integer(council),treatment)])
-test_category<-chisq.test(analysis_data[end==1,table(category,treatment)])
-test_balance <-chisq.test(analysis_data[end==1,table(total_due_at_mailing,treatment)])
-test_mv_q    <-chisq.test(analysis_data[end==1,table(mv_quartile,treatment)])
-test_area_q  <-chisq.test(analysis_data[end==1,table(area_quartile,treatment)])
-test_rooms   <-chisq.test(analysis_data[end==1,table(rooms_cut,treatment)])
-
-###Table 1: 4 tests
-print.xtable(
-  xtable(
-    matrix(
-      rbind(rep("",5),cbind(round(
-        analysis_data[end==1,prop.table2(balance_quartile,
-                                   treatment,margin=1)],2),
-                  c(round(test_balance$p.value,2),rep("",3))),
-        rep("",5),cbind(round(
-          analysis_data[end==1,prop.table2(mv_quartile,
-                                     treatment,margin=1)],2),
-          c(round(test_mv_q$p.value,2),rep("",3))),
-        rep("",5),cbind(round(
-          analysis_data[end==1,prop.table2(area_quartile,
-                                           treatment,margin=1)],2),
-          c(round(test_area_q$p.value,2),rep("",3))),
-        c(round(analysis_data[end==1,prop.table2(treatment)],2),
-          round(test_counts$p.value,2)),
-        c(round(p_exp,2),"")),ncol=5,
-      dimnames=list(c("Balance Due Quartiles",
-                      paste0("<\\$",round(quantile(analysis_data$total_due_at_mailing,.25),-2)),
-                      paste0("\\lbrack\\$",round(quantile(analysis_data$total_due_at_mailing,.25),-2),",\\$",
-                             round(quantile(analysis_data$total_due_at_mailing,.5),-2),")"),
-                      paste0("\\lbrack\\$",round(quantile(analysis_data$total_due_at_mailing,.5),-2),",\\$",
-                             round(quantile(analysis_data$total_due_at_mailing,.75),-2),")"),
-                      paste0("\\$",round(quantile(analysis_data$total_due_at_mailing,.75),-2),"+"),
-                      "Market Value Quartiles",
-                      paste0("<\\$",round(quantile(analysis_data$market_value,.25),-3)/1000,"k"),
-                      paste0("\\lbrack\\$",round(quantile(analysis_data$market_value,.25),-3)/1000,"k,\\$",
-                             round(quantile(analysis_data$market_value,.5),-3)/1000,"k)"),
-                      paste0("\\lbrack\\$",round(quantile(analysis_data$market_value,.5),-3)/1000,"k,\\$",
-                             round(quantile(analysis_data$market_value,.75),-3)/1000,"k)"),
-                      paste0("\\$",round(quantile(analysis_data$market_value,.75),-3)/1000,"k+"),
-                      "Land Area Quartiles",
-                      paste0("<",round(quantile(analysis_data$land_area,.25),-2)," sq. ft."),
-                      paste0("\\lbrack",round(quantile(analysis_data$land_area,.25),-2),",",
-                             round(quantile(analysis_data$land_area,.5),-2),") sq. ft."),
-                      paste0("\\lbrack",round(quantile(analysis_data$land_area,.5),-2),",",
-                             round(quantile(analysis_data$land_area,.75),-2),") sq. ft."),
-                      paste0(">",round(quantile(analysis_data$land_area,.75),-2)," sq. ft."),
-                      "Distribution of Properties","Expected Distribution"),
-                    c("Threat","Moral","Peer","Control","$p$-value"))),
-    caption="Tests of Sample Balance on Observables I",label="table:balanceI"),
-  hline.after=c(5,10,15:17),sanitize.text.function=identity,table.placement="htbp")
-
-print.xtable(
-  xtable(
-    matrix(
-      rbind(rep("",5),cbind(round(analysis_data[end==1,
-                                      prop.table2(rooms_cut,treatment,
-                                                  margin=1)],2),
-                  c(round(test_rooms$p.value,2),rep("",2))),
-            rep("",5),cbind(round(analysis_data[end==1,
-                                      prop.table2(years_cut,treatment,
-                                                  margin=1)],2),
-                  c(round(test_rooms$p.value,2),rep("",3))),
-            rep("",5),cbind(round(analysis_data[end==1,
-                                      prop.table2(category,treatment,
-                                                  margin=1)],2),
-                  c(round(test_category$p.value,2),rep("",5))),
-            c(round(p_exp,2),"")),ncol=5,
-      dimnames=list(c("\\# Rooms","0-5","6","7+",
-                      "Years of Debt","1 Year","2 Years",
-                      "3-5 Years","6+ Years",
-                      "Category","Residential",
-                      "Hotels\\&Apts","Store w. Dwell.",
-                      "Commercial","Industrial","Vacant Land",
-                      "Expected Distribution"),
-                    c("Threat","Moral","Peer","Control","$p$-value"))),
-    caption="Tests of Sample Balance on Observables II",label="table:balanceII"),
-  hline.after=c(4,9,16,17),sanitize.text.function=identity,table.placement="htbp")
-rm(p_exp,list=ls(pattern="test"))
-
-
-### Fidelity check--did we assign the right day as "start of treatment"?
-graphics.off()
-dev.new()
-pdf(paste0("./papers_presentations/images/analysis/act/",
-           "distribution_delinquency_mail_day_act.pdf"))
-dev.set(which=dev.list()["RStudioGD"])
-x<-analysis_data[-5<=posting_rel&posting_rel<=5,list(avg_pmt=mean(-balance_change)),by=c("cycle","posting_rel")]
-plot(x[cycle==33,.(posting_rel,avg_pmt)],main="Average Payment Near \n Assigned Treatment Boundary \n By Cycle",
-     xlab="Days Since/From Mailing",ylab="Average Payment",ylim=range(x$avg_pmt),type="l",col="black",lwd=3)
-lines(x[cycle==39,.(posting_rel,avg_pmt)],type="l",col="red",lwd=3)
-lines(x[cycle==40,.(posting_rel,avg_pmt)],type="l",col="blue",lwd=3)
-lines(x[cycle==41,.(posting_rel,avg_pmt)],type="l",col="green",lwd=3)
-lines(x[cycle==43,.(posting_rel,avg_pmt)],type="l",col="orange",lwd=3)
-lines(x[cycle==44,.(posting_rel,avg_pmt)],type="l",col="cyan",lwd=3)
-lines(x[cycle==45,.(posting_rel,avg_pmt)],type="l",col="brown",lwd=3)
-lines(x[cycle==46,.(posting_rel,avg_pmt)],type="l",col="purple",lwd=3)
-lines(x[cycle==47,.(posting_rel,avg_pmt)],type="l",col="grey",lwd=3)
-legend("topleft",legend=c(33,39,40,41,43,44,45,46,47),
-       col=c("black","red","blue","green",lwd=3,
-             "orange","cyan","brown","purple","grey"),lty=1,
-       lwd=c(rep(1,8),2))
-dev.copy(which=dev.list()["pdf"])
-dev.off(which=dev.list()["pdf"])
-rm(x)
-
-### Checking Observables Balance
-graphics.off()
-dev.new()
-pdf(paste0("./papers_presentations/images/analysis/act/",
-           "distribution_delinquency_mail_day_act.pdf"))
-dev.set(which=dev.list()["RStudioGD"])
-par(xpd=T,mar=c(5.1,4.1,4.1,4.1))
-barplot(cbind(prop.table(table(analysis_data$treatment)),
-              prop.table(table(analysis_data[,.(treatment,council)]),2)),
-        col=c("black","blue","green","red"),names.arg=c("All",1:10),
-        xlab="Council District",
-        main="Treatment Group Distribution \n By Council District")
-legend(13.5,.8,c("Threat","Peer","Moral","Control"),
-       cex=.75,fill=c("red","green","blue","black"))
-dev.copy(which=dev.list()["pdf"])
-dev.off(which=dev.list()["pdf"])
-
-#Descriptive Statistics/Plots ####
-
-##Log balance distribution, by treatment
-graphics.off()
-dev.new()
-pdf('./papers_presentations/images/balance/total_balance_by_treatment.pdf')
-dev.set(which=dev.list()["RStudioGD"])
-par(mfrow=c(2,2),oma=c(0,0,3,0))
-hist(analysis_data[end==1&treatment=="Threat",
-                   log10(total_due_at_mailing)],
-     col="red",main="Threat",xlab="Log_10 $",freq=F,breaks=seq(-2,6,by=.25))
-hist(analysis_data[end==1&treatment=="Moral",
-                   log10(total_due_at_mailing)],
-     col="blue",main="Moral",xlab="Log_10 $",freq=F,breaks=seq(-2,6,by=.25))
-hist(analysis_data[end==1&treatment=="Peer",
-                   log10(total_due_at_mailing)],
-     col="green",main="Peer",xlab="Log_10 $",freq=F,breaks=seq(-2,6,by=.25))
-hist(analysis_data[end==1&treatment=="Control",
-                   log10(total_due_at_mailing)],
-     col="black",main="Control",xlab="Log_10 $",freq=F,breaks=seq(-2,6,by=.25))
-title("Distribution of Mail-day Balance by Treatment",outer=T)
-dev.copy(which=dev.list()["pdf"])
-dev.off(which=dev.list()["pdf"])
-
 ##FIRST GLANCE: SOME DISTRIBUTIONS & TABLES
 ###MAIN DESCRIPTIVES TABLE
-xtable(matrix(rbind(cbind(analysis_data[,prop.table2(years_cut)],
-                          analysis_data[,prop.table2(years_cut,treatment,margin=2)
-                                        ][,c(4,2,3,1)]),
-                    cbind(analysis_data[,prop.table2(category)],
-                          analysis_data[,prop.table2(category,treatment,margin=2)
-                                        ][,c(4,2,3,1)]),
-                    c(analysis_data[,mean(exterior=="Sealed/Compromised")],
-                      analysis_data[,mean(exterior=="Sealed/Compromised"),
-                                    by=treatment]$V1[c(4,2,3,1)]),
-                    c(analysis_data[,mean(homestead>0)],
-                      analysis_data[,mean(homestead>0),
-                                    by=treatment]$V1[c(4,2,3,1)])),ncol=5,
+xtable(matrix(rbind(cbind(analysis_data_main[,table2(years_cut,prop=T)],
+                          analysis_data_main[,table2(years_cut,treatment,
+                                                     margin=2,prop=T)
+                                             ][,c(2,4,3,1)]),
+                    cbind(analysis_data_main[,table2(category,prop=T)],
+                          analysis_data_main[,table2(category,treatment,
+                                                     margin=2,prop=T)
+                                             ][,c(4,2,3,1)]),
+                    c(analysis_data_main[,mean(exterior=="Sealed/Compromised")],
+                      analysis_data_main[,mean(exterior=="Sealed/Compromised"),
+                                         by=treatment]$V1[c(4,2,3,1)]),
+                    c(analysis_data_main[,mean(homestead>0)],
+                      analysis_data_main[,mean(homestead>0),
+                                         by=treatment]$V1[c(4,2,3,1)])),ncol=5,
               dimnames=list(c(paste("Years:",c("[0,5]","(5,10]",
                                                "(10,20]","(20,40]")),
                               paste("Cat:",c("Commercial","Hotels/Apts",
                                              "Industrial","Residential",
                                              "Store+Resid","Vacant")),
                               "% Sealed/Compromised","% Homestead"),
-                            c("Full","Threat","Moral","Peer","Control"))),
+                            c("Full","Threat","Service","Civic","Control"))),
        digits=2)
 ###MARGINAL BALANCE DISTRIBUTION
 graphics.off()
@@ -290,20 +160,20 @@ dev.new()
 pdf(paste0("./papers_presentations/images/analysis/act/",
            "distribution_delinquency_mail_day_act.pdf"))
 dev.set(which=dev.list()["RStudioGD"])
-hist(log10(analysis_data[posting_rel==0,calc_total_due]),
+hist(log10(analysis_data_main[posting_rel==0,calc_total_due]),
      main="Distribution of (Log) Delinquent Balance \n As of Mailing Day",
      xaxt="n",xlab="Log_10 $",col="blue",freq=F,breaks=seq(-2,6.5,by=.5),ylim=c(0,.6))
 axis(1,at=-2:6)
 text(0,.8*par('usr')[4],
-     paste0("n=",nrow(analysis_data)/(max_length-min_length+1)))
+     paste0("n=",nrow(analysis_data_main)/(max_length-min_length+1)))
 text(0,.7*par('usr')[4],
      paste0("mean=",
-            round(mean(analysis_data[posting_rel==0,
-                                     calc_total_due]),2)))
+            round(mean(analysis_data_main[posting_rel==0,
+                                          calc_total_due]),2)))
 text(0,.6*par('usr')[4],
      paste0("median=",
-            median(analysis_data[posting_rel==0,
-                                 calc_total_due])))
+            median(analysis_data_main[posting_rel==0,
+                                      calc_total_due])))
 dev.copy(which=dev.list()["pdf"])
 dev.off(which=dev.list()["pdf"])
 
@@ -313,23 +183,23 @@ dev.new()
 pdf(paste0("./papers_presentations/images/analysis/act/",
            "distribution_delinquency_mail_day_act.pdf"))
 dev.set(which=dev.list()["RStudioGD"])
-plot(analysis_data[cum_treated_pmts>0&end==1,
-                   list(log10(total_due_at_mailing),
-                        log10(cum_treated_pmts))],
+plot(analysis_data_main[cum_treated_pmts>0&end==1,
+                        list(log10(total_due_at_mailing),
+                             log10(cum_treated_pmts))],
      xlab="Log_10 Owed",ylab="Log_10 Paid",
-     col=ifelse(analysis_data[cum_treated_pmts>0&end==1,
-                              cum_treated_pmts>total_due_at_mailing-20],
+     col=ifelse(analysis_data_main[cum_treated_pmts>0&end==1,
+                                   cum_treated_pmts>total_due_at_mailing-20],
                 "red","blue"),
-     ylim=range(analysis_data[cum_treated_pmts>0&end==1,
-                              log10(cum_treated_pmts)]),
+     ylim=range(analysis_data_main[cum_treated_pmts>0&end==1,
+                                   log10(cum_treated_pmts)]),
      main=paste0("Joint Distribution of (Log) $ Owed at Mailing vs. ",
                  "(Log) $ Paid in first ",as.integer(max_length)," days"))
 text(0,par('usr')[4]-1,
      paste0("n above 45-degree line: ",
-            nrow(analysis_data[cum_treated_pmts>0
-                               &end==1
-                               &cum_treated_pmts>
-                                 total_due_at_mailing-20,])),
+            nrow(analysis_data_main[cum_treated_pmts>0
+                                    &end==1
+                                    &cum_treated_pmts>
+                                      total_due_at_mailing-20,])),
      col="red")
 dev.copy(which=dev.list()["pdf"])
 dev.off(which=dev.list()["pdf"])
@@ -341,16 +211,16 @@ dev.new()
 pdf(paste0("./papers_presentations/images/analysis/act/",
            "distribution_delinquency_mail_day_act.pdf"))
 dev.set(which=dev.list()["RStudioGD"])
-plot(analysis_data[(total_due_at_mailing>cum_treated_pmts-10)
-                   &end==1
-                   &cum_treated_pmts>0&total_due_at_mailing>10,
-                   list(log10(total_due_at_mailing),
-                        cum_treated_pmts/total_due_at_mailing)],
+plot(analysis_data_main[(total_due_at_mailing>cum_treated_pmts-10)
+                        &end==1
+                        &cum_treated_pmts>0&total_due_at_mailing>10,
+                        list(log10(total_due_at_mailing),
+                             cum_treated_pmts/total_due_at_mailing)],
      main="Joint Distribution of (Log) Owed vs. % Paid \n Among Non-Overpayers Who Owed >$10",
      xlab="Log_10 $ Owed",ylab="Percentage of Debt Repaid",col="blue",ylim=c(0,1.2))
 text(3,1.1,paste0("n fully repaid: ",
-                  nrow(analysis_data[cum_treated_pmts/total_due_at_mailing>.95
-                                     &end==1,])))
+                  nrow(analysis_data_main[cum_treated_pmts/total_due_at_mailing>.95
+                                          &end==1,])))
 dev.copy(which=dev.list()["pdf"])
 dev.off(which=dev.list()["pdf"])
 
@@ -360,9 +230,9 @@ dev.new()
 pdf(paste0("./papers_presentations/images/analysis/act/",
            "distribution_delinquency_mail_day_act.pdf"))
 dev.set(which=dev.list()["RStudioGD"])
-x<-analysis_data[cum_treated_pmts>0&market_value>0
-                 &end==1,
-                 cum_treated_pmts/market_value]
+x<-analysis_data_main[cum_treated_pmts>0&market_value>0
+                      &end==1,
+                      cum_treated_pmts/market_value]
 hist(x,main="Distribution of \n Amount Paid/Assesed Value",
      xlab="Amount Paid/Market Value",col="blue",xaxt="n",
      xlim=c(0,1))
@@ -382,7 +252,7 @@ dev.off(which=dev.list()["pdf"])
 rm(x)
 
 #Time Series Plots ####
-for (data in list(analysis_data,analysis_data_lout,analysis_data_ncomm,analysis_data_sown)){
+for (data in list(analysis_data_main,analysis_data_lout,analysis_data_resd,analysis_data_sres)){
   ##Cumulative Payments by Treatment (normalized by group size)
   graphics.off()
   dev.new()
@@ -500,9 +370,9 @@ regs<-list(reg1_act="",reg1_act_non_commercial="",reg1_act_single_owner="",reg1_
            reg1c_act="",reg1c_act_non_commercial="",reg1c_act_single_owner="",reg1c_act_leave_out="",
            reg2_act="",reg2_act_non_commercial="",reg2_act_single_owner="",reg2_act_leave_out="",
            reg2c_act="",reg2c_act_non_commercial="",reg2c_act_single_owner="",reg2c_act_leave_out="")
-for (data in list(analysis_data,analysis_data_lout,analysis_data_ncomm,analysis_data_sown)){
+for (data in list(analysis_data_main,analysis_data_lout,analysis_data_resd,analysis_data_sres)){
   data_end<-data[end==1,]
-
+  
   controls<-(~I(land_area/1e3)+I(years_count<=5)+council+category+
                I(exterior=="Sealed/Compromised")+I(homestead>0))
   
@@ -534,7 +404,7 @@ for (data in list(analysis_data,analysis_data_lout,analysis_data_ncomm,analysis_
 ###Table: Summary of Effectiveness by Treatment & Sample
 ord<-c(4,2,3,1)
 print.xtable(xtable(rbindlist(lapply(list(
-  analysis_data,analysis_data_ncomm,analysis_data_sown),
+  analysis_data_main,analysis_data_resd,analysis_data_sres),
   function(x){x[end==1,.(days=treatment_days[1],.N,smpl=smpl[1],
                          tot_due=sum(total_due_at_mailing),
                          ev_pd=mean(ever_paid),pd_fl=mean(paid_full),
@@ -589,22 +459,22 @@ print.xtable(xtable(
 ###Model I: Logistic of Ever-Paid
 ####Logistic Coefficients Table: Plain model
 texreg(regs[paste(rep("reg1",3),
-                  unlist(lapply(list(analysis_data,analysis_data_ncomm,
-                                     analysis_data_sown),
+                  unlist(lapply(list(analysis_data_main,analysis_data_resd,
+                                     analysis_data_sres),
                                 function(x){comment(x)[1]})),sep="_")],
        custom.model.names=c("Full Sample","Non-Commercial","Sole Owner"),
-       custom.coef.names=c("Intercept","Moral","Peer","Threat"),
+       custom.coef.names=c("Intercept","Service","Civic","Threat"),
        caption="Model I: Logistic Regressions -- Ever Paid",label="table:modelIa",
        float.pos="htbp",include.deviance=F,include.aic=F,include.bic=F)
-       
+
 
 ####Logistic Coefficients Table: Quartile Interactions
 texreg(regs[paste(rep("reg1c",3),
-                  unlist(lapply(list(analysis_data,analysis_data_ncomm,
-                                     analysis_data_sown),
+                  unlist(lapply(list(analysis_data_main,analysis_data_resd,
+                                     analysis_data_sres),
                                 function(x){comment(x)[1]})),sep="_")],
        custom.model.names=c("Full Sample","Non-Commercial","Sole Owner"),
-       custom.coef.names=c("Intercept","Moral","Peer","Threat",
+       custom.coef.names=c("Intercept","Service","Civic","Threat",
                            paste("Balance",c("Q2","Q3","Q4")),
                            paste0("control",
                                   c("Land Area","Owes <= 5 Years",
@@ -612,7 +482,7 @@ texreg(regs[paste(rep("reg1c",3),
                                     "Store w. Dwelling","Commercial",
                                     "Industrial","Vacant","Sealed-Compromised",
                                     "Homestead","Prop. Val. (\\$100k)")),
-                           paste0(c("Moral","Peer","Threat"),"*",
+                           paste0(c("Service","Civic","Threat"),"*",
                                   rep(paste("Balance",c("Q2","Q3","Q4")),each=3))),
        omit.coef="Intercept|control",reorder.coef=c(4,5,6,1,7,10,13,2,8,11,14,3,9,12,15),
        custom.note=c("%stars. Control coefficients omitted for brevity; see Appendix."),
@@ -622,16 +492,16 @@ texreg(regs[paste(rep("reg1c",3),
 ####Marginal Predictions at Control Means
 #### via p_hat = exp(beta*x_bar)/(1+exp(beta*x_bar))
 sample_means_control12c<-
-  c(1,analysis_data[,median(land_area/1e3)],
-    unlist(analysis_data[end==1,lapply(list(years_count<=5,council==2,
-                                            council==3,council==4,council==5,
-                                            council==6,council==7,council==8,council==9,
-                                            council==10,category=="Hotels&Apts",
-                                            category=="Store w/ Dwelling",
-                                            category=="Commercial",category=="Industrial",
-                                            category=="Vacant",exterior=="Sealed/Compromised",
-                                            homestead>0),mean)]),
-    analysis_data[end==1,median(market_value/1e5)])
+  c(1,analysis_data_main[,median(land_area/1e3)],
+    unlist(analysis_data_main[end==1,lapply(list(years_count<=5,council==2,
+                                                 council==3,council==4,council==5,
+                                                 council==6,council==7,council==8,council==9,
+                                                 council==10,category=="Hotels&Apts",
+                                                 category=="Store w/ Dwelling",
+                                                 category=="Commercial",category=="Industrial",
+                                                 category=="Vacant",exterior=="Sealed/Compromised",
+                                                 homestead>0),mean)]),
+    analysis_data_main[end==1,median(market_value/1e5)])
 log_odds_control1c<-(regs[["reg1c_act"]]$result$coefficients[c(1,8:26)] %*% sample_means_control12c)[1]
 
 coef<-regs[["reg1c_act"]]$result$coefficients
@@ -640,28 +510,28 @@ print.xtable(
                          t(matrix(rep(c(0,coef[5:7]),times=4),ncol=4))+log_odds_control1c+
                          cbind(rep(0,4),rbind(rep(0,3),matrix(coef[27:35],ncol=3))),
                        function(x){round(100*exp(x)/(1+exp(x)),1)}),ncol=4,
-                dimnames=list(c("Control","Moral","Peer","Threat"),paste0("Q",1:4))),
+                dimnames=list(c("Control","Service","Civic","Threat"),paste0("Q",1:4))),
          caption="Model I: Marginal Predictions of Logistic Regressions -- Ever Paid",
          label="table:modelI_marg",align="lcccc"),table.placement="htbp")
 
 ###Model II: Logistic of Paid in Full
 ####Logistic Coefficients Table: Plain model
 texreg(regs[paste(rep("reg2",3),
-                  unlist(lapply(list(analysis_data,analysis_data_ncomm,
-                                     analysis_data_sown),
+                  unlist(lapply(list(analysis_data_main,analysis_data_resd,
+                                     analysis_data_sres),
                                 function(x){comment(x)[1]})),sep="_")],
        custom.model.names=c("Full Sample","Non-Commercial","Sole Owner"),
-       custom.coef.names=c("Intercept","Moral","Peer","Threat"),
+       custom.coef.names=c("Intercept","Service","Civic","Threat"),
        caption="Model II: Logistic Regressions -- Paid in Full",label="table:modelIIa",
        float.pos="htbp",include.deviance=F,include.aic=F,include.bic=F)
 
 ####Logistic Coefficients Table: Quartile Interactions
 texreg(regs[paste(rep("reg2c",3),
-                  unlist(lapply(list(analysis_data,analysis_data_ncomm,
-                                     analysis_data_sown),
+                  unlist(lapply(list(analysis_data_main,analysis_data_resd,
+                                     analysis_data_sres),
                                 function(x){comment(x)[1]})),sep="_")],
        custom.model.names=c("Full Sample","Non-Commercial","Sole Owner"),
-       custom.coef.names=c("Intercept","Moral","Peer","Threat",
+       custom.coef.names=c("Intercept","Service","Civic","Threat",
                            paste("Balance",c("Q2","Q3","Q4")),
                            paste0("control",
                                   c("Land Area","Owes <= 5 Years",
@@ -669,7 +539,7 @@ texreg(regs[paste(rep("reg2c",3),
                                     "Store w. Dwelling","Commercial",
                                     "Industrial","Vacant","Sealed-Compromised",
                                     "Homestead","Prop. Val. (\\$100k)")),
-                           paste0(c("Moral","Peer","Threat"),"*",
+                           paste0(c("Service","Civic","Threat"),"*",
                                   rep(paste("Balance",c("Q2","Q3","Q4")),each=3))),
        omit.coef="Intercept|control",reorder.coef=c(4,5,6,1,7,10,13,2,8,11,14,3,9,12,15),
        custom.note=c("%stars. Control coefficients omitted for brevity; see Appendix."),
@@ -686,14 +556,14 @@ print.xtable(
                          t(matrix(rep(c(0,coef[5:7]),times=4),ncol=4))+log_odds_control2c+
                          cbind(rep(0,4),rbind(rep(0,3),matrix(coef[27:35],ncol=3))),
                        function(x){round(100*exp(x)/(1+exp(x)),1)}),ncol=4,
-                dimnames=list(c("Control","Moral","Peer","Threat"),paste0("Q",1:4))),
+                dimnames=list(c("Control","Service","Civic","Threat"),paste0("Q",1:4))),
          caption="Model II: Marginal Predictions of Logistic Regressions -- Paid in Full",
          label="table:modelII_marg",align="lcccc"),table.placement="htbp")
 rm(regs,coef,list=ls(pattern="_control"))
 
 #Time Series Analysis by Quartile ####
 
-for (data in list(analysis_data,analysis_data_lout,analysis_data_ncomm,analysis_data_sown)){
+for (data in list(analysis_data_main,analysis_data_lout,analysis_data_resd,analysis_data_sres)){
   quartile_cutoffs<-round(data[,quantile(total_due_at_mailing,probs=c(.25,.5,.75))],-2)
   
   setkey(data,balance_quartile,treatment)

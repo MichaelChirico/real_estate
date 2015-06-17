@@ -79,11 +79,12 @@ payments[,balance_change:=-principal-interest_and_penalty-other_paid]
 ####From transcation level to posting day level
 ####  (combine all transactions posted on the same day)
 payments_by_day<-payments[,.(balance_change=sum(balance_change)),by=.(opa_no,posting)]
+rm(payments)
 
 ##DELINQUENCY DATA
 dor_data_oct<-fread("/media/data_drive/real_estate/dor_data_15_oct_encrypted.csv")
 dates<-c("date_latest_pmt","max_period","min_period")
-dor_data_oct[,(dates):=lapply(.SD,as.Date,format="%Y%m%d"),.SDcols=dates]
+dor_data_oct[,(dates):=lapply(.SD,as.Date,format="%Y%m%d"),.SDcols=dates]; rm(dates)
 #Found/approximated by hand the council districts for some properties where missing
 dor_data_oct[,council_flag:=0]
 setkey(dor_data_oct,council,zip)
@@ -228,6 +229,7 @@ setkey(cycle_info,opa_no)
 #MERGE THE DATA
 ##Add delinquency data to cycle info
 dor_cycle<-cycle_info[fidelity_flag==0,][opa_data][dor_data_oct]
+rm(cycle_info,dor_data_oct,opa_data)
 dor_cycle[,market_value_flag:=(market_value==0)]
 dor_cycle[market_value==0,market_value:=total_assessment]
 dor_cycle[total_assessment==0,total_assessment:=market_value]
@@ -275,8 +277,6 @@ payments_by_day[,total_due_at_mailing:=round(max(total_due_at_mailing,na.rm=T),2
 payments_by_day<-payments_by_day[total_due_at_mailing>.61,]
 ##Now round up those with balances less than $1 to $1 to keep all log values nonnegative
 payments_by_day[total_due_at_mailing<1,total_due_at_mailing:=1]
-##Update the sample size to reflect those just dropped
-n<-length(unique(payments_by_day$opa))
 
 #To get all cycles on even footing, align the analysis period
 #  by cycle (and hence by treatment)
@@ -303,7 +303,7 @@ payments_by_week<-
                                         unique(total_due_at_mailing),
                                       weekly_change=sum(balance_change),
                                       week_end_balance=current_balance[.N]),
-                                    by=c("opa_no","week_no")]]
+                                    by=c("opa_no","week_no")]]; rm(dor_cycle)
 payments_by_week[,cum_treated_pmts_wk:=cumsum(-weekly_change),by=opa_no]
 
 #Define ever-paid indicator variable
@@ -322,7 +322,7 @@ payments_by_day[.(0:max_length,T),
 payments_by_day[.(0:max_length),paid_full:=cum_treated_pmts>=.95*total_due_at_mailing]
 
 #Define indicator to get end of period
-payments_by_day[,end:=(posting_rel==max_length)]
+payments_by_day[,end:=(posting_rel==max_length)]; rm(min_length,max_length)
 
 #Finally, write the data sets to be loaded in the analysis file
 write.csv(payments_by_day,file="analysis_file.csv",quote=T,row.names=F)
@@ -331,6 +331,7 @@ write.csv(payments_by_day[end==1&fidelity_flag==0,],file="analysis_file_end_only
 #Swing Payments by Week wide for analysis file
 write.csv(setnames(dcast.data.table(payments_by_week[,!c("weekly_change","week_end_balance"),with=F],
                                     opa_no+...~week_no,value.var="cum_treated_pmts_wk"
-                                    )[,c("ever_paid_week_6","paid_full_week_6"):=list((week_6>0),(week_6>=.95*total_due_at_mailing))],
+                                    )[,c("ever_paid_week_6","paid_full_week_6"):=
+                                        list((week_6>0),(week_6>=.95*total_due_at_mailing))],
                    paste0("week_",1:6),paste0("cum_treated_pmts_week_",1:6)),
           file="analysis_file_weekly_wide.csv",quote=T,row.names=F)
