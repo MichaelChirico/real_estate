@@ -9,10 +9,10 @@ gc()
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 library(data.table)
 library(texreg)
-library(foreign)
 library(sandwich)
 library(xtable)
 library(Zelig)
+library(haven)
 
 #Convenient Functions ####
 table2<-function(...,dig=NULL,prop=F,ord=F,pct=F){
@@ -25,18 +25,6 @@ table2<-function(...,dig=NULL,prop=F,ord=F,pct=F){
   if (ord) tab<-tab[order(tab)]
   if (pct) tab<-100*tab
   if (is.null(dig)) tab else round(tab,digits=dig)
-}
-
-pdf2<-function(...){
-  graphics.off()
-  dev.new()
-  do.call('pdf',list(...))
-  dev.set(which=dev.list()["RStudioGD"])
-}
-
-dev.off2<-function(){
-  dev.copy(which=dev.list()["pdf"])
-  invisible(dev.off(which=dev.list()["pdf"]))
 }
 
 print.xtable2<-function(...){
@@ -56,14 +44,6 @@ create_quantiles<-function(x,num,right=F,include.lowest=T){
 dol_form<-function(x,dig=0){paste0("$",prettyNum(round(x,digits=dig),big.mark=","))}
 
 to.pct<-function(x,dig=0){round(100*x,digits=dig)}
-
-get_treats<-function(x){if(comment(x)[1]=="act_leave_out")
-  c("Threat","Service","Civic","Control","Leave-Out")
-  else c("Threat","Service","Civic","Control")}
-
-get_treats_col<-function(x){if(comment(x)[1]=="act_leave_out")
-  c("red","blue","green","black","orange")
-  else c("red","blue","green","black")}
 
 #Set up Analysis Data Sets ####
 analysis_data_main<-fread("analysis_file.csv",colClasses=c(date_of_first_payment="character"))
@@ -86,9 +66,6 @@ rm(factors)
 
 ##create some variables which can be defined on the main data set
 ## and passed through without change to the subsamples
-max_length<-min(analysis_data_main[,max(as.integer(posting_rel)),by=cycle]$V1)
-min_length<-max(analysis_data_main[,min(as.integer(posting_rel)),by=cycle]$V1)
-
 analysis_data_main[,treatment_count:=uniqueN(opa_no),by=treatment]
 analysis_data_main[,treatment_days :=uniqueN(cycle), by=treatment]
 
@@ -106,13 +83,17 @@ analysis_data_lout[,smpl:="Leave-Out"]
 analysis_data_main<-copy(analysis_data_main)[cycle>=33,][,treatment:=factor(treatment)]
 analysis_data_main[,smpl:="Full"]
 ###RESIDENTIAL PROPERTIES
+#### (also eliminating 3 properties with category=Commercial or Vacant
+####  due to inconsistency in definition vis-a-vis bldg_group)
 #### (reset factor levels once nonresidential properties are eliminated)
-analysis_data_resd<-analysis_data_main[residential==T,][,category:=factor(category)]
+analysis_data_resd<-analysis_data_main[residential==T&
+                                         !category %in% c("Commercial","Vacant"),
+                                       ][,category:=factor(category)]
 analysis_data_resd[,smpl:="Residential"]
 ###SINGLE RESIDENTIAL OWNER PROPERTIES--NO MATCH ON LEGAL_NAME/MAILING_ADDRESS
-#### (reset factor levels once nonresidential properties are eliminated)
 analysis_data_sres<-
-  analysis_data_main[residential==T,if (uniqueN(opa_no)==1) .SD,
+  analysis_data_main[residential==T&!category %in% c("Commercial","Vacant"),
+                     if (uniqueN(opa_no)==1) .SD,
                      by=.(legal_name,mail_address)][,category:=factor(category)]
 analysis_data_sres[,smpl:="Residential, Unique Owner"]
 
@@ -138,7 +119,56 @@ for (dt in list(analysis_data_main,analysis_data_lout,analysis_data_resd,analysi
   dummy[,area_quartile:=create_quantiles(land_area,4)]
   
   assign(comment(dt)[3],dummy)
-}; rm(dt)
+}; rm(dt,dummy)
+
+##CITY-LEVEL TAX COMPLIANCE DATA FOR COMPARIONS TABLE
+city_data<-setkey(setDT(read.dta13("/media/data_drive/real_estate/Tax Levies and Collections.dta")
+                        )[,City:=gsub("\\s+$","",City)],City
+                  )[,city2:=ifelse(City=="DC","Washington, DC",City)]
+
+###bootstrap confidence interval
+####Seed basis: current time & date
+set.seed(6222042)
+R<-200
+means<-matrix(nrow=city_data[,uniqueN(Year)],ncol=R,dimnames=list(city_data[,unique(Year)],1:R))
+for (rr in 1:R){
+  #resample at the city level to capture within-city autocorrelation
+  means[,rr]<-city_data[.(sample(unique(City),uniqueN(City),replace=T))
+                        ][PctCollected>0,mean(100*PctCollected),by=Year]$V1
+}
+setkey(city_data,Year)[setnames(
+  data.table(cbind(city_data[,unique(Year)],
+                   t(sapply(1:nrow(means),function(x)
+                     #looking for interval ~+/- 1 SD
+                     quantile(means[x,],c(1-pnorm(1),pnorm(1))))))),
+  c("Year","mean_lq","mean_uq")),`:=`(mean_uq=i.mean_uq,
+                                      mean_lq=i.mean_lq)]
+
+###now plot
+city_data[.(2005:2013)][PctCollected>0,.(mean(100*PctCollected),mean_lq[1],mean_uq[1]),
+                        by=Year][,matplot(Year,cbind(V1,V2,V3),type="l",lty=c(1,2,2),
+                                                 col=c("black","red","red"),lwd=c(3,2,2),
+                                                 main="Average Percent Collected by Year",
+                                                 ylab="Percent Collected",ylim=c(90,100))]
+
+###something else done by Inman's .do file
+# city_data[,lapply(.SD,function(x)c(mean(100*x,na.rm=T),sd(100*x,na.rm=T),length(x))),
+#           by=Year,.SDcols=c("SubsequentPctCollected",
+#                             "SubsequentAnnualAvgPctCollect",
+#                             "DelinquentAnnualAveragePctCol")]
+
+rbind(city_data[PctCollected>0,.(city2="Large City Average",
+                                 pct_com=paste0(to.pct(city_data[PctCollected>0,
+                                                                 PctCollected[.N],
+                                                                 by=City][,mean(V1)],dig=1),
+                                                "; ",to.pct(mean(PctCollected),dig=1)),
+                                 del_5y =to.pct(mean(DelinquentAnnualAveragePctCol[Year>=2010],
+                                                     na.rm=T),dig=1))],
+      city_data[PctCollected>0,.(pct_com=paste0(to.pct(PctCollected[.N],dig=1),
+                                                "; ",to.pct(mean(PctCollected),dig=1)),
+                                 del_5y =to.pct(mean(DelinquentAnnualAveragePctCol[Year>=2010],
+                                                     na.rm=T),dig=1)),
+                by=city2])
 
 #TABLES ####
 ##MAIN DESCRIPTIVES TABLE
@@ -181,7 +211,7 @@ print.xtable2(xtable(rbindlist(lapply(list(
          "Percent Ever Paid"=to.pct(ev_pd),
          "Percent Paid in Full"=to.pct(pd_fl),
          "Dollars Received"=dol_form(tot_pmt),
-         "Percent Debt Received"=to.pct(tot_pmt/tot_due),
+         "Percent Debt Received"=to.pct(tot_pmt/tot_due,dig=1),
          "Dollars above Control Per Property"=
            dol_form(tot_pmt/N-tot_pmt[1]/N[1]),
          "Total Surplus over All Properties"=
@@ -262,7 +292,8 @@ texreg2(regs[paste0(rep("reg1",3),"_",
         custom.model.names=c("Full Sample","Residential","Residential, Unique Owner"),
         custom.coef.names=c("Intercept","Threat","Service","Civic"),
         caption="Model I: Linear Probability Models -- Ever Paid",label="table:modelIa",
-        float.pos="htbp",include.aic=F,include.bic=F,include.loglik=F,stars=c(.01,.05,.1))
+        float.pos="htbp",include.aic=F,include.bic=F,include.loglik=F,
+        include.rsquared=F,include.adjrs=F,include.fstatistic=F,stars=c(.01,.05,.1))
 
 
 ###Model I: Logistic of Ever-Paid with Controls, Quartile Interactions
@@ -280,7 +311,7 @@ texreg2(regs[paste(rep("reg1c",3),
                                      "Industrial","Vacant","Sealed-Compromised",
                                      "Homestead","Prop. Val. (\\$100k)")),
                             paste0(c("Threat","Service","Civic"),"*",
-                                   rep(paste("Balance",c("Q2","Q3","Q4")),each=3))),
+                                   rep(c("Moderate","High","Very High"),each=3))),
         omit.coef="Intercept|control",reorder.coef=c(4,5,6,1,7,10,13,2,8,11,14,3,9,12,15),
         caption="Model I: Logistic Regressions -- Ever Paid",include.deviance=F,
         label="table:modelIb",float.pos="htbp",include.bic=F,include.aic=F,stars=c(.01,.05,.1))
@@ -328,7 +359,7 @@ print.xtable2(
                          c(rep(0,4),rbind(rep(0,3),matrix(main_coef[7:15],ncol=3)))
                        +x_beta_control1,
                        function(x){round(100*exp(x)/(1+exp(x)),1)}),ncol=4,
-                dimnames=list(c("Control","Service","Civic","Threat"),
+                dimnames=list(c("Control","Threat","Service","Civic"),
                               paste(c("Low","Medium","High","Very High"),"Debt"))),
          caption="Model I: Probability Ever Paid by Treatment, Debt Level at Sample Center",
          label="table:modelI_marg",align="lcccc"),table.placement="htbp")
@@ -342,7 +373,8 @@ texreg2(regs[paste0(rep("reg2",3),"_",
         custom.model.names=c("Full Sample","Residential","Residential, Unique Owner"),
         custom.coef.names=c("Intercept","Threat","Service","Civic"),
         caption="Model II: Linear Probability Models -- Paid in Full",label="table:modelIIa",
-        float.pos="htbp",include.aic=F,include.bic=F,include.loglik=F,stars=c(.01,.05,.1))
+        float.pos="htbp",include.aic=F,include.bic=F,include.loglik=F,
+        include.rsquared=F,include.adjrs=F,include.fstatistic=F,stars=c(.01,.05,.1))
 
 ####Logistic Coefficients Table: Quartile Interactions
 texreg2(regs[paste(rep("reg2c",3),
@@ -392,3 +424,4 @@ print.xtable2(
                               paste(c("Low","Medium","High","Very High"),"Debt"))),
          caption="Model II: Probability Paid in Full by Treatment, Debt Level at Sample Center",
          label="table:modelII_marg",align="lcccc"),table.placement="htbp")
+rm(main_coef,sample_means_control12,x_beta_control2,x_beta_control1)
