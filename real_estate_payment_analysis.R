@@ -58,12 +58,12 @@ dol_form<-function(x,dig=0){paste0("$",prettyNum(round(x,digits=dig),big.mark=",
 to.pct<-function(x,dig=0){round(100*x,digits=dig)}
 
 get_treats<-function(x){if(comment(x)[1]=="act_leave_out")
-  c("Threat","Service","Civic","Control","Leave-Out")
-  else c("Threat","Service","Civic","Control")}
+  c("Leave-Out","Control","Threat","Service","Civic")
+  else c("Control","Threat","Service","Civic")}
 
 get_treats_col<-function(x){if(comment(x)[1]=="act_leave_out")
-  c("red","blue","green","black","orange")
-  else c("red","blue","green","black")}
+  c("orange","black","red","blue","green")
+  else c("black","red","blue","green")}
 
 #Set up Analysis Data Sets ####
 analysis_data_main<-fread("analysis_file.csv",colClasses=c(date_of_first_payment="character"))
@@ -192,6 +192,35 @@ print.xtable2(xtable(rbind(city_data[PctCollected>0,.(city2="Large City Average"
 
 #Tables ####
 ##MAIN DESCRIPTIVES TABLE
+##  Using full and restricted samples for comparison
+full_delinquent<-fread("/media/data_drive/real_estate/dor_data_15_oct_encrypted.csv")
+full_delinquent[,owner_occ:=homestead>0]
+full_delinquent[,residential:=bldg_group %in% c("apartmentLarge","apartmentSmall","condo",
+                                                "house","house ","miscResidential","")]
+rest_delinquent<-
+  full_delinquent[payment_agreement=="N"
+                  &abate_exempt_code %in% c("","     ","\\    ")
+                  &case_status==""&sheriff_sale=="N"
+                  &bankruptcy=="N"&sequestration=="N"
+                  &returned_mail_flag=="NO"]
+
+print.xtable(xtable(matrix(t(rbindlist(lapply(list(
+  full_delinquent,rest_delinquent,analysis_data_main[end==1,]),
+  function(y)y[,lapply(list(calc_total_due,total_assessment,
+                            net_tax_value_after_homestead,
+                            years_count,100*residential,
+                            100*(mail_address %in% c("","                    ")|
+                                   (grepl("PH",mail_city)&!grepl("[XMR]",mail_city))),
+                            100*owner_occ,.N),function(x)round(mean(x,na.rm=T)))]))),
+  dimnames=list(c("Amount Due","Assessed Property Value","Value of Tax","Length of Debt",
+                  "% Residential","% w/ Phila. Mailing Address",
+                  "% Owner-Occupied","Number Observations"),
+                c("Full Sample","Restricted Sample","Analysis Sample")),ncol=3),
+  caption=c("Summary Averages for Philadelphia Tax Non-Compliants"),
+  label="table:descriptives",digits=0))
+
+
+##MAIN SAMPLE SUMMARY TABLE
 setkey(analysis_data_main,treatment)
 print.xtable2(xtable(matrix(rbind(cbind(
   analysis_data_main[,table2(years_cut,prop=T)],
@@ -461,7 +490,7 @@ floating.environment="sidewaystable")
 # rm(main_coef,sample_means_control12,x_beta_control2,x_beta_control1)
 
 #Plots ####
-#Time Series Plots ####
+##Time Series Plots
 trt<-get_treats(analysis_data_main)
 trt_col<-get_treats_col(analysis_data_main)
 draw_time_series<-function(plist){
@@ -497,12 +526,12 @@ plot_params<-list(ever_paid=list(file="ever_paid",y="%",series="evpd",pos="tople
 
 lapply(plot_params,draw_time_series); rm(ts_data,plot_params)
 
-#Time Series Analysis by Quartile ####
+##By-Quartile graphs
 quartile_cutoffs<-
   round(analysis_data_main[,quantile(total_due_at_mailing,probs=c(.25,.5,.75))],-2)
 
 setkey(analysis_data_main,balance_quartile,treatment)
-##Percent Ever Paid by treatment
+###Percent Ever Paid by treatment
 pct_ever_paid_q<-
   dcast.data.table(analysis_data_main[posting_rel>=0,mean(100*ever_paid),
                                       by=list(balance_quartile,treatment,posting_rel)],
@@ -566,7 +595,7 @@ mtext(paste0("Percent of Group Ever Having Paid\n",
 dev.off2()
 rm(uplim,pct_ever_paid_q)
 
-##Percent Paid in Full by treatment
+###Percent Paid in Full by treatment
 pct_paid_full_q<-
   dcast.data.table(analysis_data_main[posting_rel>=0,mean(100*paid_full),
                                       by=list(balance_quartile,treatment,posting_rel)],
