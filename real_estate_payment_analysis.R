@@ -12,7 +12,7 @@ library(texreg)
 library(sandwich)
 library(xtable)
 library(Zelig)
-library(haven)
+library(readstata13)
 
 #Convenient Functions ####
 table2<-function(...,dig=NULL,prop=F,ord=F,pct=F){
@@ -37,6 +37,18 @@ texreg2<-function(...){
   cat(capture.output(do.call('texreg',list(...))),sep="\n\n")
 }
 
+pdf2<-function(...){
+  graphics.off()
+  dev.new()
+  do.call('pdf',list(...))
+  dev.set(which=dev.list()["RStudioGD"])
+}
+
+dev.off2<-function(){
+  dev.copy(which=dev.list()["pdf"])
+  invisible(dev.off(which=dev.list()["pdf"]))
+}
+
 create_quantiles<-function(x,num,right=F,include.lowest=T){
   cut(x,breaks=quantile(x,probs=seq(0,1,by=1/num)),labels=1:num,right=right,include.lowest=include.lowest)
 }
@@ -44,6 +56,14 @@ create_quantiles<-function(x,num,right=F,include.lowest=T){
 dol_form<-function(x,dig=0){paste0("$",prettyNum(round(x,digits=dig),big.mark=","))}
 
 to.pct<-function(x,dig=0){round(100*x,digits=dig)}
+
+get_treats<-function(x){if(comment(x)[1]=="act_leave_out")
+  c("Threat","Service","Civic","Control","Leave-Out")
+  else c("Threat","Service","Civic","Control")}
+
+get_treats_col<-function(x){if(comment(x)[1]=="act_leave_out")
+  c("red","blue","green","black","orange")
+  else c("red","blue","green","black")}
 
 #Set up Analysis Data Sets ####
 analysis_data_main<-fread("analysis_file.csv",colClasses=c(date_of_first_payment="character"))
@@ -157,7 +177,7 @@ city_data[.(2005:2013)][PctCollected>0,.(mean(100*PctCollected),mean_lq[1],mean_
 #                             "SubsequentAnnualAvgPctCollect",
 #                             "DelinquentAnnualAveragePctCol")]
 
-rbind(city_data[PctCollected>0,.(city2="Large City Average",
+print.xtable2(xtable(rbind(city_data[PctCollected>0,.(city2="Large City Average",
                                  pct_com=paste0(to.pct(city_data[PctCollected>0,
                                                                  PctCollected[.N],
                                                                  by=City][,mean(V1)],dig=1),
@@ -168,9 +188,9 @@ rbind(city_data[PctCollected>0,.(city2="Large City Average",
                                                 "; ",to.pct(mean(PctCollected),dig=1)),
                                  del_5y =to.pct(mean(DelinquentAnnualAveragePctCol[Year>=2010],
                                                      na.rm=T),dig=1)),
-                by=city2])
+                by=city2])),include.rownames=F)
 
-#TABLES ####
+#Tables ####
 ##MAIN DESCRIPTIVES TABLE
 setkey(analysis_data_main,treatment)
 print.xtable2(xtable(matrix(rbind(cbind(
@@ -248,180 +268,364 @@ align=paste0("|c|p{2.2cm}|p{1.4cm}|p{1.8cm}|p{1.2cm}|",
 digits=c(rep(0,7),1,0,0)),include.rownames=F,hline.after=c(-1,0,5),
 floating.environment="sidewaystable")
 
-##REGRESSION TABLES
-###Running regressions
-regs<-setNames(vector("list",16),
-               paste0("reg",rep(1:2,each=8),rep(c(rep("",4),rep("c",4)),2),"_",
-                      rep(c("main","residential","residential_single_owner","leave_out"),4)))
-for (data in list(analysis_data_main,analysis_data_lout,analysis_data_resd,analysis_data_sres)){
-  data_end<-data[end==1,]
-  comm<-comment(data)[1]
-  rf<-if (comm=="leave_out") "Leave-Out" else "Control"
-  
-  controls<-(~I(land_area/1e3)+I(years_count<=5)+council+category+
-               I(exterior=="Sealed/Compromised")+owner_occ)
-  
-  #1(Ever Paid) Differs by Treatment?
-  ##First, plain LPM
-  regs[[paste0("reg1_",comm)]]<-
-    zelig(ever_paid~relevel(treatment,ref=rf),
-          data=data_end,model="ls",robust=T,cluster="cluster_id",cite=F)
-  ##Now, controlled logistic
-  regs[[paste0("reg1c_",comm)]]<-
-    zelig(update(controls,ever_paid~relevel(treatment,ref=rf)*balance_quartile
-                 +.+I(market_value/1e5)),
-          data=data_end,model="logit",robust=T,cluster="cluster_id",cite=F)
-  
-  #1(Bill Paid in Full) Differs by Treatment?
-  ##First, plain LPM
-  regs[[paste0("reg2_",comm)]]<-
-    zelig(paid_full~relevel(treatment,ref=rf),
-          data=data_end,model="ls",robust=T,cluster="cluster_id",cite=F)
-  ##Now, controlled logistic
-  regs[[paste0("reg2c_",comm)]]<-
-    zelig(update(controls,paid_full~relevel(treatment,ref=rf)*balance_quartile
-                 +.+I(market_value/1e5)),
-          data=data_end,model="logit",robust=T,cluster="cluster_id",cite=F)
-}; rm(data,data_end,controls,comm,rf)
+# ##REGRESSION TABLES
+# ###Running regressions
+# regs<-setNames(vector("list",20),
+#                paste0("reg",rep(1:3,c(8,8,4)),rep(c("","c","","c",""),each=4),"_",
+#                       rep(c("main","residential","residential_single_owner","leave_out"),5)))
+# for (data in list(analysis_data_main,analysis_data_lout,analysis_data_resd,analysis_data_sres)){
+#   data_end<-data[end==1,]
+#   comm<-comment(data)[1]
+#   rf<-if (comm=="leave_out") "Leave-Out" else "Control"
+#   
+#   controls<-(~I(land_area/1e3)+I(years_count<=5)+council+category+
+#                I(exterior=="Sealed/Compromised")+owner_occ+I(market_value/1e5))
+#   
+#   #1(Ever Paid) Differs by Treatment?
+#   ##First, plain LPM
+#   regs[[paste0("reg1_",comm)]]<-
+#     zelig(ever_paid~relevel(treatment,ref=rf),
+#           data=data_end,model="ls",cite=F)
+#   ##Now, controlled logistic
+#   regs[[paste0("reg1c_",comm)]]<-
+#     zelig(update(controls,ever_paid~relevel(treatment,ref=rf)*balance_quartile+.),
+#           data=data_end,model="logit",cite=F)
+#   
+#   #1(Bill Paid in Full) Differs by Treatment?
+#   ##First, plain LPM
+#   regs[[paste0("reg2_",comm)]]<-
+#     zelig(paid_full~relevel(treatment,ref=rf),
+#           data=data_end,model="ls",cite=F)
+#   ##Now, controlled logistic
+#   regs[[paste0("reg2c_",comm)]]<-
+#     zelig(update(controls,paid_full~relevel(treatment,ref=rf)*balance_quartile+.),
+#           data=data_end,model="logit",cite=F)
+#   
+#   #Tobit of payment LEVELS
+#   #  to get expected return per letter
+#   regs[[paste0("reg3_",comm)]]<-
+#     zelig(cum_treated_pmts~relevel(treatment,ref=rf)*balance_quartile+
+#             I(land_area/1e3)+I(years_count<=5)+council+category+
+#             I(exterior=="Sealed/Compromised")+owner_occ+I(market_value/1e5),
+#           data=data_end,model="tobit",cite=F)
+# }; rm(data,data_end,controls,comm,rf)
+# 
+# ###Model I: LPM of Ever-Paid
+# texreg2(regs[paste0(rep("reg1",3),"_",
+#                     unlist(lapply(list(analysis_data_main,analysis_data_resd,
+#                                        analysis_data_sres),
+#                                   function(x){comment(x)[1]})))],
+#         custom.model.names=c("Full Sample","Residential","Residential, Unique Owner"),
+#         custom.coef.names=c("Intercept","Threat","Service","Civic"),
+#         caption="Model I: Linear Probability Models -- Ever Paid",label="table:modelIa",
+#         float.pos="htbp",include.aic=F,include.bic=F,include.loglik=F,
+#         include.rsquared=F,include.adjrs=F,include.fstatistic=F,stars=c(.01,.05,.1))
+# 
+# 
+# ###Model I: Logistic of Ever-Paid with Controls, Quartile Interactions
+# texreg2(regs[paste(rep("reg1c",3),
+#                    unlist(lapply(list(analysis_data_main,analysis_data_resd,
+#                                       analysis_data_sres),
+#                                  function(x){comment(x)[1]})),sep="_")],
+#         custom.model.names=c("Full Sample","Residential","Residential, Unique Owner"),
+#         custom.coef.names=c("Intercept","Threat","Service","Civic",
+#                             paste(c("Medium","High","Very High"),"Debt"),
+#                             paste0("control",
+#                                    c("Land Area","Owes <= 5 Years",
+#                                      paste("Dist.",2:10),"Hotels-Apts",
+#                                      "Store w. Dwelling","Commercial",
+#                                      "Industrial","Vacant","Sealed-Compromised",
+#                                      "Homestead","Prop. Val. (\\$100k)")),
+#                             paste0(c("Threat","Service","Civic"),"*",
+#                                    rep(c("Moderate","High","Very High"),each=3))),
+#         omit.coef="Intercept|control",reorder.coef=c(4,5,6,1,7,10,13,2,8,11,14,3,9,12,15),
+#         caption="Model I: Logistic Regressions -- Ever Paid",include.deviance=F,
+#         label="table:modelIb",float.pos="htbp",include.bic=F,include.aic=F,stars=c(.01,.05,.1))
+# 
+# ####***BAND-AID TO WRAP LONG NOTE UNTIL TEXREG UPDATED:***
+# custom.note<-
+#   gsub("%stars","$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$",
+#        paste("%stars. Other controls omitted for brevity: land area,",
+#              "length of debt indicator, City Council District dummies,",
+#              "dummies for categories (hotels/apartments, stores with",
+#              "dwellings, commerical, industrial, and vacant status vs.",
+#              "residential status), sealed/compromised indicator,",
+#              "owner-occupancy indicator, and property value."))
+# cat(paste(paste0("\\multicolumn{",4,"}{l}{\\scriptsize{",
+#                  strwrap(custom.note,width=60),"}}"),
+#           collapse=" \\\\ \n"),perl=T); rm(custom.note)
+# 
+# ###Model I: Predicted Probability of Repayment at Control Means by Quartile
+# #### via p_hat = exp(beta*x_bar)/(1+exp(beta*x_bar))
+# #### log odds would be exp(beta*x_bar)
+# #####first, get the sample means for the variables we don't vary in the table
+# #####  (use sample *median* for land area and market value since they're
+# #####   so skewed)
+# sample_means_control12<-
+#   c(1,analysis_data_main[,median(land_area/1e3)],
+#     unlist(analysis_data_main[end==1,lapply(list(
+#       years_count<=5,council==2,council==3,council==4,
+#       council==5,council==6,council==7,council==8,council==9,
+#       council==10,category=="Hotels&Apts",category=="Store w/ Dwelling",
+#       category=="Commercial",category=="Industrial",category=="Vacant",
+#       exterior=="Sealed/Compromised",owner_occ),mean)]),
+#     analysis_data_main[end==1,median(market_value/1e5)])
+# x_beta_control1<-sum(regs[["reg1c_main"]]$result$coefficients[c(1,8:26)]*sample_means_control12)
+# 
+# main_coef<-regs[["reg1c_main"]]$result$coefficients[c(2:7,27:35)]
+# #the idea: add the following matrices to get the latent x*betas for each cell
+# #   0 0 0 0      0 1 2 3     0 0 0 0  : T-Threat/S-Service/C-Civic/1-Q1/2-Q2/3-Q3
+# #   T T T T      0 1 2 3     0 a d g  : a-Threat*Q1/b-Service*Q1/c-Civic*Q1
+# #   S S S S   +  0 1 2 3  +  0 b e h  : d-Threat*Q2/e-Service*Q2/f-Civic*Q2
+# #   C C C C      0 1 2 3     0 c f i  : g-Threat*Q3/h-Service*Q3/i-Civic*Q3
+# #  (but more parsimonious to specify in list form, casting ex-post as matrix)
+# print.xtable2(
+#   xtable(matrix(sapply(rep(c(0,main_coef[1:3]),times=4)+
+#                          rep(c(0,main_coef[4:6]),each=4)+
+#                          c(rep(0,4),rbind(rep(0,3),matrix(main_coef[7:15],ncol=3)))
+#                        +x_beta_control1,
+#                        function(x){round(100*exp(x)/(1+exp(x)),1)}),ncol=4,
+#                 dimnames=list(c("Control","Threat","Service","Civic"),
+#                               paste(c("Low","Medium","High","Very High"),"Debt"))),
+#          caption="Model I: Probability Ever Paid by Treatment, Debt Level at Sample Center",
+#          label="table:modelI_marg",align="lcccc"),table.placement="htbp")
+# 
+# ###Model II: Logistic of Paid in Full
+# ####Logistic Coefficients Table: Plain model
+# texreg2(regs[paste0(rep("reg2",3),"_",
+#                     unlist(lapply(list(analysis_data_main,analysis_data_resd,
+#                                        analysis_data_sres),
+#                                   function(x){comment(x)[1]})))],
+#         custom.model.names=c("Full Sample","Residential","Residential, Unique Owner"),
+#         custom.coef.names=c("Intercept","Threat","Service","Civic"),
+#         caption="Model II: Linear Probability Models -- Paid in Full",label="table:modelIIa",
+#         float.pos="htbp",include.aic=F,include.bic=F,include.loglik=F,
+#         include.rsquared=F,include.adjrs=F,include.fstatistic=F,stars=c(.01,.05,.1))
+# 
+# ####Logistic Coefficients Table: Quartile Interactions
+# texreg2(regs[paste(rep("reg2c",3),
+#                   unlist(lapply(list(analysis_data_main,analysis_data_resd,
+#                                      analysis_data_sres),
+#                                 function(x){comment(x)[1]})),sep="_")],
+#        custom.model.names=c("Full Sample","Non-Commercial","Sole Owner"),
+#        custom.coef.names=c("Intercept","Service","Civic","Threat",
+#                            paste("Balance",c("Q2","Q3","Q4")),
+#                            paste0("control",
+#                                   c("Land Area","Owes <= 5 Years",
+#                                     paste("Dist.",2:10),"Hotels-Apts",
+#                                     "Store w. Dwelling","Commercial",
+#                                     "Industrial","Vacant","Sealed-Compromised",
+#                                     "Homestead","Prop. Val. (\\$100k)")),
+#                            paste0(c("Service","Civic","Threat"),"*",
+#                                   rep(paste("Balance",c("Q2","Q3","Q4")),each=3))),
+#        omit.coef="Intercept|control",reorder.coef=c(4,5,6,1,7,10,13,2,8,11,14,3,9,12,15),
+#        custom.note=c("%stars. Control coefficients omitted for brevity; see Appendix."),
+#        caption="Model II: Logistic Regressions -- Paid in Full",include.deviance=F,
+#        label=c("table:modelIIb"),float.pos="htbp",include.bic=F,include.aic=F,stars=c(.01,.05,.1))
+# 
+# ####***BAND-AID TO WRAP LONG NOTE UNTIL TEXREG UPDATED:***
+# custom.note<-
+#   gsub("%stars","$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$",
+#        paste("%stars. Other controls omitted for brevity: land area,",
+#              "length of debt indicator, City Council District dummies,",
+#              "dummies for categories (hotels/apartments, stores with",
+#              "dwellings, commerical, industrial, and vacant status vs.",
+#              "residential status), sealed/compromised indicator,",
+#              "owner-occupancy indicator, and property value."))
+# cat(paste(paste0("\\multicolumn{",4,"}{l}{\\scriptsize{",
+#                  strwrap(custom.note,width=60),"}}"),
+#           collapse=" \\\\ \n"),perl=T); rm(custom.note)
+# 
+# ####Marginal Predictions at Control Means
+# x_beta_control2<-sum(regs[["reg2c_main"]]$result$coefficients[c(1,8:26)]*sample_means_control12)
+# 
+# tab_mat<-matrix(sapply(rep(c(0,main_coef[1:3]),times=4)+
+#                          rep(c(0,main_coef[4:6]),each=4)+
+#                          c(rep(0,4),rbind(rep(0,3),matrix(main_coef[7:15],ncol=3)))
+#                        +x_beta_control2,
+#                        function(x){round(100*exp(x)/(1+exp(x)),1)}),ncol=4,
+#                 dimnames=list(c("Control","Service","Civic","Threat"),
+#                               paste(c("Low","Medium","High","Very High"),"Debt")))
+# 
+# main_coef<-regs[["reg2c_main"]]$result$coefficients[c(2:7,27:35)]
+# print.xtable2(
+#   xtable(matrix(sapply(rep(c(0,main_coef[1:3]),times=4)+
+#                          rep(c(0,main_coef[4:6]),each=4)+
+#                          c(rep(0,4),rbind(rep(0,3),matrix(main_coef[7:15],ncol=3)))
+#                        +x_beta_control2,
+#                        function(x){round(100*exp(x)/(1+exp(x)),1)}),ncol=4,
+#                 dimnames=list(c("Control","Service","Civic","Threat"),
+#                               paste(c("Low","Medium","High","Very High"),"Debt"))),
+#          caption="Model II: Probability Paid in Full by Treatment, Debt Level at Sample Center",
+#          label="table:modelII_marg",align="lcccc"),table.placement="htbp")
+# rm(main_coef,sample_means_control12,x_beta_control2,x_beta_control1)
 
-###Model I: LPM of Ever-Paid
-texreg2(regs[paste0(rep("reg1",3),"_",
-                    unlist(lapply(list(analysis_data_main,analysis_data_resd,
-                                       analysis_data_sres),
-                                  function(x){comment(x)[1]})))],
-        custom.model.names=c("Full Sample","Residential","Residential, Unique Owner"),
-        custom.coef.names=c("Intercept","Threat","Service","Civic"),
-        caption="Model I: Linear Probability Models -- Ever Paid",label="table:modelIa",
-        float.pos="htbp",include.aic=F,include.bic=F,include.loglik=F,
-        include.rsquared=F,include.adjrs=F,include.fstatistic=F,stars=c(.01,.05,.1))
+#Plots ####
+#Time Series Plots ####
+trt<-get_treats(analysis_data_main)
+trt_col<-get_treats_col(analysis_data_main)
+draw_time_series<-function(plist){
+  pdf2(paste0("./papers_presentations/images/analysis/main",
+              "/time_series_",plist$file,"_main.pdf"))
+  dcast.data.table(
+    ts_data[,c("posting_rel","treatment",plist$series),with=F],
+    posting_rel~treatment,value.var=plist$series
+    )[,matplot(posting_rel,.SD[,!"posting_rel",with=F],
+               type="l",lty=1,xlab="Days Since Mailing",
+               ylab=plist$y,lwd=2,col=trt_col,
+               main=paste0(plist$title,"\nFull Sample"))]
+  legend(plist$pos,trt,lty=1,lwd=2,
+         col=trt_col,bg="aliceblue")
+  dev.off2()
+}
 
+ts_data<-analysis_data_main[posting_rel>=0,
+                            .(evpd=mean(100*ever_paid),
+                              pdfl=mean(100*paid_full),
+                              avpm=mean(cum_treated_pmts),
+                              cmpm=sum(100*current_balance/total_due_at_mailing_grp)),
+                            by=c("posting_rel","treatment")]
 
-###Model I: Logistic of Ever-Paid with Controls, Quartile Interactions
-texreg2(regs[paste(rep("reg1c",3),
-                   unlist(lapply(list(analysis_data_main,analysis_data_resd,
-                                      analysis_data_sres),
-                                 function(x){comment(x)[1]})),sep="_")],
-        custom.model.names=c("Full Sample","Residential","Residential, Unique Owner"),
-        custom.coef.names=c("Intercept","Threat","Service","Civic",
-                            paste(c("Medium","High","Very High"),"Debt"),
-                            paste0("control",
-                                   c("Land Area","Owes <= 5 Years",
-                                     paste("Dist.",2:10),"Hotels-Apts",
-                                     "Store w. Dwelling","Commercial",
-                                     "Industrial","Vacant","Sealed-Compromised",
-                                     "Homestead","Prop. Val. (\\$100k)")),
-                            paste0(c("Threat","Service","Civic"),"*",
-                                   rep(c("Moderate","High","Very High"),each=3))),
-        omit.coef="Intercept|control",reorder.coef=c(4,5,6,1,7,10,13,2,8,11,14,3,9,12,15),
-        caption="Model I: Logistic Regressions -- Ever Paid",include.deviance=F,
-        label="table:modelIb",float.pos="htbp",include.bic=F,include.aic=F,stars=c(.01,.05,.1))
+plot_params<-list(ever_paid=list(file="ever_paid",y="%",series="evpd",pos="topleft",
+                                 title="Percent of Group Ever Having Paid"),
+                  paid_full=list(file="paid_full",y="%",series="pdfl",pos="topleft",
+                                 title="Percent of Group Having Paid in Full"),
+                  avg_paymt=list(file="average_payments",y="$",series="avpm",pos="topleft",
+                                 title="Cumulative Average Payments Since Mail Date"),
+                  debt_paid=list(file="debt_paydown",y="%",series="cmpm",pos="bottomleft",
+                                 title="Percentage of Mailing Day Debt Owed"))
 
-####***BAND-AID TO WRAP LONG NOTE UNTIL TEXREG UPDATED:***
-custom.note<-
-  gsub("%stars","$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$",
-       paste("%stars. Other controls omitted for brevity: land area,",
-             "length of debt indicator, City Council District dummies,",
-             "dummies for categories (hotels/apartments, stores with",
-             "dwellings, commerical, industrial, and vacant status vs.",
-             "residential status), sealed/compromised indicator,",
-             "owner-occupancy indicator, and property value."))
-cat(paste(paste0("\\multicolumn{",4,"}{l}{\\scriptsize{",
-                 strwrap(custom.note,width=60),"}}"),
-          collapse=" \\\\ \n"),perl=T); rm(custom.note)
+lapply(plot_params,draw_time_series); rm(ts_data,plot_params)
 
-###Model I: Predicted Probability of Repayment at Control Means by Quartile
-#### via p_hat = exp(beta*x_bar)/(1+exp(beta*x_bar))
-#### log odds would be exp(beta*x_bar)
-#####first, get the sample means for the variables we don't vary in the table
-#####  (use sample *median* for land area and market value since they're
-#####   so skewed)
-sample_means_control12<-
-  c(1,analysis_data_main[,median(land_area/1e3)],
-    unlist(analysis_data_main[end==1,lapply(list(
-      years_count<=5,council==2,council==3,council==4,
-      council==5,council==6,council==7,council==8,council==9,
-      council==10,category=="Hotels&Apts",category=="Store w/ Dwelling",
-      category=="Commercial",category=="Industrial",category=="Vacant",
-      exterior=="Sealed/Compromised",owner_occ),mean)]),
-    analysis_data_main[end==1,median(market_value/1e5)])
-x_beta_control1<-sum(regs[["reg1c_main"]]$result$coefficients[c(1,8:26)]*sample_means_control12)
+#Time Series Analysis by Quartile ####
+quartile_cutoffs<-
+  round(analysis_data_main[,quantile(total_due_at_mailing,probs=c(.25,.5,.75))],-2)
 
-main_coef<-regs[["reg1c_main"]]$result$coefficients[c(2:7,27:35)]
-#the idea: add the following matrices to get the latent x*betas for each cell
-#   0 0 0 0      0 1 2 3     0 0 0 0  : T-Threat/S-Service/C-Civic/1-Q1/2-Q2/3-Q3
-#   T T T T      0 1 2 3     0 a d g  : a-Threat*Q1/b-Service*Q1/c-Civic*Q1
-#   S S S S   +  0 1 2 3  +  0 b e h  : d-Threat*Q2/e-Service*Q2/f-Civic*Q2
-#   C C C C      0 1 2 3     0 c f i  : g-Threat*Q3/h-Service*Q3/i-Civic*Q3
-#  (but more parsimonious to specify in list form, casting ex-post as matrix)
-print.xtable2(
-  xtable(matrix(sapply(rep(c(0,main_coef[1:3]),times=4)+
-                         rep(c(0,main_coef[4:6]),each=4)+
-                         c(rep(0,4),rbind(rep(0,3),matrix(main_coef[7:15],ncol=3)))
-                       +x_beta_control1,
-                       function(x){round(100*exp(x)/(1+exp(x)),1)}),ncol=4,
-                dimnames=list(c("Control","Threat","Service","Civic"),
-                              paste(c("Low","Medium","High","Very High"),"Debt"))),
-         caption="Model I: Probability Ever Paid by Treatment, Debt Level at Sample Center",
-         label="table:modelI_marg",align="lcccc"),table.placement="htbp")
+setkey(analysis_data_main,balance_quartile,treatment)
+##Percent Ever Paid by treatment
+pct_ever_paid_q<-
+  dcast.data.table(analysis_data_main[posting_rel>=0,mean(100*ever_paid),
+                                      by=list(balance_quartile,treatment,posting_rel)],
+                   posting_rel~balance_quartile+treatment,value.var="V1")
 
-###Model II: Logistic of Paid in Full
-####Logistic Coefficients Table: Plain model
-texreg2(regs[paste0(rep("reg2",3),"_",
-                    unlist(lapply(list(analysis_data_main,analysis_data_resd,
-                                       analysis_data_sres),
-                                  function(x){comment(x)[1]})))],
-        custom.model.names=c("Full Sample","Residential","Residential, Unique Owner"),
-        custom.coef.names=c("Intercept","Threat","Service","Civic"),
-        caption="Model II: Linear Probability Models -- Paid in Full",label="table:modelIIa",
-        float.pos="htbp",include.aic=F,include.bic=F,include.loglik=F,
-        include.rsquared=F,include.adjrs=F,include.fstatistic=F,stars=c(.01,.05,.1))
+uplim<-max(pct_ever_paid_q[,!"posting_rel",with=F])
 
-####Logistic Coefficients Table: Quartile Interactions
-texreg2(regs[paste(rep("reg2c",3),
-                  unlist(lapply(list(analysis_data_main,analysis_data_resd,
-                                     analysis_data_sres),
-                                function(x){comment(x)[1]})),sep="_")],
-       custom.model.names=c("Full Sample","Non-Commercial","Sole Owner"),
-       custom.coef.names=c("Intercept","Service","Civic","Threat",
-                           paste("Balance",c("Q2","Q3","Q4")),
-                           paste0("control",
-                                  c("Land Area","Owes <= 5 Years",
-                                    paste("Dist.",2:10),"Hotels-Apts",
-                                    "Store w. Dwelling","Commercial",
-                                    "Industrial","Vacant","Sealed-Compromised",
-                                    "Homestead","Prop. Val. (\\$100k)")),
-                           paste0(c("Service","Civic","Threat"),"*",
-                                  rep(paste("Balance",c("Q2","Q3","Q4")),each=3))),
-       omit.coef="Intercept|control",reorder.coef=c(4,5,6,1,7,10,13,2,8,11,14,3,9,12,15),
-       custom.note=c("%stars. Control coefficients omitted for brevity; see Appendix."),
-       caption="Model II: Logistic Regressions -- Paid in Full",include.deviance=F,
-       label=c("table:modelIIb"),float.pos="htbp",include.bic=F,include.aic=F,stars=c(.01,.05,.1))
+pdf2(paste0("./papers_presentations/images/analysis/main",
+            "/time_series_pct_ever_paid_by_quartile_main.pdf"))
+layout(mat=matrix(c(1,3,5,2,4,5),nrow=3),heights=c(.4,.4,.2))
+par(oma=c(0,0,3,0))
+par(mar=c(0,4.1,4.1,2.1))
+pct_ever_paid_q[,c("posting_rel",paste0("1_",trt)),with=F
+                ][,matplot(posting_rel,.SD[,!"posting_rel",with=F],
+                         type="l",lty=1,col=trt_col,xlab="",
+                         lwd=2,xaxt="n",main="",ylab="%",
+                         ylim=c(0,max(.SD[,!"posting_rel",with=F])))]
+text(7,.75*par("usr")[4],
+     paste("1st Quartile: \n",
+           paste0("Below $",quartile_cutoffs[["25%"]])))
 
-####***BAND-AID TO WRAP LONG NOTE UNTIL TEXREG UPDATED:***
-custom.note<-
-  gsub("%stars","$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$",
-       paste("%stars. Other controls omitted for brevity: land area,",
-             "length of debt indicator, City Council District dummies,",
-             "dummies for categories (hotels/apartments, stores with",
-             "dwellings, commerical, industrial, and vacant status vs.",
-             "residential status), sealed/compromised indicator,",
-             "owner-occupancy indicator, and property value."))
-cat(paste(paste0("\\multicolumn{",4,"}{l}{\\scriptsize{",
-                 strwrap(custom.note,width=60),"}}"),
-          collapse=" \\\\ \n"),perl=T); rm(custom.note)
+par(mar=c(0,4.1,4.1,2.1))
+pct_ever_paid_q[,c("posting_rel",paste0("2_",trt)),with=F
+                ][,matplot(posting_rel,.SD[,!"posting_rel",with=F],
+                           type="l",lty=1,col=trt_col,xlab="",
+                           lwd=2,xaxt="n",main="",ylab="%",
+                           ylim=c(0,max(.SD[,!"posting_rel",with=F])))]
+text(7,.75*par("usr")[4],
+     paste("2nd Quartile: \n",
+           paste0("$",quartile_cutoffs[["25%"]],
+                  "-$",quartile_cutoffs[["50%"]])))
 
-####Marginal Predictions at Control Means
-x_beta_control2<-sum(regs[["reg2c_main"]]$result$coefficients[c(1,8:26)]*sample_means_control12)
+par(mar=c(5.1,4.1,0,2.1))
+pct_ever_paid_q[,c("posting_rel",paste0("3_",trt)),with=F
+                ][,matplot(posting_rel,.SD[,!"posting_rel",with=F],
+                           type="l",lty=1,col=trt_col,lwd=2,
+                           main="",ylab="%",xlab="Days Since Mailing",
+                           ylim=c(0,max(.SD[,!"posting_rel",with=F])))]
+text(7,.75*par("usr")[4],
+     paste("3rd Quartile: \n",
+           paste0("$",quartile_cutoffs[["50%"]],
+                  "-$",quartile_cutoffs[["75%"]])))
 
-main_coef<-regs[["reg2c_main"]]$result$coefficients[c(2:7,27:35)]
-print.xtable2(
-  xtable(matrix(sapply(rep(c(0,main_coef[1:3]),times=4)+
-                         rep(c(0,main_coef[4:6]),each=4)+
-                         c(rep(0,4),rbind(rep(0,3),matrix(main_coef[7:15],ncol=3)))
-                       +x_beta_control2,
-                       function(x){round(100*exp(x)/(1+exp(x)),1)}),ncol=4,
-                dimnames=list(c("Control","Service","Civic","Threat"),
-                              paste(c("Low","Medium","High","Very High"),"Debt"))),
-         caption="Model II: Probability Paid in Full by Treatment, Debt Level at Sample Center",
-         label="table:modelII_marg",align="lcccc"),table.placement="htbp")
-rm(main_coef,sample_means_control12,x_beta_control2,x_beta_control1)
+par(mar=c(5.1,4.1,0,2.1))
+pct_ever_paid_q[,c("posting_rel",paste0("4_",trt)),with=F
+                ][,matplot(posting_rel,.SD[,!"posting_rel",with=F],
+                           type="l",lty=1,col=trt_col,lwd=2,
+                           main="",ylab="%",xlab="Days Since Mailing",
+                           ylim=c(0,max(.SD[,!"posting_rel",with=F])))]
+text(7,.75*par("usr")[4],
+     paste("4th Quartile: \n",
+           paste0("Above $",quartile_cutoffs[["75%"]])))
+
+par(mar=c(0,0,0,0))
+plot(1,type="n",axes=F,xlab="",ylab="")
+legend("top",legend=trt,lty=1,lwd=2,
+       col=trt_col,horiz=T,inset=0)
+mtext(paste0("Percent of Group Ever Having Paid\n",
+             "By Balance Quartile, Full Sample"),
+      side=3,line=-2,outer=T)
+dev.off2()
+rm(uplim,pct_ever_paid_q)
+
+##Percent Paid in Full by treatment
+pct_paid_full_q<-
+  dcast.data.table(analysis_data_main[posting_rel>=0,mean(100*paid_full),
+                                      by=list(balance_quartile,treatment,posting_rel)],
+                   posting_rel~balance_quartile+treatment,value.var="V1")
+
+uplim<-max(pct_paid_full_q[,!"posting_rel",with=F])
+
+pdf2(paste0("./papers_presentations/images/analysis/main",
+            "/time_series_pct_paid_full_by_quartile_main.pdf"))
+layout(mat=matrix(c(1,3,5,2,4,5),nrow=3),heights=c(.4,.4,.2))
+par(oma=c(0,0,3,0))
+par(mar=c(0,4.1,4.1,2.1))
+pct_paid_full_q[,c("posting_rel",paste0("1_",trt)),with=F
+                ][,matplot(posting_rel,.SD[,!"posting_rel",with=F],
+                           type="l",lty=1,col=trt_col,xlab="",
+                           lwd=2,xaxt="n",main="",ylab="%",
+                           ylim=c(0,max(.SD[,!"posting_rel",with=F])))]
+text(7,.75*par("usr")[4],
+     paste("1st Quartile: \n",
+           paste0("Below $",quartile_cutoffs[["25%"]])))
+
+par(mar=c(0,4.1,4.1,2.1))
+pct_paid_full_q[,c("posting_rel",paste0("2_",trt)),with=F
+                ][,matplot(posting_rel,.SD[,!"posting_rel",with=F],
+                           type="l",lty=1,col=trt_col,xlab="",
+                           lwd=2,xaxt="n",main="",ylab="%",
+                           ylim=c(0,max(.SD[,!"posting_rel",with=F])))]
+text(7,.75*par("usr")[4],
+     paste("2nd Quartile: \n",
+           paste0("$",quartile_cutoffs[["25%"]],
+                  "-$",quartile_cutoffs[["50%"]])))
+
+par(mar=c(5.1,4.1,0,2.1))
+pct_paid_full_q[,c("posting_rel",paste0("3_",trt)),with=F
+                ][,matplot(posting_rel,.SD[,!"posting_rel",with=F],
+                           type="l",lty=1,col=trt_col,lwd=2,
+                           main="",ylab="%",xlab="Days Since Mailing",
+                           ylim=c(0,max(.SD[,!"posting_rel",with=F])))]
+text(7,.75*par("usr")[4],
+     paste("3rd Quartile: \n",
+           paste0("$",quartile_cutoffs[["50%"]],
+                  "-$",quartile_cutoffs[["75%"]])))
+
+par(mar=c(5.1,4.1,0,2.1))
+pct_paid_full_q[,c("posting_rel",paste0("4_",trt)),with=F
+                ][,matplot(posting_rel,.SD[,!"posting_rel",with=F],
+                           type="l",lty=1,col=trt_col,lwd=2,
+                           main="",ylab="%",xlab="Days Since Mailing",
+                           ylim=c(0,max(.SD[,!"posting_rel",with=F])))]
+text(7,.75*par("usr")[4],
+     paste("4th Quartile: \n",
+           paste0("Above $",quartile_cutoffs[["75%"]])))
+
+par(mar=c(0,0,0,0))
+plot(1,type="n",axes=F,xlab="",ylab="")
+legend("top",legend=trt,lty=1,lwd=2,
+       col=trt_col,horiz=T,inset=0)
+mtext(paste0("Percent of Group Having Paid in Full\n",
+             "By Balance Quartile, Full Sample"),
+      side=3,line=-2,outer=T)
+dev.off2()
+rm(uplim,pct_paid_full_q)
