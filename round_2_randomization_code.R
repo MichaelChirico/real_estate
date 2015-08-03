@@ -38,7 +38,10 @@ data["881035640",c("azavea_nbhd","zip"):=list("Logan Square",19103L)]
 holdout_size<-3000L
 holdout<-sample(nrow(data),holdout_size)
 
+## DoR wants XLSX format
 write.xlsx2(data[holdout],file="holdout_sample.xlsx",row.names=F)
+## More useful for our own later use to have CSV
+write.csv(data[holdout],file="holdout_sample.csv",row.names=F)
 
 data<-data[!holdout]; rm(holdout,holdout_size)
 

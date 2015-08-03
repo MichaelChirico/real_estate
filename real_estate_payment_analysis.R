@@ -55,7 +55,7 @@ create_quantiles<-function(x,num,right=F,include.lowest=T){
 
 dol_form<-function(x,dig=0){paste0("$",prettyNum(round(x,digits=dig),big.mark=","))}
 
-to.pct<-function(x,dig=0){round(100*x,digits=dig)}
+to.pct<-function(x,dig=0)round(100*x,digits=dig)
 
 get_treats<-function(x){if(comment(x)[1]=="act_leave_out")
   c("Leave-Out","Control","Threat","Service","Civic")

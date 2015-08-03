@@ -114,6 +114,23 @@ data_r2[,main_treat:=gsub("_.*","",treatment)]
 data_r2<-data_r2[setkey(fread("./round_two/round_2_full_data.csv"),
                         opa_no,treatment)]
 
+###Define some flags
+#### Was more than one treatment received at this mailing address?
+data_r2[,flag_multiple_address:=uniqueN(treatment)>1,
+        by=.(mail_address,mail_city,mail_state)]
+#### Did this owner receive more than one letter?
+data_r2[,flag_multiple_property:=.N>1,by=owner1]
+#### Is more than one year of taxes owed 
+####   (should all be 1; some noise in sample selection)
+data_r2[,flag_years_count:=years_count>1]
+#### Was this owner in both the holdout sample and the treatment panel?
+data_r2[,flag_holdout_overlap:=
+          owner1 %in% unique(unlist(fread("holdout_sample.csv",select="owner1")))]
+#### Was this property treated in Round 1?
+data_r2[,flag_round_one:=
+          opa_no %in% fread("analysis_file.csv",select=c("opa_no","cycle")
+                            )[cycle>=33,unique(opa_no)]]
+###Get owner-level version of data, keeping only key analysis variables
 data_r2_own<-setkey(
   data_r2[,.(main_treat=main_treat[1],
              treatment=treatment[1],
@@ -123,6 +140,11 @@ data_r2_own<-setkey(
              total_paid=sum(total_paid),
              prop_count=.N),
           by=owner1],treatment)
+
+
+
+##Background data merge
+
 
 #Analysis ####
 ##Bar Plots
