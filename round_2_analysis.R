@@ -145,7 +145,34 @@ data_r2_own<-setkey(
 
 ##Background data merge
 
+#Fidelity Checks ####
+##Returned Mail Rates by Envelope Size
+big_returns<-26+17+75+12+16+4+4+192
+small_returns<-766+9
+returns<-c(big_returns,small_returns)
+xtable(matrix(rbind(returns,100*returns/data_r2[,.N,by=big_small]$N),
+              ncol=2,dimnames=list(c("Count","Percentage"),
+                                   paste(c("Large","Small"),
+                                         "Envelopes"))),
+       caption="Returned Mail by Envelope Type",
+       label="table_return_env",digits=matrix(c(0,0,0,1,0,1),ncol=3))
 
+##Letter Content Fidelity Checks
+print.xtable(xtable(matrix(cbind(
+  c(rep("Small",8),rep("Big",7)),
+  c(273036500,882697200,123233800,152054820,314169700,421552000,
+    381197900,"023067410",482183800,331052400,871550440,881105200,
+    888290588,621279300,282208400),
+  sprintf("%7.2f",c(253.45,29180.85,718.50,10726.30,64.41,191.84,
+                    480.30,3488.15,1047.42,20.62,1834.39,56.14,
+                    1849.80,1375.09,322.07)),
+  c("Amenities","Lien","Peer",rep("Lien",6),"Moral","Duty",
+    "Peer","Moral","Lien","Moral"),rep("Yes",15)),ncol=5,
+  dimnames=list(1:15,c("Envelope Size","OPA No.",
+                       "Balance","Treatment","Correct Content?"))),
+  caption="OPA Numbers Checked for Content Fidelity",
+  label="table_content_fidelity"),include.rownames=F)
+                              
 #Analysis ####
 ##Bar Plots
 ### Basic overview tables
