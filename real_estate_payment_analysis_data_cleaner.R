@@ -2,21 +2,13 @@
 #Philadelphia Real Estate Tax Evasion
 #Michael Chirico
 #February 12, 2015
-# PACKAGES AND CLEANUP ####
+# PACKAGES, CLEANUP, CONVENIENT FUNCTIONS ####
 rm(list=ls(all=T))
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 library(data.table)
-library(boot)
-library(foreach)
-library(doMC)
-registerDoMC(4)
-library(texreg)
 library(foreign)
-library(AER)
-library(survival)
-library(reshape2)
 
-# CONVENIENT FUNCTIONS ####
+# CONVENIENT FUNCTIONS
 abbr_to_colClass<-function(inits,counts){
   x<-substring(inits,1:nchar(inits),1:nchar(inits))
   types<-ifelse(x=="c","character",

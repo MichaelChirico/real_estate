@@ -8,6 +8,8 @@
 rm(list=ls(all=T))
 gc()
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
+data_wd<-"/media/data_drive/real_estate/"
+img_wd<-"./papers_presentations/round_two/images/analysis/"
 library(data.table)
 library(texreg)
 library(sandwich)
@@ -74,6 +76,9 @@ abbr_to_colClass<-function(inits,counts){
 
 to.pct<-function(x,dig=0)round(100*x,digits=dig)
 
+#Shorthand for string concatenation
+"%+%"<-function(s1,s2)paste0(s1,s2)
+
 get.col<-function(n){if (n==2){c("blue","red")}
   else if(n==7){c("yellow","blue","darkgreen","red",
                   "cyan","orange","orchid")}
@@ -87,9 +92,8 @@ get.col<-function(n){if (n==2){c("blue","red")}
 ### current_balance is as of July 22, 2015
 ### total_paid is the accrual between June 1, 2015
 ###   and July 22, 2015
-data_r2<-setkey(setnames(setDT(read.xlsx3(paste0(
-  "/media/data_drive/real_estate/",
-  "Payments and Balance Penn Letter Experiment_150727.xlsx"),
+data_r2<-setkey(setnames(setDT(read.xlsx3(
+  data_wd%+%"Payments and Balance Penn Letter Experiment_150727.xlsx",
   colIndex=c(2,5,7:15),
   sheetName="DETAILS",header=T,startRow=9,stringsAsFactors=F,
   colClasses=abbr_to_colClass("cidndn","512111"))),
@@ -110,7 +114,7 @@ data_r2[is.na(big_small),big_small:="Small"]
 data_r2[,main_treat:=gsub("_.*","",treatment)]
 
 ##Original experiment data
-###Merge what we need into main data, then delete
+###Merge what we need into main data
 data_r2<-data_r2[setkey(fread("./round_two/round_2_full_data.csv"),
                         opa_no,treatment)]
 
@@ -130,6 +134,11 @@ data_r2[,flag_holdout_overlap:=
 data_r2[,flag_round_one:=
           opa_no %in% fread("analysis_file.csv",select=c("opa_no","cycle")
                             )[cycle>=33,unique(opa_no)]]
+#### Does this property have any of the
+####   tax exemptions excluded in Round 1?
+data_r2[fread(data_wd%+%"prop2015.txt",select=c("PARCEL","XMPT CD")),
+        flag_abate_exempt:=`i.XMPT CD`!="",on=c(opa_no="PARCEL")]
+
 ###Get owner-level version of data, keeping only key analysis variables
 data_r2_own<-setkey(
   data_r2[,.(main_treat=main_treat[1],
@@ -138,12 +147,9 @@ data_r2_own<-setkey(
              ever_paid=any(ever_paid),
              paid_full=all(paid_full),
              total_paid=sum(total_paid),
+             total_due=sum(total_due),
              prop_count=.N),
           by=owner1],treatment)
-
-
-
-##Background data merge
 
 #Fidelity Checks ####
 ##Returned Mail Rates by Envelope Size
@@ -173,8 +179,9 @@ print.xtable(xtable(matrix(cbind(
   caption="OPA Numbers Checked for Content Fidelity",
   label="table_content_fidelity"),include.rownames=F)
                               
-#Analysis ####
-##Bar Plots
+
+#Analysis 
+##Bar Plots ####
 ### Basic overview tables
 ####By all 7 Treatments (collapse big/small)
 by_own_7<-data_r2_own[,.(ep=mean(ever_paid),
@@ -202,7 +209,7 @@ by_own_7<-
 
 #####Bar Plot of Result
 ######Ever Paid
-pdf2("./round_two/images/analysis/bar_plot_ever_paid_7.pdf")
+pdf2(img_wd%+%"bar_plot_ever_paid_7.pdf")
 by_own_7[,{par(mar=c(5.1,5.1,4.1,1.6));
            x<-barplot(to.pct(ep),names.arg=main_treat,col=get.col(.N),
                       xlim=c(0,1.05*max(to.pct(ep.ci.hi))),horiz=T,
@@ -214,7 +221,7 @@ by_own_7[,{par(mar=c(5.1,5.1,4.1,1.6));
            abline(v=to.pct(ep.ci.lo[main_treat=="Control"]),lty=2)}]
 dev.off2()
 ######Paid Full
-pdf2("./round_two/images/analysis/bar_plot_paid_full_7.pdf")
+pdf2(img_wd%+%"bar_plot_paid_full_7.pdf")
 by_own_7[,{par(mar=c(5.1,5.1,4.1,1.6));
   x<-barplot(to.pct(pf),names.arg=main_treat,col=get.col(.N),
              xlim=c(0,1.05*max(to.pct(pf.ci.hi))),horiz=T,
@@ -226,7 +233,7 @@ by_own_7[,{par(mar=c(5.1,5.1,4.1,1.6));
   abline(v=to.pct(pf.ci.lo[main_treat=="Control"]),lty=2)}]
 dev.off2()
 ######Average Payment
-pdf2("./round_two/images/analysis/bar_plot_aver_paid_7.pdf")
+pdf2(img_wd%+%"bar_plot_aver_paid_7.pdf")
 by_own_7[,{par(mar=c(5.1,5.1,4.1,1.6));
   x<-barplot(round(tp),names.arg=main_treat,col=get.col(.N),
              xlim=c(0,1.05*max(round(tp.ci.hi))),horiz=T,
@@ -266,7 +273,7 @@ by_own_bs<-
       "tp.ci.lo","tp.ci.hi")),big_small)]
 
 #####Bar Plots of Results
-pdf2("./round_two/images/analysis/bar_plot_ever_paid_2.pdf")
+pdf2(img_wd%+%"bar_plot_ever_paid_2.pdf")
 by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6));
             x<-barplot(to.pct(ep),names.arg=big_small,col=get.col(.N),
                        xlim=c(0,1.05*max(to.pct(ep.ci.hi))),horiz=T,
@@ -278,7 +285,7 @@ by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6));
             abline(v=to.pct(ep.ci.lo[big_small=="Small"]),lty=2)}]
 dev.off2()
 ######Paid Full
-pdf2("./round_two/images/analysis/bar_plot_paid_full_2.pdf")
+pdf2(img_wd%+%"bar_plot_paid_full_2.pdf")
 by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6));
   x<-barplot(to.pct(pf),names.arg=big_small,col=get.col(.N),
              xlim=c(0,1.05*max(to.pct(pf.ci.hi))),horiz=T,
@@ -290,7 +297,7 @@ by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6));
   abline(v=to.pct(pf.ci.lo[big_small=="Small"]),lty=2)}]
 dev.off2()
 ######Average Paid
-pdf2("./round_two/images/analysis/bar_plot_aver_paid_2.pdf")
+pdf2(img_wd%+%"bar_plot_aver_paid_2.pdf")
 by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6));
   x<-barplot(round(tp),names.arg=big_small,col=get.col(.N),
              xlim=c(0,1.05*max(round(tp.ci.hi))),horiz=T,
@@ -328,7 +335,7 @@ by_own_all<-
 
 #####Bar Plot of Result
 ######Ever Paid
-pdf2("./round_two/images/analysis/bar_plot_ever_paid_14.pdf")
+pdf2(img_wd%+%"bar_plot_ever_paid_14.pdf")
 by_own_all[,{par(mar=c(5.1,5.1,4.1,1.6));
              x<-barplot(to.pct(ep),names.arg=gsub("_E.*","",treatment),
                         col=get.col(.N),horiz=T,las=1,
@@ -342,7 +349,7 @@ by_own_all[,{par(mar=c(5.1,5.1,4.1,1.6));
              abline(v=to.pct(ep.ci.lo[treatment=="Control_Small_Envelope"]),lty=2)}]
 dev.off2()
 ######Paid Full
-pdf2("./round_two/images/analysis/bar_plot_paid_full_14.pdf")
+pdf2(img_wd%+%"bar_plot_paid_full_14.pdf")
 by_own_all[,{par(mar=c(5.1,5.1,4.1,1.6));
   x<-barplot(to.pct(pf),names.arg=gsub("_E.*","",treatment),
              col=get.col(.N),horiz=T,las=1,
@@ -356,7 +363,7 @@ by_own_all[,{par(mar=c(5.1,5.1,4.1,1.6));
   abline(v=to.pct(pf.ci.lo[treatment=="Control_Small_Envelope"]),lty=2)}]
 dev.off2()
 ######Average Paid
-pdf2("./round_two/images/analysis/bar_plot_aver_paid_14.pdf")
+pdf2(img_wd%+%"bar_plot_aver_paid_14.pdf")
 by_own_all[,{par(mar=c(5.1,5.1,4.1,1.6));
   x<-barplot(round(tp),names.arg=gsub("_E.*","",treatment),
              col=get.col(.N),horiz=T,las=1,
@@ -369,3 +376,104 @@ by_own_all[,{par(mar=c(5.1,5.1,4.1,1.6));
   abline(v=round(tp.ci.hi[treatment=="Control_Small_Envelope"]),lty=2);
   abline(v=round(tp.ci.lo[treatment=="Control_Small_Envelope"]),lty=2)}]
 dev.off2()
+
+##Logit Fit Plots ####
+### Ever Paid
+logit_ever_paid_7<-glm(ever_paid~log(total_due)*
+                         relevel(factor(main_treat),ref="Control"),
+                       data=data_r2_own,
+                       family=binomial(link="logit"))
+
+bbeta<-logit_ever_paid_7$coefficients
+names(bbeta)<-gsub("relevel\\(.*\\)","",names(bbeta))
+total_grid<-data_r2_own[,seq(min(log(total_due)),
+                             max(log(total_due)),
+                             length.out=1e3)]
+trt.nms<-data_r2_own[,sort(unique(main_treat))]
+log_preds<-cbind(total_grid,
+                 sapply(trt.nms,
+                        function(x){
+                          xb<-bbeta["(Intercept)"]+bbeta["log(total_due)"]+
+                            if(x=="Control"){bbeta["log(total_due)"]*total_grid
+                            }else{bbeta[x]+(bbeta["log(total_due):"%+%x]+
+                                              bbeta["log(total_due)"])*total_grid}
+                          exp(xb)/(1+exp(xb))}))
+colnames(log_preds)<-c("l_total_due",trt.nms)
+log_preds<-data.table(log_preds)
+log_preds[,{pdf2(img_wd%+%"predict_logit_ever_paid_7.pdf")
+  layout(mat=matrix(1:2),heights=c(.8,.2))
+  par(mar=c(0,4.1,4.1,2.1))
+  matplot(l_total_due,.SD[,trt.nms,with=F],
+          main="Predicted Probability of Payment\n"%+%
+            "By Treatment and (Log) Balance",
+          type="l",lty=1,xlab="(Log) $ Due",
+          ylab="Probability Ever Paid",lwd=2,
+          col=get.col(7L))
+  par(mar=rep(0,4))
+  plot(0,0,type="n",ann=F,axes=F,xlim=range(total_grid))
+  legend(max(total_grid)/2,0,bty="n",xjust=.4,cex=.7,
+         legend=trt.nms,lwd=2,ncol=7,col=get.col(7),
+         text.width=1.2)
+  dev.off2()}]
+
+### Paid in Full
+logit_paid_full_7<-glm(paid_full~log(total_due)*
+                         relevel(factor(main_treat),ref="Control"),
+                       data=data_r2_own,
+                       family=binomial(link="logit"))
+
+bbeta<-logit_paid_full_7$coefficients
+names(bbeta)<-gsub("relevel\\(.*\\)","",names(bbeta))
+total_grid<-data_r2_own[,seq(min(log(total_due)),
+                             max(log(total_due)),
+                             length.out=1e3)]
+trt.nms<-data_r2_own[,sort(unique(main_treat))]
+log_preds<-cbind(total_grid,
+                 sapply(trt.nms,
+                        function(x){
+                          xb<-bbeta["(Intercept)"]+bbeta["log(total_due)"]+
+                            if(x=="Control"){bbeta["log(total_due)"]*total_grid
+                            }else{bbeta[x]+(bbeta["log(total_due):"%+%x]+
+                                              bbeta["log(total_due)"])*total_grid}
+                          exp(xb)/(1+exp(xb))}))
+colnames(log_preds)<-c("l_total_due",trt.nms)
+log_preds<-data.table(log_preds)
+log_preds[,{pdf2(img_wd%+%"predict_logit_paid_full_7.pdf")
+  layout(mat=matrix(1:2),heights=c(.8,.2))
+  par(mar=c(0,4.1,4.1,2.1))
+  matplot(l_total_due,.SD[,trt.nms,with=F],
+          main="Predicted Probability of Full Repayment\n"%+%
+            "By Treatment and (Log) Balance",
+          type="l",lty=1,xlab="(Log) $ Due",
+          ylab="Probability Paid in Full",lwd=2,
+          col=get.col(7L))
+  par(mar=rep(0,4))
+  plot(0,0,type="n",ann=F,axes=F,xlim=range(total_grid))
+  legend(max(total_grid)/2,0,bty="n",xjust=.4,cex=.7,
+         legend=trt.nms,lwd=2,ncol=7,col=get.col(7),
+         text.width=1.2)
+  dev.off2()}]
+
+## Probability Repayment by Quartile
+data_r2_own[,total_due_quartile:=
+              create_quantiles(total_due,4)]
+###Ever Paid
+print.xtable(xtable(setnames(dcast(
+  data_r2_own[,mean(ever_paid),
+              keyby=.(main_treat,total_due_quartile)],
+  main_treat~total_due_quartile,value.var="V1"),
+  c("Treatment","Q"%+%1:4)),
+  caption="Probability Ever Paid by Treatment and Debt Quartile",
+  label="table_ever_paid_quartile"),
+  include.rownames=F)
+
+###Paid Full
+print.xtable(xtable(setnames(dcast(
+  data_r2_own[,mean(paid_full),
+              keyby=.(main_treat,total_due_quartile)],
+  main_treat~total_due_quartile,value.var="V1"),
+  c("Treatment","Q"%+%1:4)),
+  caption="Probability Paid Full by Treatment and Debt Quartile",
+  label="table_paid_full_quartile"),
+  include.rownames=F)
+  
