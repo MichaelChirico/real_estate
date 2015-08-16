@@ -80,10 +80,10 @@ to.pct<-function(x,dig=0)round(100*x,digits=dig)
 "%+%"<-function(s1,s2)paste0(s1,s2)
 
 get.col<-function(n){if (n==2){c("blue","red")}
-  else if(n==7){c("yellow","blue","darkgreen","red",
-                  "cyan","orange","orchid")}
-  else if(n==14){rep(c("yellow","blue","darkgreen","red",
-                       "cyan","orange","orchid"),each=2)}
+  else if(n==7){c("blue","yellow","cyan","darkgreen",
+                  "red","orchid","orange")}
+  else if(n==14){rep(c("blue","yellow","cyan","darkgreen",
+                       "red","orchid","orange"),each=2)}
   else cat("Ya done goofed.")}
 
 #Data Import ####
@@ -111,11 +111,16 @@ data_r2[,paid_full:=!paid_full]
 data_r2[grepl("Big",treatment),big_small:="Big"]
 data_r2[is.na(big_small),big_small:="Small"]
 
-data_r2[,main_treat:=gsub("_.*","",treatment)]
+data_r2[,main_treat:=factor(gsub("_.*","",treatment))]
+####Reorder main treatments for plotting purposes
+new.order<-c("Control","Amenities","Moral",
+             "Duty","Lien","Sheriff","Peer")
+data_r2[,main_treat:=
+          factor(main_treat,new.order)]
 
 ##Original experiment data
 ###Merge what we need into main data
-data_r2<-data_r2[fread("./round_two/round_2_full_data.csv"),on=opa_no]
+data_r2<-data_r2[fread("./round_two/round_2_full_data.csv"),on="opa_no"]
 
 ###Define some flags
 #### Was more than one treatment received at this mailing address?
@@ -179,7 +184,7 @@ print.xtable(xtable(matrix(cbind(
   label="table_content_fidelity"),include.rownames=F)
                               
 
-#Analysis 
+#Analysis ####
 ##Bar Plots ####
 ###By all 7 Treatments (collapse big/small)
 by_own_7<-data_r2_own[,.(ep=mean(ever_paid),
@@ -190,7 +195,7 @@ by_own_7<-data_r2_own[,.(ep=mean(ever_paid),
 BB<-1e4
 setkey(data_r2_own,main_treat)
 by_own_7[data.table(t(sapply(
-  data_r2_own[,unique(main_treat)],
+  paste0(data_r2_own[,unique(main_treat)]),
   #replicate to bootstrap confidence intervals
   function(x)apply(replicate(
     BB,unlist(data_r2_own[.(x)][
@@ -206,7 +211,7 @@ by_own_7[data.table(t(sapply(
   on=c(main_treat="rn")]
 
 setkey(data_r2,main_treat)
-owners<-sapply(data_r2[,unique(main_treat)],
+owners<-sapply(paste0(data_r2[,unique(main_treat)]),
                function(x)data_r2[.(x),unique(owner1)],
                USE.NAMES=T)
 setkey(data_r2,owner1)
@@ -214,7 +219,7 @@ by_prop_7<-
   data_r2[,.(ep=mean(ever_paid),pf=mean(paid_full),
              tp=mean(total_paid)),by=main_treat
           ][data.table(t(sapply(
-            data_r2[,unique(main_treat)],
+            paste0(data_r2[,unique(main_treat)]),
             function(x)apply(
               replicate(BB,unlist(
                 data_r2[.(sample(owners[[x]],rep=T)),
@@ -229,7 +234,7 @@ by_prop_7<-
 ####Ever Paid
 #####By Owner
 pdf2(img_wd%+%"bar_plot_ever_paid_7_own.pdf")
-by_own_7[,{par(mar=c(5.1,5.1,4.1,1.6));
+by_own_7[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6));
            x<-barplot(to.pct(ep),names.arg=main_treat,col=get.col(.N),
                       xlim=c(0,1.05*max(to.pct(ep.ci.hi))),horiz=T,
                       las=1,main="Percent Ever Paid by Treatment",
@@ -257,7 +262,7 @@ dev.off2()
 ####Paid Full
 #####By Owner
 pdf2(img_wd%+%"bar_plot_paid_full_7_own.pdf")
-by_own_7[,{par(mar=c(5.1,5.1,4.1,1.6));
+by_own_7[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6));
   x<-barplot(to.pct(pf),names.arg=main_treat,col=get.col(.N),
              xlim=c(0,1.05*max(to.pct(pf.ci.hi))),horiz=T,
              las=1,main="Percent Paid Full by Treatment",
@@ -285,7 +290,7 @@ dev.off2()
 
 ####Average Payment
 pdf2(img_wd%+%"bar_plot_aver_paid_7_own.pdf")
-by_own_7[,{par(mar=c(5.1,5.1,4.1,1.6));
+by_own_7[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6));
   x<-barplot(round(tp),names.arg=main_treat,col=get.col(.N),
              xlim=c(0,1.05*max(round(tp.ci.hi))),horiz=T,
              las=1,main="Average Paid by Treatment",
