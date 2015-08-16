@@ -115,8 +115,7 @@ data_r2[,main_treat:=gsub("_.*","",treatment)]
 
 ##Original experiment data
 ###Merge what we need into main data
-data_r2<-data_r2[setkey(fread("./round_two/round_2_full_data.csv"),
-                        opa_no,treatment)]
+data_r2<-data_r2[fread("./round_two/round_2_full_data.csv"),on=opa_no]
 
 ###Define some flags
 #### Was more than one treatment received at this mailing address?
@@ -186,25 +185,25 @@ print.xtable(xtable(matrix(cbind(
 by_own_7<-data_r2_own[,.(ep=mean(ever_paid),
                          pf=mean(paid_full),
                          tp=mean(total_paid)),
-                      keyby=main_treat]
+                      by=main_treat]
 
 BB<-1e4
 setkey(data_r2_own,main_treat)
-by_own_7<-
-  by_own_7[setkey(setnames(data.table(t(sapply(
-    data_r2_own[,unique(main_treat)],
-    #replicate to bootstrap confidence intervals
-    function(x)apply(replicate(
-      BB,unlist(data_r2_own[.(x)][
-        sample(.N,.N,T),
-        .(ep=mean(ever_paid),
-          pf=mean(paid_full),
-          tp=mean(total_paid))])),
-      1,quantile,c(.025,.975)),
-    USE.NAMES=T)),keep.rownames=T),
-    c("main_treat","ep.ci.lo","ep.ci.hi",
-      "pf.ci.lo","pf.ci.hi",
-      "tp.ci.lo","tp.ci.hi")),main_treat)]
+by_own_7[data.table(t(sapply(
+  data_r2_own[,unique(main_treat)],
+  #replicate to bootstrap confidence intervals
+  function(x)apply(replicate(
+    BB,unlist(data_r2_own[.(x)][
+      sample(.N,.N,T),
+      .(ep=mean(ever_paid),
+        pf=mean(paid_full),
+        tp=mean(total_paid))])),
+    1,quantile,c(.025,.975)),
+  USE.NAMES=T)),keep.rownames=T),
+  `:=`(ep.ci.lo=i.V1,ep.ci.hi=i.V2,
+       pf.ci.lo=i.V3,pf.ci.hi=i.V4,
+       tp.ci.lo=i.V5,tp.ci.hi=i.V6),
+  on=c(main_treat="rn")]
 
 setkey(data_r2,main_treat)
 owners<-sapply(data_r2[,unique(main_treat)],
@@ -455,25 +454,42 @@ total_grid<-data_r2_own[,seq(min(log(total_due)),
                              max(log(total_due)),
                              length.out=1e3)]
 trt.nms<-data_r2_own[,sort(unique(main_treat))]
-log_preds<-cbind(total_grid,
-                 sapply(trt.nms,
-                        function(x){
-                          xb<-bbeta["(Intercept)"]+bbeta["log(total_due)"]+
-                            if(x=="Control"){bbeta["log(total_due)"]*total_grid
-                            }else{bbeta[x]+(bbeta["log(total_due):"%+%x]+
-                                              bbeta["log(total_due)"])*total_grid}
-                          exp(xb)/(1+exp(xb))}))
-colnames(log_preds)<-c("l_total_due",trt.nms)
-log_preds<-data.table(log_preds)
+log_preds_mat<-
+  cbind(total_grid,
+        sapply(trt.nms,
+               function(x){
+                 xb<-bbeta["(Intercept)"]+
+                   if(x=="Control"){bbeta["log(total_due)"]*total_grid
+                   }else{bbeta[x]+(bbeta["log(total_due):"%+%x]+
+                                     bbeta["log(total_due)"])*total_grid}
+                 exp(xb)/(1+exp(xb))}))
+
+####Bootstrap prediction intervals for the control group
+control_cis<-
+  t(apply(replicate(
+    BB,data_r2_own[.("Control")
+                   ][sample(.N,rep=T),
+                     {bbeta<-glm(ever_paid~log(total_due),
+                                 family=binomial(link="logit"))$coefficients
+                     xb<-bbeta["(Intercept)"]+
+                       bbeta["log(total_due)"]*total_grid
+                     exp(xb)/(1+exp(xb))}]),
+    1,quantile,c(.025,.975)))
+
+
+colnames(log_preds_mat)<-c("l_total_due",trt.nms)
+log_preds<-data.table(log_preds_mat,
+                      ctrl.ci.lo=control_cis[,"2.5%"],
+                      ctrl.ci.hi=control_cis[,"97.5%"])
 log_preds[,{pdf2(img_wd%+%"predict_logit_ever_paid_7.pdf")
   layout(mat=matrix(1:2),heights=c(.8,.2))
   par(mar=c(0,4.1,4.1,2.1))
-  matplot(l_total_due,.SD[,trt.nms,with=F],
+  matplot(l_total_due,.SD[,!"l_total_due",with=F],
           main="Predicted Probability of Payment\n"%+%
             "By Treatment and (Log) Balance",
-          type="l",lty=1,xlab="(Log) $ Due",
-          ylab="Probability Ever Paid",lwd=2,
-          col=get.col(7L))
+          type="l",lty=c(rep(1,7),2,2),xlab="(Log) $ Due",
+          ylab="Probability Ever Paid",lwd=c(rep(2,7),1,1),
+          col=c(get.col(7L),"blue","blue"))
   par(mar=rep(0,4))
   plot(0,0,type="n",ann=F,axes=F,xlim=range(total_grid))
   legend(max(total_grid)/2,0,bty="n",xjust=.4,cex=.7,
@@ -496,7 +512,7 @@ trt.nms<-data_r2_own[,sort(unique(main_treat))]
 log_preds<-cbind(total_grid,
                  sapply(trt.nms,
                         function(x){
-                          xb<-bbeta["(Intercept)"]+bbeta["log(total_due)"]+
+                          xb<-bbeta["(Intercept)"]+
                             if(x=="Control"){bbeta["log(total_due)"]*total_grid
                             }else{bbeta[x]+(bbeta["log(total_due):"%+%x]+
                                               bbeta["log(total_due)"])*total_grid}
