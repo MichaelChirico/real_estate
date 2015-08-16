@@ -343,38 +343,39 @@ by_own_bs<-
 
 #####Bar Plots of Results
 pdf2(img_wd%+%"bar_plot_ever_paid_2_own.pdf")
-by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6));
-            x<-barplot(to.pct(ep),names.arg=big_small,col=get.col(.N),
-                       xlim=c(0,1.05*max(to.pct(ep.ci.hi))),horiz=T,
-                       las=1,main="Percent Ever Paid by Big/Small",
-                       xlab="Percent"); 
-            arrows(to.pct(ep.ci.lo),x,to.pct(ep.ci.hi),x,
-                   code=3,angle=90,lwd=2);
-            abline(v=to.pct(ep.ci.hi[big_small=="Small"]),lty=2);
-            abline(v=to.pct(ep.ci.lo[big_small=="Small"]),lty=2)}]
+by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6))
+  x<-barplot(to.pct(ep),names.arg=big_small,col=get.col(.N),
+             xlim=c(0,1.05*max(to.pct(ep.ci.hi))),horiz=T,
+             las=1,main="Percent Ever Paid by Big/Small",
+             xlab="Percent",space=3,ylim=c(2,10))
+  print(x)
+  arrows(to.pct(ep.ci.lo),x,to.pct(ep.ci.hi),x,
+         code=3,angle=90,lwd=2,length=.2)
+  abline(v=to.pct(ep.ci.hi[big_small=="Small"]),lty=2)
+  abline(v=to.pct(ep.ci.lo[big_small=="Small"]),lty=2)}]
 dev.off2()
 ######Paid Full
 pdf2(img_wd%+%"bar_plot_paid_full_2_own.pdf")
-by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6));
+by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6))
   x<-barplot(to.pct(pf),names.arg=big_small,col=get.col(.N),
              xlim=c(0,1.05*max(to.pct(pf.ci.hi))),horiz=T,
              las=1,main="Percent Paid Full by Big/Small",
-             xlab="Percent"); 
+             xlab="Percent",space=3,ylim=c(2,10))
   arrows(to.pct(pf.ci.lo),x,to.pct(pf.ci.hi),x,
-         code=3,angle=90,lwd=2);
-  abline(v=to.pct(pf.ci.hi[big_small=="Small"]),lty=2);
+         code=3,angle=90,lwd=2,length=.2)
+  abline(v=to.pct(pf.ci.hi[big_small=="Small"]),lty=2)
   abline(v=to.pct(pf.ci.lo[big_small=="Small"]),lty=2)}]
 dev.off2()
 ######Average Paid
 pdf2(img_wd%+%"bar_plot_aver_paid_2_own.pdf")
-by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6));
+by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6))
   x<-barplot(round(tp),names.arg=big_small,col=get.col(.N),
              xlim=c(0,1.05*max(round(tp.ci.hi))),horiz=T,
              las=1,main="Average Paid by Big/Small",
-             xlab="$"); 
+             xlab="$",space=3,ylim=c(2,10)) 
   arrows(round(tp.ci.lo),x,round(tp.ci.hi),x,
-         code=3,angle=90,lwd=2);
-  abline(v=round(tp.ci.hi[big_small=="Small"]),lty=2);
+         code=3,angle=90,lwd=2,length=.2)
+  abline(v=round(tp.ci.hi[big_small=="Small"]),lty=2)
   abline(v=round(tp.ci.lo[big_small=="Small"]),lty=2)}]
 dev.off2()
 
