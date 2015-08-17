@@ -122,6 +122,26 @@ data_r2[,main_treat:=
 ###Merge what we need into main data
 data_r2<-data_r2[fread("./round_two/round_2_full_data.csv"),on="opa_no"]
 
+##Holdout data
+data_holdout<-
+  setkey(rbind(
+    data_r2,setnames(setDT(read.xlsx3(
+      data_wd%+%"req20150709_PennLetterExperiment_"%+%
+        "v2_Commissioners Control Details.xlsx",
+      colIndex=c(2,7:14),
+      sheetName="DETAILS",header=T,startRow=9,stringsAsFactors=F,
+      colClasses=abbr_to_colClass("cdndn","42111"))),
+      c("opa_no","pre_15_balance","paid_full",
+        "ever_paid","period_min","period_max",
+        "current_balance","earliest_pmt",
+        "total_paid")
+      )[,treatment:="Holdout"
+        ][,(inds):=lapply(.SD,function(x)x=="Y"),
+          .SDcols=inds
+          ][,paid_full:=!paid_full
+            ][fread("holdout_sample.csv"),
+              owner1:=owner1,on="opa_no"],fill=T),opa_no)
+
 ###Define some flags
 #### Was more than one treatment received at this mailing address?
 data_r2[,flag_multiple_address:=uniqueN(treatment)>1,
@@ -133,7 +153,12 @@ data_r2[,flag_multiple_property:=.N>1,by=owner1]
 data_r2[,flag_years_count:=years_count>1]
 #### Was this owner in both the holdout sample and the treatment panel?
 data_r2[,flag_holdout_overlap:=
-          owner1 %in% unique(unlist(fread("holdout_sample.csv",select="owner1")))]
+          owner1 %in% unique(unlist(fread(
+            "holdout_sample.csv",select="owner1")))]
+data_holdout[treatment=="Holdout",
+             flag_main_sample_overlap:=
+               owner1 %in% data_holdout[treatment!="Holdout",
+                                        unique(owner1)]]
 #### Was this property treated in Round 1?
 data_r2[,flag_round_one:=
           opa_no %in% fread("analysis_file.csv",select=c("opa_no","cycle")
@@ -154,6 +179,16 @@ data_r2_own<-setkey(
              total_due=sum(total_due),
              prop_count=.N),
           by=owner1],treatment)
+
+###Get owner-level version of data, keeping only key analysis variables
+data_holdout_own<-
+  data_holdout[,.(treatment=treatment[1],
+                  ever_paid=any(ever_paid),
+                  paid_full=all(paid_full),
+                  total_paid=sum(total_paid),
+                  total_due=sum(total_due),
+                  prop_count=.N),
+               by=owner1]
 
 #Fidelity Checks ####
 ##Returned Mail Rates by Envelope Size
@@ -185,32 +220,45 @@ print.xtable(xtable(matrix(cbind(
                               
 
 #Analysis ####
-##Bar Plots ####
-###By all 7 Treatments (collapse big/small)
-by_own_7<-data_r2_own[,.(ep=mean(ever_paid),
+## Bootstrap simulations ####
+###Number of repetitions for all bootstrap
+###  exercises
+BB<-1e4 
+
+###Confidence intervals for 7 treatments
+###  on ever_paid, paid_full, total_paid
+###  by owner (all measures pre-aggregated)
+setkey(data_r2_own,main_treat)
+by_own_7<-
+  #First, point estimates from raw data
+  data_r2_own[,.(ep=mean(ever_paid),
                          pf=mean(paid_full),
                          tp=mean(total_paid)),
-                      by=main_treat]
+                      by=main_treat
+              ][data.table(t(sapply(
+                #to guarantee equal representation of each
+                #  treatment, block at the treatment level--
+                #  resample N_t observations for each treatment t
+                paste0(data_r2_own[,unique(main_treat)]),
+                function(x)apply(replicate(
+                  BB,unlist(data_r2_own[.(x)][
+                    sample(.N,.N,T),
+                    #calculate point estimate in re-sample
+                    .(ep=mean(ever_paid),
+                      pf=mean(paid_full),
+                      tp=mean(total_paid))])),
+                  #CIs are given by the 2.5 &
+                  #  97.5 %ile of each measure
+                  1,quantile,c(.025,.975)),
+                USE.NAMES=T)),keep.rownames=T),
+                `:=`(ep.ci.lo=i.V1,ep.ci.hi=i.V2,
+                     pf.ci.lo=i.V3,pf.ci.hi=i.V4,
+                     tp.ci.lo=i.V5,tp.ci.hi=i.V6),
+                on=c(main_treat="rn")]
 
-BB<-1e4
-setkey(data_r2_own,main_treat)
-by_own_7[data.table(t(sapply(
-  paste0(data_r2_own[,unique(main_treat)]),
-  #replicate to bootstrap confidence intervals
-  function(x)apply(replicate(
-    BB,unlist(data_r2_own[.(x)][
-      sample(.N,.N,T),
-      .(ep=mean(ever_paid),
-        pf=mean(paid_full),
-        tp=mean(total_paid))])),
-    1,quantile,c(.025,.975)),
-  USE.NAMES=T)),keep.rownames=T),
-  `:=`(ep.ci.lo=i.V1,ep.ci.hi=i.V2,
-       pf.ci.lo=i.V3,pf.ci.hi=i.V4,
-       tp.ci.lo=i.V5,tp.ci.hi=i.V6),
-  on=c(main_treat="rn")]
-
-setkey(data_r2,main_treat)
+###Confidence intervals for 7 treatments
+###  on ever_paid, paid_full, total_paid
+###  by property, resampling at the owner level
 owners<-sapply(paste0(data_r2[,unique(main_treat)]),
                function(x)data_r2[.(x),unique(owner1)],
                USE.NAMES=T)
@@ -231,6 +279,74 @@ by_prop_7<-
                  tp.ci.lo.clust=i.V5,tp.ci.hi.clust=i.V6),
             on=c(main_treat="rn")]
 
+###Confidence intervals for 2 treatments
+###  on ever_paid, paid_full, total_paid
+###  by owner (all measures pre-aggregated)
+setkey(data_r2_own,big_small)
+by_own_bs<-
+  data_r2_own[,.(ep=mean(ever_paid),
+                 pf=mean(paid_full),
+                 tp=mean(total_paid)),
+              by=big_small
+              ][data.table(t(sapply(
+                data_r2_own[,unique(big_small)],
+                function(x)apply(replicate(
+                  BB,unlist(data_r2_own[.(x)][
+                    sample(.N,.N,T),
+                    .(ep=mean(ever_paid),
+                      pf=mean(paid_full),
+                      tp=mean(total_paid))])),
+                  1,quantile,c(.025,.975)),
+                USE.NAMES=T)),keep.rownames=T),
+                `:=`(ep.ci.lo=V1,ep.ci.hi=V2,
+                     pf.ci.lo=V3,pf.ci.hi=V4,
+                     tp.ci.lo=V5,tp.ci.hi=V6),
+                on=c(big_small="rn")]
+
+###Confidence intervals for 14 treatments
+###  on ever_paid, paid_full, total_paid
+###  by owner (all measures pre-aggregated)
+setkey(data_r2_own,treatment)
+by_own_all<-
+  data_r2_own[,.(ep=mean(ever_paid),
+                 pf=mean(paid_full),
+                 tp=mean(total_paid)),
+              by=treatment
+              ][data.table(t(sapply(
+                data_r2_own[,unique(treatment)],
+                function(x)apply(replicate(
+                  BB,unlist(data_r2_own[.(x)][
+                    sample(.N,.N,T),
+                    .(ep=mean(ever_paid),
+                      pf=mean(paid_full),
+                      tp=mean(total_paid))])),
+                  1,quantile,c(.025,.975)),
+                USE.NAMES=T)),keep.rownames=T),
+                `:=`(ep.ci.lo=V1,ep.ci.hi=V2,
+                     pf.ci.lo=V3,pf.ci.hi=V4,
+                     tp.ci.lo=V5,tp.ci.hi=V6),
+                on=c(treatment="rn")]
+
+###Confidence intervals for Holdout sample
+###  on ever_paid, paid_full, total_paid
+###  by owner (all measures pre-aggregated)
+ho.bs<-
+  setNames(c(unlist(data_holdout[!(flag_main_sample_overlap),
+                                 .(ep=mean(ever_paid),
+                                   pf=mean(paid_full),
+                                   tp=mean(total_paid))]),
+             c(apply(replicate(
+               BB,unlist(data_holdout[!(flag_main_sample_overlap)][
+                 sample(.N,.N,T),
+                 .(ep=mean(ever_paid),
+                   pf=mean(paid_full),
+                   tp=mean(total_paid))])),
+               1,quantile,c(.025,.975)))),
+           c("ep","pf","tp","ep.ci.lo","ep.ci.hi",
+             "pf.ci.lo","pf.ci.hi","tp.ci.hi","tp.ci.lo"))
+
+##Bar Plots ####
+###By all 7 Treatments (collapse big/small) ####
 ####Ever Paid
 #####By Owner
 pdf2(img_wd%+%"bar_plot_ever_paid_7_own.pdf")
@@ -315,33 +431,61 @@ by_prop_7[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6));
   abline(v=round(tp.ci.lo.clust[main_treat=="Control"]),lty=2)}]
 dev.off2()
 
+###By all 7 Treatments, Including Holdout ####
+####Ever Paid
+pdf2(img_wd%+%"bar_plot_ever_paid_8_own.pdf")
+by_own_7[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
+  ep<-c(ho.bs["ep"],ep)
+  ep.ci.hi<-c(ho.bs["ep.ci.hi"],ep.ci.hi)
+  ep.ci.lo<-c(ho.bs["ep.ci.lo"],ep.ci.lo)
+  x<-barplot(to.pct(ep),col=c("darkgrey",get.col(.N)),las=1,
+             names.arg=c("Holdout",paste0(main_treat)),
+             xlim=c(0,1.05*max(to.pct(ep.ci.hi))),horiz=T,
+             main="Percent Ever Paid by Treatment",
+             xlab="Percent",cex.names=.75);
+  arrows(to.pct(ep.ci.lo),x,to.pct(ep.ci.hi),x,
+         code=3,angle=90,length=.07,lwd=2)
+  abline(v=to.pct(ho.bs["ep.ci.hi"]),lty=2)
+  abline(v=to.pct(ho.bs["ep.ci.lo"]),lty=2)}]
+dev.off2()
 
-####By Big/Small
-by_own_bs<-
-  data_r2_own[,.(ep=mean(ever_paid),
-                 pf=mean(paid_full),
-                 tp=mean(total_paid)),
-              keyby=big_small]
+####Paid Full
+pdf2(img_wd%+%"bar_plot_paid_full_8_own.pdf")
+by_own_7[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
+  pf<-c(ho.bs["pf"],pf)
+  pf.ci.hi<-c(ho.bs["pf.ci.hi"],pf.ci.hi)
+  pf.ci.lo<-c(ho.bs["pf.ci.lo"],pf.ci.lo)
+  x<-barplot(to.pct(pf),col=c("darkgrey",get.col(.N)),las=1,
+             names.arg=c("Holdout",paste0(main_treat)),
+             xlim=c(0,1.05*max(to.pct(pf.ci.hi))),horiz=T,
+             main="Percent Paid Full by Treatment",
+             xlab="Percent",cex.names=.75);
+  arrows(to.pct(pf.ci.lo),x,to.pct(pf.ci.hi),x,
+         code=3,angle=90,length=.07,lwd=2)
+  abline(v=to.pct(ho.bs["pf.ci.hi"]),lty=2)
+  abline(v=to.pct(ho.bs["pf.ci.lo"]),lty=2)}]
+dev.off2()
 
-#####Bootstrapped confidence intervals
-BB<-1e4
-setkey(data_r2_own,big_small)
-by_own_bs<-
-  by_own_bs[setkey(setnames(data.table(t(sapply(
-    data_r2_own[,unique(big_small)],
-    function(x)apply(replicate(
-      BB,unlist(data_r2_own[.(x)][
-        sample(.N,.N,T),
-        .(ep=mean(ever_paid),
-          pf=mean(paid_full),
-          tp=mean(total_paid))])),
-      1,quantile,c(.025,.975)),
-    USE.NAMES=T)),keep.rownames=T),
-    c("big_small","ep.ci.lo","ep.ci.hi",
-      "pf.ci.lo","pf.ci.hi",
-      "tp.ci.lo","tp.ci.hi")),big_small)]
+####Average Payment
+pdf2(img_wd%+%"bar_plot_aver_paid_8_own.pdf")
+by_own_7[order(main_treat),
+         {par(mar=c(5.1,5.1,4.1,1.6))
+           tp<-c(ho.bs["tp"],tp)
+           tp.ci.hi<-c(ho.bs["tp.ci.hi"],tp.ci.hi)
+           tp.ci.lo<-c(ho.bs["tp.ci.lo"],tp.ci.lo)
+           x<-barplot(tp,col=c("darkgrey",get.col(.N)),las=1,
+                      names.arg=c("Holdout",paste0(main_treat)),
+                      xlim=c(0,1.05*max(tp.ci.hi)),horiz=T,
+                      main="Average Paid by Treatment",
+                      xlab="$",cex.names=.75);
+           arrows(tp.ci.lo,x,tp.ci.hi,x,
+                  code=3,angle=90,length=.07,lwd=2)
+           abline(v=ho.bs["tp.ci.hi"],lty=2)
+           abline(v=ho.bs["tp.ci.lo"],lty=2)}]
+dev.off2()
 
-#####Bar Plots of Results
+###By Big/Small ####
+####Bar Plots of Results
 pdf2(img_wd%+%"bar_plot_ever_paid_2_own.pdf")
 by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6))
   x<-barplot(to.pct(ep),names.arg=big_small,col=get.col(.N),
@@ -354,7 +498,7 @@ by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6))
   abline(v=to.pct(ep.ci.hi[big_small=="Small"]),lty=2)
   abline(v=to.pct(ep.ci.lo[big_small=="Small"]),lty=2)}]
 dev.off2()
-######Paid Full
+#####Paid Full
 pdf2(img_wd%+%"bar_plot_paid_full_2_own.pdf")
 by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6))
   x<-barplot(to.pct(pf),names.arg=big_small,col=get.col(.N),
@@ -366,7 +510,7 @@ by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6))
   abline(v=to.pct(pf.ci.hi[big_small=="Small"]),lty=2)
   abline(v=to.pct(pf.ci.lo[big_small=="Small"]),lty=2)}]
 dev.off2()
-######Average Paid
+#####Average Paid
 pdf2(img_wd%+%"bar_plot_aver_paid_2_own.pdf")
 by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6))
   x<-barplot(round(tp),names.arg=big_small,col=get.col(.N),
@@ -379,32 +523,8 @@ by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6))
   abline(v=round(tp.ci.lo[big_small=="Small"]),lty=2)}]
 dev.off2()
 
-####By all 14 Treatments
-by_own_all<-
-  data_r2_own[,.(ep=mean(ever_paid),
-                 pf=mean(paid_full),
-                 tp=mean(total_paid)),
-              keyby=treatment]
-
-#####Bootstrapped confidence intervals
-setkey(data_r2_own,treatment)
-by_own_all<-
-  by_own_all[setkey(setnames(data.table(t(sapply(
-    data_r2_own[,unique(treatment)],
-    function(x)apply(replicate(
-      BB,unlist(data_r2_own[.(x)][
-        sample(.N,.N,T),
-        .(ep=mean(ever_paid),
-          pf=mean(paid_full),
-          tp=mean(total_paid))])),
-      1,quantile,c(.025,.975)),
-    USE.NAMES=T)),keep.rownames=T),
-    c("treatment","ep.ci.lo","ep.ci.hi",
-      "pf.ci.lo","pf.ci.hi",
-      "tp.ci.lo","tp.ci.hi")),treatment)]
-
-#####Bar Plot of Result
-######Ever Paid
+####By all 14 Treatments ####
+#####Ever Paid
 pdf2(img_wd%+%"bar_plot_ever_paid_14_own.pdf")
 by_own_all[,{par(mar=c(5.1,5.1,4.1,1.6));
              x<-barplot(to.pct(ep),names.arg=gsub("_E.*","",treatment),
@@ -418,7 +538,7 @@ by_own_all[,{par(mar=c(5.1,5.1,4.1,1.6));
              abline(v=to.pct(ep.ci.hi[treatment=="Control_Small_Envelope"]),lty=2);
              abline(v=to.pct(ep.ci.lo[treatment=="Control_Small_Envelope"]),lty=2)}]
 dev.off2()
-######Paid Full
+#####Paid Full
 pdf2(img_wd%+%"bar_plot_paid_full_14_own.pdf")
 by_own_all[,{par(mar=c(5.1,5.1,4.1,1.6));
   x<-barplot(to.pct(pf),names.arg=gsub("_E.*","",treatment),
@@ -432,7 +552,7 @@ by_own_all[,{par(mar=c(5.1,5.1,4.1,1.6));
   abline(v=to.pct(pf.ci.hi[treatment=="Control_Small_Envelope"]),lty=2);
   abline(v=to.pct(pf.ci.lo[treatment=="Control_Small_Envelope"]),lty=2)}]
 dev.off2()
-######Average Paid
+#####Average Paid
 pdf2(img_wd%+%"bar_plot_aver_paid_14_own.pdf")
 by_own_all[,{par(mar=c(5.1,5.1,4.1,1.6));
   x<-barplot(round(tp),names.arg=gsub("_E.*","",treatment),
