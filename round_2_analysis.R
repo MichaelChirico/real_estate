@@ -549,7 +549,7 @@ by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6))
              las=1,main="Percent Ever Paid by Big/Small",
              xlab="Percent",space=3,ylim=c(2,10))
   arrows(to.pct(ep.ci.lo),x,to.pct(ep.ci.hi),x,
-         code=3,angle=90,lwd=2,length=.2)
+         code=3,angle=90,lwd=2,length=.1)
   abline(v=to.pct(ep.ci.hi[big_small=="Small"]),lty=2)
   abline(v=to.pct(ep.ci.lo[big_small=="Small"]),lty=2)}]
 dev.off2()
@@ -561,7 +561,7 @@ by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6))
              las=1,main="Percent Paid Full by Big/Small",
              xlab="Percent",space=3,ylim=c(2,10))
   arrows(to.pct(pf.ci.lo),x,to.pct(pf.ci.hi),x,
-         code=3,angle=90,lwd=2,length=.2)
+         code=3,angle=90,lwd=2,length=.1)
   abline(v=to.pct(pf.ci.hi[big_small=="Small"]),lty=2)
   abline(v=to.pct(pf.ci.lo[big_small=="Small"]),lty=2)}]
 dev.off2()
@@ -573,7 +573,7 @@ by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6))
              las=1,main="Average Paid by Big/Small",
              xlab="$",space=3,ylim=c(2,10)) 
   arrows(round(tp.ci.lo),x,round(tp.ci.hi),x,
-         code=3,angle=90,lwd=2,length=.2)
+         code=3,angle=90,lwd=2,length=.1)
   abline(v=round(tp.ci.hi[big_small=="Small"]),lty=2)
   abline(v=round(tp.ci.lo[big_small=="Small"]),lty=2)}]
 dev.off2()
