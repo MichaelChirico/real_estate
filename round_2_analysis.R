@@ -74,20 +74,9 @@ abbr_to_colClass<-function(inits,counts){
   rep(types,strsplit(counts,split="")[[1]])
 }
 
-#For simpler generation of tiled plots by looping
-tile_params<-function(n,xlab="",ylab=""){
-  if (n==6){
-    list(xlab=rep(c("",xlab),each=3),
-         ylab=rep(c(ylab,"",""),2),
-         xaxt=rep(c("n","s"),each=3),
-         yaxt=rep(c("s","n","n"),2),
-         mar=list(c(0,4.1,4.1,0),
-                  c(0,0,4.1,0),
-                  c(0,0,4.1,1.1),
-                  c(5.1,4.1,0,0),
-                  c(5.1,0,0,0),
-                  c(5.1,0,0,1.1)))
-  }
+tile_axes<-function(n,M,N,...){
+  if (n>(M-1)*N)do.call("axis",c(side=1,list(...)))
+  if (n%%N==1)do.call("axis",c(side=2,list(...)))
 }
 
 to.pct<-function(x,dig=0)round(100*x,digits=dig)
@@ -649,26 +638,28 @@ ever_paid_log_preds<-
 ever_paid_log_preds[,{
   pdf2(img_wd%+%"predict_logit_ever_paid_7.pdf")
   yrng<-range(.SD[,!"total_due",with=F])
-  par(mfrow=c(2,3))
-  ttls<-tile_params(6,xlab="Log $",ylab="Probability Ever Paid")
+  par(mfrow=c(2,3),
+      mar=c(0,0,0,0),
+      oma=c(5.1,4.1,4.1,1.1))
   for (ii in 1:6){
     x<-trt.nms[ii+1L] #skip Control
     ctrlx<-c("Control",x)
     y<-.SD[,paste0(rep(ctrlx,each=3),
                    c("","_lower","_upper")),with=F]
-    par(mar=ttls$mar[[ii]])
-    matplot(total_due,y,xlab=ttls$xlab[ii],
-            ylab=ttls$ylab[ii],xaxt=ttls$xaxt[ii],
-            yaxt=ttls$yaxt[ii],las=1,cex.axis=.8,
+    matplot(total_due,y,axes=F,
             type="l",lty=rep(c(1,2,2),2),
             lwd=rep(c(2,1,1),2),ylim=yrng,
             col=get.col.nm(rep(ctrlx,each=3)))
+    tile_axes(ii,2,3,las=1,cex.axis=.6)
+    box()
     legend(max(total_grid),.95*yrng[2],legend=ctrlx,
            col=get.col.nm(ctrlx),lwd=2,lty=1,
            y.intersp=.2,bty="n",xjust=1.5,yjust=.5)
     }
   title("Predicted Probability of Ever Paying\n"%+%
-          "by Initial Debt",outer=T,line=-3)
+          "by Initial Debt",outer=T)
+  mtext("Log $ Due",side=1,outer=T,line=2.5,cex=.8)
+  mtext("Probability Ever Paid",side=2,outer=T,line=2.5,cex=.8)
   dev.off2()}]
 
 ### Paid in Full
@@ -686,26 +677,28 @@ paid_full_log_preds<-
 paid_full_log_preds[,{
   pdf2(img_wd%+%"predict_logit_paid_full_7.pdf")
   yrng<-range(.SD[,!"total_due",with=F])
-  par(mfrow=c(2,3))
-  ttls<-tile_params(6,xlab="Log $",ylab="Probability Ever Paid")
+  par(mfrow=c(2,3),
+      mar=c(0,0,0,0),
+      oma=c(5.1,4.1,4.1,1.1))
   for (ii in 1:6){
     x<-trt.nms[ii+1L] #skip Control
     ctrlx<-c("Control",x)
     y<-.SD[,paste0(rep(ctrlx,each=3),
                    c("","_lower","_upper")),with=F]
-    par(mar=ttls$mar[[ii]])
-    matplot(total_due,y,xlab=ttls$xlab[ii],
-            ylab=ttls$ylab[ii],xaxt=ttls$xaxt[ii],
-            yaxt=ttls$yaxt[ii],las=1,cex.axis=.8,
+    matplot(total_due,y,axes=F,
             type="l",lty=rep(c(1,2,2),2),
             lwd=rep(c(2,1,1),2),ylim=yrng,
             col=get.col.nm(rep(ctrlx,each=3)))
+    tile_axes(ii,2,3,las=1,cex.axis=.6)
+    box()
     legend(max(total_grid),.95*yrng[2],legend=ctrlx,
            col=get.col.nm(ctrlx),lwd=2,lty=1,
            y.intersp=.2,bty="n",xjust=1.5,yjust=.5)
   }
   title("Predicted Probability of Paying in Full\n"%+%
-          "by Initial Debt",outer=T,line=-3)
+          "by Initial Debt",outer=T)
+  mtext("Log $ Due",side=1,outer=T,line=2.5,cex=.8)
+  mtext("Probability Paid in Full",side=2,outer=T,line=2.5,cex=.8)
   dev.off2()}]
 
 ## Probability Repayment by Quartile
