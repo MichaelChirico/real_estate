@@ -74,17 +74,51 @@ abbr_to_colClass<-function(inits,counts){
   rep(types,strsplit(counts,split="")[[1]])
 }
 
+#For simpler generation of tiled plots by looping
+tile_params<-function(n,xlab="",ylab=""){
+  if (n==6){
+    list(xlab=rep(c("",xlab),each=3),
+         ylab=rep(c(ylab,"",""),2),
+         xaxt=rep(c("n","s"),each=3),
+         yaxt=rep(c("s","n","n"),2),
+         mar=list(c(0,4.1,4.1,0),
+                  c(0,0,4.1,0),
+                  c(0,0,4.1,1.1),
+                  c(5.1,4.1,0,0),
+                  c(5.1,0,0,0),
+                  c(5.1,0,0,1.1)))
+  }
+}
+
 to.pct<-function(x,dig=0)round(100*x,digits=dig)
 
 #Shorthand for string concatenation
 "%+%"<-function(s1,s2)paste0(s1,s2)
 
-get.col<-function(n){if (n==2){c("blue","red")}
-  else if(n==7){c("blue","yellow","cyan","darkgreen",
-                  "red","orchid","orange")}
-  else if(n==14){rep(c("blue","yellow","cyan","darkgreen",
-                       "red","orchid","orange"),each=2)}
-  else cat("Ya done goofed.")}
+#Shorthand for set difference
+"%\\%"<-function(x,y)setdiff(x,y)
+
+get.col<-function(n){
+  cols<-c(Big="blue",Small="red",
+          Holdout="darkgray",Control="blue",
+          Amenities="yellow",Moral="cyan",
+          Duty="darkgreen",Lien="red",
+          Sheriff="orchid",Peer="orange")
+  if (n==2){cols[1:2]}
+  else if(n==7){cols[4:10]}
+  else if(n==8){cols[3:10]}
+  else if(n==14){rep(c[4:10],each=2)}
+  else cat("Ya done goofed.")
+}
+
+get.col.nm<-function(st){
+  cols<-c(Big="blue",Small="red",
+          Control="blue",Amenities="yellow",
+          Moral="cyan",Duty="darkgreen",
+          Lien="red",Sheriff="orchid",
+          Peer="orange",Holdout="darkgray")
+  cols[st]
+}
 
 #Data Import ####
 ##Main outcomes data
@@ -113,10 +147,10 @@ data_r2[is.na(big_small),big_small:="Small"]
 
 data_r2[,main_treat:=factor(gsub("_.*","",treatment))]
 ####Reorder main treatments for plotting purposes
-new.order<-c("Control","Amenities","Moral",
+trt.nms<-c("Control","Amenities","Moral",
              "Duty","Lien","Sheriff","Peer")
 data_r2[,main_treat:=
-          factor(main_treat,new.order)]
+          factor(main_treat,trt.nms)]
 
 ##Original experiment data
 ###Merge what we need into main data
@@ -259,6 +293,7 @@ by_own_7<-
 ###Confidence intervals for 7 treatments
 ###  on ever_paid, paid_full, total_paid
 ###  by property, resampling at the owner level
+setkey(data_r2,main_treat)
 owners<-sapply(paste0(data_r2[,unique(main_treat)]),
                function(x)data_r2[.(x),unique(owner1)],
                USE.NAMES=T)
@@ -330,20 +365,62 @@ by_own_all<-
 ###Confidence intervals for Holdout sample
 ###  on ever_paid, paid_full, total_paid
 ###  by owner (all measures pre-aggregated)
-ho.bs<-
-  setNames(c(unlist(data_holdout[!(flag_main_sample_overlap),
-                                 .(ep=mean(ever_paid),
-                                   pf=mean(paid_full),
-                                   tp=mean(total_paid))]),
-             c(apply(replicate(
-               BB,unlist(data_holdout[!(flag_main_sample_overlap)][
-                 sample(.N,.N,T),
-                 .(ep=mean(ever_paid),
-                   pf=mean(paid_full),
-                   tp=mean(total_paid))])),
-               1,quantile,c(.025,.975)))),
-           c("ep","pf","tp","ep.ci.lo","ep.ci.hi",
-             "pf.ci.lo","pf.ci.hi","tp.ci.hi","tp.ci.lo"))
+by_own_8<-rbind(
+  by_own_7,data.table(
+    main_treat="Holdout",
+    rbind(setNames(c(unlist(
+      data_holdout[!(flag_main_sample_overlap),
+                   .(ep=mean(ever_paid),
+                     pf=mean(paid_full),
+                     tp=mean(total_paid))]),
+      c(apply(replicate(
+        BB,unlist(data_holdout[!(flag_main_sample_overlap)][
+          sample(.N,.N,T),
+          .(ep=mean(ever_paid),
+            pf=mean(paid_full),
+            tp=mean(total_paid))])),
+        1,quantile,c(.025,.975)))),
+      c("ep","pf","tp","ep.ci.lo","ep.ci.hi",
+        "pf.ci.lo","pf.ci.hi","tp.ci.hi","tp.ci.lo"))))
+  )[,main_treat:=
+      factor(main_treat,c("Holdout",trt.nms))]
+
+###Confidence Intervals for 7 treatments
+###  On predictions of P[ever_paid] by log(total_due)
+###  by owner (pre-aggregated)
+total_grid<-data_r2_own[,seq(min(log(total_due)),
+                             max(log(total_due)),
+                             length.out=1e3)]
+setkey(data_r2_own,main_treat)
+ever_paid.lgt.ci<-
+  dcast(data.table(grd=rep(total_grid,each=2),
+                   id=rep(c("lower","upper"),
+                          length(total_grid)),
+            sapply(trt.nms,
+                   function(x)apply(replicate(
+                     BB,data_r2_own[.(x)][
+                       sample(.N,rep=T),
+                       predict(glm(ever_paid~log(total_due),
+                                   family=binomial(link="logit")),
+                               data.table(total_due=total_grid),
+                               type="response")]),
+                     1,quantile,c(.025,.975)),USE.NAMES=T)),
+      grd~id,value.var=trt.nms)
+
+paid_full.lgt.ci<-
+  dcast(data.table(grd=rep(total_grid,each=2),
+                   id=rep(c("lower","upper"),
+                          length(total_grid)),
+                   sapply(trt.nms,
+                          function(x)apply(replicate(
+                            BB,data_r2_own[.(x)][
+                              sample(.N,rep=T),
+                              predict(glm(paid_full~log(total_due),
+                                          family=binomial(link="logit")),
+                                      data.table(total_due=total_grid),
+                                      type="response")]),
+                            1,quantile,c(.025,.975)),USE.NAMES=T)),
+        grd~id,value.var=trt.nms)
 
 ##Bar Plots ####
 ###By all 7 Treatments (collapse big/small) ####
@@ -434,54 +511,44 @@ dev.off2()
 ###By all 7 Treatments, Including Holdout ####
 ####Ever Paid
 pdf2(img_wd%+%"bar_plot_ever_paid_8_own.pdf")
-by_own_7[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
-  ep<-c(ho.bs["ep"],ep)
-  ep.ci.hi<-c(ho.bs["ep.ci.hi"],ep.ci.hi)
-  ep.ci.lo<-c(ho.bs["ep.ci.lo"],ep.ci.lo)
-  x<-barplot(to.pct(ep),col=c("darkgrey",get.col(.N)),las=1,
-             names.arg=c("Holdout",paste0(main_treat)),
+by_own_8[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
+  x<-barplot(to.pct(ep),col=get.col(.N),las=1,
+             names.arg=main_treat,
              xlim=c(0,1.05*max(to.pct(ep.ci.hi))),horiz=T,
              main="Percent Ever Paid by Treatment",
              xlab="Percent",cex.names=.75);
   arrows(to.pct(ep.ci.lo),x,to.pct(ep.ci.hi),x,
          code=3,angle=90,length=.07,lwd=2)
-  abline(v=to.pct(ho.bs["ep.ci.hi"]),lty=2)
-  abline(v=to.pct(ho.bs["ep.ci.lo"]),lty=2)}]
+  abline(v=to.pct(ep.ci.hi[main_treat=="Holdout"]),lty=2)
+  abline(v=to.pct(ep.ci.lo[main_treat=="Holdout"]),lty=2)}]
 dev.off2()
 
 ####Paid Full
 pdf2(img_wd%+%"bar_plot_paid_full_8_own.pdf")
-by_own_7[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
-  pf<-c(ho.bs["pf"],pf)
-  pf.ci.hi<-c(ho.bs["pf.ci.hi"],pf.ci.hi)
-  pf.ci.lo<-c(ho.bs["pf.ci.lo"],pf.ci.lo)
-  x<-barplot(to.pct(pf),col=c("darkgrey",get.col(.N)),las=1,
-             names.arg=c("Holdout",paste0(main_treat)),
-             xlim=c(0,1.05*max(to.pct(pf.ci.hi))),horiz=T,
+by_own_8[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
+  x<-barplot(to.pct(pf),col=get.col(.N),las=1,
+             names.arg=main_treat,horiz=T,
+             xlim=c(0,1.05*max(to.pct(pf.ci.hi))),
              main="Percent Paid Full by Treatment",
              xlab="Percent",cex.names=.75);
   arrows(to.pct(pf.ci.lo),x,to.pct(pf.ci.hi),x,
          code=3,angle=90,length=.07,lwd=2)
-  abline(v=to.pct(ho.bs["pf.ci.hi"]),lty=2)
-  abline(v=to.pct(ho.bs["pf.ci.lo"]),lty=2)}]
+  abline(v=to.pct(ep.ci.hi[main_treat=="Holdout"]),lty=2)
+  abline(v=to.pct(ep.ci.lo[main_treat=="Holdout"]),lty=2)}]
 dev.off2()
 
 ####Average Payment
 pdf2(img_wd%+%"bar_plot_aver_paid_8_own.pdf")
-by_own_7[order(main_treat),
-         {par(mar=c(5.1,5.1,4.1,1.6))
-           tp<-c(ho.bs["tp"],tp)
-           tp.ci.hi<-c(ho.bs["tp.ci.hi"],tp.ci.hi)
-           tp.ci.lo<-c(ho.bs["tp.ci.lo"],tp.ci.lo)
-           x<-barplot(tp,col=c("darkgrey",get.col(.N)),las=1,
-                      names.arg=c("Holdout",paste0(main_treat)),
+by_own_8[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
+           x<-barplot(tp,col=get.col(.N),las=1,
+                      names.arg=main_treat,
                       xlim=c(0,1.05*max(tp.ci.hi)),horiz=T,
                       main="Average Paid by Treatment",
                       xlab="$",cex.names=.75);
            arrows(tp.ci.lo,x,tp.ci.hi,x,
                   code=3,angle=90,length=.07,lwd=2)
-           abline(v=ho.bs["tp.ci.hi"],lty=2)
-           abline(v=ho.bs["tp.ci.lo"],lty=2)}]
+           abline(v=ep.ci.hi[main_treat=="Holdout"],lty=2)
+           abline(v=ep.ci.lo[main_treat=="Holdout"],lty=2)}]
 dev.off2()
 
 ###By Big/Small ####
@@ -492,7 +559,6 @@ by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6))
              xlim=c(0,1.05*max(to.pct(ep.ci.hi))),horiz=T,
              las=1,main="Percent Ever Paid by Big/Small",
              xlab="Percent",space=3,ylim=c(2,10))
-  print(x)
   arrows(to.pct(ep.ci.lo),x,to.pct(ep.ci.hi),x,
          code=3,angle=90,lwd=2,length=.2)
   abline(v=to.pct(ep.ci.hi[big_small=="Small"]),lty=2)
@@ -569,96 +635,77 @@ dev.off2()
 
 ##Logit Fit Plots ####
 ### Ever Paid
-logit_ever_paid_7<-glm(ever_paid~log(total_due)*
-                         relevel(factor(main_treat),ref="Control"),
+logit_ever_paid_7<-glm(ever_paid~log(total_due)*main_treat,
                        data=data_r2_own,
                        family=binomial(link="logit"))
 
-bbeta<-logit_ever_paid_7$coefficients
-names(bbeta)<-gsub("relevel\\(.*\\)","",names(bbeta))
-total_grid<-data_r2_own[,seq(min(log(total_due)),
-                             max(log(total_due)),
-                             length.out=1e3)]
-trt.nms<-data_r2_own[,sort(unique(main_treat))]
-log_preds_mat<-
-  cbind(total_grid,
-        sapply(trt.nms,
-               function(x){
-                 xb<-bbeta["(Intercept)"]+
-                   if(x=="Control"){bbeta["log(total_due)"]*total_grid
-                   }else{bbeta[x]+(bbeta["log(total_due):"%+%x]+
-                                     bbeta["log(total_due)"])*total_grid}
-                 exp(xb)/(1+exp(xb))}))
+ever_paid_log_preds<-
+  dcast(data.table(expand.grid(total_due=total_grid,
+                               main_treat=trt.nms)
+  )[,l_pred:=predict(logit_ever_paid_7,.SD,type="response")],
+  total_due~main_treat,value.var="l_pred"
+  )[ever_paid.lgt.ci,on=c(total_due="grd")]
 
-####Bootstrap prediction intervals for the control group
-control_cis<-
-  t(apply(replicate(
-    BB,data_r2_own[.("Control")
-                   ][sample(.N,rep=T),
-                     {bbeta<-glm(ever_paid~log(total_due),
-                                 family=binomial(link="logit"))$coefficients
-                     xb<-bbeta["(Intercept)"]+
-                       bbeta["log(total_due)"]*total_grid
-                     exp(xb)/(1+exp(xb))}]),
-    1,quantile,c(.025,.975)))
-
-
-colnames(log_preds_mat)<-c("l_total_due",trt.nms)
-log_preds<-data.table(log_preds_mat,
-                      ctrl.ci.lo=control_cis[,"2.5%"],
-                      ctrl.ci.hi=control_cis[,"97.5%"])
-log_preds[,{pdf2(img_wd%+%"predict_logit_ever_paid_7.pdf")
-  layout(mat=matrix(1:2),heights=c(.8,.2))
-  par(mar=c(0,4.1,4.1,2.1))
-  matplot(l_total_due,.SD[,!"l_total_due",with=F],
-          main="Predicted Probability of Payment\n"%+%
-            "By Treatment and (Log) Balance",
-          type="l",lty=c(rep(1,7),2,2),xlab="(Log) $ Due",
-          ylab="Probability Ever Paid",lwd=c(rep(2,7),1,1),
-          col=c(get.col(7L),"blue","blue"))
-  par(mar=rep(0,4))
-  plot(0,0,type="n",ann=F,axes=F,xlim=range(total_grid))
-  legend(max(total_grid)/2,0,bty="n",xjust=.4,cex=.7,
-         legend=trt.nms,lwd=2,ncol=7,col=get.col(7),
-         text.width=1.2)
+ever_paid_log_preds[,{
+  pdf2(img_wd%+%"predict_logit_ever_paid_7.pdf")
+  yrng<-range(.SD[,!"total_due",with=F])
+  par(mfrow=c(2,3))
+  ttls<-tile_params(6,xlab="Log $",ylab="Probability Ever Paid")
+  for (ii in 1:6){
+    x<-trt.nms[ii+1L] #skip Control
+    ctrlx<-c("Control",x)
+    y<-.SD[,paste0(rep(ctrlx,each=3),
+                   c("","_lower","_upper")),with=F]
+    par(mar=ttls$mar[[ii]])
+    matplot(total_due,y,xlab=ttls$xlab[ii],
+            ylab=ttls$ylab[ii],xaxt=ttls$xaxt[ii],
+            yaxt=ttls$yaxt[ii],las=1,cex.axis=.8,
+            type="l",lty=rep(c(1,2,2),2),
+            lwd=rep(c(2,1,1),2),ylim=yrng,
+            col=get.col.nm(rep(ctrlx,each=3)))
+    legend(max(total_grid),.95*yrng[2],legend=ctrlx,
+           col=get.col.nm(ctrlx),lwd=2,lty=1,
+           y.intersp=.2,bty="n",xjust=1.5,yjust=.5)
+    }
+  title("Predicted Probability of Ever Paying\n"%+%
+          "by Initial Debt",outer=T,line=-3)
   dev.off2()}]
 
 ### Paid in Full
-logit_paid_full_7<-glm(paid_full~log(total_due)*
-                         relevel(factor(main_treat),ref="Control"),
+logit_paid_full_7<-glm(paid_full~log(total_due)*main_treat,
                        data=data_r2_own,
                        family=binomial(link="logit"))
 
-bbeta<-logit_paid_full_7$coefficients
-names(bbeta)<-gsub("relevel\\(.*\\)","",names(bbeta))
-total_grid<-data_r2_own[,seq(min(log(total_due)),
-                             max(log(total_due)),
-                             length.out=1e3)]
-trt.nms<-data_r2_own[,sort(unique(main_treat))]
-log_preds<-cbind(total_grid,
-                 sapply(trt.nms,
-                        function(x){
-                          xb<-bbeta["(Intercept)"]+
-                            if(x=="Control"){bbeta["log(total_due)"]*total_grid
-                            }else{bbeta[x]+(bbeta["log(total_due):"%+%x]+
-                                              bbeta["log(total_due)"])*total_grid}
-                          exp(xb)/(1+exp(xb))}))
-colnames(log_preds)<-c("l_total_due",trt.nms)
-log_preds<-data.table(log_preds)
-log_preds[,{pdf2(img_wd%+%"predict_logit_paid_full_7.pdf")
-  layout(mat=matrix(1:2),heights=c(.8,.2))
-  par(mar=c(0,4.1,4.1,2.1))
-  matplot(l_total_due,.SD[,trt.nms,with=F],
-          main="Predicted Probability of Full Repayment\n"%+%
-            "By Treatment and (Log) Balance",
-          type="l",lty=1,xlab="(Log) $ Due",
-          ylab="Probability Paid in Full",lwd=2,
-          col=get.col(7L))
-  par(mar=rep(0,4))
-  plot(0,0,type="n",ann=F,axes=F,xlim=range(total_grid))
-  legend(max(total_grid)/2,0,bty="n",xjust=.4,cex=.7,
-         legend=trt.nms,lwd=2,ncol=7,col=get.col(7),
-         text.width=1.2)
+paid_full_log_preds<-
+  dcast(data.table(expand.grid(total_due=total_grid,
+                               main_treat=trt.nms)
+  )[,l_pred:=predict(logit_paid_full_7,.SD,type="response")],
+  total_due~main_treat,value.var="l_pred"
+  )[paid_full.lgt.ci,on=c(total_due="grd")]
+
+paid_full_log_preds[,{
+  pdf2(img_wd%+%"predict_logit_paid_full_7.pdf")
+  yrng<-range(.SD[,!"total_due",with=F])
+  par(mfrow=c(2,3))
+  ttls<-tile_params(6,xlab="Log $",ylab="Probability Ever Paid")
+  for (ii in 1:6){
+    x<-trt.nms[ii+1L] #skip Control
+    ctrlx<-c("Control",x)
+    y<-.SD[,paste0(rep(ctrlx,each=3),
+                   c("","_lower","_upper")),with=F]
+    par(mar=ttls$mar[[ii]])
+    matplot(total_due,y,xlab=ttls$xlab[ii],
+            ylab=ttls$ylab[ii],xaxt=ttls$xaxt[ii],
+            yaxt=ttls$yaxt[ii],las=1,cex.axis=.8,
+            type="l",lty=rep(c(1,2,2),2),
+            lwd=rep(c(2,1,1),2),ylim=yrng,
+            col=get.col.nm(rep(ctrlx,each=3)))
+    legend(max(total_grid),.95*yrng[2],legend=ctrlx,
+           col=get.col.nm(ctrlx),lwd=2,lty=1,
+           y.intersp=.2,bty="n",xjust=1.5,yjust=.5)
+  }
+  title("Predicted Probability of Paying in Full\n"%+%
+          "by Initial Debt",outer=T,line=-3)
   dev.off2()}]
 
 ## Probability Repayment by Quartile
