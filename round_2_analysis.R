@@ -79,7 +79,7 @@ tile_axes<-function(n,M,N,...){
   if (n%%N==1)do.call("axis",c(side=2,list(...)))
 }
 
-to.pct<-function(x,dig=0)round(100*x,digits=dig)
+to.pct<-function(x,dig=Inf)round(100*x,digits=dig)
 
 #Shorthand for string concatenation
 "%+%"<-function(s1,s2)paste0(s1,s2)
@@ -203,6 +203,13 @@ data_r2_own<-setkey(
              prop_count=.N),
           by=owner1],treatment)
 
+###Get owner-level version of data, dropping the top
+###  a) 5% and b) 10% of accounts by repayment numbers
+data_r2_own_x05<-
+  data_r2_own[total_paid<quantile(total_paid,.95)]
+data_r2_own_x10<-
+  data_r2_own[total_paid<quantile(total_paid,.90)]
+
 ###Get owner-level version of data, keeping only key analysis variables
 data_holdout_own<-
   data_holdout[,.(treatment=treatment[1],
@@ -291,8 +298,7 @@ by_prop_7<-
   data_r2[,.(ep=mean(ever_paid),pf=mean(paid_full),
              tp=mean(total_paid)),by=main_treat
           ][data.table(t(sapply(
-            paste0(data_r2[,unique(main_treat)]),
-            function(x)apply(
+            trt.nms,function(x)apply(
               replicate(BB,unlist(
                 data_r2[.(sample(owners[[x]],rep=T)),
                         .(mean(ever_paid),mean(paid_full),
@@ -302,6 +308,50 @@ by_prop_7<-
                  pf.ci.lo.clust=i.V3,pf.ci.hi.clust=i.V4,
                  tp.ci.lo.clust=i.V5,tp.ci.hi.clust=i.V6),
             on=c(main_treat="rn")]
+
+###Confidence intervals for 7 treatments
+###  on ever_paid, paid_full, total_paid
+###  by owner (all measures pre-aggregated),
+###  top 5% then 10% of payers excluded
+setkey(data_r2_own_x05,main_treat)
+by_own_7_x05<-
+  data_r2_own_x05[,.(ep=mean(ever_paid),
+                     pf=mean(paid_full),
+                     tp=mean(total_paid)),
+                  by=main_treat
+                  ][data.table(t(sapply(
+                    trt.nms,function(x)apply(replicate(
+                      BB,unlist(data_r2_own_x05[.(x)][
+                        sample(.N,.N,T),
+                        .(ep=mean(ever_paid),
+                          pf=mean(paid_full),
+                          tp=mean(total_paid))])),
+                      1,quantile,c(.025,.975)),
+                    USE.NAMES=T)),keep.rownames=T),
+                    `:=`(ep.ci.lo=i.V1,ep.ci.hi=i.V2,
+                         pf.ci.lo=i.V3,pf.ci.hi=i.V4,
+                         tp.ci.lo=i.V5,tp.ci.hi=i.V6),
+                    on=c(main_treat="rn")]
+
+setkey(data_r2_own_x10,main_treat)
+by_own_7_x10<-
+  data_r2_own_x10[,.(ep=mean(ever_paid),
+                     pf=mean(paid_full),
+                     tp=mean(total_paid)),
+                  by=main_treat
+                  ][data.table(t(sapply(
+                    trt.nms,function(x)apply(replicate(
+                      BB,unlist(data_r2_own_x10[.(x)][
+                        sample(.N,.N,T),
+                        .(ep=mean(ever_paid),
+                          pf=mean(paid_full),
+                          tp=mean(total_paid))])),
+                      1,quantile,c(.025,.975)),
+                    USE.NAMES=T)),keep.rownames=T),
+                    `:=`(ep.ci.lo=i.V1,ep.ci.hi=i.V2,
+                         pf.ci.lo=i.V3,pf.ci.hi=i.V4,
+                         tp.ci.lo=i.V5,tp.ci.hi=i.V6),
+                    on=c(main_treat="rn")]
 
 ###Confidence intervals for 2 treatments
 ###  on ever_paid, paid_full, total_paid
@@ -508,8 +558,8 @@ by_own_8[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
              xlab="Percent",cex.names=.75);
   arrows(to.pct(ep.ci.lo),x,to.pct(ep.ci.hi),x,
          code=3,angle=90,length=.07,lwd=2)
-  abline(v=to.pct(ep.ci.hi[main_treat=="Holdout"]),lty=2)
-  abline(v=to.pct(ep.ci.lo[main_treat=="Holdout"]),lty=2)}]
+  abline(v=to.pct(.SD[main_treat=="Holdout",
+                      .(ep.ci.hi,ep.ci.lo)]),lty=2)}]
 dev.off2()
 
 ####Paid Full
@@ -522,8 +572,8 @@ by_own_8[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
              xlab="Percent",cex.names=.75);
   arrows(to.pct(pf.ci.lo),x,to.pct(pf.ci.hi),x,
          code=3,angle=90,length=.07,lwd=2)
-  abline(v=to.pct(ep.ci.hi[main_treat=="Holdout"]),lty=2)
-  abline(v=to.pct(ep.ci.lo[main_treat=="Holdout"]),lty=2)}]
+  abline(v=to.pct(.SD[main_treat=="Holdout",
+                      .(pf.ci.hi,pf.ci.lo)]),lty=2)}]
 dev.off2()
 
 ####Average Payment
@@ -536,8 +586,94 @@ by_own_8[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
                       xlab="$",cex.names=.75);
            arrows(tp.ci.lo,x,tp.ci.hi,x,
                   code=3,angle=90,length=.07,lwd=2)
-           abline(v=ep.ci.hi[main_treat=="Holdout"],lty=2)
-           abline(v=ep.ci.lo[main_treat=="Holdout"],lty=2)}]
+           abline(v=.SD[main_treat=="Holdout",
+                        .(tp.ci.hi,tp.ci.lo)],lty=2)}]
+dev.off2()
+
+###By all 7 Treatments,
+###  Excluding Top Repayment Quartiles ####
+####Ever Paid
+#####Exclude top 5%
+pdf2(img_wd%+%"bar_plot_ever_paid_7_own_x05.pdf")
+by_own_7_x05[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
+  x<-barplot(to.pct(ep),names.arg=main_treat,col=get.col(.N),
+             xlim=c(0,1.05*max(to.pct(ep.ci.hi))),horiz=T,
+             las=1,main="Percent Ever Paid by Treatment\n"%+%
+               "Excluding Top 5% of Payers",
+             xlab="Percent",cex.names=.75)
+  arrows(to.pct(ep.ci.lo),x,to.pct(ep.ci.hi),x,
+         code=3,angle=90,length=.07,lwd=2)
+  abline(v=to.pct(.SD[main_treat=="Control",
+                      .(ep.ci.hi,ep.ci.lo)]),lty=2)}]
+dev.off2()
+#####Exclude top 10%
+pdf2(img_wd%+%"bar_plot_ever_paid_7_own_x10.pdf")
+by_own_7_x10[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
+  x<-barplot(to.pct(ep),names.arg=main_treat,col=get.col(.N),
+             xlim=c(0,1.05*max(to.pct(ep.ci.hi))),horiz=T,
+             las=1,main="Percent Ever Paid by Treatment\n"%+%
+               "Excluding Top 10% of Payers",
+             xlab="Percent",cex.names=.75)
+  arrows(to.pct(ep.ci.lo),x,to.pct(ep.ci.hi),x,
+         code=3,angle=90,length=.07,lwd=2)
+  abline(v=to.pct(.SD[main_treat=="Control",
+                      .(ep.ci.hi,ep.ci.lo)]),lty=2)}]
+dev.off2()
+
+####Paid Full
+#####Exclude top 5%
+pdf2(img_wd%+%"bar_plot_paid_full_7_own_x05.pdf")
+by_own_7_x05[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
+  x<-barplot(to.pct(pf),names.arg=main_treat,col=get.col(.N),
+             xlim=c(0,1.05*max(to.pct(pf.ci.hi))),horiz=T,
+             las=1,main="Percent Paid Full by Treatment\n"%+%
+               "Excluding Top 5% of Payers",
+             xlab="Percent",cex.names=.75)
+  arrows(to.pct(pf.ci.lo),x,to.pct(pf.ci.hi),x,
+         code=3,angle=90,length=.07,lwd=2)
+  abline(v=to.pct(.SD[main_treat=="Control",
+                      .(pf.ci.hi,pf.ci.lo)]),lty=2)}]
+dev.off2()
+#####Exclude top 10%
+pdf2(img_wd%+%"bar_plot_paid_full_7_own_x10.pdf")
+by_own_7_x10[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
+  x<-barplot(to.pct(pf),names.arg=main_treat,col=get.col(.N),
+             xlim=c(0,1.05*max(to.pct(pf.ci.hi))),horiz=T,
+             las=1,main="Percent Paid Full by Treatment\n"%+%
+               "Excluding Top 10% of Payers",
+             xlab="Percent",cex.names=.75)
+  arrows(to.pct(pf.ci.lo),x,to.pct(pf.ci.hi),x,
+         code=3,angle=90,length=.07,lwd=2)
+  abline(v=to.pct(.SD[main_treat=="Control",
+                      .(pf.ci.hi,pf.ci.lo)]),lty=2)}]
+dev.off2()
+
+####Average Payment
+#####Exclude top 5%
+pdf2(img_wd%+%"bar_plot_aver_paid_7_own_x05.pdf")
+by_own_7_x05[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
+  x<-barplot(tp,names.arg=main_treat,col=get.col(.N),
+             xlim=c(0,1.05*max(tp.ci.hi)),horiz=T,
+             las=1,main="Average Paid by Treatment\n"%+%
+               "Excluding Top 5% of Payers",
+             xlab="Percent",cex.names=.75)
+  arrows(tp.ci.lo,x,tp.ci.hi,x,
+         code=3,angle=90,length=.07,lwd=2)
+  abline(v=.SD[main_treat=="Control",
+               .(tp.ci.hi,tp.ci.lo)],lty=2)}]
+dev.off2()
+#####Exclude top 10%
+pdf2(img_wd%+%"bar_plot_aver_paid_7_own_x10.pdf")
+by_own_7_x10[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
+  x<-barplot(tp,names.arg=main_treat,col=get.col(.N),
+             xlim=c(0,1.05*max(tp.ci.hi)),horiz=T,
+             las=1,main="Average Paid by Treatment\n"%+%
+               "Excluding Top 10% of Payers",
+             xlab="Percent",cex.names=.75)
+  arrows(tp.ci.lo,x,tp.ci.hi,x,
+         code=3,angle=90,length=.07,lwd=2)
+  abline(v=.SD[main_treat=="Control",
+               .(tp.ci.hi,tp.ci.lo)],lty=2)}]
 dev.off2()
 
 ###By Big/Small ####
