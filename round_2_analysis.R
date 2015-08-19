@@ -474,7 +474,7 @@ plot.params<-{list(list(dt=by_own_bs,fn="2_own",tr="big_small",
                         tl="Treatment\nExcluding Top 5% of Payers",
                         rf="Control",nx=.75,sp=NULL,yl=NULL,dn=NULL),
                    list(dt=by_own_7_x10,fn="7_own_x10",tr="main_treat",
-                        tl="Treatment\nExcluding Top 5% of Payers",
+                        tl="Treatment\nExcluding Top 10% of Payers",
                         rf="Control",nx=.75,sp=NULL,yl=NULL,dn=NULL),
                    list(dt=by_prop_7,fn="7_prop",tr="main_treat",
                         tl="Treatment\nProperty Level, SEs "%+%
@@ -488,11 +488,11 @@ plot.params<-{list(list(dt=by_own_bs,fn="2_own",tr="big_small",
                         rf="Control_Small",nx=.5,
                         sp=NULL,yl=NULL,dn=rep(c(-1,30),.N)))}
 
-type.params<-list(list(mfn="bar_plot_ever_paid_",xn="ep",
+type.params<-list(list(mfn="bar_plot_ever_paid_",xn="ep",trans=to.pct,
                        mtl="Percent Ever Paid",xlb="Percent"),
-                  list(mfn="bar_plot_paid_full_",xn="pf",
+                  list(mfn="bar_plot_paid_full_",xn="pf",trans=to.pct,
                        mtl="Percent Paid Full",xlb="Percent"),
-                  list(mfn="bar_plot_aver_paid_",xn="tp",
+                  list(mfn="bar_plot_aver_paid_",xn="tp",trans=identity,
                        mtl="Average Paid",xlb="$"))
 
 sapply(type.params,
@@ -501,7 +501,7 @@ sapply(type.params,
            with(lst,
                 dt[order(get(tr)),{pdf2(img_wd%+%mfn%+%fn%+%".pdf")
                   par(mar=c(5.1,5.1,4.1,1.6))
-                  vals<-lapply(mget(xn%+%c("",".ci.lo",".ci.hi")),to.pct)
+                  vals<-lapply(mget(xn%+%c("",".ci.lo",".ci.hi")),trans)
                   ind<-which(get(tr)==rf)
                   x<-barplot(vals[[1]],names.arg=get(tr),ylim=yl,
                              xlim=c(0,nx.mlt(1.05*max(vals[[3]]),5)),
