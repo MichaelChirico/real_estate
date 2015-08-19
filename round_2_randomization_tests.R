@@ -55,6 +55,7 @@ boxplot(total_due~tmt7,data=data_own,
 axis(side=1,at=10^(1:6),cex.axis=.8,
      labels=paste0("$",formatC(as.integer(10^(1:6)),
                                big.mark=",")))
+abline(v=data_own[tmt7=="Control",median(total_due)],lty=2)
 dev.off2()
 
 ## Log Balance by Envelope
@@ -67,6 +68,7 @@ boxplot(total_due~bs,data=data_own,log="x",xaxt="n",
 axis(side=1,at=10^(1:6),cex.axis=.8,
      labels=paste0("$",formatC(as.integer(10^(1:6)),
                                big.mark=",")))
+abline(v=data_own[bs=="Small",median(total_due)],lty=2)
 dev.off2()
 
 ## Bar Plot: Number of Properties and Owners by Letter
