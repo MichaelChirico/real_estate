@@ -81,11 +81,11 @@ tile_axes<-function(n,M,N,...){
 
 to.pct<-function(x,dig=Inf)round(100*x,digits=dig)
 
+#Get the nearest multiple of n weakly larger than x
+nx.mlt<-function(x,n)n*ceiling(x/n)
+
 #Shorthand for string concatenation
 "%+%"<-function(s1,s2)paste0(s1,s2)
-
-#Shorthand for set difference
-"%\\%"<-function(x,y)setdiff(x,y)
 
 get.col<-function(n){
   cols<-c(Big="blue",Small="red",
@@ -96,7 +96,7 @@ get.col<-function(n){
   if (n==2){cols[1:2]}
   else if(n==7){cols[4:10]}
   else if(n==8){cols[3:10]}
-  else if(n==14){rep(c[4:10],each=2)}
+  else if(n==14){rep(cols[4:10],each=2)}
   else cat("Ya done goofed.")
 }
 
@@ -304,9 +304,9 @@ by_prop_7<-
                         .(mean(ever_paid),mean(paid_full),
                           mean(total_paid))])),1,quantile,c(.025,.975)),
             USE.NAMES=T)),keep.rownames=T),
-            `:=`(ep.ci.lo.clust=i.V1,ep.ci.hi.clust=i.V2,
-                 pf.ci.lo.clust=i.V3,pf.ci.hi.clust=i.V4,
-                 tp.ci.lo.clust=i.V5,tp.ci.hi.clust=i.V6),
+            `:=`(ep.ci.lo=i.V1,ep.ci.hi=i.V2,
+                 pf.ci.lo=i.V3,pf.ci.hi=i.V4,
+                 tp.ci.lo=i.V5,tp.ci.hi=i.V6),
             on=c(main_treat="rn")]
 
 ###Confidence intervals for 7 treatments
@@ -399,7 +399,8 @@ by_own_all<-
                 `:=`(ep.ci.lo=V1,ep.ci.hi=V2,
                      pf.ci.lo=V3,pf.ci.hi=V4,
                      tp.ci.lo=V5,tp.ci.hi=V6),
-                on=c(treatment="rn")]
+                on=c(treatment="rn")
+                ]
 
 ###Confidence intervals for Holdout sample
 ###  on ever_paid, paid_full, total_paid
@@ -462,301 +463,55 @@ paid_full.lgt.ci<-
         grd~id,value.var=trt.nms)
 
 ##Bar Plots ####
-###By all 7 Treatments (collapse big/small) ####
-####Ever Paid
-#####By Owner
-pdf2(img_wd%+%"bar_plot_ever_paid_7_own.pdf")
-by_own_7[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6));
-           x<-barplot(to.pct(ep),names.arg=main_treat,col=get.col(.N),
-                      xlim=c(0,1.05*max(to.pct(ep.ci.hi))),horiz=T,
-                      las=1,main="Percent Ever Paid by Treatment",
-                      xlab="Percent",cex.names=.75); 
-           arrows(to.pct(ep.ci.lo),x,to.pct(ep.ci.hi),x,
-                  code=3,angle=90,length=.07,lwd=2);
-           abline(v=to.pct(ep.ci.hi[main_treat=="Control"]),lty=2);
-           abline(v=to.pct(ep.ci.lo[main_treat=="Control"]),lty=2)}]
-dev.off2()
+###Ever Paid Bar Plots
+plot.params<-{list(list(dt=by_own_bs,fn="2_own",tr="big_small",
+                        tl="Big/Small",rf="Small",nx=.75,
+                        sp=3,yl=c(2,10),dn=NULL),
+                   list(dt=by_own_7,fn="7_own",tr="main_treat",
+                        tl="Treatment",rf="Control",nx=.75,
+                        sp=NULL,yl=NULL,dn=NULL),
+                   list(dt=by_own_7_x05,fn="7_own_x05",tr="main_treat",
+                        tl="Treatment\nExcluding Top 5% of Payers",
+                        rf="Control",nx=.75,sp=NULL,yl=NULL,dn=NULL),
+                   list(dt=by_own_7_x10,fn="7_own_x10",tr="main_treat",
+                        tl="Treatment\nExcluding Top 5% of Payers",
+                        rf="Control",nx=.75,sp=NULL,yl=NULL,dn=NULL),
+                   list(dt=by_prop_7,fn="7_prop",tr="main_treat",
+                        tl="Treatment\nProperty Level, SEs "%+%
+                          "Clustered by Owner",rf="Control",
+                        nx=.75,sp=NULL,yl=NULL,dn=NULL),
+                   list(dt=by_own_8,fn="8_own",tr="main_treat",
+                        tl="Treatment\nIncluding Holdout Sample",
+                        rf="Holdout",nx=.75,sp=NULL,yl=NULL,dn=NULL),
+                   list(dt=by_own_all,fn="14_own",tr="treatment",
+                        tl="Treatment / Big/Small",
+                        rf="Control_Small",nx=.5,
+                        sp=NULL,yl=NULL,dn=rep(c(-1,30),.N)))}
 
-#####By Property (re-sampling at owner level)
-pdf2(img_wd%+%"bar_plot_ever_paid_7_prop.pdf")
-by_prop_7[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
-  x<-barplot(to.pct(ep),names.arg=main_treat,col=get.col(.N),
-             xlim=c(0,1.05*max(to.pct(ep.ci.hi.clust))),horiz=T,
-             las=1,xlab="Percent",cex.names=.75,
-             main=paste0("Percent Ever Paid by Treatment\n",
-                         "Property Level, Standard Errors Clustered by Owner"))
-  arrows(to.pct(ep.ci.lo.clust),x,to.pct(ep.ci.hi.clust),x,
-         code=3,angle=90,length=.07,lwd=2)
-  abline(v=to.pct(ep.ci.hi.clust[main_treat=="Control"]),lty=2)
-  abline(v=to.pct(ep.ci.lo.clust[main_treat=="Control"]),lty=2)}]
-dev.off2()
+type.params<-list(list(mfn="bar_plot_ever_paid_",xn="ep",
+                       mtl="Percent Ever Paid",xlb="Percent"),
+                  list(mfn="bar_plot_paid_full_",xn="pf",
+                       mtl="Percent Paid Full",xlb="Percent"),
+                  list(mfn="bar_plot_aver_paid_",xn="tp",
+                       mtl="Average Paid",xlb="$"))
 
-####Paid Full
-#####By Owner
-pdf2(img_wd%+%"bar_plot_paid_full_7_own.pdf")
-by_own_7[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6));
-  x<-barplot(to.pct(pf),names.arg=main_treat,col=get.col(.N),
-             xlim=c(0,1.05*max(to.pct(pf.ci.hi))),horiz=T,
-             las=1,main="Percent Paid Full by Treatment",
-             xlab="Percent",cex.names=.75); 
-  arrows(to.pct(pf.ci.lo),x,to.pct(pf.ci.hi),x,
-         code=3,angle=90,length=.07,lwd=2);
-  abline(v=to.pct(pf.ci.hi[main_treat=="Control"]),lty=2);
-  abline(v=to.pct(pf.ci.lo[main_treat=="Control"]),lty=2)}]
-dev.off2()
-
-#####By Property (re-sampling at owner level)
-pdf2(img_wd%+%"bar_plot_paid_full_7_prop.pdf")
-by_prop_7[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6));
-  x<-barplot(to.pct(pf),names.arg=main_treat,col=get.col(.N),
-             xlim=c(0,1.05*max(to.pct(pf.ci.hi.clust))),horiz=T,
-             main=paste0("Percent Paid Full by Treatment\n",
-                         "Property Level, Standard Errors Clustered by Owner"),
-             xlab="Percent",cex.names=.75,las=1); 
-  arrows(to.pct(pf.ci.lo.clust),x,to.pct(pf.ci.hi.clust),x,
-         code=3,angle=90,length=.07,lwd=2);
-  abline(v=to.pct(pf.ci.hi.clust[main_treat=="Control"]),lty=2);
-  abline(v=to.pct(pf.ci.lo.clust[main_treat=="Control"]),lty=2)}]
-dev.off2()
-
-
-####Average Payment
-pdf2(img_wd%+%"bar_plot_aver_paid_7_own.pdf")
-by_own_7[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6));
-  x<-barplot(round(tp),names.arg=main_treat,col=get.col(.N),
-             xlim=c(0,1.05*max(round(tp.ci.hi))),horiz=T,
-             las=1,main="Average Paid by Treatment",
-             xlab="$",cex.names=.75); 
-  arrows(round(tp.ci.lo),x,round(tp.ci.hi),x,
-         code=3,angle=90,length=.07,lwd=2);
-  abline(v=round(tp.ci.hi[main_treat=="Control"]),lty=2);
-  abline(v=round(tp.ci.lo[main_treat=="Control"]),lty=2)}]
-dev.off2()
-
-#####By Property (re-sampling at owner level)
-pdf2(img_wd%+%"bar_plot_aver_paid_7_prop.pdf")
-by_prop_7[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6));
-  x<-barplot(round(tp),names.arg=main_treat,col=get.col(.N),
-             xlim=c(0,1.05*max(round(tp.ci.hi.clust))),horiz=T,
-             main="Average Paid by Treatment",
-             sub="Property Level, Standard Errors Clustered by Owner",
-             xlab="$",cex.names=.75,las=1); 
-  arrows(round(tp.ci.lo.clust),x,round(tp.ci.hi.clust),x,
-         code=3,angle=90,length=.07,lwd=2);
-  abline(v=round(tp.ci.hi.clust[main_treat=="Control"]),lty=2);
-  abline(v=round(tp.ci.lo.clust[main_treat=="Control"]),lty=2)}]
-dev.off2()
-
-###By all 7 Treatments, Including Holdout ####
-####Ever Paid
-pdf2(img_wd%+%"bar_plot_ever_paid_8_own.pdf")
-by_own_8[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
-  x<-barplot(to.pct(ep),col=get.col(.N),las=1,
-             names.arg=main_treat,
-             xlim=c(0,1.05*max(to.pct(ep.ci.hi))),horiz=T,
-             main="Percent Ever Paid by Treatment",
-             xlab="Percent",cex.names=.75);
-  arrows(to.pct(ep.ci.lo),x,to.pct(ep.ci.hi),x,
-         code=3,angle=90,length=.07,lwd=2)
-  abline(v=to.pct(.SD[main_treat=="Holdout",
-                      .(ep.ci.hi,ep.ci.lo)]),lty=2)}]
-dev.off2()
-
-####Paid Full
-pdf2(img_wd%+%"bar_plot_paid_full_8_own.pdf")
-by_own_8[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
-  x<-barplot(to.pct(pf),col=get.col(.N),las=1,
-             names.arg=main_treat,horiz=T,
-             xlim=c(0,1.05*max(to.pct(pf.ci.hi))),
-             main="Percent Paid Full by Treatment",
-             xlab="Percent",cex.names=.75);
-  arrows(to.pct(pf.ci.lo),x,to.pct(pf.ci.hi),x,
-         code=3,angle=90,length=.07,lwd=2)
-  abline(v=to.pct(.SD[main_treat=="Holdout",
-                      .(pf.ci.hi,pf.ci.lo)]),lty=2)}]
-dev.off2()
-
-####Average Payment
-pdf2(img_wd%+%"bar_plot_aver_paid_8_own.pdf")
-by_own_8[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
-           x<-barplot(tp,col=get.col(.N),las=1,
-                      names.arg=main_treat,
-                      xlim=c(0,1.05*max(tp.ci.hi)),horiz=T,
-                      main="Average Paid by Treatment",
-                      xlab="$",cex.names=.75);
-           arrows(tp.ci.lo,x,tp.ci.hi,x,
-                  code=3,angle=90,length=.07,lwd=2)
-           abline(v=.SD[main_treat=="Holdout",
-                        .(tp.ci.hi,tp.ci.lo)],lty=2)}]
-dev.off2()
-
-###By all 7 Treatments,
-###  Excluding Top Repayment Quartiles ####
-####Ever Paid
-#####Exclude top 5%
-pdf2(img_wd%+%"bar_plot_ever_paid_7_own_x05.pdf")
-by_own_7_x05[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
-  x<-barplot(to.pct(ep),names.arg=main_treat,col=get.col(.N),
-             xlim=c(0,1.05*max(to.pct(ep.ci.hi))),horiz=T,
-             las=1,main="Percent Ever Paid by Treatment\n"%+%
-               "Excluding Top 5% of Payers",
-             xlab="Percent",cex.names=.75)
-  arrows(to.pct(ep.ci.lo),x,to.pct(ep.ci.hi),x,
-         code=3,angle=90,length=.07,lwd=2)
-  abline(v=to.pct(.SD[main_treat=="Control",
-                      .(ep.ci.hi,ep.ci.lo)]),lty=2)}]
-dev.off2()
-#####Exclude top 10%
-pdf2(img_wd%+%"bar_plot_ever_paid_7_own_x10.pdf")
-by_own_7_x10[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
-  x<-barplot(to.pct(ep),names.arg=main_treat,col=get.col(.N),
-             xlim=c(0,1.05*max(to.pct(ep.ci.hi))),horiz=T,
-             las=1,main="Percent Ever Paid by Treatment\n"%+%
-               "Excluding Top 10% of Payers",
-             xlab="Percent",cex.names=.75)
-  arrows(to.pct(ep.ci.lo),x,to.pct(ep.ci.hi),x,
-         code=3,angle=90,length=.07,lwd=2)
-  abline(v=to.pct(.SD[main_treat=="Control",
-                      .(ep.ci.hi,ep.ci.lo)]),lty=2)}]
-dev.off2()
-
-####Paid Full
-#####Exclude top 5%
-pdf2(img_wd%+%"bar_plot_paid_full_7_own_x05.pdf")
-by_own_7_x05[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
-  x<-barplot(to.pct(pf),names.arg=main_treat,col=get.col(.N),
-             xlim=c(0,1.05*max(to.pct(pf.ci.hi))),horiz=T,
-             las=1,main="Percent Paid Full by Treatment\n"%+%
-               "Excluding Top 5% of Payers",
-             xlab="Percent",cex.names=.75)
-  arrows(to.pct(pf.ci.lo),x,to.pct(pf.ci.hi),x,
-         code=3,angle=90,length=.07,lwd=2)
-  abline(v=to.pct(.SD[main_treat=="Control",
-                      .(pf.ci.hi,pf.ci.lo)]),lty=2)}]
-dev.off2()
-#####Exclude top 10%
-pdf2(img_wd%+%"bar_plot_paid_full_7_own_x10.pdf")
-by_own_7_x10[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
-  x<-barplot(to.pct(pf),names.arg=main_treat,col=get.col(.N),
-             xlim=c(0,1.05*max(to.pct(pf.ci.hi))),horiz=T,
-             las=1,main="Percent Paid Full by Treatment\n"%+%
-               "Excluding Top 10% of Payers",
-             xlab="Percent",cex.names=.75)
-  arrows(to.pct(pf.ci.lo),x,to.pct(pf.ci.hi),x,
-         code=3,angle=90,length=.07,lwd=2)
-  abline(v=to.pct(.SD[main_treat=="Control",
-                      .(pf.ci.hi,pf.ci.lo)]),lty=2)}]
-dev.off2()
-
-####Average Payment
-#####Exclude top 5%
-pdf2(img_wd%+%"bar_plot_aver_paid_7_own_x05.pdf")
-by_own_7_x05[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
-  x<-barplot(tp,names.arg=main_treat,col=get.col(.N),
-             xlim=c(0,1.05*max(tp.ci.hi)),horiz=T,
-             las=1,main="Average Paid by Treatment\n"%+%
-               "Excluding Top 5% of Payers",
-             xlab="Percent",cex.names=.75)
-  arrows(tp.ci.lo,x,tp.ci.hi,x,
-         code=3,angle=90,length=.07,lwd=2)
-  abline(v=.SD[main_treat=="Control",
-               .(tp.ci.hi,tp.ci.lo)],lty=2)}]
-dev.off2()
-#####Exclude top 10%
-pdf2(img_wd%+%"bar_plot_aver_paid_7_own_x10.pdf")
-by_own_7_x10[order(main_treat),{par(mar=c(5.1,5.1,4.1,1.6))
-  x<-barplot(tp,names.arg=main_treat,col=get.col(.N),
-             xlim=c(0,1.05*max(tp.ci.hi)),horiz=T,
-             las=1,main="Average Paid by Treatment\n"%+%
-               "Excluding Top 10% of Payers",
-             xlab="Percent",cex.names=.75)
-  arrows(tp.ci.lo,x,tp.ci.hi,x,
-         code=3,angle=90,length=.07,lwd=2)
-  abline(v=.SD[main_treat=="Control",
-               .(tp.ci.hi,tp.ci.lo)],lty=2)}]
-dev.off2()
-
-###By Big/Small ####
-####Bar Plots of Results
-pdf2(img_wd%+%"bar_plot_ever_paid_2_own.pdf")
-by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6))
-  x<-barplot(to.pct(ep),names.arg=big_small,col=get.col(.N),
-             xlim=c(0,1.05*max(to.pct(ep.ci.hi))),horiz=T,
-             las=1,main="Percent Ever Paid by Big/Small",
-             xlab="Percent",space=3,ylim=c(2,10))
-  arrows(to.pct(ep.ci.lo),x,to.pct(ep.ci.hi),x,
-         code=3,angle=90,lwd=2,length=.1)
-  abline(v=to.pct(ep.ci.hi[big_small=="Small"]),lty=2)
-  abline(v=to.pct(ep.ci.lo[big_small=="Small"]),lty=2)}]
-dev.off2()
-#####Paid Full
-pdf2(img_wd%+%"bar_plot_paid_full_2_own.pdf")
-by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6))
-  x<-barplot(to.pct(pf),names.arg=big_small,col=get.col(.N),
-             xlim=c(0,1.05*max(to.pct(pf.ci.hi))),horiz=T,
-             las=1,main="Percent Paid Full by Big/Small",
-             xlab="Percent",space=3,ylim=c(2,10))
-  arrows(to.pct(pf.ci.lo),x,to.pct(pf.ci.hi),x,
-         code=3,angle=90,lwd=2,length=.1)
-  abline(v=to.pct(pf.ci.hi[big_small=="Small"]),lty=2)
-  abline(v=to.pct(pf.ci.lo[big_small=="Small"]),lty=2)}]
-dev.off2()
-#####Average Paid
-pdf2(img_wd%+%"bar_plot_aver_paid_2_own.pdf")
-by_own_bs[,{par(mar=c(5.1,5.1,4.1,1.6))
-  x<-barplot(round(tp),names.arg=big_small,col=get.col(.N),
-             xlim=c(0,1.05*max(round(tp.ci.hi))),horiz=T,
-             las=1,main="Average Paid by Big/Small",
-             xlab="$",space=3,ylim=c(2,10)) 
-  arrows(round(tp.ci.lo),x,round(tp.ci.hi),x,
-         code=3,angle=90,lwd=2,length=.1)
-  abline(v=round(tp.ci.hi[big_small=="Small"]),lty=2)
-  abline(v=round(tp.ci.lo[big_small=="Small"]),lty=2)}]
-dev.off2()
-
-####By all 14 Treatments ####
-#####Ever Paid
-pdf2(img_wd%+%"bar_plot_ever_paid_14_own.pdf")
-by_own_all[,{par(mar=c(5.1,5.1,4.1,1.6));
-             x<-barplot(to.pct(ep),names.arg=gsub("_E.*","",treatment),
-                        col=get.col(.N),horiz=T,las=1,
-                        xlim=c(0,1.05*max(to.pct(ep.ci.hi))),
-                        main="Percent Ever Paid by Treatment / Big/Small",
-                        xlab="Percent",cex.names=.5,
-                        density=rep(c(-1,30),.N)); 
-             arrows(to.pct(ep.ci.lo),x,to.pct(ep.ci.hi),x,
-                    code=3,angle=90,lwd=2,length=.05);
-             abline(v=to.pct(ep.ci.hi[treatment=="Control_Small_Envelope"]),lty=2);
-             abline(v=to.pct(ep.ci.lo[treatment=="Control_Small_Envelope"]),lty=2)}]
-dev.off2()
-#####Paid Full
-pdf2(img_wd%+%"bar_plot_paid_full_14_own.pdf")
-by_own_all[,{par(mar=c(5.1,5.1,4.1,1.6));
-  x<-barplot(to.pct(pf),names.arg=gsub("_E.*","",treatment),
-             col=get.col(.N),horiz=T,las=1,
-             xlim=c(0,1.05*max(to.pct(pf.ci.hi))),
-             main="Percent Paid Full by Treatment / Big/Small",
-             xlab="Percent",cex.names=.5,
-             density=rep(c(-1,30),.N)); 
-  arrows(to.pct(pf.ci.lo),x,to.pct(pf.ci.hi),x,
-         code=3,angle=90,lwd=2,length=.05);
-  abline(v=to.pct(pf.ci.hi[treatment=="Control_Small_Envelope"]),lty=2);
-  abline(v=to.pct(pf.ci.lo[treatment=="Control_Small_Envelope"]),lty=2)}]
-dev.off2()
-#####Average Paid
-pdf2(img_wd%+%"bar_plot_aver_paid_14_own.pdf")
-by_own_all[,{par(mar=c(5.1,5.1,4.1,1.6));
-  x<-barplot(round(tp),names.arg=gsub("_E.*","",treatment),
-             col=get.col(.N),horiz=T,las=1,
-             xlim=c(0,1.05*max(round(tp.ci.hi))),
-             main="Average Paid by Treatment / Big/Small",
-             xlab="$",cex.names=.5,
-             density=rep(c(-1,30),.N)); 
-  arrows(round(tp.ci.lo),x,round(tp.ci.hi),x,
-         code=3,angle=90,lwd=2,length=.05);
-  abline(v=round(tp.ci.hi[treatment=="Control_Small_Envelope"]),lty=2);
-  abline(v=round(tp.ci.lo[treatment=="Control_Small_Envelope"]),lty=2)}]
-dev.off2()
+sapply(type.params,
+       function(y){
+         with(y,sapply(plot.params,function(lst){
+           with(lst,
+                dt[order(get(tr)),{pdf2(img_wd%+%mfn%+%fn%+%".pdf")
+                  par(mar=c(5.1,5.1,4.1,1.6))
+                  vals<-lapply(mget(xn%+%c("",".ci.lo",".ci.hi")),to.pct)
+                  ind<-which(get(tr)==rf)
+                  x<-barplot(vals[[1]],names.arg=get(tr),ylim=yl,
+                             xlim=c(0,nx.mlt(1.05*max(vals[[3]]),5)),
+                             horiz=T,las=1,col=get.col(.N),
+                             main=mtl%+%" by "%+%tl,space=sp,
+                             xlab=xlb,cex.names=nx,density=dn)
+                  arrows(vals[[2]],x,vals[[3]],x,code=3,
+                         angle=90,length=.07,lwd=2)
+                  abline(v=c(vals[[2]][ind],vals[[3]][ind]),lty=2)
+                  dev.off2()}])}))})
 
 ##Logit Fit Plots ####
 ### Ever Paid
