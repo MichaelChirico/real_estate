@@ -38,26 +38,35 @@ data[,tmt:=paste0(substr(treatment,1,1),
 
 data_own<-data[,.(tmt=tmt[1],bs=bs[1],tmt7=tmt7[1],
                   total_due=sum(total_due)),by=owner1]
+data_own[,tmt7:=factor(tmt7,c("Control","Amenities","Moral",
+                              "Duty","Lien","Sheriff","Peer"))]
 
 # Graphic Tests ####
 rand_path<-"./papers_presentations/round_two/images/balance/"
 ## Log Balance by Letter
 pdf2(rand_path%+%"dist_log_due_by_trt_7_box.pdf")
-par(mar=c(7.1,6.1,6.1,2.1))
-boxplot(log10(total_due)~tmt7,data=data_own,
+par(mar=c(2.6,5.1,4.1,2.1))
+boxplot(total_due~tmt7,data=data_own,
         main="Box Plots of Log Debt\nBy Treatment",
-        col=c("yellow","blue","darkgreen","red",
-              "cyan","orange","orchid"),notch=T,
-        boxwex=.75,horizontal=T,las=1,xlab="Log_10 $")
+        log="x",xaxt="n",cex.axis=.8,
+        col=c("blue","yellow","cyan","darkgreen",
+              "red","orchid","orange"),notch=T,
+        boxwex=.5,horizontal=T,las=1,xlab="")
+axis(side=1,at=10^(1:6),cex.axis=.8,
+     labels=paste0("$",formatC(as.integer(10^(1:6)),
+                               big.mark=",")))
 dev.off2()
 
 ## Log Balance by Envelope
 pdf2(rand_path%+%"dist_log_due_by_trt_2_box.pdf")
-par(mar=c(7.1,6.1,6.1,2.1))
-boxplot(log10(total_due)~bs,data=data_own,
-        main="Box Plots of Log Debt\nBy Treatment",
-        col=c("blue","red"),notch=T,boxwex=.25,
-        horizontal=T,las=1,xlab="Log_10 $")
+par(mar=c(2.6,5.1,4.1,2.1))
+boxplot(total_due~bs,data=data_own,log="x",xaxt="n",
+        main="Box Plots of Log Debt\nBy Envelope Size",
+        col=c("blue","red"),notch=T,boxwex=.2,
+        horizontal=T,las=1,xlab="")
+axis(side=1,at=10^(1:6),cex.axis=.8,
+     labels=paste0("$",formatC(as.integer(10^(1:6)),
+                               big.mark=",")))
 dev.off2()
 
 ## Bar Plot: Number of Properties and Owners by Letter
