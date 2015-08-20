@@ -138,6 +138,10 @@ data_r2[,main_treat:=factor(gsub("_.*","",treatment))]
 ####Reorder main treatments for plotting purposes
 trt.nms<-c("Control","Amenities","Moral",
              "Duty","Lien","Sheriff","Peer")
+data_r2[,treatment:=factor(treatment,
+                           paste0(rep(trt.nms,each=2),
+                                  c("_Big_","_Small_"))%+%
+                             "Envelope")]
 data_r2[,main_treat:=
           factor(main_treat,trt.nms)]
 
@@ -393,7 +397,7 @@ by_own_all<-
                  tp=mean(total_paid)),
               by=treatment
               ][data.table(t(sapply(
-                data_r2_own[,unique(treatment)],
+                data_r2_own[,unique(treatment)]%+%"",
                 function(x)apply(replicate(
                   BB,unlist(data_r2_own[.(x)][
                     sample(.N,.N,T),
@@ -405,8 +409,7 @@ by_own_all<-
                 `:=`(ep.ci.lo=V1,ep.ci.hi=V2,
                      pf.ci.lo=V3,pf.ci.hi=V4,
                      tp.ci.lo=V5,tp.ci.hi=V6),
-                on=c(treatment="rn")
-                ]
+                on=c(treatment="rn")]
 
 ###Confidence intervals for Holdout sample
 ###  on ever_paid, paid_full, total_paid
