@@ -262,9 +262,11 @@ setkey(data_r2_own,main_treat)
 by_own_7<-
   #First, point estimates from raw data
   data_r2_own[,.(ep=mean(ever_paid),
-                         pf=mean(paid_full),
-                         tp=mean(total_paid)),
-                      by=main_treat
+                 pf=mean(paid_full),
+                 tp=mean(total_paid),
+                 md=median(total_paid[total_paid>0]),
+                 pp=mean(total_paid[total_paid>0])),
+              by=main_treat
               ][data.table(t(sapply(
                 #to guarantee equal representation of each
                 #  treatment, block at the treatment level--
@@ -276,14 +278,18 @@ by_own_7<-
                     #calculate point estimate in re-sample
                     .(ep=mean(ever_paid),
                       pf=mean(paid_full),
-                      tp=mean(total_paid))])),
+                      tp=mean(total_paid),
+                      md=median(total_paid[total_paid>0]),
+                      pp=mean(total_paid[total_paid>0]))])),
                   #CIs are given by the 2.5 &
                   #  97.5 %ile of each measure
                   1,quantile,c(.025,.975)),
                 USE.NAMES=T)),keep.rownames=T),
                 `:=`(ep.ci.lo=i.V1,ep.ci.hi=i.V2,
                      pf.ci.lo=i.V3,pf.ci.hi=i.V4,
-                     tp.ci.lo=i.V5,tp.ci.hi=i.V6),
+                     tp.ci.lo=i.V5,tp.ci.hi=i.V6,
+                     md.ci.lo=i.V7,md.ci.hi=i.V8,
+                     pp.ci.lo=i.V9,pp.ci.hi=i.V10),
                 on=c(main_treat="rn")]
 
 ###Confidence intervals for 7 treatments
@@ -463,48 +469,56 @@ paid_full.lgt.ci<-
         grd~id,value.var=trt.nms)
 
 ##Bar Plots ####
-###Ever Paid Bar Plots
-plot.params<-{list(list(dt=by_own_bs,fn="2_own",tr="big_small",
-                        tl="Big/Small",rf="Small",nx=.75,
-                        sp=3,yl=c(2,10),dn=NULL),
-                   list(dt=by_own_7,fn="7_own",tr="main_treat",
-                        tl="Treatment",rf="Control",nx=.75,
-                        sp=NULL,yl=NULL,dn=NULL),
-                   list(dt=by_own_7_x05,fn="7_own_x05",tr="main_treat",
-                        tl="Treatment\nExcluding Top 5% of Payers",
-                        rf="Control",nx=.75,sp=NULL,yl=NULL,dn=NULL),
-                   list(dt=by_own_7_x10,fn="7_own_x10",tr="main_treat",
-                        tl="Treatment\nExcluding Top 10% of Payers",
-                        rf="Control",nx=.75,sp=NULL,yl=NULL,dn=NULL),
-                   list(dt=by_prop_7,fn="7_prop",tr="main_treat",
-                        tl="Treatment\nProperty Level, SEs "%+%
-                          "Clustered by Owner",rf="Control",
-                        nx=.75,sp=NULL,yl=NULL,dn=NULL),
-                   list(dt=by_own_8,fn="8_own",tr="main_treat",
-                        tl="Treatment\nIncluding Holdout Sample",
-                        rf="Holdout",nx=.75,sp=NULL,yl=NULL,dn=NULL),
-                   list(dt=by_own_all,fn="14_own",tr="treatment",
-                        tl="Treatment / Big/Small",
-                        rf="Control_Small",nx=.5,
-                        sp=NULL,yl=NULL,dn=rep(c(-1,30),.N)))}
+plot.params<-{list(o2=list(dt=by_own_bs,fn="2_own",tr="big_small",
+                           tl="Big/Small",rf="Small",nx=.75,
+                           sp=3,yl=c(2,10),dn=NULL),
+                   o7=list(dt=by_own_7,fn="7_own",tr="main_treat",
+                           tl="Treatment",rf="Control",nx=.75,
+                           sp=NULL,yl=NULL,dn=NULL),
+                   o75=list(dt=by_own_7_x05,fn="7_own_x05",tr="main_treat",
+                            tl="Treatment\nExcluding Top 5% of Payers",
+                            rf="Control",nx=.75,sp=NULL,yl=NULL,dn=NULL),
+                   o71=list(dt=by_own_7_x10,fn="7_own_x10",tr="main_treat",
+                            tl="Treatment\nExcluding Top 10% of Payers",
+                            rf="Control",nx=.75,sp=NULL,yl=NULL,dn=NULL),
+                   p7=list(dt=by_prop_7,fn="7_prop",tr="main_treat",
+                           tl="Treatment\nProperty Level, SEs "%+%
+                             "Clustered by Owner",rf="Control",
+                           nx=.75,sp=NULL,yl=NULL,dn=NULL),
+                   o8=list(dt=by_own_8,fn="8_own",tr="main_treat",
+                           tl="Treatment\nIncluding Holdout Sample",
+                           rf="Holdout",nx=.75,sp=NULL,yl=NULL,dn=NULL),
+                   o14=list(dt=by_own_all,fn="14_own",tr="treatment",
+                           tl="Treatment / Big/Small",
+                           rf="Control_Small",nx=.5,
+                           sp=NULL,yl=NULL,dn=rep(c(-1,30),.N)))}
 
 type.params<-list(list(mfn="bar_plot_ever_paid_",xn="ep",trans=to.pct,
-                       mtl="Percent Ever Paid",xlb="Percent"),
+                       mtl="Percent Ever Paid",xlb="Percent",xup=5,
+                       tps=c("o2","o7","o75","o71","p7","o8","o14")),
                   list(mfn="bar_plot_paid_full_",xn="pf",trans=to.pct,
-                       mtl="Percent Paid Full",xlb="Percent"),
+                       mtl="Percent Paid Full",xlb="Percent",xup=5,
+                       tps=c("o2","o7","o75","o71","p7","o8","o14")),
                   list(mfn="bar_plot_aver_paid_",xn="tp",trans=identity,
-                       mtl="Average Paid",xlb="$"))
+                       mtl="Average Paid",xlb="$",xup=100,
+                       tps=c("o2","o7","o75","o71","p7","o8","o14")),
+                  list(mfn="bar_plot_med_pos_paid_",xn="md",trans=identity,
+                       mtl="Median Positive Amount Paid",xlb="$",
+                       tps=c("o7"),xup=100),
+                  list(mfn="bar_plot_avg_pos_paid_",xn="pp",trans=identity,
+                       mtl="Average Positive Amount Paid",xlb="$",
+                       tps=c("o7"),xup=100))
 
 sapply(type.params,
        function(y){
-         with(y,sapply(plot.params,function(lst){
+         with(y,sapply(plot.params[tps],function(lst){
            with(lst,
                 dt[order(get(tr)),{pdf2(img_wd%+%mfn%+%fn%+%".pdf")
                   par(mar=c(5.1,5.1,4.1,1.6))
                   vals<-lapply(mget(xn%+%c("",".ci.lo",".ci.hi")),trans)
                   ind<-which(get(tr)==rf)
                   x<-barplot(vals[[1]],names.arg=get(tr),ylim=yl,
-                             xlim=c(0,nx.mlt(1.05*max(vals[[3]]),5)),
+                             xlim=c(0,nx.mlt(1.05*max(vals[[3]]),xup)),
                              horiz=T,las=1,col=get.col(.N),
                              main=mtl%+%" by "%+%tl,space=sp,
                              xlab=xlb,cex.names=nx,density=dn)
@@ -512,6 +526,24 @@ sapply(type.params,
                          angle=90,length=.07,lwd=2)
                   abline(v=c(vals[[2]][ind],vals[[3]][ind]),lty=2)
                   dev.off2()}])}))})
+
+##Box and Whisker Plots ####
+###Box-and-Whisker Repayment Distribution (among Payers)
+pdf2(img_wd%+%"box_whisk_pos_paid_7_own.pdf")
+par(mar=c(2.6,5.1,4.1,1.1))
+boxplot(total_paid~main_treat,horizontal=T,
+        cex.axis=.8,xaxt="n",boxwex=.5,
+        data=data_r2_own[total_paid>0],las=1,
+        col=get.col(7L),log="x",notch=T,
+        main="Distributions of Positive "%+%
+          "Payments\nBy Treatment")
+axis(side=1,at=10^(0:5),cex.axis=.8,
+     labels=paste0("$",formatC(as.integer(10^(0:5)),
+                               big.mark=",")))
+abline(v=data_r2_own[total_paid>0&
+                       main_treat=="Control",
+                     median(total_paid)],lty=2)
+dev.off2()
 
 ##Logit Fit Plots ####
 ### Ever Paid
