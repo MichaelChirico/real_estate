@@ -4,7 +4,14 @@
 #Michael Chirico
 #July 29, 2015
 
-#Setup: Packages, Working Directory, Convenient Functions ####
+#Setup: Random Seed, Packages,
+#  Working Directory, Convenient Functions ####
+##Random Seed
+###Alternating digits (1,3,...) of
+###  my CVS Extra Care card number
+set.seed(4746966)
+
+##Packages
 rm(list=ls(all=T))
 gc()
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
@@ -257,182 +264,147 @@ print.xtable(xtable(matrix(cbind(
 ## Bootstrap simulations ####
 ###Number of repetitions for all bootstrap
 ###  exercises
-BB<-1e4 
+BB<-1e4
 
-###Confidence intervals for 7 treatments
-###  on ever_paid, paid_full, total_paid
-###  by owner (all measures pre-aggregated)
-setkey(data_r2_own,main_treat)
-by_own_7<-
-  #First, point estimates from raw data
-  data_r2_own[,.(ep=mean(ever_paid),
-                 pf=mean(paid_full),
-                 tp=mean(total_paid),
-                 md=median(total_paid[total_paid>0]),
-                 pp=mean(total_paid[total_paid>0])),
-              by=main_treat
-              ][data.table(t(sapply(
-                #to guarantee equal representation of each
-                #  treatment, block at the treatment level--
-                #  resample N_t observations for each treatment t
-                paste0(data_r2_own[,unique(main_treat)]),
-                function(x)apply(replicate(
-                  BB,unlist(data_r2_own[.(x)][
-                    sample(.N,.N,T),
-                    #calculate point estimate in re-sample
-                    .(ep=mean(ever_paid),
-                      pf=mean(paid_full),
-                      tp=mean(total_paid),
-                      md=median(total_paid[total_paid>0]),
-                      pp=mean(total_paid[total_paid>0]))])),
-                  #CIs are given by the 2.5 &
-                  #  97.5 %ile of each measure
-                  1,quantile,c(.025,.975)),
+###For the standard confidence intervals,
+###  we can condense the process by storing
+###  the key changing parameters in this list;
+###  also store a bunch of plotting parameters
+###  since we'll use the result of this list for that
+bootlist<-{
+  #By owner, big vs. small
+  list(o2=list(dt=data_r2_own,trt="big_small",
+               exprs=quote(.(mean(ever_paid),
+                             mean(paid_full),
+                             mean(total_paid))),
+               nms=c("ep","pf","tp"),
+               fn="2_own",tr="big_small",
+               tl="Big/Small",rf="Small",nx=.75,
+               sp=3,yl=c(2,10),dn=quote(NULL)),
+       #By owner, main 7 treatments
+       o7=list(dt=data_r2_own,trt="main_treat",
+               exprs=quote(.(mean(ever_paid),mean(paid_full),
+                             mean(total_paid),
+                             median(total_paid[total_paid>0]),
+                             mean(total_paid[total_paid>0]))),
+               nms=c("ep","pf","tp","md","pp"),
+               fn="7_own",tr="main_treat",
+               tl="Treatment",rf="Control",nx=.75,
+               sp=NULL,yl=NULL,dn=quote(NULL)),
+       #By owner, main 7 treatments,
+       #  exclude 5% extreme payers
+       o75=list(dt=data_r2_own_x05,trt="main_treat",
+                exprs=quote(.(mean(ever_paid),
+                              mean(paid_full),
+                              mean(total_paid))),
+                nms=c("ep","pf","tp"),
+                fn="7_own_x05",tr="main_treat",
+                tl="Treatment\nExcluding Top 5% of Payers",
+                rf="Control",nx=.75,sp=NULL,
+                yl=NULL,dn=quote(NULL)),
+       #By owner, main 7 treatments,
+       #  exclude 10% extreme payers
+       o71=list(dt=data_r2_own_x10,trt="main_treat",
+                exprs=quote(.(mean(ever_paid),
+                              mean(paid_full),
+                              mean(total_paid))),
+                nms=c("ep","pf","tp"),
+                fn="7_own_x10",tr="main_treat",
+                tl="Treatment\nExcluding Top 10% of Payers",
+                rf="Control",nx=.75,sp=NULL,
+                yl=NULL,dn=quote(NULL)),
+       #By owner, full 14 treatments
+       o14=list(dt=data_r2_own,trt="treatment",
+                exprs=quote(.(mean(ever_paid),
+                              mean(paid_full),
+                              mean(total_paid))),
+                nms=c("ep","pf","tp"),
+                fn="14_own",tr="treatment",
+                tl="Treatment / Big/Small",
+                rf="Control_Small",nx=.5,
+                sp=NULL,yl=NULL,dn=quote(rep(c(-1,30),.N))))}
+
+boot.cis<-{
+  lapply(bootlist,function(z){
+    print(names(z))
+    with(z,list("dt"=setnames(setkeyv(
+      #First, point estimates from raw data
+      dt,trt)[,eval(exprs),by=trt
+              ][data.table(t(sapply(paste0(
+                dt[,unique(get(trt))]),
+                function(w){
+                  apply(replicate(
+                    #to guarantee equal representation of each
+                    #  treatment, block at the treatment level--
+                    #  resample N_t observations for each treatment t
+                    BB,unlist(dt[.(w)][
+                      #calculate point estimate in re-sample
+                      sample(.N,.N,T),eval(exprs)])),
+                    #CIs are given by the 2.5 &
+                    #  97.5 %ile of each measure
+                    1,quantile,c(.025,.975))},
                 USE.NAMES=T)),keep.rownames=T),
-                `:=`(ep.ci.lo=i.V1,ep.ci.hi=i.V2,
-                     pf.ci.lo=i.V3,pf.ci.hi=i.V4,
-                     tp.ci.lo=i.V5,tp.ci.hi=i.V6,
-                     md.ci.lo=i.V7,md.ci.hi=i.V8,
-                     pp.ci.lo=i.V9,pp.ci.hi=i.V10),
-                on=c(main_treat="rn")]
+                on=setNames("rn",trt)],
+      c(trt,nms,rep(nms,each=2)%+%
+          c(".ci.lo",".ci.hi"))),
+      "fn"=fn,"tr"=tr,"tl"=tl,"rf"=rf,
+      "nx"=nx,"sp"=sp,"yl"=yl,"dn"=dn))})}
 
-###Confidence intervals for 7 treatments
-###  on ever_paid, paid_full, total_paid
-###  by property, resampling at the owner level
+###Now add confidence intervals for more complicated
+###  scenario--results at the property level,
+###  clustering by owner by resampling owners
 setkey(data_r2,main_treat)
 owners<-sapply(paste0(data_r2[,unique(main_treat)]),
                function(x)data_r2[.(x),unique(owner1)],
                USE.NAMES=T)
 setkey(data_r2,owner1)
-by_prop_7<-
-  data_r2[,.(ep=mean(ever_paid),pf=mean(paid_full),
-             tp=mean(total_paid)),by=main_treat
-          ][data.table(t(sapply(
-            trt.nms,function(x)apply(
-              replicate(BB,unlist(
-                data_r2[.(sample(owners[[x]],rep=T)),
-                        .(mean(ever_paid),mean(paid_full),
-                          mean(total_paid))])),1,quantile,c(.025,.975)),
-            USE.NAMES=T)),keep.rownames=T),
-            `:=`(ep.ci.lo=i.V1,ep.ci.hi=i.V2,
-                 pf.ci.lo=i.V3,pf.ci.hi=i.V4,
-                 tp.ci.lo=i.V5,tp.ci.hi=i.V6),
-            on=c(main_treat="rn")]
+boot.cis$p7<-{
+  list("dt"=data_r2[,.(ep=mean(ever_paid),pf=mean(paid_full),
+                       tp=mean(total_paid)),by=main_treat
+                    ][data.table(t(sapply(
+                      trt.nms,function(x)apply(
+                        replicate(BB,unlist(
+                          data_r2[.(sample(owners[[x]],rep=T)),
+                                  .(mean(ever_paid),mean(paid_full),
+                                    mean(total_paid))])),1,
+                        quantile,c(.025,.975)),
+                      USE.NAMES=T)),keep.rownames=T),
+                      `:=`(ep.ci.lo=i.V1,ep.ci.hi=i.V2,
+                           pf.ci.lo=i.V3,pf.ci.hi=i.V4,
+                           tp.ci.lo=i.V5,tp.ci.hi=i.V6),
+                      on=c(main_treat="rn")],
+       fn="7_prop",tr="main_treat",
+       tl="Treatment\nProperty Level, SEs "%+%
+         "Clustered by Owner",rf="Control",
+       nx=.75,sp=NULL,yl=NULL,dn=quote(NULL))}
 
-###Confidence intervals for 7 treatments
-###  on ever_paid, paid_full, total_paid
-###  by owner (all measures pre-aggregated),
-###  top 5% then 10% of payers excluded
-setkey(data_r2_own_x05,main_treat)
-by_own_7_x05<-
-  data_r2_own_x05[,.(ep=mean(ever_paid),
-                     pf=mean(paid_full),
-                     tp=mean(total_paid)),
-                  by=main_treat
-                  ][data.table(t(sapply(
-                    trt.nms,function(x)apply(replicate(
-                      BB,unlist(data_r2_own_x05[.(x)][
-                        sample(.N,.N,T),
-                        .(ep=mean(ever_paid),
-                          pf=mean(paid_full),
-                          tp=mean(total_paid))])),
-                      1,quantile,c(.025,.975)),
-                    USE.NAMES=T)),keep.rownames=T),
-                    `:=`(ep.ci.lo=i.V1,ep.ci.hi=i.V2,
-                         pf.ci.lo=i.V3,pf.ci.hi=i.V4,
-                         tp.ci.lo=i.V5,tp.ci.hi=i.V6),
-                    on=c(main_treat="rn")]
-
-setkey(data_r2_own_x10,main_treat)
-by_own_7_x10<-
-  data_r2_own_x10[,.(ep=mean(ever_paid),
-                     pf=mean(paid_full),
-                     tp=mean(total_paid)),
-                  by=main_treat
-                  ][data.table(t(sapply(
-                    trt.nms,function(x)apply(replicate(
-                      BB,unlist(data_r2_own_x10[.(x)][
-                        sample(.N,.N,T),
-                        .(ep=mean(ever_paid),
-                          pf=mean(paid_full),
-                          tp=mean(total_paid))])),
-                      1,quantile,c(.025,.975)),
-                    USE.NAMES=T)),keep.rownames=T),
-                    `:=`(ep.ci.lo=i.V1,ep.ci.hi=i.V2,
-                         pf.ci.lo=i.V3,pf.ci.hi=i.V4,
-                         tp.ci.lo=i.V5,tp.ci.hi=i.V6),
-                    on=c(main_treat="rn")]
-
-###Confidence intervals for 2 treatments
-###  on ever_paid, paid_full, total_paid
-###  by owner (all measures pre-aggregated)
-setkey(data_r2_own,big_small)
-by_own_bs<-
-  data_r2_own[,.(ep=mean(ever_paid),
-                 pf=mean(paid_full),
-                 tp=mean(total_paid)),
-              by=big_small
-              ][data.table(t(sapply(
-                data_r2_own[,unique(big_small)],
-                function(x)apply(replicate(
-                  BB,unlist(data_r2_own[.(x)][
-                    sample(.N,.N,T),
-                    .(ep=mean(ever_paid),
-                      pf=mean(paid_full),
-                      tp=mean(total_paid))])),
-                  1,quantile,c(.025,.975)),
-                USE.NAMES=T)),keep.rownames=T),
-                `:=`(ep.ci.lo=V1,ep.ci.hi=V2,
-                     pf.ci.lo=V3,pf.ci.hi=V4,
-                     tp.ci.lo=V5,tp.ci.hi=V6),
-                on=c(big_small="rn")]
-
-###Confidence intervals for 14 treatments
-###  on ever_paid, paid_full, total_paid
-###  by owner (all measures pre-aggregated)
-setkey(data_r2_own,treatment)
-by_own_all<-
-  data_r2_own[,.(ep=mean(ever_paid),
-                 pf=mean(paid_full),
-                 tp=mean(total_paid)),
-              by=treatment
-              ][data.table(t(sapply(
-                data_r2_own[,unique(treatment)]%+%"",
-                function(x)apply(replicate(
-                  BB,unlist(data_r2_own[.(x)][
-                    sample(.N,.N,T),
-                    .(ep=mean(ever_paid),
-                      pf=mean(paid_full),
-                      tp=mean(total_paid))])),
-                  1,quantile,c(.025,.975)),
-                USE.NAMES=T)),keep.rownames=T),
-                `:=`(ep.ci.lo=V1,ep.ci.hi=V2,
-                     pf.ci.lo=V3,pf.ci.hi=V4,
-                     tp.ci.lo=V5,tp.ci.hi=V6),
-                on=c(treatment="rn")]
-
-###Confidence intervals for Holdout sample
-###  on ever_paid, paid_full, total_paid
-###  by owner (all measures pre-aggregated)
-by_own_8<-rbind(
-  by_own_7,data.table(
-    main_treat="Holdout",
-    rbind(setNames(c(unlist(
-      data_holdout[!(flag_main_sample_overlap),
-                   .(ep=mean(ever_paid),
-                     pf=mean(paid_full),
-                     tp=mean(total_paid))]),
-      c(apply(replicate(
-        BB,unlist(data_holdout[!(flag_main_sample_overlap)][
-          sample(.N,.N,T),
-          .(ep=mean(ever_paid),
-            pf=mean(paid_full),
-            tp=mean(total_paid))])),
-        1,quantile,c(.025,.975)))),
-      c("ep","pf","tp","ep.ci.lo","ep.ci.hi",
-        "pf.ci.lo","pf.ci.hi","tp.ci.hi","tp.ci.lo"))))
-  )[,main_treat:=
-      factor(main_treat,c("Holdout",trt.nms))]
+###Lastly, for the holdout sample, we simply need to
+###  append the holdout results--no need to repeat
+###  sampling for the main treatments again
+boot.cis$o8<-{
+  list("dt"=rbind(fill=T,
+    boot.cis$o7$dt,data.table(
+      main_treat="Holdout",
+      rbind(setNames(c(unlist(
+        data_holdout[!(flag_main_sample_overlap),
+                     .(ep=mean(ever_paid),
+                       pf=mean(paid_full),
+                       tp=mean(total_paid))]),
+        c(apply(replicate(
+          BB,unlist(data_holdout[!(flag_main_sample_overlap)][
+            sample(.N,.N,T),
+            .(ep=mean(ever_paid),
+              pf=mean(paid_full),
+              tp=mean(total_paid))])),
+          1,quantile,c(.025,.975)))),
+        c("ep","pf","tp","ep.ci.lo","ep.ci.hi",
+          "pf.ci.lo","pf.ci.hi","tp.ci.hi","tp.ci.lo"))))
+    )[,main_treat:=
+      factor(main_treat,c("Holdout",trt.nms))],
+    fn="8_own",tr="main_treat",
+    tl="Treatment\nIncluding Holdout Sample",
+    rf="Holdout",nx=.75,sp=NULL,
+    yl=NULL,dn=quote(NULL))}
 
 ###Confidence Intervals for 7 treatments
 ###  On predictions of P[ever_paid] by log(total_due)
@@ -472,30 +444,6 @@ paid_full.lgt.ci<-
         grd~id,value.var=trt.nms)
 
 ##Bar Plots ####
-plot.params<-{list(o2=list(dt=by_own_bs,fn="2_own",tr="big_small",
-                           tl="Big/Small",rf="Small",nx=.75,
-                           sp=3,yl=c(2,10),dn=NULL),
-                   o7=list(dt=by_own_7,fn="7_own",tr="main_treat",
-                           tl="Treatment",rf="Control",nx=.75,
-                           sp=NULL,yl=NULL,dn=NULL),
-                   o75=list(dt=by_own_7_x05,fn="7_own_x05",tr="main_treat",
-                            tl="Treatment\nExcluding Top 5% of Payers",
-                            rf="Control",nx=.75,sp=NULL,yl=NULL,dn=NULL),
-                   o71=list(dt=by_own_7_x10,fn="7_own_x10",tr="main_treat",
-                            tl="Treatment\nExcluding Top 10% of Payers",
-                            rf="Control",nx=.75,sp=NULL,yl=NULL,dn=NULL),
-                   p7=list(dt=by_prop_7,fn="7_prop",tr="main_treat",
-                           tl="Treatment\nProperty Level, SEs "%+%
-                             "Clustered by Owner",rf="Control",
-                           nx=.75,sp=NULL,yl=NULL,dn=NULL),
-                   o8=list(dt=by_own_8,fn="8_own",tr="main_treat",
-                           tl="Treatment\nIncluding Holdout Sample",
-                           rf="Holdout",nx=.75,sp=NULL,yl=NULL,dn=NULL),
-                   o14=list(dt=by_own_all,fn="14_own",tr="treatment",
-                           tl="Treatment / Big/Small",
-                           rf="Control_Small",nx=.5,
-                           sp=NULL,yl=NULL,dn=rep(c(-1,30),.N)))}
-
 type.params<-list(list(mfn="bar_plot_ever_paid_",xn="ep",trans=to.pct,
                        mtl="Percent Ever Paid",xlb="Percent",xup=5,
                        tps=c("o2","o7","o75","o71","p7","o8","o14")),
@@ -514,7 +462,7 @@ type.params<-list(list(mfn="bar_plot_ever_paid_",xn="ep",trans=to.pct,
 
 sapply(type.params,
        function(y){
-         with(y,sapply(plot.params[tps],function(lst){
+         with(y,sapply(boot.cis[tps],function(lst){
            with(lst,
                 dt[order(get(tr)),{pdf2(img_wd%+%mfn%+%fn%+%".pdf")
                   par(mar=c(5.1,5.1,4.1,1.6))
@@ -524,7 +472,7 @@ sapply(type.params,
                              xlim=c(0,nx.mlt(1.05*max(vals[[3]]),xup)),
                              horiz=T,las=1,col=get.col(.N),
                              main=mtl%+%" by "%+%tl,space=sp,
-                             xlab=xlb,cex.names=nx,density=dn)
+                             xlab=xlb,cex.names=nx,density=eval(dn))
                   arrows(vals[[2]],x,vals[[3]],x,code=3,
                          angle=90,length=.07,lwd=2)
                   abline(v=c(vals[[2]][ind],vals[[3]][ind]),lty=2)
