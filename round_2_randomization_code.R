@@ -2,32 +2,51 @@
 # Michael Chirico
 # May 15, 2015
 
-# Setup: Packages, Working Directory, Set Random Seed ####
+# Setup: Working Directory, Packages,
+#   Convenient Functions, Set Random Seed ####
 rm(list=ls(all=T))
 gc()
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
+data_wd<-"/media/data_drive/real_estate/"
+gis_wd<-"/media/data_drive/gis_data/PA/"
 library(data.table)
 library(xlsx)
 library(foreign)
 library(maptools)
+
+abbr_to_colClass<-function(inits,counts){
+  x<-strsplit(inits,split="")[[1]]
+  types<-character(length(x))
+  types[x=="c"]<-"character"
+  types[x=="f"]<-"factor"
+  types[x=="i"]<-"integer"
+  types[x=="n"]<-"numeric"
+  types[x=="d"]<-"Date"
+  rep(types,strsplit(counts,split="")[[1]])
+}
+
+"%+%"<-function(s1,s2)paste0(s1,s2)
+
 ##Set Random Seed:
 ## Took current time as of this writing and appended the digits
 ## of a Banana Republic coupon code I found on my desk: 1729749
 set.seed(1820749)
 
 # Data Import ####
-data_final<-setnames(fread("/media/data_drive/real_estate/2015 Delinquent.csv",
-                           colClasses=c(rep("character",7),rep("numeric",3),"character"),
+data_final<-setnames(fread(data_wd%+%"2015 Delinquent.csv",
+                           colClasses=abbr_to_colClass("cnc","731"),
                            drop=c("V8","V9")),
                      c("opa_no","owner1","owner2",
-                       paste0("mail_",c("address","city","state","zip")),
+                       "mail_"%+%c("address","city","state","zip"),
                        "total_due","property_address"))
 
-data_old<-setnames(fread("/media/data_drive/real_estate/round_two_property_file.csv",
+data_old<-setnames(fread(data_wd%+%"round_two_property_file.csv",
                          select=c("BRT NUMBER","AZAVEA NEIGHBORHOOD","ZIP CODE")),
                    c("opa_no","azavea_nbhd","zip"))
 
-data<-setkey(data_old,opa_no)[setkey(data_final,opa_no)][,total_due:=total_due/100]; rm(data_final,data_old)
+data<-setkey(data_old,opa_no
+             )[setkey(data_final,opa_no)
+               ][,total_due:=total_due/100]; rm(data_final,data_old)
 
 # Hand-code Azavea & Zip for new properties (3)
 data["632196220",c("azavea_nbhd","zip"):=list("Bustleton",19115L)]
@@ -80,27 +99,26 @@ to.proper<-function(strings){
   gsub("\\bMc([a-z])","Mc\\U\\1",res,perl=T)
 }
 
-data[,paste0("owner",1:2,"_clean"):=lapply(.SD,to.proper),.SDcols=paste0("owner",1:2)]
+data[,paste0("owner",1:2,"_clean"):=
+       lapply(.SD,to.proper),.SDcols="owner"%+%1:2]
 
 #Add in spatial data
 
 ## Sheriff's Sales Info ####
 sheriffs_map_delinquent<-
-  readShapePoints("/media/data_drive/gis_data/PA/delinquent_sold_year_to_may_15_nad.shp")
-phila_zip<-
-  readShapePoly("/media/data_drive/gis_data/PA/Philadelphia_Zipcodes_Poly201302.shp")
+  readShapePoints(gis_wd%+%"delinquent_sold_year_to_may_15_nad.shp")
 phila_azav<-
-  readShapePoly("/media/data_drive/gis_data/PA/Neighborhoods_Philadelphia_with_quadrants.shp")
+  readShapePoly(gis_wd%+%"Neighborhoods_Philadelphia_with_quadrants.shp")
 
 sheriffs_sales<-setkey(setkey(setkey(fread(
-  "/media/data_drive/real_estate/sheriffs_sales/delinquent_sold_year_to_may_15.csv"
+  data_wd%+%"sheriffs_sales/delinquent_sold_year_to_may_15.csv"
   ),opa_no)[.(as.character(sheriffs_map_delinquent@data$opa_no)),
             #Spatial join: assign Azavea neighborhood and quadrant to each sale
             `:=`(azavea_nbhd=(sheriffs_map_delinquent %over% phila_azav)[,"LISTNAME"],
                  azavea_quad=(sheriffs_map_delinquent %over% phila_azav)[,"quadrant"])
             #Rename Azavea neighborhoods to match DoR data
-            ],azavea_nbhd)[setkey(fread(paste0("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/",
-                      "azaveas_mapping_dor_shp.csv")),azavea_shp),azavea_nbhd:=i.azavea_dor],
+            ],azavea_nbhd)[setkey(fread(
+                      "azaveas_mapping_dor_shp.csv"),azavea_shp),azavea_nbhd:=i.azavea_dor],
   #Format dates pretty for output to letters
   opa_no)[,sale_date:=format(as.Date(sale_date),"%B %d, %Y")]; rm(sheriffs_map_delinquent)
 
@@ -124,10 +142,9 @@ azavea_quad_sample_ss<-setkey(setnames(dcast.data.table(
 
 ###Get Quadrant-Neighborhood mapping to assign in main data
 azavea_nbhd_quad_mapping<-
-  setkey(setkey(data.table(read.dbf("/media/data_drive/gis_data/PA/Neighborhoods_Philadelphia_with_quadrants.dbf")
+  setkey(setkey(data.table(read.dbf(gis_wd%+%"Neighborhoods_Philadelphia_with_quadrants.dbf")
                            )[,.(azavea_shp=LISTNAME,quadrant)],azavea_shp
-                )[fread(paste0("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/",
-                               "azaveas_mapping_dor_shp.csv")),
+                )[fread("azaveas_mapping_dor_shp.csv"),
                   azavea_nbhd:=i.azavea_dor][,azavea_shp:=NULL],azavea_nbhd)
 
 setkey(data,azavea_nbhd)[azavea_nbhd_quad_mapping,azavea_quad:=i.quadrant]; rm(azavea_nbhd_quad_mapping)
@@ -150,7 +167,7 @@ rm(sheriffs_sales,azavea_nbhd_sample_ss,azavea_quad_sample_ss)
 
 ## Amenities Info ####
 amenities_map<-
-  readShapePoints("/media/data_drive/gis_data/PA/amenities_azav_for_geocoding_nad.shp")
+  readShapePoints(gis_wd%+%"amenities_azav_for_geocoding_nad.shp")
 
 amenities_azav<-
   setkey(as.data.table(amenities_map)[,.(amenity,address,resource)],address
@@ -158,11 +175,10 @@ amenities_azav<-
            #Spatial join: assign Azavea neighborhood and quadrant to each sale
            `:=`(azavea_nbhd=(amenities_map %over% phila_azav)[,"LISTNAME"],
                 azavea_quad=(amenities_map %over% phila_azav)[,"quadrant"])
-           ][!is.na(azavea_nbhd),]; rm(amenities_map,phila_azav,phila_zip)
+           ][!is.na(azavea_nbhd),]; rm(amenities_map,phila_azav)
 ###Reset names of Azavea neighborhoods to fit formatting of DoR records
 setkey(amenities_azav,azavea_nbhd
-       )[setkey(fread(paste0("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/",
-                             "azaveas_mapping_dor_shp.csv")),azavea_shp),
+       )[setkey(fread("azaveas_mapping_dor_shp.csv"),azavea_shp),
          azavea_nbhd:=i.azavea_dor]
 
 ###As for Sheriff's Sales, define which neighborhoods are
