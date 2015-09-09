@@ -17,6 +17,7 @@ gc()
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 data_wd<-"/media/data_drive/real_estate/"
 img_wd<-"./papers_presentations/round_two/images/analysis/"
+gis_wd<-"/media/data_drive/gis_data/PA/"
 library(data.table)
 library(texreg)
 library(sandwich)
@@ -24,6 +25,8 @@ library(xtable)
 library(xlsx)
 library(sp)
 library(doParallel)
+library(RgoogleMaps)
+library(maptools)
 
 #Convenient Functions 
 table2<-function(...,dig=if (prop) 2 else NULL,prop=F,ord=F,pct=F){
@@ -621,4 +624,64 @@ print.xtable(xtable(setnames(dcast(
   
 
 ##Geospatial Analysis ####
+###map of Philadelphia for overlay
+gmap.phila<-GetMap(center=getGeoCode("Philadelphia, PA"),zoom=11)
+phila_azav_quad<-
+  readShapePoly(
+    gis_wd%+%"Azavea_Quadrant_cartogram_r2.shp")
+#Done by copying for now; check GH FR #1310 for updates
+phila_azav_quad@data<-setDT(phila_azav_quad@data)
+phila_azav_quad@data[,orig:=1:.N]
+phila_azav_quad@data<-
+  phila_azav_quad@data[
+    dcast(data_r2[,mean(ever_paid),
+                  keyby=.(main_treat,azavea_quad)
+                  ][CJ(unique(main_treat),
+                       unique(phila_azav_quad@data$quadrant))
+                    ][is.na(V1),V1:=0
+                      ][,.(main_treat,
+                           ep.over.control=
+                             V1-V1[main_treat=="Control"]),
+                        by=azavea_quad][!main_treat=="Control"],
+          azavea_quad~main_treat,value.var="ep.over.control"),
+    on=c(quadrant="azavea_quad")][order(orig)]
 
+scale.value<-function(x,nn=1000,
+                      cols=c("red","white","blue"),
+                      rng=range(x,na.rm=T)){
+  ramp<-colorRampPalette(cols)(nn)
+  xseq<-seq(from=rng[1],to=rng[2],length.out=nn)
+  min.or.na<-function(y){
+    z<-which.min(abs(xseq-y))
+    if (length(z))z else NA
+  }
+  ramp[sapply(x,min.or.na)]
+}
+
+PlotOnStaticMap(gmap.phila)
+pdf2(img_wd%+%"cartogram_quadrant_ever_paid.pdf")
+ncols<-31
+layout(mat=matrix(c(1:7,7,7),byrow=T,nrow=3),
+       heights=c(.475,.475,.05))
+par(mar=c(0,0,1.1,0),
+    oma=c(5.1,4.1,4.1,1.1))
+for (trt in trt.nms[-1]){
+  plot(phila_azav_quad,col=phila_azav_quad@
+         data[,scale.value(get(trt),nn=ncols,rng=c(-.15,.15),
+                           cols=c(get.col.nm("Control"),
+                                  "white",get.col.nm(trt)))],
+       main=trt,cex.main=.9)
+  text(coordinates(phila_azav_quad),font=2,cex=.4,
+       labels=phila_azav_quad@data[,paste0(quadrant)])
+}
+par(mar=c(0,0,0.1,0))
+plot(NA,type="n",ann=FALSE,xlim=c(1,2),ylim=c(1,2),
+     xaxt="n",yaxt="n",bty="n")
+xs<-seq(1,2,length.out=ncols+1)
+rect(xs[-(ncols+1)],1,
+     xs[-1],2,col=colorRampPalette(c("blue","white","black")
+                                   )(ncols))
+mtext(c("-15%","even","15%"),at=c(1,1.5,2),side=3,adj=c(0,.5,1))
+title("Cartogram: Ever Paid by City Sector\n"%+%
+        "Percentage above Control",outer=T)
+dev.off2()
