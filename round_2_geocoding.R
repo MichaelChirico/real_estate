@@ -87,5 +87,7 @@ phila_azav_quad_carto<-quick.carto(phila_azav_quad,phila_azav_quad$count)
 ##Export
 writeSpatialShape(phila_azav_carto,
                   gis_wd%+%"Azavea_Neighborhood_cartogram_r2")
+writeSpatialShape(phila_azav_quad,
+                  gis_wd%+%"Azavea_Quadrants")
 writeSpatialShape(phila_azav_quad_carto,
                   gis_wd%+%"Azavea_Quadrant_cartogram_r2")
