@@ -165,11 +165,15 @@ data_r2<-data_r2[fread("./round_two/round_2_full_data.csv",
 ##Property coordinates
 data_r2[setDT(read.xlsx3(
   data_wd%+%"req20150709_PennLetter"%+%
-    "Experiment_v2_Coordinates.xlsx",
-  sheetName="TREATMENTS",colIndex=c(1,4,5),
+    "Experiment_v3_Coordinates.xlsx",
+  sheetName="TREATMENT",colIndex=c(2,4,5),
   colClasses=c("character",rep("numeric",2)))),
   `:=`(longitude=X_LONG,latitude=Y_LAT),
-  on=c(opa_no="BRT.NUMBER")]
+  on=c(opa_no="BRT.NUMBER")
+  #supplement with coordinates done by hand & flag
+  ][fread(data_wd%+%"round_2_supplement_lon_lat_main.csv"),
+    `:=`(longitude=i.longitude,latitude=i.latitude,
+         flag_hand_geocode=TRUE),on="opa_no"]
 
 ##Sheriff's Sale property coordinates
 sheriffs_delinquent<-
@@ -219,11 +223,16 @@ data_holdout<-{
 ###Coordinates for holdout
 data_holdout[setDT(read.xlsx3(
   data_wd%+%"req20150709_PennLetter"%+%
-    "Experiment_v2_Coordinates.xlsx",
-  sheetName="CONTROL",colIndex=c(1,4,5),
+    "Experiment_v3_Coordinates.xlsx",
+  sheetName="CONTROL",colIndex=c(2,4,5),
   colClasses=c("character",rep("numeric",2)))),
   `:=`(latitude=Y_LAT,longitude=X_LONG),
-  on=c(opa_no="BRT.NUMBER")]
+  on=c(opa_no="BRT")
+  #supplement with coordinates done by hand & flag
+  ][fread(data_wd%+%"round_2_supplement_lon_lat_holdout.csv"),
+    `:=`(longitude=i.longitude,latitude=i.latitude,
+         flag_hand_geocode=TRUE),on="opa_no"]
+
 
 ###Define some flags
 #### Was more than one treatment received at this mailing address?
