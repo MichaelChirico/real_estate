@@ -99,24 +99,11 @@ nx.mlt<-function(x,n)n*ceiling(x/n)
 #Shorthand for string concatenation
 "%+%"<-function(s1,s2)paste0(s1,s2)
 
-get.col<-function(n){
-  cols<-c(Big="blue",Small="red",
-          Holdout="darkgray",Control="blue",
-          Amenities="yellow",Moral="cyan",
-          Duty="darkgreen",Lien="red",
-          Sheriff="orchid",Peer="orange")
-  if (n==2){cols[1:2]}
-  else if(n==7){cols[4:10]}
-  else if(n==8){cols[3:10]}
-  else if(n==14){rep(cols[4:10],each=2)}
-  else cat("Ya done goofed.")
-}
+dol_form<-function(x,dig=0){"$"%+%prettyNum(round(x,digits=dig),big.mark=",")}
 
 get.col.nm<-function(st){
-  cols<-c(Big="blue",Small="red",
-          Control="blue",Amenities="yellow",
-          Moral="cyan",Duty="darkgreen",
-          Lien="red",Sheriff="orchid",
+  cols<-c(Big="blue",Small="red",Control="blue",Amenities="yellow",
+          Moral="cyan",Duty="darkgreen",Lien="red",Sheriff="orchid",
           Peer="orange",Holdout="darkgray")
   cols[st]
 }
@@ -457,73 +444,6 @@ boot.cis$o8<-{
   rf="Holdout",nx=.75,sp=NULL,
   yl=NULL,dn=quote(NULL))}
 
-###Logit Prediction CIs ####
-logit.params<-{
-  list(td.ep=list(dn="data_r2_own",ky="main_treat",
-                  vr="total_due",kv=trt.nms,
-                  ov=quote(ever_paid),nm="total_grid",pd="ep",
-                  fn="ever_paid",tl="Ever Paying",
-                  st="Initial Debt",xl="Log $ Due",
-                  yl="Probability Ever Paid"),
-       td.pf=list(dn="data_r2_own",ky="main_treat",
-                  vr="total_due",kv=trt.nms,
-                  ov=quote(paid_full),nm="total_grid",pd="pf",
-                  fn="paid_full",tl="Paying in Full",
-                  st="Initial Debt",xl="Log $ Due",
-                  yl="Probability Paid in Full"),
-       dmn=list(dn="data_r2",ky="main_treat",kv=trt.nms,
-                vr="sheriff_distance_min",
-                ov=quote(ever_paid),nm="dist_grid",pd="ep",
-                fn="dist_min",tl="Ever Paying",
-                st="Distance to Sheriff's Sale (min)",
-                xl="Log km",yl="Probability Ever Paid"),
-       dmu=list(dn="data_r2",ky="main_treat",kv=trt.nms,
-                vr="sheriff_distance_mean",
-                ov=quote(ever_paid),nm="dist_grid",pd="ep",
-                fn="dist_avg",tl="Ever Paying",
-                st="Distance to Sheriff's Sale (mean)",
-                xl="Log km",yl="Probability Ever Paid"),
-       dfr=list(dn="data_r2",ky="main_treat",kv=trt.nms,
-                vr="example_address_1_distance",
-                ov=quote(ever_paid),nm="dist_grid",pd="ep",
-                fn="dist_one",tl="Ever Paying",
-                st="Distance to Sheriff's Sale (first)",
-                xl="Log km",yl="Probability Ever Paid"))}
-
-system.time({logit.preds<-
-  lapply(logit.params,function(x){
-    print(names(x))
-    with(x,{dt<-get(dn,envir=globalenv())
-    grd<-dt[,seq(min(get(vr),na.rm=T),
-                 max(get(vr),na.rm=T),
-                 length.out=1e3)]
-    setkeyv(dt,ky)
-    cl <- makeCluster(detectCores())
-    registerDoParallel(cl)
-    clusterExport(cl,c(dn,"BB"),envir=environment())
-    clusterEvalQ(cl,{library("data.table")})
-    out<-foreach(i = kv,.combine=rbind) %dopar% {
-      outdt<-setnames(data.table(vr=grd),vr)
-      print("yo2")
-      outdt[,(pd):=dt[.(i)][
-        !is.na(get(vr)),
-        predict(glm(eval(ov)~log(get(vr)),family=binomial),
-                outdt,type="response")]]
-      ci.lim<-apply(replicate(
-        BB,dt[.(i)][!is.na(get(vr))][
-          sample(.N,rep=T),
-          predict(glm(eval(ov)~log(get(vr)),family=binomial),
-                  outdt,type="response")]),
-        1,quantile,c(.025,.975))
-      outdt[,c(ky,paste0(pd,c(".ci.lo",".ci.hi"))):=
-              list(i,ci.lim[1,],ci.lim[2,])]
-      setnames(outdt,vr,nm)
-      outdt
-    }
-    stopCluster(cl)
-    list("dt"=out,"fn"=fn,"nm"=nm,"ky"=ky,"kv"=kv,
-         "tl"=tl,"st"=st,"xl"=xl,"yl"=yl,"pd"=pd)})})})
-
 ##Bar Plots ####
 type.params<-{list(list(mfn="bar_plot_ever_paid_",xn="ep",trans=to.pct,
                         mtl="Percent Ever Paid",xlb="Percent",xup=5,
@@ -551,7 +471,7 @@ sapply(type.params,
                ind<-which(get(tr)==rf)
                x<-barplot(vals[[1]],names.arg=get(tr),ylim=yl,
                           xlim=c(0,nx.mlt(1.05*max(vals[[3]]),xup)),
-                          horiz=T,las=1,col=get.col(.N),
+                          horiz=T,las=1,col=get.col.nm(get(tr)),
                           main=mtl%+%" by "%+%tl,space=sp,
                           xlab=xlb,cex.names=nx,density=eval(dn))
                arrows(vals[[2]],x,vals[[3]],x,code=3,
@@ -566,7 +486,7 @@ par(mar=c(2.6,5.1,4.1,1.1))
 boxplot(total_paid~main_treat,horizontal=T,
         cex.axis=.8,xaxt="n",boxwex=.5,
         data=data_r2_own[total_paid>0],las=1,
-        col=get.col(7L),log="x",notch=T,
+        col=get.col.nm(trt.nms),log="x",notch=T,
         main="Distributions of Positive "%+%
           "Payments\nBy Treatment")
 axis(side=1,at=10^(0:5),cex.axis=.8,
@@ -576,37 +496,6 @@ abline(v=data_r2_own[total_paid>0&
                        main_treat=="Control",
                      median(total_paid)],lty=2)
 dev.off2()
-
-##Logit Fit Plots ####
-lapply(logit.preds,function(x){
-  with(x,dt[,{
-    pdf2(img_wd%+%"predict_logit_"%+%fn%+%".pdf")
-    yrng<-range(.SD[,!c(nm,ky),with=F])
-    par(mfrow=c(2,3),
-        mar=c(0,0,0,0),
-        oma=c(5.1,4.1,4.1,1.1))
-    ctrl<-.SD[get(ky)=="Control",with=F,
-              j=pd%+%c("",".ci.lo",".ci.hi")]
-    gr<-.SD[1:1000L,get(nm)]
-    for (ii in 1:6){
-      ctrlx<-kv[c(1,ii+1L)]
-      y<-.SD[get(ky)==kv[-1][ii],with=F,
-             j=pd%+%c("",".ci.lo",".ci.hi")]
-      matplot(log(gr),cbind(ctrl,y),axes=F,type="l",
-              lty=rep(c(1,2,2),2),
-              lwd=rep(c(2,1,1),2),ylim=yrng,
-              col=get.col.nm(rep(ctrlx,each=3)))
-      tile_axes(ii,2,3,las=1,cex.axis=.6)
-      box()
-      legend(max(log(gr)),.95*yrng[2],legend=ctrlx,
-             col=get.col.nm(ctrlx),lwd=2,lty=1,
-             y.intersp=.2,bty="n",xjust=1.5,yjust=.5)
-    }
-    title("Predicted Probability of "%+%tl%+%
-            "\nby "%+%st,outer=T)
-    mtext(xl,side=1,outer=T,line=2.5,cex=.8)
-    mtext(yl,side=2,outer=T,line=2.5,cex=.8)
-    dev.off2()}])})
 
 ## Probability Repayment by Quartile
 data_r2_own[,total_due_quartile:=
@@ -694,3 +583,31 @@ mtext(c("-15%","even","15%"),at=c(1,1.5,2),side=3,adj=c(0,.5,1))
 title("Cartogram: Ever Paid by City Sector\n"%+%
         "Percentage above Control",outer=T)
 dev.off2()
+
+##Financial Analysis ####
+print.xtable2(xtable(
+  data_r2_own[,.(.N,
+             tot_due=sum(total_due),
+             ev_pd=mean(ever_paid),pd_fl=mean(paid_full),
+             tot_pmt=sum(total_paid)),keyby=main_treat
+    ][,.("Treatment"=main_treat,
+         "Total Debt Owed"=dol_form(tot_due),
+         "Percent Ever Paid"=to.pct(ev_pd,dig=0),
+         "Percent Paid in Full"=to.pct(pd_fl,dig=0),
+         "Dollars Received"=dol_form(tot_pmt),
+         "Percent Debt Received"=to.pct(tot_pmt/tot_due,dig=1),
+         "Dollars above Control Per Owner"=
+           dol_form(tot_pmt/N-tot_pmt[1]/N[1]),
+         "Total Surplus over All Owners"=
+           dol_form(tot_pmt-tot_pmt[1]/N[1]*N))],
+  caption=c("Summary of Effectiveness of Treatment"),label="table:summary",
+  align="|c|p{1.4cm}|p{1.8cm}|p{1.2cm}|p{1.2cm}|"%+%
+    "p{1.6cm}|p{1.4cm}|p{2.2cm}|p{1.8cm}|",
+  digits=c(rep(0,6),1,0,0)),include.rownames=F)
+
+quantile(replicate(10000,data_holdout_own[sample(.N,rep=T),.(.N,sum(total_paid)),
+                        keyby=.(main_treat=gsub("_.*","",treatment))
+                        ][,sum(V2-V2[main_treat=="Holdout"]/
+                                 N[main_treat=="Holdout"]*N)]),c(.05,.95))
+
+
