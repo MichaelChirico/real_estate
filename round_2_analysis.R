@@ -105,7 +105,7 @@ get.col.nm<-function(st){
   cols<-c(Big="blue",Small="red",Control="blue",Amenities="yellow",
           Moral="cyan",Duty="darkgreen",Lien="red",Sheriff="orchid",
           Peer="orange",Holdout="darkgray")
-  cols[st]
+  cols[as.character(st)]
 }
 
 #Data Import ####
@@ -259,11 +259,11 @@ data_r2_own<-setkey(
           by=owner1],treatment)
 
 ###Get owner-level version of data, dropping the top
-###  a) 5% and b) 10% of accounts by repayment numbers
+###  a) 1% and b) 5% of accounts by repayment numbers
+data_r2_own_x01<-
+  data_r2_own[total_paid<quantile(total_paid,.99)]
 data_r2_own_x05<-
   data_r2_own[total_paid<quantile(total_paid,.95)]
-data_r2_own_x10<-
-  data_r2_own[total_paid<quantile(total_paid,.90)]
 
 ###Get owner-level version of data for single-owner
 ###  property subsample
@@ -348,16 +348,16 @@ bootlist<-{
                  yl=NULL,dn=quote(NULL)),
        #By owner, main 7 treatments,
        #  exclude 5% extreme payers
-       o75=list(dt=data_r2_own_x05,tr="main_treat",
-                exprs=mneppftp,nms=eppftp,fn="7_own_x05",
-                tl="Treatment\nExcluding Top 5% of Payers",
+       o71=list(dt=data_r2_own_x01,tr="main_treat",
+                exprs=mneppftp,nms=eppftp,fn="7_own_x01",
+                tl="Treatment\nExcluding Top 1% of Payers",
                 lv=trt.nms,nx=.75,sp=NULL,
                 yl=NULL,dn=quote(NULL)),
        #By owner, main 7 treatments,
        #  exclude 10% extreme payers
-       o71=list(dt=data_r2_own_x10,tr="main_treat",
-                exprs=mneppftp,nms=eppftp,fn="7_own_x10",
-                tl="Treatment\nExcluding Top 10% of Payers",
+       o75=list(dt=data_r2_own_x05,tr="main_treat",
+                exprs=mneppftp,nms=eppftp,fn="7_own_x05",
+                tl="Treatment\nExcluding Top 5% of Payers",
                 lv=trt.nms,nx=.75,sp=NULL,
                 yl=NULL,dn=quote(NULL)),
        #By owner, full 14 treatments
@@ -404,17 +404,17 @@ owners<-sapply(paste0(data_r2[,unique(main_treat)]),
 setkey(data_r2,owner1)
 boot.cis$p7<-{
   list("dt"=setnames(
-    data_r2[,eval(mneppftp),by=main_treat
-            ][data.table(t(sapply(
-              trt.nms,function(x)apply(
-                replicate(BB,unlist(
-                  data_r2[.(sample(owners[[x]],rep=T)),
-                          eval(mneppftp)])),1,
-                quantile,c(.025,.975)),
-              USE.NAMES=T)),keep.rownames=T),
-              on=c(main_treat="rn")],
-    c("main_treat",eppftp,rep(eppftp,each=2)%+%
-        c(".ci.lo",".ci.hi"))),
+    data.table(t(sapply(
+      trt.nms,function(x)apply(
+        replicate(BB,unlist(
+          data_r2[.(sample(owners[[x]],rep=T)),
+                  eval(mneppftp)])),1,
+        quantile,c(.025,.975)),
+      USE.NAMES=T)),keep.rownames=T
+      )[data_r2[,eval(mneppftp),keyby=main_treat],
+        on=c(rn="main_treat")],
+    c("main_treat",rep(eppftp,each=2)%+%
+        c(".ci.lo",".ci.hi"),eppftp)),
     fn="7_prop",tr="main_treat",
     tl="Treatment\nProperty Level, SEs "%+%
       "Clustered by Owner",rf="Control",
@@ -447,13 +447,13 @@ boot.cis$o8<-{
 ##Bar Plots ####
 type.params<-{list(list(mfn="bar_plot_ever_paid_",xn="ep",trans=to.pct,
                         mtl="Percent Ever Paid",xlb="Percent",xup=5,
-                        tps=c("o2","o7","o7so","o75","o71","p7","o8","o14")),
+                        tps=c("o2","o7","o7so","o71","o75","p7","o8","o14")),
                    list(mfn="bar_plot_paid_full_",xn="pf",trans=to.pct,
                         mtl="Percent Paid Full",xlb="Percent",xup=5,
-                        tps=c("o2","o7","o7so","o75","o71","p7","o8","o14")),
+                        tps=c("o2","o7","o7so","o751","o75","p7","o8","o14")),
                    list(mfn="bar_plot_aver_paid_",xn="tp",trans=identity,
                         mtl="Average Paid",xlb="$",xup=100,
-                        tps=c("o2","o7","o7so","o75","o71","p7","o8","o14")),
+                        tps=c("o2","o7","o7so","o71","o75","p7","o8","o14")),
                    list(mfn="bar_plot_med_pos_paid_",xn="md",trans=identity,
                         mtl="Median Positive Amount Paid",xlb="$",
                         tps=c("o7"),xup=100),
