@@ -200,12 +200,13 @@ data_holdout<-{
         "ever_paid","period_min","period_max",
         "current_balance","earliest_pmt",
         "total_paid")
-    )[,treatment:="Holdout"
+    )[,c("main_treat","treatment"):="Holdout"
       ][,(inds):=lapply(.SD,function(x)x=="Y"),
         .SDcols=inds
         ][,paid_full:=!paid_full
           ][fread("holdout_sample.csv"),
             owner1:=owner1,on="opa_no"],fill=T),opa_no)}
+data_holdout[,main_treat:=factor(main_treat,c("Holdout",trt.nms))]
 
 ###Coordinates for holdout
 data_holdout[setDT(read.xlsx3(
@@ -247,7 +248,7 @@ data_r2[,flag_round_one:=
 data_r2[fread(data_wd%+%"prop2015.txt",select=c("PARCEL","XMPT CD")),
         flag_abate_exempt:=`i.XMPT CD`!="",on=c(opa_no="PARCEL")]
 
-###Get owner-level version of data, keeping only key analysis variables
+###Get owner-level versions of data, keeping only key analysis variables
 data_r2_own<-setkey(
   data_r2[,.(main_treat=main_treat[1L],
              treatment=treatment[1L],
@@ -258,20 +259,13 @@ data_r2_own<-setkey(
              total_due=sum(total_due)),
           by=owner1],treatment)
 
-###Get owner-level version of data, dropping the top
-###  a) 1% and b) 5% of accounts by repayment numbers
+####  Dropping the top
+####  a) 1% and b) 5% of accounts by repayment numbers
 data_r2_own_x01<-
   data_r2_own[total_paid<quantile(total_paid,.99)]
 data_r2_own_x05<-
   data_r2_own[total_paid<quantile(total_paid,.95)]
 
-###Get owner-level version of data for single-owner
-###  property subsample
-data_r2_own_so<-
-  data_r2_own[data_r2[!(flag_multiple_property),
-                      .(owner1)],on="owner1"]
-
-###Get owner-level version of holdout data
 data_holdout_own<-
   data_holdout[,.(treatment=treatment[1],
                   ever_paid=any(ever_paid),
@@ -279,6 +273,11 @@ data_holdout_own<-
                   total_paid=sum(total_paid),
                   total_due=sum(total_due)),
                by=owner1]
+
+####Single-owner property subsample
+data_r2_own_so<-
+  data_r2_own[data_r2[!(flag_multiple_property),
+                      .(owner1)],on="owner1"]
 
 #Fidelity Checks ####
 ##Returned Mail Rates by Envelope Size
@@ -605,9 +604,37 @@ print.xtable2(xtable(
     "p{1.6cm}|p{1.4cm}|p{2.2cm}|p{1.8cm}|",
   digits=c(rep(0,6),1,0,0)),include.rownames=F)
 
-quantile(replicate(10000,data_holdout_own[sample(.N,rep=T),.(.N,sum(total_paid)),
-                        keyby=.(main_treat=gsub("_.*","",treatment))
-                        ][,sum(V2-V2[main_treat=="Holdout"]/
-                                 N[main_treat=="Holdout"]*N)]),c(.05,.95))
-
-
+sapply(list(list(dt=data_r2_own,fl="",tl="",
+                 tr="main_treat",rf="Control"),
+            list(dt=data_r2_own_x01,fl="_x01",
+                 tl="\nTop 1% of Payers Removed",
+                 tr="main_treat",rf="Control"),
+            list(dt=data_r2_own_x05,fl="_x05",
+                 tl="\nTop 5% of Payers Removed",
+                 tr="main_treat",rf="Control"),
+            list(dt=data_holdout_own,fl="_holdout",
+                 tl="\nvs. Holdout",tr="treatment",
+                 rf="Holdout")),
+       function(x){
+         with(x,{setkeyv(dt,tr)
+           lessref<-function(x)x-x[,rf]
+           dist<-lessref(sapply(
+             dt[,paste0(unique(get(tr)))],
+             function(y){tpx<-dt[.(y),total_paid]
+             replicate(BB,mean(sample(tpx,rep=T)))})) %*%
+             dt[,.N,by=tr]$N
+           pdf2(img_wd%+%"histogram_surplus"%+%fl%+%".pdf")
+           hist(dist,xaxt="n",xlab="$ Received above "%+%rf,
+                main="Distribution of (Bootstrapped) Total Surplus"%+%
+                  "\nAcross All Treatments"%+%tl,col="cyan",breaks=50)
+           axis(side=1,
+                at=seq(round(par("usr")[1],-6),
+                       round(par("usr")[2],-6),by=500000))
+           qs<-quantile(dist,c(.025,.975))
+           abline(v=qs,lwd=3)
+           abline(v=0,lwd=3,col="red")
+           text(x=qs,y=par("usr")[4]*.8,
+                labels=c("2.5 %-ile","97.5 %-ile"))
+           text(x=0,y=par("usr")[4]*.6,
+                labels=round(100*ecdf(dist)(0),1)%+%"%-ile")
+           dev.off2()})})
