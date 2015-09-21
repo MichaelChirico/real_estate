@@ -604,17 +604,20 @@ print.xtable2(xtable(
     "p{1.6cm}|p{1.4cm}|p{2.2cm}|p{1.8cm}|",
   digits=c(rep(0,6),1,0,0)),include.rownames=F)
 
-sapply(list(list(dt=data_r2_own,fl="",tl="",
+sapply(list(list(dt=data_r2_own,fl="7_own",tl="",
                  tr="main_treat",rf="Control"),
-            list(dt=data_r2_own_x01,fl="_x01",
+            list(dt=data_r2_own_x01,fl="7_own_x01",
                  tl="\nTop 1% of Payers Removed",
                  tr="main_treat",rf="Control"),
-            list(dt=data_r2_own_x05,fl="_x05",
+            list(dt=data_r2_own_x05,fl="7_own_x05",
                  tl="\nTop 5% of Payers Removed",
                  tr="main_treat",rf="Control"),
-            list(dt=data_holdout_own,fl="_holdout",
+            list(dt=data_holdout_own,fl="8_own",
                  tl="\nvs. Holdout",tr="treatment",
-                 rf="Holdout")),
+                 rf="Holdout"),
+            list(dt=data_r2_own,fl="2_own",
+                 tl="\nBig vs. Small",
+                 tr="big_small",rf="Small")),
        function(x){
          with(x,{setkeyv(dt,tr)
            lessref<-function(x)x-x[,rf]
@@ -623,7 +626,7 @@ sapply(list(list(dt=data_r2_own,fl="",tl="",
              function(y){tpx<-dt[.(y),total_paid]
              replicate(BB,mean(sample(tpx,rep=T)))})) %*%
              dt[,.N,by=tr]$N
-           pdf2(img_wd%+%"histogram_surplus"%+%fl%+%".pdf")
+           pdf2(img_wd%+%"histogram_surplus_"%+%fl%+%".pdf")
            hist(dist,xaxt="n",xlab="$ Received above "%+%rf,
                 main="Distribution of (Bootstrapped) Total Surplus"%+%
                   "\nAcross All Treatments"%+%tl,col="cyan",breaks=50)
