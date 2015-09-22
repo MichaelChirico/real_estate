@@ -617,7 +617,15 @@ sapply(list(list(dt=data_r2_own,fl="7_own",tl="",
                  rf="Holdout"),
             list(dt=data_r2_own,fl="2_own",
                  tl="\nBig vs. Small",
-                 tr="big_small",rf="Small")),
+                 tr="big_small",rf="Small"),
+            list(dt=data_r2_own[main_treat%in%
+                                  c("Control","Lien")],
+                 fl="7_own_lien",tr="main_treat",
+                 tl="\nLien vs. Control",rf="Control"),
+            list(dt=data_r2_own[main_treat%in%
+                                  c("Control","Lien","Peer")],
+                 fl="7_own_lien.peer",tr="main_treat",
+                 tl="\nLien & Peer vs. Control",rf="Control")),
        function(x){
          with(x,{setkeyv(dt,tr)
            lessref<-function(x)x-x[,rf]
