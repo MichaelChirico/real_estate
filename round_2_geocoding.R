@@ -11,16 +11,36 @@ gc()
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 data_wd<-"/media/data_drive/real_estate/"
 gis_wd<-"/media/data_drive/gis_data/PA/"
+library(funchir)
 library(data.table)
 library(maptools)
 library(ggmap)
 library(getcartr)
+library(deldir)
+library(sp)
 
-"%+%"<-function(s1,s2)paste0(s1,s2)
+#Copied & personalized from Carson Farmer here:
+#  http://carsonfarmer.com/2009/09/voronoi-polygons-with-r/
+voronoi = function(layer,box=NULL) {
+  crds <- layer@coords
+  colnames(crds)<-c("x","y")
+  rw <- c(t(box))
+  tlz <- tile.list(deldir(data.frame(crds),rw=rw))
+  wrap<-function(x)rbind(x, x[1,])
+  polys = lapply(tlz,function(tl){
+    Polygons(list(Polygon(wrap(cbind(tl$x,tl$y)))), 
+             ID=as.character(tl$ptNum))
+  })
+  SP = SpatialPolygons(polys)
+  DF <- data.frame(crds, 
+                   row.names=sapply(slot(SP, 'polygons'),function(x)slot(x, 'ID')))
+  
+  SpatialPolygonsDataFrame(SP, data = DF)
+}
 
 #Data Import ####
 ##Addresses mentioned in any letter in Round 2
-to_geocode<-unique(unlist(fread(
+used_sheriff<-unique(unlist(fread(
   "./round_two/round_2_full_data.csv",
   select="example_address_"%+%1:3)))
 
@@ -29,10 +49,11 @@ sheriffs_delinquent<-
   fread(data_wd%+%"/sheriffs_sales/"%+%
           "delinquent_sold_year_to_may_15.csv",
         select=c("opa_no","address")
-        )[address%in%to_geocode]
+        )[address%in%used_sheriff]
 
 ##Get experiment data for counts
 exper.data<-fread("./round_two/round_2_full_data.csv")
+exper.data.gis<-fread(data_wd%+%
 
 
 #Import shapefiles for delinquent
@@ -48,18 +69,19 @@ phila_azav<-
     CRS("+proj=longlat +datum=WGS84"))
 
 #Geocoding ####
-##Overlap properties to ZIPs to assign ZIPs; merge
+##Sheriff's Sales
+###Overlap properties to ZIPs to assign ZIPs; merge
 sheriffs_delinquent[as.data.table(cbind(as.character(
   sheriffs_map_delinquent@data$opa_no),
   as.numeric(as.character(
     (sheriffs_map_delinquent %over% phila_zip)[,"CODE"])))),
   "zip":=i.V2,on=c(opa_no="V1")]
 
-##Geocode using ZIPs & addresses 
+###Geocode using ZIPs & addresses 
 sheriffs_delinquent[,c("longitude","latitude"):=
                       geocode(paste0(address,", Philadelphia PA ",zip),
                               source="google")]
-##Write output
+###Write output
 write.csv(sheriffs_delinquent,file=data_wd%+%"/sheriffs_sales/"%+%
             "delinquent_sold_used_round_2_w_lon_lat.csv",
           row.names=F)
@@ -91,3 +113,13 @@ writeSpatialShape(phila_azav_quad,
                   gis_wd%+%"Azavea_Quadrants")
 writeSpatialShape(phila_azav_quad_carto,
                   gis_wd%+%"Azavea_Quadrant_cartogram_r2")
+
+#Voronoi Polygons ####
+sheriffs_map_in_sample<-
+  sheriffs_map_delinquent[
+    sheriffs_map_delinquent@data$opa_no %in% 
+      sheriffs_delinquent$opa_no,]
+
+sheriffs_map_in_sample_voronoi<-
+  voronoi(sheriffs_map_in_sample,
+          box=phila_zip@bbox)

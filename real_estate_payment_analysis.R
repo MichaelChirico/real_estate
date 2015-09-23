@@ -3,59 +3,19 @@
 #Michael Chirico
 #April 3, 2015
 
-#Setup: Packages, Working Directory, Etc.####
+#Setup: Packages, Working Directory, Convenient Functions ####
 rm(list=ls(all=T))
 gc()
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
+data_wd<-"/media/data_drive/real_estate/"
+library(funchir)
 library(data.table)
 library(texreg)
 library(sandwich)
 library(xtable)
 library(Zelig)
+library(foreign)
 library(readstata13)
-
-#Convenient Functions ####
-table2<-function(...,dig=NULL,prop=F,ord=F,pct=F){
-  dots<-list(...)
-  args<-names(dots) %in% names(formals(prop.table))
-  tab<-if (prop) do.call(
-    'prop.table',c(list(
-      do.call('table',if (length(args)) dots[!args] else dots)),
-      dots[args])) else do.call('table',list(...))
-  if (ord) tab<-tab[order(tab)]
-  if (pct) tab<-100*tab
-  if (is.null(dig)) tab else round(tab,digits=dig)
-}
-
-print.xtable2<-function(...){
-  #For pretty copy-pasting into LyX
-  cat(capture.output(do.call('print.xtable',list(...))),sep="\n\n")
-}
-
-texreg2<-function(...){
-  #For pretty copy-pasting into Lyx
-  cat(capture.output(do.call('texreg',list(...))),sep="\n\n")
-}
-
-pdf2<-function(...){
-  graphics.off()
-  dev.new()
-  do.call('pdf',list(...))
-  dev.set(which=dev.list()["RStudioGD"])
-}
-
-dev.off2<-function(){
-  dev.copy(which=dev.list()["pdf"])
-  invisible(dev.off(which=dev.list()["pdf"]))
-}
-
-create_quantiles<-function(x,num,right=F,include.lowest=T){
-  cut(x,breaks=quantile(x,probs=seq(0,1,by=1/num)),labels=1:num,right=right,include.lowest=include.lowest)
-}
-
-dol_form<-function(x,dig=0){paste0("$",prettyNum(round(x,digits=dig),big.mark=","))}
-
-to.pct<-function(x,dig=0)round(100*x,digits=dig)
 
 get_treats<-function(x){if(comment(x)[1]=="act_leave_out")
   c("Leave-Out","Control","Threat","Service","Civic")
@@ -102,29 +62,22 @@ analysis_data_lout[,smpl:="Leave-Out"]
 #### (reset factor levels once leave-out sample is eliminated)
 analysis_data_main<-copy(analysis_data_main)[cycle>=33,][,treatment:=factor(treatment)]
 analysis_data_main[,smpl:="Full"]
-###RESIDENTIAL PROPERTIES
-#### (also eliminating 3 properties with category=Commercial or Vacant
-####  due to inconsistency in definition vis-a-vis bldg_group)
-#### (reset factor levels once nonresidential properties are eliminated)
-analysis_data_resd<-analysis_data_main[residential==T&
-                                         !category %in% c("Commercial","Vacant"),
-                                       ][,category:=factor(category)]
-analysis_data_resd[,smpl:="Residential"]
-###SINGLE RESIDENTIAL OWNER PROPERTIES--NO MATCH ON LEGAL_NAME/MAILING_ADDRESS
-analysis_data_sres<-
-  analysis_data_main[residential==T&!category %in% c("Commercial","Vacant"),
-                     if (uniqueN(opa_no)==1) .SD,
-                     by=.(legal_name,mail_address)][,category:=factor(category)]
-analysis_data_sres[,smpl:="Residential, Unique Owner"]
+###NON-COMMERCIAL PROPERTIES
+analysis_data_ncom<-
+  copy(analysis_data_main[category!="Commercial"][,category:=factor(category)])
+analysis_data_ncom[,smpl:="Non-Commercial"]
+###SINGLE-OWNER PROPERTIES
+analysis_data_sown<-
+  copy(analysis_data_main[,if (uniqueN(opa_no)==1) .SD,by=.(legal_name,mail_address)])
+analysis_data_sown[,smpl:="Unique Owner"]
 
 ###Tags & data descriptions for file naming for each data set
 comment(analysis_data_main)<-c("main","Full Sample","analysis_data_main")
 comment(analysis_data_lout)<-c("leave_out","Including Leave-Out Sample","analysis_data_lout")
-comment(analysis_data_resd)<-c("residential","Residential Properties","analysis_data_resd")
-comment(analysis_data_sres)<-
-  c("residential_single_owner","Unique-Owner Residential Properties","analysis_data_sres")
+comment(analysis_data_ncom)<-c("non_comm","Non-Commercial Properties","analysis_data_ncom")
+comment(analysis_data_sown)<-c("single_owner","Unique-Owner Properties","analysis_data_sown")
 
-for (dt in list(analysis_data_main,analysis_data_lout,analysis_data_resd,analysis_data_sres)){
+for (dt in list(analysis_data_main,analysis_data_lout,analysis_data_ncom,analysis_data_sown)){
   ##Define the sample-specific variables:
   ## total_due_at_mailing_grp: total due by properties
   ##                           in each group at mailing
@@ -142,7 +95,7 @@ for (dt in list(analysis_data_main,analysis_data_lout,analysis_data_resd,analysi
 }; rm(dt,dummy)
 
 ##CITY-LEVEL TAX COMPLIANCE DATA FOR COMPARIONS TABLE
-city_data<-setkey(setDT(read.dta13("/media/data_drive/real_estate/Tax Levies and Collections.dta")
+city_data<-setkey(setDT(read.dta13(paste0(data_wd,"Tax Levies and Collections.dta"))
                         )[,City:=gsub("\\s+$","",City)],City
                   )[,city2:=ifelse(City=="DC","Washington, DC",City)]
 
@@ -193,7 +146,7 @@ print.xtable2(xtable(rbind(city_data[PctCollected>0,.(city2="Large City Average"
 #Tables ####
 ##MAIN DESCRIPTIVES TABLE
 ##  Using full and restricted samples for comparison
-full_delinquent<-fread("/media/data_drive/real_estate/dor_data_15_oct_encrypted.csv")
+full_delinquent<-fread(paste0(data_wd,"dor_data_15_oct_encrypted.csv"))
 full_delinquent[,owner_occ:=homestead>0]
 full_delinquent[,residential:=bldg_group %in% c("apartmentLarge","apartmentSmall","condo",
                                                 "house","house ","miscResidential","")]
@@ -247,7 +200,7 @@ print.xtable2(xtable(matrix(rbind(cbind(
 ##EFFECTIVENESS SUMMARY TABLE
 ###Summary of Effectiveness by Treatment & Sample
 print.xtable2(xtable(rbindlist(lapply(list(
-  analysis_data_main,analysis_data_resd,analysis_data_sres),
+  analysis_data_main,analysis_data_ncom,analysis_data_sown),
   function(x){setkey(x,treatment
   )[end==1,.(.N,smpl=smpl[1],
              tot_due=sum(total_due_at_mailing),
@@ -256,15 +209,15 @@ print.xtable2(xtable(rbindlist(lapply(list(
     by=treatment
     ][,.("Sample"=c(smpl[1],paste0("(N=",prettyNum(sum(N),big.mark=","),")"),"",""),
          "Treatment (Obs.)"=paste0(treatment," (n=",prettyNum(N,big.mark=","),")"),
-         "Total Debt Owed"=dol_form(tot_due),
-         "Percent Ever Paid"=to.pct(ev_pd),
-         "Percent Paid in Full"=to.pct(pd_fl),
-         "Dollars Received"=dol_form(tot_pmt),
+         "Total Debt Owed"=dol.form(tot_due),
+         "Percent Ever Paid"=to.pct(ev_pd,dig=0),
+         "Percent Paid in Full"=to.pct(pd_fl,dig=0),
+         "Dollars Received"=dol.form(tot_pmt),
          "Percent Debt Received"=to.pct(tot_pmt/tot_due,dig=1),
          "Dollars above Control Per Property"=
-           dol_form(tot_pmt/N-tot_pmt[1]/N[1]),
+           dol.form(tot_pmt/N-tot_pmt[1]/N[1]),
          "Total Surplus over All Properties"=
-           dol_form(tot_pmt-tot_pmt[1]/N[1]*N))]})),
+           dol.form(tot_pmt-tot_pmt[1]/N[1]*N))]})),
   caption=c("Summary of Effectiveness of Treatment"),label="table:summary",
   align=paste0("|c|p{2.2cm}|p{1.4cm}|p{1.8cm}|p{1.2cm}|",
                "p{1.2cm}|p{1.4cm}|p{1.4cm}|p{2.2cm}|p{1.8cm}|"),
@@ -281,15 +234,15 @@ print.xtable2(xtable(
     by=treatment
     ][,.("Sample"=c(smpl[1],paste0("(N=",prettyNum(sum(N),big.mark=","),")"),"","",""),
          "Treatment (Obs.)"=paste0(treatment," (n=",prettyNum(N,big.mark=","),")"),
-         "Total Debt Owed"=dol_form(tot_due),
-         "Percent Ever Paid"=to.pct(ev_pd),
-         "Percent Paid in Full"=to.pct(pd_fl),
-         "Dollars Received"=dol_form(tot_pmt),
-         "Percent Debt Received"=to.pct(tot_pmt/tot_due),
+         "Total Debt Owed"=dol.form(tot_due),
+         "Percent Ever Paid"=to.pct(ev_pd,dig=0),
+         "Percent Paid in Full"=to.pct(pd_fl,dig=0),
+         "Dollars Received"=dol.form(tot_pmt),
+         "Percent Debt Received"=to.pct(tot_pmt/tot_due,dig=1),
          "Dollars above Control Per Property"=
-           dol_form(tot_pmt/N-tot_pmt[1]/N[1]),
+           dol.form(tot_pmt/N-tot_pmt[1]/N[1]),
          "Total Surplus over All Properties"=
-           dol_form(tot_pmt-tot_pmt[1]/N[1]*N))],
+           dol.form(tot_pmt-tot_pmt[1]/N[1]*N))],
 caption=c("Summary of Effectiveness of Treatment vs. Leave-Out Sample"),
 label="table:summary_leave_out",
 align=paste0("|c|p{2.2cm}|p{1.4cm}|p{1.8cm}|p{1.2cm}|",
@@ -302,7 +255,7 @@ floating.environment="sidewaystable")
 # regs<-setNames(vector("list",20),
 #                paste0("reg",rep(1:3,c(8,8,4)),rep(c("","c","","c",""),each=4),"_",
 #                       rep(c("main","residential","residential_single_owner","leave_out"),5)))
-# for (data in list(analysis_data_main,analysis_data_lout,analysis_data_resd,analysis_data_sres)){
+# for (data in list(analysis_data_main,analysis_data_lout,analysis_data_ncom,analysis_data_sown)){
 #   data_end<-data[end==1,]
 #   comm<-comment(data)[1]
 #   rf<-if (comm=="leave_out") "Leave-Out" else "Control"
@@ -341,8 +294,8 @@ floating.environment="sidewaystable")
 # 
 # ###Model I: LPM of Ever-Paid
 # texreg2(regs[paste0(rep("reg1",3),"_",
-#                     unlist(lapply(list(analysis_data_main,analysis_data_resd,
-#                                        analysis_data_sres),
+#                     unlist(lapply(list(analysis_data_main,analysis_data_ncom,
+#                                        analysis_data_sown),
 #                                   function(x){comment(x)[1]})))],
 #         custom.model.names=c("Full Sample","Residential","Residential, Unique Owner"),
 #         custom.coef.names=c("Intercept","Threat","Service","Civic"),
@@ -353,8 +306,8 @@ floating.environment="sidewaystable")
 # 
 # ###Model I: Logistic of Ever-Paid with Controls, Quartile Interactions
 # texreg2(regs[paste(rep("reg1c",3),
-#                    unlist(lapply(list(analysis_data_main,analysis_data_resd,
-#                                       analysis_data_sres),
+#                    unlist(lapply(list(analysis_data_main,analysis_data_ncom,
+#                                       analysis_data_sown),
 #                                  function(x){comment(x)[1]})),sep="_")],
 #         custom.model.names=c("Full Sample","Residential","Residential, Unique Owner"),
 #         custom.coef.names=c("Intercept","Threat","Service","Civic",
@@ -422,8 +375,8 @@ floating.environment="sidewaystable")
 # ###Model II: Logistic of Paid in Full
 # ####Logistic Coefficients Table: Plain model
 # texreg2(regs[paste0(rep("reg2",3),"_",
-#                     unlist(lapply(list(analysis_data_main,analysis_data_resd,
-#                                        analysis_data_sres),
+#                     unlist(lapply(list(analysis_data_main,analysis_data_ncom,
+#                                        analysis_data_sown),
 #                                   function(x){comment(x)[1]})))],
 #         custom.model.names=c("Full Sample","Residential","Residential, Unique Owner"),
 #         custom.coef.names=c("Intercept","Threat","Service","Civic"),
@@ -433,8 +386,8 @@ floating.environment="sidewaystable")
 # 
 # ####Logistic Coefficients Table: Quartile Interactions
 # texreg2(regs[paste(rep("reg2c",3),
-#                   unlist(lapply(list(analysis_data_main,analysis_data_resd,
-#                                      analysis_data_sres),
+#                   unlist(lapply(list(analysis_data_main,analysis_data_ncom,
+#                                      analysis_data_sown),
 #                                 function(x){comment(x)[1]})),sep="_")],
 #        custom.model.names=c("Full Sample","Non-Commercial","Sole Owner"),
 #        custom.coef.names=c("Intercept","Service","Civic","Threat",
@@ -490,6 +443,107 @@ floating.environment="sidewaystable")
 # rm(main_coef,sample_means_control12,x_beta_control2,x_beta_control1)
 
 #Plots ####
+##Sample Composition Plot
+dor_data_oct<-
+  setkey(fread(paste0(data_wd,"dor_data_15_oct_encrypted.csv")),opa_no)
+
+cycle_info<-
+  setkey(setnames(fread(paste0(data_wd,"opa_cycles.csv"),
+                        select=c("OPA #","Billing Cycle")),
+                  c("opa_no","cycle")
+                  )[,opa_no:=sprintf("%09d",opa_no)],opa_no)
+
+dor_data_oct[cycle_info,cycle:=i.cycle]; rm(cycle_info)
+
+opa_data<-setkey(setnames(fread(
+  paste0(data_wd,"prop2014.txt"),select=c("PARCEL","TOT AREA")),
+  c("opa_no","land_area")),opa_no)[,land_area:=as.numeric(land_area)/100]
+opa_data[setkey(setDT(read.dbf("./gis_data/dor_data_aug_with_zoning_base_id.dbf")
+                      )[,.(opa_no=sprintf("%09d",opa_no),OBJECTID)],opa_no),
+         zone_district:=i.OBJECTID][zone_district==0,zone_district:=NA]
+opa_data[land_area<100,land_area:=NA]
+opa_data[,land_area_mean:=mean(land_area,na.rm=T),by=zone_district]
+opa_data[is.na(land_area),land_area:=land_area_mean]
+
+dor_data_oct[opa_data,land_area_keep:=!is.na(land_area)&land_area<1e6]
+#Not sure what to do with those unmatched from OPA data...
+#  May make most sense to count them as "kept" since it wasn't
+#  on account of land area that they were dropped, but something else
+dor_data_oct[is.na(land_area_keep),land_area_keep:=T]; rm(opa_data)
+
+clrs<-c("blue","gold","springgreen","orange",
+        "orchid","olivedrab","green",
+        "cornflowerblue","turquoise","red")
+dor_data_oct[,{x<-sapply(list("Payment Agreement"=payment_agreement=="N",
+                              "Tax Exemption"=abate_exempt_code %in% c("","     ","\\    "),
+                              "Handled In-House"=case_status=="",
+                              "Sheriff's Sale"=sheriff_sale=="N",
+                              "Bankruptcy"=bankruptcy=="N",
+                              "Sequestration"=sequestration=="N",
+                              "Mail Flag"=returned_mail_flag=="NO",
+                              "Mailing Cycle"=cycle%in%33:47,
+                              "Land Area"=land_area_keep,
+                              "Negligible Balance"=calc_total_due>.61,
+                              "Overall"=payment_agreement=="N"&case_status==""&
+                                abate_exempt_code %in% c("","     ","\\    ")&
+                                sheriff_sale=="N"&returned_mail_flag=="NO"&
+                                bankruptcy=="N"&sequestration=="N"&
+                                cycle%in%33:47&land_area_keep),
+                         table2,prop=T,ord="dec",USE.NAMES=T)
+y<-x[,order(-x["FALSE",])]
+NN<-formatC(.N,big.mark=",")
+pdf2("./papers_presentations/images/sample_restrictions.pdf")
+par(mar=c(5.1,7.6,4.1,2.1))
+z<-barplot(Reduce(magic::adiag,lapply(split(t(y),1:ncol(y)),as.matrix)),
+           horiz=T,col=c(rbind(rep("blue",6),
+                               c("white","purple",
+                                 rev(clrs[-1])))),
+           names.arg=colnames(y),las=1,cex.names=.6,
+           main=paste0("Proportion of ",NN," Overdue Properties\n",
+                       "Kept/Dropped Given Each Sample Restriction"))
+text(y["FALSE",1]/2,z[1],"KEEP",col="white",cex=.5)
+text((1+y["FALSE",1])/2,z[1],"DROP",col="black")
+dev.off2()}]
+
+dor_data_oct[,stage_lost:=
+               max.col(-.SD[,.(.5,land_area_keep,bankruptcy=="N",
+                               sequestration=="N",calc_total_due>.61,
+                               sheriff_sale=="N",
+                               abate_exempt_code %in% c("","     ","\\    "),
+                               returned_mail_flag=="NO",
+                               payment_agreement=="N",case_status=="",
+                               cycle%in%c(33,39:41,43:47))],
+                       ties.method="last")]
+dor_data_oct[cycle%in%c(33,39:41,43:47)
+             ][order(-cycle),
+               {pdf2("./papers_presentations/images/sample_restrictions_by_cycle.pdf")
+                 layout(mat=matrix(1:2),heights=c(.8,.2))
+                 par(mar=c(0,4.1,4.1,2.1))
+                 tt<-table(stage_lost,cycle)
+                 y<-barplot(tt,horiz=T,col=clrs,xlab="Count of Properties",
+                            names.arg=paste("Day",uniqueN(cycle):1),
+                            las=1,main=paste0("Impact of Sample Restrictions",
+                                              "\nBy Mailing Day"))
+                 sapply(1:uniqueN(cycle),function(z)
+                   text(150,y[z],paste0(tt[1,z]),col="white",font=2))
+                 text(sum(tt[1:9,uniqueN(cycle)]),y[uniqueN(cycle)],pos=4,
+                      "Do Not Receive Treatment",font=2,cex=.9)
+                 par(mar=rep(0,4))
+                 XX<-max(colSums(tt))
+                 plot(0,0,type="n",ann=F,axes=F,xlim=c(0,XX))
+                 legend(XX/2,0,legend=c("Final Sample","Land Area",
+                                     "Bankruptcy","Sequestration",
+                                     "Negligible Balance",
+                                     "Sheriff's Sale","Tax Exemption",
+                                     "Returned Mail",
+                                     "Payment Agreement",
+                                     "Excluded from Mailings"),
+                        inset=0,ncol=5,cex=.5,bty="n",x.intersp=1,
+                        text.width=450,
+                        y.intersp=.5,pch=15,col=clrs,lwd=10,xjust=.5)
+                 dev.off2()}]
+
+
 ##Time Series Plots
 trt<-get_treats(analysis_data_main)
 trt_col<-get_treats_col(analysis_data_main)

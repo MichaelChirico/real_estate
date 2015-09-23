@@ -18,6 +18,7 @@ setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 data_wd<-"/media/data_drive/real_estate/"
 img_wd<-"./papers_presentations/round_two/images/analysis/"
 gis_wd<-"/media/data_drive/gis_data/PA/"
+library(funchir)
 library(data.table)
 library(texreg)
 library(sandwich)
@@ -29,79 +30,7 @@ library(RgoogleMaps)
 library(maptools)
 
 #Convenient Functions 
-table2<-function(...,dig=if (prop) 2 else NULL,prop=F,ord=F,pct=F){
-  if (ord=="dec"){ dec<-T; ord<-T} else dec<-F
-  dots<-list(...)
-  args<-names(dots) %in% names(formals(prop.table))
-  tab<-if (prop) do.call(
-    'prop.table',c(list(
-      do.call('table',if (length(args)) dots[!args] else dots)),
-      dots[args])) else do.call('table',list(...))
-  if (ord) tab<-tab[order(tab,decreasing=dec)]
-  if (pct) tab<-100*tab
-  if (is.null(dig)) tab else round(tab,digits=dig)
-}
-
-print.xtable2<-function(...){
-  #For pretty copy-pasting into LyX
-  cat(capture.output(do.call('print.xtable',list(...))),sep="\n\n")
-}
-
-texreg2<-function(...){
-  #For pretty copy-pasting into Lyx
-  cat(capture.output(do.call('texreg',list(...))),sep="\n\n")
-}
-
-pdf2<-function(...){
-  graphics.off()
-  dev.new()
-  do.call('pdf',list(...))
-  dev.set(which=dev.list()["RStudioGD"])
-}
-
-dev.off2<-function(){
-  dev.copy(which=dev.list()["pdf"])
-  invisible(dev.off(which=dev.list()["pdf"]))
-}
-
-create_quantiles<-function(x,num,right=F,include.lowest=T){
-  cut(x,breaks=quantile(x,probs=seq(0,1,by=1/num)),
-      labels=1:num,right=right,include.lowest=include.lowest)
-}
-
-read.xlsx3<-function(...){
-  x<-do.call('read.xlsx2',list(...))
-  invisible(gc())
-  x
-}
-
-abbr_to_colClass<-function(inits,counts){
-  x<-strsplit(inits,split="")[[1]]
-  types<-character(length(x))
-  types[x=="c"]<-"character"
-  types[x=="f"]<-"factor"
-  types[x=="i"]<-"integer"
-  types[x=="n"]<-"numeric"
-  types[x=="d"]<-"Date"
-  rep(types,strsplit(counts,split="")[[1]])
-}
-
-tile_axes<-function(n,M,N,...){
-  if (n>(M-1)*N)do.call("axis",c(side=1,list(...)))
-  if (n%%N==1)do.call("axis",c(side=2,list(...)))
-}
-
-to.pct<-function(x,dig=Inf)round(100*x,digits=dig)
-
-#Get the nearest multiple of n weakly larger than x
-nx.mlt<-function(x,n)n*ceiling(x/n)
-
-#Shorthand for string concatenation
-"%+%"<-function(s1,s2)paste0(s1,s2)
-
-dol_form<-function(x,dig=0){"$"%+%prettyNum(round(x,digits=dig),big.mark=",")}
-
-get.col.nm<-function(st){
+get.col<-function(st){
   cols<-c(Big="blue",Small="red",Control="blue",Amenities="yellow",
           Moral="cyan",Duty="darkgreen",Lien="red",Sheriff="orchid",
           Peer="orange",Holdout="darkgray")
@@ -470,7 +399,7 @@ sapply(type.params,
                ind<-which(get(tr)==rf)
                x<-barplot(vals[[1]],names.arg=get(tr),ylim=yl,
                           xlim=c(0,nx.mlt(1.05*max(vals[[3]]),xup)),
-                          horiz=T,las=1,col=get.col.nm(get(tr)),
+                          horiz=T,las=1,col=get.col(get(tr)),
                           main=mtl%+%" by "%+%tl,space=sp,
                           xlab=xlb,cex.names=nx,density=eval(dn))
                arrows(vals[[2]],x,vals[[3]],x,code=3,
@@ -485,7 +414,7 @@ par(mar=c(2.6,5.1,4.1,1.1))
 boxplot(total_paid~main_treat,horizontal=T,
         cex.axis=.8,xaxt="n",boxwex=.5,
         data=data_r2_own[total_paid>0],las=1,
-        col=get.col.nm(trt.nms),log="x",notch=T,
+        col=get.col(trt.nms),log="x",notch=T,
         main="Distributions of Positive "%+%
           "Payments\nBy Treatment")
 axis(side=1,at=10^(0:5),cex.axis=.8,
@@ -565,8 +494,8 @@ par(mar=c(0,0,1.1,0),
 for (trt in trt.nms[-1]){
   plot(phila_azav_quad,col=phila_azav_quad@
          data[,scale.value(get(trt),nn=ncols,rng=c(-.15,.15),
-                           cols=c(get.col.nm("Control"),
-                                  "white",get.col.nm(trt)))],
+                           cols=c(get.col("Control"),
+                                  "white",get.col(trt)))],
        main=trt,cex.main=.9)
   text(coordinates(phila_azav_quad),font=2,cex=.4,
        labels=phila_azav_quad@data[,paste0(quadrant)])
