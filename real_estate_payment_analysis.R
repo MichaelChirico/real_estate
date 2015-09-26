@@ -3,9 +3,11 @@
 #Michael Chirico
 #April 3, 2015
 
-#Setup: Packages, Working Directory, Convenient Functions ####
+#Setup: Packages, Random Seed, Working Directory ####
 rm(list=ls(all=T))
 gc()
+##First and last 4 digits of my Cosi rewards card
+set.seed(60008645)
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 data_wd<-"/media/data_drive/real_estate/"
 library(funchir)
@@ -15,52 +17,46 @@ library(sandwich)
 library(xtable)
 library(Zelig)
 library(foreign)
-library(readstata13)
 
-get_treats<-function(x){if(comment(x)[1]=="act_leave_out")
-  c("Leave-Out","Control","Threat","Service","Civic")
-  else c("Control","Threat","Service","Civic")}
-
-get_treats_col<-function(x){if(comment(x)[1]=="act_leave_out")
-  c("orange","black","red","blue","green")
-  else c("black","red","blue","green")}
+trt.nms <- c("Control","Threat","Service","Civic")
+trt.col <- c(Control="black",Threat="red",
+             Service="blue", Civic="green")
 
 #Set up Analysis Data Sets ####
-analysis_data_main<-fread("analysis_file.csv",colClasses=c(date_of_first_payment="character"))
+analysis_data_main<-
+  fread("analysis_file_end_only_act.csv",
+        colClasses=c(date_of_first_payment="character"))
 #CLUSTERS DEFINED AT THE OWNER LEVEL
 #OWNER DEFINED AS ANYONE WITH IDENTICAL NAME & MAILING ADDRESS
-setkey(setkey(analysis_data_main,legal_name,mail_address
-              )[unique(analysis_data_main,by=c("legal_name","mail_address")
-                       )[,I:=.I],cluster_id:=i.I],opa_no,posting_rel)
+clust<-c("legal_name","mail_address")
+analysis_data_main[,cluster_id:=.GRP,by=clust]
 
 ###tidying up data classifications
 factors<-c("treatment","category","exterior","council")
 analysis_data_main[,(factors):=lapply(.SD,as.factor),.SDcols=factors]
-analysis_data_main[,treatment:=
-                     factor(treatment,levels(treatment)[c(3,2,5,4,1)])]
+analysis_data_main[,treatment:=factor(treatment,levels=trt.nms)]
 #since read as strings, order is out of whack
-analysis_data_main[,council:=factor(council,levels=levels(council)[c(1,3:10,2)])]
-analysis_data_main[,category:=factor(category,levels=levels(category)[c(4,2,5,1,3,6)])]
+analysis_data_main[,council:=factor(council,levels=paste0(1:10))]
+cat_ord <- c("Residential","Hotels&Apts","Store w/ Dwelling",
+             "Commercial","Industrial","Vacant")
+analysis_data_main[,category:=factor(category,levels=cat_ord)]
 analysis_data_main[,posting:=as.Date(posting)]
-rm(factors)
+rm(factors,cat_ord)
 
 ##create some variables which can be defined on the main data set
 ## and passed through without change to the subsamples
 analysis_data_main[,treatment_count:=uniqueN(opa_no),by=treatment]
 analysis_data_main[,treatment_days :=uniqueN(cycle), by=treatment]
 
-analysis_data_main[,years_cut:=cut(years_count,breaks=c(0,1,2,5,40),
-                                   include.lowest=T,labels=c(1:2,"3-5",">5"))]
+analysis_data_main[,years_cut:=cut(years_count,include.lowest=T,
+                                   breaks=c(0,1,2,5,40),
+                                   labels=c(1:2,"3-5","6+")%+%" Years")]
 analysis_data_main[,rooms_cut:=cut(rooms,breaks=c(0,5,6,20),
-                                   include.lowest=T,labels=c("0-5","6",">6"))]
+                                   include.lowest=T,labels=c("0-5","6","7+"))]
 
 ##DEFINE DATA SETS FOR THE SUBSAMPLES
-###LEAVE-OUT SAMPLE (2 DAYS PRIOR TO TREATMENT)
-analysis_data_lout<-analysis_data_main
-analysis_data_lout[,smpl:="Leave-Out"]
 ###MAIN SAMPLE
 #### (reset factor levels once leave-out sample is eliminated)
-analysis_data_main<-copy(analysis_data_main)[cycle>=33,][,treatment:=factor(treatment)]
 analysis_data_main[,smpl:="Full"]
 ###NON-COMMERCIAL PROPERTIES
 analysis_data_ncom<-
@@ -68,16 +64,16 @@ analysis_data_ncom<-
 analysis_data_ncom[,smpl:="Non-Commercial"]
 ###SINGLE-OWNER PROPERTIES
 analysis_data_sown<-
-  copy(analysis_data_main[,if (uniqueN(opa_no)==1) .SD,by=.(legal_name,mail_address)])
+  copy(analysis_data_main[,if (uniqueN(opa_no)==1L) .SD,by=clust])
 analysis_data_sown[,smpl:="Unique Owner"]
 
 ###Tags & data descriptions for file naming for each data set
 comment(analysis_data_main)<-c("main","Full Sample","analysis_data_main")
-comment(analysis_data_lout)<-c("leave_out","Including Leave-Out Sample","analysis_data_lout")
 comment(analysis_data_ncom)<-c("non_comm","Non-Commercial Properties","analysis_data_ncom")
 comment(analysis_data_sown)<-c("single_owner","Unique-Owner Properties","analysis_data_sown")
 
-for (dt in list(analysis_data_main,analysis_data_lout,analysis_data_ncom,analysis_data_sown)){
+for (dt in list(analysis_data_main,
+                analysis_data_ncom,analysis_data_sown)){
   ##Define the sample-specific variables:
   ## total_due_at_mailing_grp: total due by properties
   ##                           in each group at mailing
@@ -85,71 +81,44 @@ for (dt in list(analysis_data_main,analysis_data_lout,analysis_data_ncom,analysi
   
   dummy<-copy(dt)
   
-  dummy[,total_due_at_mailing_grp:=sum(current_balance[posting_rel==0]),by=treatment]
+  dummy[,total_due_at_mailing_grp:=
+          sum(current_balance[posting_rel==0L]),by=treatment]
   
-  dummy[,balance_quartile:=create_quantiles(total_due_at_mailing,4)]
-  dummy[,mv_quartile:=create_quantiles(market_value,4)]
-  dummy[,area_quartile:=create_quantiles(land_area,4)]
+  qs <- c(.25,.5,.75)
+  dummy[,balance_quartile:={
+    x<-"$"%+%round(quantile(total_due_at_mailing,qs),-2)
+    lbs<-c("< "%+%x[1],paste0("[",x[1],", ",x[2],")"),
+           paste0("[",x[2],", ",x[3],")"),"> "%+%x[3])
+    create_quantiles(total_due_at_mailing,4,labels=lbs)}]
+  
+  dummy[,mv_quartile:={
+    x<-"$"%+%round(quantile(market_value/1000,qs))%+%"k"
+    lbs<-c("< "%+%x[1],paste0("[",x[1],", ",x[2],")"),
+           paste0("[",x[2],", ",x[3],")"),"> "%+%x[3])
+    create_quantiles(market_value,4,labels=lbs)}]
+  
+  dummy[,area_quartile:={
+    x<-round(quantile(land_area,qs),-2)
+    sf <- " sq. ft"
+    lbs<-c("< "%+%x[1]%+%sf,paste0("[",x[1],", ",x[2],")",sf),
+           paste0("[",x[2],", ",x[3],")",sf),"> "%+%x[3]%+%sf)
+    create_quantiles(land_area,4,labels=lbs)}]
   
   assign(comment(dt)[3],dummy)
 }; rm(dt,dummy)
 
-##CITY-LEVEL TAX COMPLIANCE DATA FOR COMPARIONS TABLE
-city_data<-setkey(setDT(read.dta13(paste0(data_wd,"Tax Levies and Collections.dta"))
-                        )[,City:=gsub("\\s+$","",City)],City
-                  )[,city2:=ifelse(City=="DC","Washington, DC",City)]
-
-###bootstrap confidence interval
-####Seed basis: current time & date
-set.seed(6222042)
-R<-200
-means<-matrix(nrow=city_data[,uniqueN(Year)],ncol=R,dimnames=list(city_data[,unique(Year)],1:R))
-for (rr in 1:R){
-  #resample at the city level to capture within-city autocorrelation
-  means[,rr]<-city_data[.(sample(unique(City),uniqueN(City),replace=T))
-                        ][PctCollected>0,mean(100*PctCollected),by=Year]$V1
-}
-setkey(city_data,Year)[setnames(
-  data.table(cbind(city_data[,unique(Year)],
-                   t(sapply(1:nrow(means),function(x)
-                     #looking for interval ~+/- 1 SD
-                     quantile(means[x,],c(1-pnorm(1),pnorm(1))))))),
-  c("Year","mean_lq","mean_uq")),`:=`(mean_uq=i.mean_uq,
-                                      mean_lq=i.mean_lq)]
-
-###now plot
-city_data[.(2005:2013)][PctCollected>0,.(mean(100*PctCollected),mean_lq[1],mean_uq[1]),
-                        by=Year][,matplot(Year,cbind(V1,V2,V3),type="l",lty=c(1,2,2),
-                                                 col=c("black","red","red"),lwd=c(3,2,2),
-                                                 main="Average Percent Collected by Year",
-                                                 ylab="Percent Collected",ylim=c(90,100))]
-
-###something else done by Inman's .do file
-# city_data[,lapply(.SD,function(x)c(mean(100*x,na.rm=T),sd(100*x,na.rm=T),length(x))),
-#           by=Year,.SDcols=c("SubsequentPctCollected",
-#                             "SubsequentAnnualAvgPctCollect",
-#                             "DelinquentAnnualAveragePctCol")]
-
-print.xtable2(xtable(rbind(city_data[PctCollected>0,.(city2="Large City Average",
-                                 pct_com=paste0(to.pct(city_data[PctCollected>0,
-                                                                 PctCollected[.N],
-                                                                 by=City][,mean(V1)],dig=1),
-                                                "; ",to.pct(mean(PctCollected),dig=1)),
-                                 del_5y =to.pct(mean(DelinquentAnnualAveragePctCol[Year>=2010],
-                                                     na.rm=T),dig=1))],
-      city_data[PctCollected>0,.(pct_com=paste0(to.pct(PctCollected[.N],dig=1),
-                                                "; ",to.pct(mean(PctCollected),dig=1)),
-                                 del_5y =to.pct(mean(DelinquentAnnualAveragePctCol[Year>=2010],
-                                                     na.rm=T),dig=1)),
-                by=city2])),include.rownames=F)
-
 #Tables ####
+##TABLE 1
+##  Produced by Bob
+
+##TABLE 2 ####
 ##MAIN DESCRIPTIVES TABLE
 ##  Using full and restricted samples for comparison
-full_delinquent<-fread(paste0(data_wd,"dor_data_15_oct_encrypted.csv"))
-full_delinquent[,owner_occ:=homestead>0]
-full_delinquent[,residential:=bldg_group %in% c("apartmentLarge","apartmentSmall","condo",
-                                                "house","house ","miscResidential","")]
+full_delinquent<-fread(data_wd%+%"dor_data_15_oct_encrypted.csv")
+resid_grp <- c("apartmentLarge","apartmentSmall","condo",
+               "house","house ","miscResidential","")
+full_delinquent[,residential:=bldg_group %in% resid_grp]
+#Now applying our sample restrictions
 rest_delinquent<-
   full_delinquent[payment_agreement=="N"
                   &abate_exempt_code %in% c("","     ","\\    ")
@@ -157,52 +126,137 @@ rest_delinquent<-
                   &bankruptcy=="N"&sequestration=="N"
                   &returned_mail_flag=="NO"]
 
-print.xtable(xtable(matrix(t(rbindlist(lapply(list(
-  full_delinquent,rest_delinquent,analysis_data_main[end==1,]),
-  function(y)y[,lapply(list(calc_total_due,total_assessment,
-                            net_tax_value_after_homestead,
-                            years_count,100*residential,
-                            100*(mail_address %in% c("","                    ")|
-                                   (grepl("PH",mail_city)&!grepl("[XMR]",mail_city))),
-                            100*owner_occ,.N),function(x)round(mean(x,na.rm=T)))]))),
-  dimnames=list(c("Amount Due","Assessed Property Value","Value of Tax","Length of Debt",
-                  "% Residential","% w/ Phila. Mailing Address",
-                  "% Owner-Occupied","Number Observations"),
-                c("Full Sample","Restricted Sample","Analysis Sample")),ncol=3),
-  caption=c("Summary Averages for Philadelphia Tax Non-Compliants"),
-  label="table:descriptives",digits=0))
+#We count an address as in Philadelphia when:
+#  1) Mailing address is blank -- this means the
+#     mailing address is the property address
+#  2) Mailing city contains "PH" but NOT
+#     "X","M", or "R" -- this eliminates
+#     Alpharetta (GA), Gulph Mills (PA),
+#     Memphis (TN), Phelan (CA), Phoenix (AZ),
+#     Phoenixville (PA), Randolph (MA, NJ),
+#     and Zephyrhills (FL). This in particular
+#     captures most (but perhaps not all)
+#     of the multitudinous typos for Philadelphia.
+phila_addr<-quote(mail_address %in% c("","                    ")|
+                    (grepl("PH",mail_city)&!grepl("[XMR]",mail_city)))
+xtable(sapply(list(
+  "All Properties"=full_delinquent,
+  "Restricted Properties"=rest_delinquent,
+  "Analysis Sample"=analysis_data_main[(end)]),
+  function(y)y[,.(`Amount Due`=mean(calc_total_due),
+                  `Assessed Property Value`=
+                    mean(total_assessment,na.rm=T),
+                  `Value of Tax`=
+                    mean(net_tax_value_after_homestead,na.rm=T),
+                  `Length of Debt`=mean(years_count),
+                  `% Residential`=to.pct(mean(residential)),
+                  `% with Philadelphia Mailing Address`=
+                    to.pct(mean(eval(phila_addr))),
+                  `% Owner-Occupied`=
+                    to.pct(mean(homestead>0,na.rm=T)),
+                  `Number Observations`=.N)],USE.NAMES=T),
+  caption=c("Descriptive Statistics"),
+  label="table:descriptives",digits=0); rm(phila_addr,resid_grp)
 
+##TABLE 3 ####
+##BALANCE ON OBSERVABLES
+###Use blocked (at our cluster level)
+###  bootstrap to get p-values
 
-##MAIN SAMPLE SUMMARY TABLE
-setkey(analysis_data_main,treatment)
-print.xtable2(xtable(matrix(rbind(cbind(
-  analysis_data_main[,table2(years_cut,prop=T)],
-  analysis_data_main[,table2(years_cut,treatment,
-                             margin=2,prop=T)]),
-  cbind(analysis_data_main[,table2(category,prop=T)],
-        analysis_data_main[,table2(category,treatment,
-                                   margin=2,prop=T)]),
-  c(analysis_data_main[,mean(exterior=="Sealed/Compromised")],
-    analysis_data_main[,mean(exterior=="Sealed/Compromised"),
-                       by=treatment]$V1),
-  c(analysis_data_main[,mean(homestead>0)],
-    analysis_data_main[,mean(homestead>0),
-                       by=treatment]$V1)),ncol=5,
-  dimnames=list(c(paste("Years:",c("1","2",
-                                   "[3,5]","(5,40]")),
-                  paste("Cat:",c("Commercial","Hotels/Apts",
-                                 "Industrial","Residential",
-                                 "Store+Resid","Vacant")),
-                  "% Sealed/Compromised","% Owner-Occupied"),
-                c("Full","Control","Threat","Service","Civic"))),
-  digits=2))
+###Function for getting the raw statistic
+###  used in Pearson's 1 and 2-way Chi-squared test
+###  (drawn basically from Wikipedia)
+pearson_stat1<-function(x,p=1/length(unique(x))){
+  tab<-table(x)
+  if (is.null(names(p))){
+    sum((1-tab/length(x)/p)^2)
+  } else {
+    sum((1-tab/length(x)/p[names(tab)])^2)
+  }
+}
+
+pearson_stat2<-function(x,y){
+  tab<-table(x,y)
+  sum((1-c(tab)*length(x)/
+         rep(rowSums(tab),ncol(tab))/
+         rep(colSums(tab),each=nrow(tab)))^2)
+}
+
+###Set of variables which we'll test
+###  to probe balance on observables
+test_vars<-c("balance_quartile","mv_quartile",
+             "area_quartile","rooms_cut",
+             "years_cut","category")
+
+###Expected distribution of properties across
+###  cycles given unbalanced number of treatment days
+p_exp<-unique(analysis_data_main,by="cycle"
+              )[,table2(treatment,prop=T,dig=Inf)]
+
+###Number of bootstrap replications
+BB<-10000
+setkey(analysis_data_main,cluster_id)
+test_dist<-replicate(BB,analysis_data_main[
+  #Sample with replacement from cluster IDs
+  .(sample(unique(cluster_id),rep=T)),
+  #Applying this to every test variable mentioned
+  c(sapply(test_vars,function(x)
+    #Get the two-way Pearson's Chi-Squared
+    #  statistic for each bootstrap replication
+    pearson_stat2(get(x),treatment)),
+    #The distribution of properties across cycles
+    #  is a one-way test, so treat separately
+    "prop_dist"=pearson_stat1(treatment,p=p_exp))])
+
+lyx.xtable(xtable(rbindlist(c(lapply(
+  #Create one data.table for each test,
+  #  then stack them all and print as LaTeX
+  test_vars,function(x){
+    #The p-value for the current test -- find the CDF
+    #  of the bootstrapped test statistics, then find
+    #  the proportion of observations exceeding the
+    #  in-sample statistic (i.e., 1-P[test > in-sample])
+    pv<-analysis_data_main[,1-ecdf(test_dist[x,])(
+      pearson_stat2(get(x),treatment))]
+    #Instead of doing table, count and reshape wide
+    dcast(
+      analysis_data_main[,.N,keyby=c(x,"treatment")
+                         ][,.(treatment,N/sum(N)),
+                           by=.("Variable"=get(x))
+                           ],Variable~treatment,value.var="V2"
+      #only want the p-value to show up in the first row
+    )[1L,"$p$-value":=pv]}),
+  #add a data.table for the distribution of properties
+  list(data.table(
+    "Variable"="Distribution of Properties",
+    rbind(analysis_data_main[,table2(treatment,prop=T,dig=Inf)]),
+    "$p$-value"=analysis_data_main[,1-ecdf(test_dist["prop_dist",])(
+      pearson_stat1(treatment,p=p_exp))])),
+  #add one more table to show the expected distribution
+  list(data.table("Variable"="Expected Distribution",
+                     rbind(p_exp),"$p$-value"=NA)))),
+  caption="Tests of Sample Balance on Observables",align=c("|c|l|c|c|c|c|c|"),
+  label="table:balance",digits=2),include.rownames=F,
+  #don't remove the $ from p-value column so it prints as math
+  hline.after=c(-1,25:27),sanitize.colnames.function=identity,
+  #use sanitize2 for now to deal properly with left brackets;
+  #  check for updates to xtable to see if this is fixed natively
+  sanitize.text.function=sanitize2,
+  add.to.row=list(pos=list(0L,4L,8L,12L,15L,19L),
+                  command=c("\\hline \nTaxes Due Quartiles & & & & & \\\\ \n",
+                            "\\hline \nMarket Value Quartiles & & & & & \\\\ \n",
+                            "\\hline \nLand Area Quartiles & & & & & \\\\ \n",
+                            "\\hline \n\\# Rooms & & & & & \\\\ \n",
+                            "\\hline \nYears of Debt & & & & & \\\\ \n",
+                            "\\hline \nCategory & & & & & \\\\ \n")))
+
 
 ##EFFECTIVENESS SUMMARY TABLE
 ###Summary of Effectiveness by Treatment & Sample
-print.xtable2(xtable(rbindlist(lapply(list(
+lyx.xtable(xtable(rbindlist(lapply(list(
   analysis_data_main,analysis_data_ncom,analysis_data_sown),
   function(x){setkey(x,treatment
-  )[end==1,.(.N,smpl=smpl[1],
+  )[,.(.N,smpl=smpl[1],
              tot_due=sum(total_due_at_mailing),
              ev_pd=mean(ever_paid),pd_fl=mean(paid_full),
              tot_pmt=sum(cum_treated_pmts)),
@@ -223,32 +277,6 @@ print.xtable2(xtable(rbindlist(lapply(list(
                "p{1.2cm}|p{1.4cm}|p{1.4cm}|p{2.2cm}|p{1.8cm}|"),
   digits=c(rep(0,7),1,0,0)),include.rownames=F,hline.after=c(-1,0,4,8,12),
   floating.environment="sidewaystable")
-
-###Summary of Effectiveness by Treatment & Sample, vs. Leave-Out Sample
-print.xtable2(xtable(
-  setkey(analysis_data_lout,treatment)[
-    end==1,.(.N,smpl=smpl[1],
-             tot_due=sum(total_due_at_mailing),
-             ev_pd=mean(ever_paid),pd_fl=mean(paid_full),
-             tot_pmt=sum(cum_treated_pmts)),
-    by=treatment
-    ][,.("Sample"=c(smpl[1],paste0("(N=",prettyNum(sum(N),big.mark=","),")"),"","",""),
-         "Treatment (Obs.)"=paste0(treatment," (n=",prettyNum(N,big.mark=","),")"),
-         "Total Debt Owed"=dol.form(tot_due),
-         "Percent Ever Paid"=to.pct(ev_pd,dig=0),
-         "Percent Paid in Full"=to.pct(pd_fl,dig=0),
-         "Dollars Received"=dol.form(tot_pmt),
-         "Percent Debt Received"=to.pct(tot_pmt/tot_due,dig=1),
-         "Dollars above Control Per Property"=
-           dol.form(tot_pmt/N-tot_pmt[1]/N[1]),
-         "Total Surplus over All Properties"=
-           dol.form(tot_pmt-tot_pmt[1]/N[1]*N))],
-caption=c("Summary of Effectiveness of Treatment vs. Leave-Out Sample"),
-label="table:summary_leave_out",
-align=paste0("|c|p{2.2cm}|p{1.4cm}|p{1.8cm}|p{1.2cm}|",
-             "p{1.2cm}|p{1.4cm}|p{1.4cm}|p{2.2cm}|p{1.8cm}|"),
-digits=c(rep(0,7),1,0,0)),include.rownames=F,hline.after=c(-1,0,5),
-floating.environment="sidewaystable")
 
 # ##REGRESSION TABLES
 # ###Running regressions
@@ -441,274 +469,3 @@ floating.environment="sidewaystable")
 #          caption="Model II: Probability Paid in Full by Treatment, Debt Level at Sample Center",
 #          label="table:modelII_marg",align="lcccc"),table.placement="htbp")
 # rm(main_coef,sample_means_control12,x_beta_control2,x_beta_control1)
-
-#Plots ####
-##Sample Composition Plot
-dor_data_oct<-
-  setkey(fread(paste0(data_wd,"dor_data_15_oct_encrypted.csv")),opa_no)
-
-cycle_info<-
-  setkey(setnames(fread(paste0(data_wd,"opa_cycles.csv"),
-                        select=c("OPA #","Billing Cycle")),
-                  c("opa_no","cycle")
-                  )[,opa_no:=sprintf("%09d",opa_no)],opa_no)
-
-dor_data_oct[cycle_info,cycle:=i.cycle]; rm(cycle_info)
-
-opa_data<-setkey(setnames(fread(
-  paste0(data_wd,"prop2014.txt"),select=c("PARCEL","TOT AREA")),
-  c("opa_no","land_area")),opa_no)[,land_area:=as.numeric(land_area)/100]
-opa_data[setkey(setDT(read.dbf("./gis_data/dor_data_aug_with_zoning_base_id.dbf")
-                      )[,.(opa_no=sprintf("%09d",opa_no),OBJECTID)],opa_no),
-         zone_district:=i.OBJECTID][zone_district==0,zone_district:=NA]
-opa_data[land_area<100,land_area:=NA]
-opa_data[,land_area_mean:=mean(land_area,na.rm=T),by=zone_district]
-opa_data[is.na(land_area),land_area:=land_area_mean]
-
-dor_data_oct[opa_data,land_area_keep:=!is.na(land_area)&land_area<1e6]
-#Not sure what to do with those unmatched from OPA data...
-#  May make most sense to count them as "kept" since it wasn't
-#  on account of land area that they were dropped, but something else
-dor_data_oct[is.na(land_area_keep),land_area_keep:=T]; rm(opa_data)
-
-clrs<-c("blue","gold","springgreen","orange",
-        "orchid","olivedrab","green",
-        "cornflowerblue","turquoise","red")
-dor_data_oct[,{x<-sapply(list("Payment Agreement"=payment_agreement=="N",
-                              "Tax Exemption"=abate_exempt_code %in% c("","     ","\\    "),
-                              "Handled In-House"=case_status=="",
-                              "Sheriff's Sale"=sheriff_sale=="N",
-                              "Bankruptcy"=bankruptcy=="N",
-                              "Sequestration"=sequestration=="N",
-                              "Mail Flag"=returned_mail_flag=="NO",
-                              "Mailing Cycle"=cycle%in%33:47,
-                              "Land Area"=land_area_keep,
-                              "Negligible Balance"=calc_total_due>.61,
-                              "Overall"=payment_agreement=="N"&case_status==""&
-                                abate_exempt_code %in% c("","     ","\\    ")&
-                                sheriff_sale=="N"&returned_mail_flag=="NO"&
-                                bankruptcy=="N"&sequestration=="N"&
-                                cycle%in%33:47&land_area_keep),
-                         table2,prop=T,ord="dec",USE.NAMES=T)
-y<-x[,order(-x["FALSE",])]
-NN<-formatC(.N,big.mark=",")
-pdf2("./papers_presentations/images/sample_restrictions.pdf")
-par(mar=c(5.1,7.6,4.1,2.1))
-z<-barplot(Reduce(magic::adiag,lapply(split(t(y),1:ncol(y)),as.matrix)),
-           horiz=T,col=c(rbind(rep("blue",6),
-                               c("white","purple",
-                                 rev(clrs[-1])))),
-           names.arg=colnames(y),las=1,cex.names=.6,
-           main=paste0("Proportion of ",NN," Overdue Properties\n",
-                       "Kept/Dropped Given Each Sample Restriction"))
-text(y["FALSE",1]/2,z[1],"KEEP",col="white",cex=.5)
-text((1+y["FALSE",1])/2,z[1],"DROP",col="black")
-dev.off2()}]
-
-dor_data_oct[,stage_lost:=
-               max.col(-.SD[,.(.5,land_area_keep,bankruptcy=="N",
-                               sequestration=="N",calc_total_due>.61,
-                               sheriff_sale=="N",
-                               abate_exempt_code %in% c("","     ","\\    "),
-                               returned_mail_flag=="NO",
-                               payment_agreement=="N",case_status=="",
-                               cycle%in%c(33,39:41,43:47))],
-                       ties.method="last")]
-dor_data_oct[cycle%in%c(33,39:41,43:47)
-             ][order(-cycle),
-               {pdf2("./papers_presentations/images/sample_restrictions_by_cycle.pdf")
-                 layout(mat=matrix(1:2),heights=c(.8,.2))
-                 par(mar=c(0,4.1,4.1,2.1))
-                 tt<-table(stage_lost,cycle)
-                 y<-barplot(tt,horiz=T,col=clrs,xlab="Count of Properties",
-                            names.arg=paste("Day",uniqueN(cycle):1),
-                            las=1,main=paste0("Impact of Sample Restrictions",
-                                              "\nBy Mailing Day"))
-                 sapply(1:uniqueN(cycle),function(z)
-                   text(150,y[z],paste0(tt[1,z]),col="white",font=2))
-                 text(sum(tt[1:9,uniqueN(cycle)]),y[uniqueN(cycle)],pos=4,
-                      "Do Not Receive Treatment",font=2,cex=.9)
-                 par(mar=rep(0,4))
-                 XX<-max(colSums(tt))
-                 plot(0,0,type="n",ann=F,axes=F,xlim=c(0,XX))
-                 legend(XX/2,0,legend=c("Final Sample","Land Area",
-                                     "Bankruptcy","Sequestration",
-                                     "Negligible Balance",
-                                     "Sheriff's Sale","Tax Exemption",
-                                     "Returned Mail",
-                                     "Payment Agreement",
-                                     "Excluded from Mailings"),
-                        inset=0,ncol=5,cex=.5,bty="n",x.intersp=1,
-                        text.width=450,
-                        y.intersp=.5,pch=15,col=clrs,lwd=10,xjust=.5)
-                 dev.off2()}]
-
-
-##Time Series Plots
-trt<-get_treats(analysis_data_main)
-trt_col<-get_treats_col(analysis_data_main)
-draw_time_series<-function(plist){
-  pdf2(paste0("./papers_presentations/images/analysis/main",
-              "/time_series_",plist$file,"_main.pdf"))
-  dcast.data.table(
-    ts_data[,c("posting_rel","treatment",plist$series),with=F],
-    posting_rel~treatment,value.var=plist$series
-    )[,matplot(posting_rel,.SD[,!"posting_rel",with=F],
-               type="l",lty=1,xlab="Days Since Mailing",
-               ylab=plist$y,lwd=2,col=trt_col,
-               main=paste0(plist$title,"\nFull Sample"))]
-  legend(plist$pos,trt,lty=1,lwd=2,
-         col=trt_col,bg="aliceblue")
-  dev.off2()
-}
-
-ts_data<-analysis_data_main[posting_rel>=0,
-                            .(evpd=mean(100*ever_paid),
-                              pdfl=mean(100*paid_full),
-                              avpm=mean(cum_treated_pmts),
-                              cmpm=sum(100*current_balance/total_due_at_mailing_grp)),
-                            by=c("posting_rel","treatment")]
-
-plot_params<-list(ever_paid=list(file="ever_paid",y="%",series="evpd",pos="topleft",
-                                 title="Percent of Group Ever Having Paid"),
-                  paid_full=list(file="paid_full",y="%",series="pdfl",pos="topleft",
-                                 title="Percent of Group Having Paid in Full"),
-                  avg_paymt=list(file="average_payments",y="$",series="avpm",pos="topleft",
-                                 title="Cumulative Average Payments Since Mail Date"),
-                  debt_paid=list(file="debt_paydown",y="%",series="cmpm",pos="bottomleft",
-                                 title="Percentage of Mailing Day Debt Owed"))
-
-lapply(plot_params,draw_time_series); rm(ts_data,plot_params)
-
-##By-Quartile graphs
-quartile_cutoffs<-
-  round(analysis_data_main[,quantile(total_due_at_mailing,probs=c(.25,.5,.75))],-2)
-
-setkey(analysis_data_main,balance_quartile,treatment)
-###Percent Ever Paid by treatment
-pct_ever_paid_q<-
-  dcast.data.table(analysis_data_main[posting_rel>=0,mean(100*ever_paid),
-                                      by=list(balance_quartile,treatment,posting_rel)],
-                   posting_rel~balance_quartile+treatment,value.var="V1")
-
-uplim<-max(pct_ever_paid_q[,!"posting_rel",with=F])
-
-pdf2(paste0("./papers_presentations/images/analysis/main",
-            "/time_series_pct_ever_paid_by_quartile_main.pdf"))
-layout(mat=matrix(c(1,3,5,2,4,5),nrow=3),heights=c(.4,.4,.2))
-par(oma=c(0,0,3,0))
-par(mar=c(0,4.1,4.1,2.1))
-pct_ever_paid_q[,c("posting_rel",paste0("1_",trt)),with=F
-                ][,matplot(posting_rel,.SD[,!"posting_rel",with=F],
-                         type="l",lty=1,col=trt_col,xlab="",
-                         lwd=2,xaxt="n",main="",ylab="%",
-                         ylim=c(0,max(.SD[,!"posting_rel",with=F])))]
-text(7,.75*par("usr")[4],
-     paste("1st Quartile: \n",
-           paste0("Below $",quartile_cutoffs[["25%"]])))
-
-par(mar=c(0,4.1,4.1,2.1))
-pct_ever_paid_q[,c("posting_rel",paste0("2_",trt)),with=F
-                ][,matplot(posting_rel,.SD[,!"posting_rel",with=F],
-                           type="l",lty=1,col=trt_col,xlab="",
-                           lwd=2,xaxt="n",main="",ylab="%",
-                           ylim=c(0,max(.SD[,!"posting_rel",with=F])))]
-text(7,.75*par("usr")[4],
-     paste("2nd Quartile: \n",
-           paste0("$",quartile_cutoffs[["25%"]],
-                  "-$",quartile_cutoffs[["50%"]])))
-
-par(mar=c(5.1,4.1,0,2.1))
-pct_ever_paid_q[,c("posting_rel",paste0("3_",trt)),with=F
-                ][,matplot(posting_rel,.SD[,!"posting_rel",with=F],
-                           type="l",lty=1,col=trt_col,lwd=2,
-                           main="",ylab="%",xlab="Days Since Mailing",
-                           ylim=c(0,max(.SD[,!"posting_rel",with=F])))]
-text(7,.75*par("usr")[4],
-     paste("3rd Quartile: \n",
-           paste0("$",quartile_cutoffs[["50%"]],
-                  "-$",quartile_cutoffs[["75%"]])))
-
-par(mar=c(5.1,4.1,0,2.1))
-pct_ever_paid_q[,c("posting_rel",paste0("4_",trt)),with=F
-                ][,matplot(posting_rel,.SD[,!"posting_rel",with=F],
-                           type="l",lty=1,col=trt_col,lwd=2,
-                           main="",ylab="%",xlab="Days Since Mailing",
-                           ylim=c(0,max(.SD[,!"posting_rel",with=F])))]
-text(7,.75*par("usr")[4],
-     paste("4th Quartile: \n",
-           paste0("Above $",quartile_cutoffs[["75%"]])))
-
-par(mar=c(0,0,0,0))
-plot(1,type="n",axes=F,xlab="",ylab="")
-legend("top",legend=trt,lty=1,lwd=2,
-       col=trt_col,horiz=T,inset=0)
-mtext(paste0("Percent of Group Ever Having Paid\n",
-             "By Balance Quartile, Full Sample"),
-      side=3,line=-2,outer=T)
-dev.off2()
-rm(uplim,pct_ever_paid_q)
-
-###Percent Paid in Full by treatment
-pct_paid_full_q<-
-  dcast.data.table(analysis_data_main[posting_rel>=0,mean(100*paid_full),
-                                      by=list(balance_quartile,treatment,posting_rel)],
-                   posting_rel~balance_quartile+treatment,value.var="V1")
-
-uplim<-max(pct_paid_full_q[,!"posting_rel",with=F])
-
-pdf2(paste0("./papers_presentations/images/analysis/main",
-            "/time_series_pct_paid_full_by_quartile_main.pdf"))
-layout(mat=matrix(c(1,3,5,2,4,5),nrow=3),heights=c(.4,.4,.2))
-par(oma=c(0,0,3,0))
-par(mar=c(0,4.1,4.1,2.1))
-pct_paid_full_q[,c("posting_rel",paste0("1_",trt)),with=F
-                ][,matplot(posting_rel,.SD[,!"posting_rel",with=F],
-                           type="l",lty=1,col=trt_col,xlab="",
-                           lwd=2,xaxt="n",main="",ylab="%",
-                           ylim=c(0,max(.SD[,!"posting_rel",with=F])))]
-text(7,.75*par("usr")[4],
-     paste("1st Quartile: \n",
-           paste0("Below $",quartile_cutoffs[["25%"]])))
-
-par(mar=c(0,4.1,4.1,2.1))
-pct_paid_full_q[,c("posting_rel",paste0("2_",trt)),with=F
-                ][,matplot(posting_rel,.SD[,!"posting_rel",with=F],
-                           type="l",lty=1,col=trt_col,xlab="",
-                           lwd=2,xaxt="n",main="",ylab="%",
-                           ylim=c(0,max(.SD[,!"posting_rel",with=F])))]
-text(7,.75*par("usr")[4],
-     paste("2nd Quartile: \n",
-           paste0("$",quartile_cutoffs[["25%"]],
-                  "-$",quartile_cutoffs[["50%"]])))
-
-par(mar=c(5.1,4.1,0,2.1))
-pct_paid_full_q[,c("posting_rel",paste0("3_",trt)),with=F
-                ][,matplot(posting_rel,.SD[,!"posting_rel",with=F],
-                           type="l",lty=1,col=trt_col,lwd=2,
-                           main="",ylab="%",xlab="Days Since Mailing",
-                           ylim=c(0,max(.SD[,!"posting_rel",with=F])))]
-text(7,.75*par("usr")[4],
-     paste("3rd Quartile: \n",
-           paste0("$",quartile_cutoffs[["50%"]],
-                  "-$",quartile_cutoffs[["75%"]])))
-
-par(mar=c(5.1,4.1,0,2.1))
-pct_paid_full_q[,c("posting_rel",paste0("4_",trt)),with=F
-                ][,matplot(posting_rel,.SD[,!"posting_rel",with=F],
-                           type="l",lty=1,col=trt_col,lwd=2,
-                           main="",ylab="%",xlab="Days Since Mailing",
-                           ylim=c(0,max(.SD[,!"posting_rel",with=F])))]
-text(7,.75*par("usr")[4],
-     paste("4th Quartile: \n",
-           paste0("Above $",quartile_cutoffs[["75%"]])))
-
-par(mar=c(0,0,0,0))
-plot(1,type="n",axes=F,xlab="",ylab="")
-legend("top",legend=trt,lty=1,lwd=2,
-       col=trt_col,horiz=T,inset=0)
-mtext(paste0("Percent of Group Having Paid in Full\n",
-             "By Balance Quartile, Full Sample"),
-      side=3,line=-2,outer=T)
-dev.off2()
-rm(uplim,pct_paid_full_q)
