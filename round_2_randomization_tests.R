@@ -6,24 +6,10 @@
 rm(list=ls(all=T))
 gc()
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency")
+library(funchir)
 library(data.table)
 library(xlsx)
 library(maptools)
-
-pdf2<-function(...){
-  graphics.off()
-  dev.new()
-  do.call('pdf',list(...))
-  dev.set(which=dev.list()["RStudioGD"])
-}
-
-dev.off2<-function(){
-  dev.copy(which=dev.list()["pdf"])
-  invisible(dev.off(which=dev.list()["pdf"]))
-}
-
-#Shorthand for string concatenation
-"%+%"<-function(s1,s2)paste0(s1,s2)
 
 # Data import ####
 

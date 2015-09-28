@@ -18,10 +18,11 @@ library(ggmap)
 library(getcartr)
 library(deldir)
 library(sp)
+library(xlsx)
 
 #Copied & personalized from Carson Farmer here:
 #  http://carsonfarmer.com/2009/09/voronoi-polygons-with-r/
-voronoi = function(layer,box=NULL) {
+voronoi = function(layer,box=NULL,proj4string=layer@proj4string) {
   crds <- layer@coords
   colnames(crds)<-c("x","y")
   rw <- c(t(box))
@@ -31,7 +32,7 @@ voronoi = function(layer,box=NULL) {
     Polygons(list(Polygon(wrap(cbind(tl$x,tl$y)))), 
              ID=as.character(tl$ptNum))
   })
-  SP = SpatialPolygons(polys)
+  SP = SpatialPolygons(polys,proj4string=proj4string)
   DF <- data.frame(crds, 
                    row.names=sapply(slot(SP, 'polygons'),function(x)slot(x, 'ID')))
   
@@ -52,14 +53,31 @@ sheriffs_delinquent<-
         )[address%in%used_sheriff]
 
 ##Get experiment data for counts
-exper.data<-fread("./round_two/round_2_full_data.csv")
-exper.data.gis<-fread(data_wd%+%
+exper.data<-
+  fread("./round_two/round_2_full_data.csv"
+        )[setDT(read.xlsx3(
+          data_wd%+%"req20150709_PennLetter"%+%
+            "Experiment_v3_Coordinates.xlsx",
+          sheetName="TREATMENT",colIndex=c(2,4,5),
+          colClasses=c("character",rep("numeric",2)))),
+          `:=`(longitude=X_LONG,latitude=Y_LAT),
+          on=c(opa_no="BRT.NUMBER")
+          #supplement with coordinates done by hand & flag
+          ][fread(data_wd%+%"round_2_supplement_lon_lat_main.csv"),
+            `:=`(longitude=i.longitude,latitude=i.latitude),on="opa_no"]
 
+exper.data.map<-
+  spTransform(SpatialPointsDataFrame(cbind(
+    exper.data$longitude,exper.data$latitude),
+    exper.data[,!c("longitude","latitude"),with=F],
+    proj4string=CRS("+proj=longlat +datum=WGS84")),
+    CRS("+init=epsg:2272"))
 
 #Import shapefiles for delinquent
 #  properties & Philadelphia ZIP codes
 sheriffs_map_delinquent<-
-  readShapePoints(gis_wd%+%"delinquent_sold_year_to_may_15_nad.shp")
+  readShapePoints(gis_wd%+%"delinquent_sold_year_to_may_15_nad.shp",
+                  proj4string=CRS("+init=epsg:2272"))
 phila_zip<-
   readShapePoly(gis_wd%+%"Philadelphia_Zipcodes_Poly201302.shp")
 phila_azav<-
@@ -123,3 +141,5 @@ sheriffs_map_in_sample<-
 sheriffs_map_in_sample_voronoi<-
   voronoi(sheriffs_map_in_sample,
           box=phila_zip@bbox)
+
+x<-exper.data.map %over% sheriffs_map_in_sample_voronoi

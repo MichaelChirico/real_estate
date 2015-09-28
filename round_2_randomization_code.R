@@ -9,23 +9,11 @@ gc()
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 data_wd<-"/media/data_drive/real_estate/"
 gis_wd<-"/media/data_drive/gis_data/PA/"
+library(funchir)
 library(data.table)
 library(xlsx)
 library(foreign)
 library(maptools)
-
-abbr_to_colClass<-function(inits,counts){
-  x<-strsplit(inits,split="")[[1]]
-  types<-character(length(x))
-  types[x=="c"]<-"character"
-  types[x=="f"]<-"factor"
-  types[x=="i"]<-"integer"
-  types[x=="n"]<-"numeric"
-  types[x=="d"]<-"Date"
-  rep(types,strsplit(counts,split="")[[1]])
-}
-
-"%+%"<-function(s1,s2)paste0(s1,s2)
 
 ##Set Random Seed:
 ## Took current time as of this writing and appended the digits

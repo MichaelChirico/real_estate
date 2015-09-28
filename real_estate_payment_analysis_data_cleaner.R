@@ -6,20 +6,9 @@
 rm(list=ls(all=T))
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 data_wd<-"/media/data_drive/real_estate/"
+library(funchir)
 library(data.table)
 library(foreign)
-
-# CONVENIENT FUNCTIONS
-abbr_to_colClass<-function(inits,counts){
-  x<-substring(inits,1:nchar(inits),1:nchar(inits))
-  types<-ifelse(x=="c","character",
-                ifelse(x=="f","factor",
-                       ifelse(x=="i","integer",
-                              "numeric")))
-  rep(types,substring(counts,1:nchar(counts),1:nchar(counts)))
-}
-
-"%+%"<-function(s1,s2)paste0(s1,s2)
 
 #READING IN THE DATA ####
 ##PAYMENTS DATA
@@ -162,9 +151,8 @@ levels(opa_data$exterior)<-c("N/A","N/A","New/Rehab","Above Average","Average",
 cycle_info<-
   setnames(fread(data_wd%+%"opa_cycles.csv",
                  select=c("OPA #","Billing Cycle")),c("opa_no","cycle")
-           #Round 1 Treatments: 33-47;
-           #  using 31 & 32 as (non-random) hold-out sample
-           )[cycle %in% 31:47,]
+           #Round 1 Treatments: 33-47
+           )[cycle %in% 33:47,]
 
 #Correct coding of OPA# to match other files
 cycle_info[,opa_no:=sprintf("%09d",opa_no)]
@@ -182,33 +170,21 @@ cycle_info[,opa_no:=sprintf("%09d",opa_no)]
 #### 37    Nov. 11  M    Nov. 17    $ 46    Nov. 24  M    Dec. 1     $
 #### 38    Nov. 12  M    Nov. 17    $ 47    Nov. 25  M    Dec. 1     $
 #### 39    Nov. 13  M    Nov. 18    $
-cycle_info[data.table(cycle=31:47,
+cycle_info[data.table(cycle=33:47,
                       mailing_day=
                         as.Date(c(paste0("2014-11-",
-                                         c(5,10,10,12,13,14,17,17,
+                                         c(10,12,13,14,17,17,
                                            18,19,20,21,24,24,25)),
                                   rep("2014-12-01",2)))),
            mailing_day:=i.mailing_day,on="cycle"]
 
-###INTENDED TREATMENTS WERE AS FOLLOWS
-levels_int<-character()
-levels_int[c(31,32)]="Leave-Out"
-levels_int[c(35,37,44)]="Threat"
-levels_int[c(33,40,41,47)]="Service"
-levels_int[c(34,38,43,46)]="Civic"
-levels_int[c(36,39,42,45)]="Control"
-cycle_info[data.table(cycle=31:47,treatment_int=levels_int[31:47]),
-      treatment_int:=factor(i.treatment_int),on="cycle"]
-rm(levels_int)
-
 ###ACTUAL TREATMENTS WERE AS FOLLOWS
 levels_act<-character()
-levels_act[c(31,32)]="Leave-Out"
 levels_act[c(35,36,44)]="Threat"
 levels_act[c(33,40,41,42,47)]="Service"
 levels_act[c(34,37,38,43,46)]="Civic"
 levels_act[c(39,45)]="Control"
-cycle_info[data.table(cycle=31:47,treatment=levels_act[31:47]),
+cycle_info[data.table(cycle=33:47,treatment=levels_act[33:47]),
            treatment:=factor(i.treatment),on="cycle"]
 rm(levels_act)
 
@@ -295,5 +271,5 @@ payments_by_day[,end:=(posting_rel==max_length)]; rm(max_length)
 
 #Finally, write the data sets to be loaded in the analysis file
 write.csv(payments_by_day,file="analysis_file.csv",quote=T,row.names=F)
-write.csv(payments_by_day[end==1&fidelity_flag==0,],
+write.csv(payments_by_day[(end&!fidelity_flag)],
           file="analysis_file_end_only_act.csv",quote=T,row.names=F)

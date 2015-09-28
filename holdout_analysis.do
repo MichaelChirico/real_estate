@@ -14,8 +14,8 @@ bysort owner1: gen owner_count = _N
  
 duplicates drop owner1, force
  
-gen nonzeropayment    = 1 if owner_paid>0
+gen nonzeropayment  = 1 if owner_paid>0
  
-gen fullpayment               = 1 if TOTALDUEJULY2015==0
+gen fullpayment = 1 if TOTALDUEJULY2015==0
  
 mvencode nonzeropayment fullpayment, mv(.=0)
