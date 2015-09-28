@@ -10,6 +10,9 @@ gc()
 set.seed(60008645)
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 data_wd<-"/media/data_drive/real_estate/"
+code_wd<-"./analysis_code/"
+#funchir is Michael Chirico's package of convenience functions
+#  install with devtools::install_github("MichaelChirico/funchir")
 library(funchir)
 library(data.table)
 library(texreg)
@@ -19,6 +22,8 @@ library(Zelig)
 library(foreign)
 library(lmtest)
 library(glmmML)
+write.packages(code_wd%+%"real_estate_payment_"%+%
+                 "analysis_session.txt")
 
 trt.nms <- c("Control","Threat","Service","Civic")
 trt.col <- c(Control="black",Threat="red",
@@ -167,25 +172,6 @@ xtable(sapply(list(
 ###Use blocked (at our cluster level)
 ###  bootstrap to get p-values
 
-###Function for getting the raw statistic
-###  used in Pearson's 1 and 2-way Chi-squared test
-###  (drawn basically from Wikipedia)
-pearson_stat1<-function(x,p=1/length(unique(x))){
-  tab<-table(x)
-  if (is.null(names(p))){
-    sum((1-tab/length(x)/p)^2)
-  } else {
-    sum((1-tab/length(x)/p[names(tab)])^2)
-  }
-}
-
-pearson_stat2<-function(x,y){
-  tab<-table(x,y)
-  sum((1-c(tab)*length(x)/
-         rep(rowSums(tab),ncol(tab))/
-         rep(colSums(tab),each=nrow(tab)))^2)
-}
-
 ###Set of variables which we'll test
 ###  to probe balance on observables
 test_vars<-c("balance_quartile","mv_quartile",
@@ -207,12 +193,14 @@ test_dist<-replicate(BB,analysis_data_main[
   c(sapply(test_vars,function(x)
     #Get the two-way Pearson's Chi-Squared
     #  statistic for each bootstrap replication
-    pearson_stat2(get(x),treatment)),
+    chisq.test(get(x),treatment)$statistic),
     #The distribution of properties across cycles
     #  is a one-way test, so treat separately
-    "prop_dist"=pearson_stat1(treatment,p=p_exp))])
+    "prop_dist"=chisq.test(table(treatment),p=p_exp)$statistic)])
+rownames(test_dist)<-
+  gsub("\\..*","",rownames(test_dist))
 
-print.xtable(xtable(rbindlist(c(lapply(
+{print.xtable(xtable(rbindlist(c(lapply(
   #Create one data.table for each test,
   #  then stack them all and print as LaTeX
   test_vars,function(x){
@@ -220,8 +208,9 @@ print.xtable(xtable(rbindlist(c(lapply(
     #  of the bootstrapped test statistics, then find
     #  the proportion of observations exceeding the
     #  in-sample statistic (i.e., 1-P[test > in-sample])
-    pv<-analysis_data_main[,1-ecdf(test_dist[x,])(
-      pearson_stat2(get(x),treatment))]
+    pv<-mean(test_dist[x,] > 
+               analysis_data_main[
+                 j=chisq.test(get(x),treatment)$statistic])
     #Instead of doing table, count and reshape wide
     dcast(
       analysis_data_main[,.N,keyby=c(x,"treatment")
@@ -235,10 +224,10 @@ print.xtable(xtable(rbindlist(c(lapply(
     "Variable"="Distribution of Properties",
     rbind(analysis_data_main[,table2(treatment,prop=T,dig=Inf)]),
     "$p$-value"=analysis_data_main[,1-ecdf(test_dist["prop_dist",])(
-      pearson_stat1(treatment,p=p_exp))])),
+      chisq.test(table(treatment),p=p_exp)$statistic)])),
   #add one more table to show the expected distribution
   list(data.table("Variable"="Expected Distribution",
-                     rbind(p_exp),"$p$-value"=NA)))),
+                  rbind(p_exp),"$p$-value"=NA)))),
   caption="Tests of Sample Balance on Observables",align=c("|c|l|c|c|c|c|c|"),
   label="table:balance",digits=2),include.rownames=F,
   #don't remove the $ from p-value column so it prints as math
@@ -252,7 +241,7 @@ print.xtable(xtable(rbindlist(c(lapply(
                             "\\hline \nLand Area Quartiles & & & & & \\\\ \n",
                             "\\hline \n\\# Rooms & & & & & \\\\ \n",
                             "\\hline \nYears of Debt & & & & & \\\\ \n",
-                            "\\hline \nCategory & & & & & \\\\ \n")))
+                            "\\hline \nCategory & & & & & \\\\ \n")))}
 
 ##TABLE 4 ####
 ##SUMMARY OF EFFECTIVENESS OF EACH SAMPLE
@@ -266,7 +255,7 @@ print.xtable(xtable(rbindlist(lapply(
              by=treatment
              ][,.("Sample"=c(smpl[1],paste0(
                "(N=",prettyNum(sum(N),big.mark=","),")"),"",""),
-                  "Treatment (Obs.)"=paste0(
+                  "Treatment (Properties)"=paste0(
                     treatment," (n=",prettyNum(N,big.mark=","),")"),
                   "Total Debt Owed"=dol.form(tot_due),
                   "Percent Ever Paid"=to.pct(ev_pd,dig=0),
@@ -286,9 +275,7 @@ print.xtable(xtable(rbindlist(lapply(
 # Regressions ####
 ##TABLE 5 ####
 ##DIFFERENCE IN MEAN TESTS
-texreg(lapply(list(analysis_data_main,
-                   analysis_data_ncom,
-                   analysis_data_sown),
+texreg(lapply(all_samples,
               function(y)y[,{x<-lm(cum_treated_pmts~treatment)
               names(x$coefficients)<-
                 gsub("[()]|treatment","",names(x$coefficients))
@@ -296,8 +283,8 @@ texreg(lapply(list(analysis_data_main,
        custom.model.names=
          c("Main Sample","Non-Commercial Sample",
            "Unique Owner Sample"),
-       caption="Difference in Mean Tests",
-       caption.above=T,label="dif_mean")
+       caption="Estimated Average Treatment Effects: Revenues",
+       caption.above=T,label="dif_mean",stars=c(.01,.05,.1))
 
 ##TABLE 6 ####
 ##LOGIT - EVER PAID (I)

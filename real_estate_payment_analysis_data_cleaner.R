@@ -6,9 +6,14 @@
 rm(list=ls(all=T))
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 data_wd<-"/media/data_drive/real_estate/"
+code_wd<-"./analysis_code/"
+#funchir is Michael Chirico's package of convenience functions
+#  install with devtools::install_github("MichaelChirico/funchir")
 library(funchir)
 library(data.table)
 library(foreign)
+write.packages(code_wd%+%"real_estate_payment_"%+%
+                 "analysis_data_cleaner_session.txt")
 
 #READING IN THE DATA ####
 ##PAYMENTS DATA
