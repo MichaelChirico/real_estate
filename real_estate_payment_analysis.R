@@ -18,6 +18,7 @@ library(xtable)
 library(Zelig)
 library(foreign)
 library(lmtest)
+library(glmmML)
 
 trt.nms <- c("Control","Threat","Service","Civic")
 trt.col <- c(Control="black",Threat="red",
@@ -73,8 +74,10 @@ comment(analysis_data_main)<-c("main","Full Sample","analysis_data_main")
 comment(analysis_data_ncom)<-c("non_comm","Non-Commercial Properties","analysis_data_ncom")
 comment(analysis_data_sown)<-c("single_owner","Unique-Owner Properties","analysis_data_sown")
 
-for (dt in list(analysis_data_main,
-                analysis_data_ncom,analysis_data_sown)){
+all_samples<-list(analysis_data_main,
+                  analysis_data_ncom,
+                  analysis_data_sown)
+for (dt in all_samples){
   ##Define the sample-specific variables:
   ## total_due_at_mailing_grp: total due by properties
   ##                           in each group at mailing
@@ -252,33 +255,37 @@ print.xtable(xtable(rbindlist(c(lapply(
                             "\\hline \nCategory & & & & & \\\\ \n")))
 
 ##TABLE 4 ####
-##SUMMAR OF EFFECTIVENESS OF EACH SAMPLE
-print.xtable(xtable(rbindlist(lapply(list(
-  analysis_data_main,analysis_data_ncom,analysis_data_sown),
-  function(x){setkey(x,treatment
-  )[,.(.N,smpl=smpl[1],
-             tot_due=sum(total_due_at_mailing),
-             ev_pd=mean(ever_paid),pd_fl=mean(paid_full),
-             tot_pmt=sum(cum_treated_pmts)),
-    by=treatment
-    ][,.("Sample"=c(smpl[1],paste0("(N=",prettyNum(sum(N),big.mark=","),")"),"",""),
-         "Treatment (Obs.)"=paste0(treatment," (n=",prettyNum(N,big.mark=","),")"),
-         "Total Debt Owed"=dol.form(tot_due),
-         "Percent Ever Paid"=to.pct(ev_pd,dig=0),
-         "Percent Paid in Full"=to.pct(pd_fl,dig=0),
-         "Dollars Received"=dol.form(tot_pmt),
-         "Percent Debt Received"=to.pct(tot_pmt/tot_due,dig=1),
-         "Dollars above Control Per Property"=
-           dol.form(tot_pmt/N-tot_pmt[1]/N[1]),
-         "Total Surplus over All Properties"=
-           dol.form(tot_pmt-tot_pmt[1]/N[1]*N))]})),
+##SUMMARY OF EFFECTIVENESS OF EACH SAMPLE
+print.xtable(xtable(rbindlist(lapply(
+  all_samples,function(x){
+    setkey(x,treatment
+           )[,.(.N,smpl=smpl[1],
+                tot_due=sum(total_due_at_mailing),
+                ev_pd=mean(ever_paid),pd_fl=mean(paid_full),
+                tot_pmt=sum(cum_treated_pmts)),
+             by=treatment
+             ][,.("Sample"=c(smpl[1],paste0(
+               "(N=",prettyNum(sum(N),big.mark=","),")"),"",""),
+                  "Treatment (Obs.)"=paste0(
+                    treatment," (n=",prettyNum(N,big.mark=","),")"),
+                  "Total Debt Owed"=dol.form(tot_due),
+                  "Percent Ever Paid"=to.pct(ev_pd,dig=0),
+                  "Percent Paid in Full"=to.pct(pd_fl,dig=0),
+                  "Dollars Received"=dol.form(tot_pmt),
+                  "Percent Debt Received"=to.pct(tot_pmt/tot_due,dig=1),
+                  "Dollars above Control Per Property"=
+                    dol.form(tot_pmt/N-tot_pmt[1]/N[1]),
+                  "Total Surplus over All Properties"=
+                    dol.form(tot_pmt-tot_pmt[1]/N[1]*N))]})),
   caption=c("Summary of Effectiveness of Treatment"),label="table:summary",
   align=paste0("|c|p{2.2cm}|p{1.4cm}|p{1.8cm}|p{1.2cm}|",
                "p{1.2cm}|p{1.4cm}|p{1.4cm}|p{2.2cm}|p{1.8cm}|"),
   digits=c(rep(0,7),1,0,0)),include.rownames=F,hline.after=c(-1,0,4,8,12),
   floating.environment="sidewaystable")
 
-# Regressions
+# Regressions ####
+##TABLE 5 ####
+##DIFFERENCE IN MEAN TESTS
 texreg(lapply(list(analysis_data_main,
                    analysis_data_ncom,
                    analysis_data_sown),
@@ -292,9 +299,9 @@ texreg(lapply(list(analysis_data_main,
        caption="Difference in Mean Tests",
        caption.above=T,label="dif_mean")
 
+##TABLE 6 ####
+##LOGIT - EVER PAID (I)
 
-##TABLE 5 ####
-##DIFFERENCE IN MEAN TESTS
 # ##REGRESSION TABLES
 # ###Running regressions
 # regs<-setNames(vector("list",20),
