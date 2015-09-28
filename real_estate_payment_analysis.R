@@ -17,6 +17,7 @@ library(sandwich)
 library(xtable)
 library(Zelig)
 library(foreign)
+library(lmtest)
 
 trt.nms <- c("Control","Threat","Service","Civic")
 trt.col <- c(Control="black",Threat="red",
@@ -107,7 +108,7 @@ for (dt in list(analysis_data_main,
   assign(comment(dt)[3],dummy)
 }; rm(dt,dummy)
 
-#Tables ####
+#Results ####
 ##TABLE 1
 ##  Produced by Bob
 
@@ -208,7 +209,7 @@ test_dist<-replicate(BB,analysis_data_main[
     #  is a one-way test, so treat separately
     "prop_dist"=pearson_stat1(treatment,p=p_exp))])
 
-lyx.xtable(xtable(rbindlist(c(lapply(
+print.xtable(xtable(rbindlist(c(lapply(
   #Create one data.table for each test,
   #  then stack them all and print as LaTeX
   test_vars,function(x){
@@ -250,10 +251,9 @@ lyx.xtable(xtable(rbindlist(c(lapply(
                             "\\hline \nYears of Debt & & & & & \\\\ \n",
                             "\\hline \nCategory & & & & & \\\\ \n")))
 
-
-##EFFECTIVENESS SUMMARY TABLE
-###Summary of Effectiveness by Treatment & Sample
-lyx.xtable(xtable(rbindlist(lapply(list(
+##TABLE 4 ####
+##SUMMAR OF EFFECTIVENESS OF EACH SAMPLE
+print.xtable(xtable(rbindlist(lapply(list(
   analysis_data_main,analysis_data_ncom,analysis_data_sown),
   function(x){setkey(x,treatment
   )[,.(.N,smpl=smpl[1],
@@ -278,6 +278,23 @@ lyx.xtable(xtable(rbindlist(lapply(list(
   digits=c(rep(0,7),1,0,0)),include.rownames=F,hline.after=c(-1,0,4,8,12),
   floating.environment="sidewaystable")
 
+# Regressions
+texreg(lapply(list(analysis_data_main,
+                   analysis_data_ncom,
+                   analysis_data_sown),
+              function(y)y[,{x<-lm(cum_treated_pmts~treatment)
+              names(x$coefficients)<-
+                gsub("[()]|treatment","",names(x$coefficients))
+              coeftest(x, vcov=vcovHC(x))}]),
+       custom.model.names=
+         c("Main Sample","Non-Commercial Sample",
+           "Unique Owner Sample"),
+       caption="Difference in Mean Tests",
+       caption.above=T,label="dif_mean")
+
+
+##TABLE 5 ####
+##DIFFERENCE IN MEAN TESTS
 # ##REGRESSION TABLES
 # ###Running regressions
 # regs<-setNames(vector("list",20),
