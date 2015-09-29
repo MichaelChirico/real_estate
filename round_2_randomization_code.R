@@ -9,11 +9,14 @@ gc()
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 data_wd<-"/media/data_drive/real_estate/"
 gis_wd<-"/media/data_drive/gis_data/PA/"
+code_wd<-"./analysis_code/"
 library(funchir)
 library(data.table)
 library(xlsx)
 library(foreign)
 library(maptools)
+write.packages(code_wd%+%"logs/round_2_"%+%
+                 "randomization_code_session.txt")
 
 ##Set Random Seed:
 ## Took current time as of this writing and appended the digits

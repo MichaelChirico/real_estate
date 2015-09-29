@@ -6,10 +6,13 @@
 rm(list=ls(all=T))
 gc()
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency")
+code_wd<-"./analysis_code/"
 library(funchir)
 library(data.table)
 library(xlsx)
 library(maptools)
+write.packages(code_wd%+%"logs/round_2_"%+%
+                 "randomization_tests_session.txt")
 
 # Data import ####
 

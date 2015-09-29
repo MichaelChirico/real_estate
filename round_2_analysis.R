@@ -18,6 +18,7 @@ setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 data_wd<-"/media/data_drive/real_estate/"
 img_wd<-"./papers_presentations/round_two/images/analysis/"
 gis_wd<-"/media/data_drive/gis_data/PA/"
+code_wd<-"./analysis_code/"
 library(funchir)
 library(data.table)
 library(texreg)
@@ -28,6 +29,8 @@ library(sp)
 library(doParallel)
 library(RgoogleMaps)
 library(maptools)
+write.packages(code_wd%+%"logs/round_2_"%+%
+                 "analysis_session.txt")
 
 #Convenient Functions 
 get.col<-function(st){
@@ -196,12 +199,18 @@ data_r2_own_x05<-
   data_r2_own[total_paid<quantile(total_paid,.95)]
 
 data_holdout_own<-
-  data_holdout[,.(treatment=treatment[1],
+  data_holdout[,.(main_treat=main_treat[1],
+                  treatment=treatment[1],
                   ever_paid=any(ever_paid),
                   paid_full=all(paid_full),
                   total_paid=sum(total_paid),
                   total_due=sum(total_due)),
                by=owner1]
+
+data_holdout_own_x01<-
+  data_holdout_own[total_paid<quantile(total_paid,.99)]
+data_holdout_own_x05<-
+  data_holdout_own[total_paid<quantile(total_paid,.95)]
 
 ####Single-owner property subsample
 data_r2_own_so<-
@@ -513,21 +522,21 @@ title("Cartogram: Ever Paid by City Sector\n"%+%
 dev.off2()
 
 ##Financial Analysis ####
-print.xtable2(xtable(
+lyx.xtable(xtable(
   data_r2_own[,.(.N,
              tot_due=sum(total_due),
              ev_pd=mean(ever_paid),pd_fl=mean(paid_full),
              tot_pmt=sum(total_paid)),keyby=main_treat
     ][,.("Treatment"=main_treat,
-         "Total Debt Owed"=dol_form(tot_due),
+         "Total Debt Owed"=dol.form(tot_due),
          "Percent Ever Paid"=to.pct(ev_pd,dig=0),
          "Percent Paid in Full"=to.pct(pd_fl,dig=0),
-         "Dollars Received"=dol_form(tot_pmt),
+         "Dollars Received"=dol.form(tot_pmt),
          "Percent Debt Received"=to.pct(tot_pmt/tot_due,dig=1),
          "Dollars above Control Per Owner"=
-           dol_form(tot_pmt/N-tot_pmt[1]/N[1]),
+           dol.form(tot_pmt/N-tot_pmt[1]/N[1]),
          "Total Surplus over All Owners"=
-           dol_form(tot_pmt-tot_pmt[1]/N[1]*N))],
+           dol.form(tot_pmt-tot_pmt[1]/N[1]*N))],
   caption=c("Summary of Effectiveness of Treatment"),label="table:summary",
   align="|c|p{1.4cm}|p{1.8cm}|p{1.2cm}|p{1.2cm}|"%+%
     "p{1.6cm}|p{1.4cm}|p{2.2cm}|p{1.8cm}|",
@@ -542,7 +551,12 @@ sapply(list(list(dt=data_r2_own,fl="7_own",tl="",
                  tl="\nTop 5% of Payers Removed",
                  tr="main_treat",rf="Control"),
             list(dt=data_holdout_own,fl="8_own",
-                 tl="\nvs. Holdout",tr="treatment",
+                 tl="\nvs. Holdout",tr="main_treat",
+                 rf="Holdout"),
+            list(dt=data_holdout_own[main_treat%in%
+                                       c("Holdout","Control")],
+                 fl="8_own_control",
+                 tl="\nControl vs. Holdout",tr="main_treat",
                  rf="Holdout"),
             list(dt=data_r2_own,fl="2_own",
                  tl="\nBig vs. Small",

@@ -12,7 +12,7 @@ code_wd<-"./analysis_code/"
 library(funchir)
 library(data.table)
 library(foreign)
-write.packages(code_wd%+%"real_estate_payment_"%+%
+write.packages(code_wd%+%"logs/real_estate_payment_"%+%
                  "analysis_data_cleaner_session.txt")
 
 #READING IN THE DATA ####

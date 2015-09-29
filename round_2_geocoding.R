@@ -11,6 +11,7 @@ gc()
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 data_wd<-"/media/data_drive/real_estate/"
 gis_wd<-"/media/data_drive/gis_data/PA/"
+code_wd<-"./analysis_code/"
 library(funchir)
 library(data.table)
 library(maptools)
@@ -19,6 +20,8 @@ library(getcartr)
 library(deldir)
 library(sp)
 library(xlsx)
+write.packages(code_wd%+%"logs/round_2_"%+%
+                 "geocoding_session.txt")
 
 #Copied & personalized from Carson Farmer here:
 #  http://carsonfarmer.com/2009/09/voronoi-polygons-with-r/
