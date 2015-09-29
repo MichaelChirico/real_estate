@@ -1,4 +1,4 @@
-Package info for code run on 2015-09-29 10:33:15:
+Package info for code run on 2015-09-28 15:17:33:
 R version 3.2.2 (2015-08-14)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Ubuntu 14.04.3 LTS
@@ -12,8 +12,8 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] glmmML_1.0       lmtest_0.9-34    zoo_1.7-12       foreign_0.8-66   Zelig_4.2-1      MASS_7.3-44      boot_1.3-17     
- [8] xtable_1.7-4     sandwich_2.3-4   texreg_1.35      data.table_1.9.7 funchir_0.1.1   
+ [1] glmmML_1.0       lmtest_0.9-34    zoo_1.7-12       Zelig_4.2-1      MASS_7.3-44      boot_1.3-17      xtable_1.7-4    
+ [8] sandwich_2.3-4   texreg_1.35      foreign_0.8-66   data.table_1.9.7 funchir_0.1.1   
 
 loaded via a namespace (and not attached):
 [1] tools_3.2.2     grid_3.2.2      chron_2.3-47    lattice_0.20-33
