@@ -186,8 +186,8 @@ cycle_info[data.table(cycle=33:47,
 ###ACTUAL TREATMENTS WERE AS FOLLOWS
 levels_act<-character()
 levels_act[c(35,36,44)]="Threat"
-levels_act[c(33,40,41,42,47)]="Service"
-levels_act[c(34,37,38,43,46)]="Civic"
+levels_act[c(33,40,41,42,47)]="Public Service"
+levels_act[c(34,37,38,43,46)]="Civic Duty"
 levels_act[c(39,45)]="Control"
 cycle_info[data.table(cycle=33:47,treatment=levels_act[33:47]),
            treatment:=factor(i.treatment),on="cycle"]

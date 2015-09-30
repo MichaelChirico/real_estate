@@ -155,9 +155,9 @@ xtable(sapply(list(
   function(y)y[,.(`Amount Due`=mean(calc_total_due),
                   `Assessed Property Value`=
                     mean(total_assessment,na.rm=T),
-                  `Value of Tax`=
+                  `Tax Due`=
                     mean(net_tax_value_after_homestead,na.rm=T),
-                  `Length of Debt`=mean(years_count),
+                  `Years of Debt`=mean(years_count),
                   `% Residential`=to.pct(mean(residential)),
                   `% with Philadelphia Mailing Address`=
                     to.pct(mean(eval(phila_addr))),
