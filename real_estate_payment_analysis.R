@@ -11,23 +11,34 @@ set.seed(60008645)
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 data_wd<-"/media/data_drive/real_estate/"
 code_wd<-"./analysis_code/"
+log_fl<-"./papers_presentations/round_one_analysis_output.txt"
+BB<-3000 #number of bootstrap/resample repetitions throughout
 #funchir is Michael Chirico's package of convenience functions
 #  install with devtools::install_github("MichaelChirico/funchir")
 library(funchir)
 library(data.table)
 library(texreg)
-library(sandwich)
 library(xtable)
-library(Zelig)
-library(foreign)
-library(lmtest)
-library(glmmML)
+library(multiwayvcov)
 write.packages(code_wd%+%"logs/real_estate_payment_"%+%
                  "analysis_session.txt")
 
-trt.nms <- c("Control","Threat","Service","Civic")
+trt.nms <- c("Control","Threat","Public Service","Civic Duty")
 trt.col <- c(Control="black",Threat="red",
-             Service="blue", Civic="green")
+             "Public Service"="blue", "Civic Duty"="green")
+
+rename_fcn<-function(nms){
+  indx<-!grepl("Intercept|treatment|"%+%
+                 "balance_quartile_pretty",nms)
+  nms[indx]<-nms[indx]%+%"XXX"
+  nms<-gsub("(Intercept)","Intercept",nms,fixed=TRUE)
+  nms<-gsub("treatment","",nms)
+  nms<-gsub("balance_quartile_pretty","",nms)
+  nms<-gsub(":","*",nms,fixed=TRUE)
+  nms<-gsub("&","\\&",nms,fixed=TRUE)
+  nms<-gsub("(.*)\\*(.*)","\\2*\\1",nms)
+  nms
+}
 
 #Set up Analysis Data Sets ####
 analysis_data_main<-
@@ -79,9 +90,10 @@ comment(analysis_data_main)<-c("main","Full Sample","analysis_data_main")
 comment(analysis_data_ncom)<-c("non_comm","Non-Commercial Properties","analysis_data_ncom")
 comment(analysis_data_sown)<-c("single_owner","Unique-Owner Properties","analysis_data_sown")
 
-all_samples<-list(analysis_data_main,
-                  analysis_data_ncom,
-                  analysis_data_sown)
+all_samples<-list("main"=analysis_data_main,
+                  "non_comm"=analysis_data_ncom,
+                  "single_owner"=analysis_data_sown)
+
 for (dt in all_samples){
   ##Define the sample-specific variables:
   ## total_due_at_mailing_grp: total due by properties
@@ -100,6 +112,11 @@ for (dt in all_samples){
            paste0("[",x[2],", ",x[3],")"),"> "%+%x[3])
     create_quantiles(total_due_at_mailing,4,labels=lbs)}]
   
+  dummy[,balance_quartile_pretty:=
+          create_quantiles(total_due_at_mailing,4,
+                           labels="Balance "%+%
+                             c("LOW","MOD","HIGH","VHIGH"))]
+  
   dummy[,mv_quartile:={
     x<-"$"%+%round(quantile(market_value/1000,qs))%+%"k"
     lbs<-c("< "%+%x[1],paste0("[",x[1],", ",x[2],")"),
@@ -115,6 +132,13 @@ for (dt in all_samples){
   
   assign(comment(dt)[3],dummy)
 }; rm(dt,dummy)
+
+###Unfortunately, since list made a copy,
+###  all_samples was not updated, either.
+###  So have to make a new copy.
+all_samples<-list("main"=analysis_data_main,
+                  "non_comm"=analysis_data_ncom,
+                  "single_owner"=analysis_data_sown)
 
 #Results ####
 ##TABLE 1
@@ -134,6 +158,14 @@ rest_delinquent<-
                   &case_status==""&sheriff_sale=="N"
                   &bankruptcy=="N"&sequestration=="N"
                   &returned_mail_flag=="NO"]
+#To compare properties assigned to outside law firms
+#  to those in our sample (all other restrictions being equal)
+rest_law_firm<-
+  full_delinquent[payment_agreement=="N"
+                  &abate_exempt_code %in% c("","     ","\\    ")
+                  &case_status!=""&sheriff_sale=="N"
+                  &bankruptcy=="N"&sequestration=="N"
+                  &returned_mail_flag=="NO"]
 
 #We count an address as in Philadelphia when:
 #  1) Mailing address is blank -- this means the
@@ -148,24 +180,29 @@ rest_delinquent<-
 #     of the multitudinous typos for Philadelphia.
 phila_addr<-quote(mail_address %in% c("","                    ")|
                     (grepl("PH",mail_city)&!grepl("[XMR]",mail_city)))
-xtable(sapply(list(
-  "All Properties"=full_delinquent,
-  "Restricted Properties"=rest_delinquent,
-  "Analysis Sample"=analysis_data_main[(end)]),
-  function(y)y[,.(`Amount Due`=mean(calc_total_due),
+capture.output(print.xtable(xtable(sapply(list(
+  "All Delinquent"=full_delinquent,
+  "Law Firm"=rest_law_firm,
+  "Restricted"=rest_delinquent,
+  "Analysis"=analysis_data_main[(end)]),
+  function(y)y[,.(`Amount Due`=dol.form(mean(calc_total_due)),
                   `Assessed Property Value`=
-                    mean(total_assessment,na.rm=T),
+                    dol.form(mean(total_assessment,na.rm=T)),
                   `Tax Due`=
-                    mean(net_tax_value_after_homestead,na.rm=T),
-                  `Years of Debt`=mean(years_count),
-                  `% Residential`=to.pct(mean(residential)),
+                    dol.form(mean(net_tax_value_after_homestead,
+                                  na.rm=T)),
+                  `Years of Debt`=round(mean(years_count)),
+                  `% Residential`=to.pct(mean(residential),dig=0),
                   `% with Philadelphia Mailing Address`=
-                    to.pct(mean(eval(phila_addr))),
+                    to.pct(mean(eval(phila_addr)),dig=0),
                   `% Owner-Occupied`=
-                    to.pct(mean(homestead>0,na.rm=T)),
-                  `Number Observations`=.N)],USE.NAMES=T),
-  caption=c("Descriptive Statistics"),
-  label="table:descriptives",digits=0); rm(phila_addr,resid_grp)
+                    to.pct(mean(homestead>0,na.rm=T),dig=0),
+                  `Number Observations`=
+                    prettyNum(.N,big.mark=","))],USE.NAMES=T),
+  caption=c("Descriptive Statistics"),align=c("|r|r|r|r|r|"),
+  label="table:descriptives"),caption.placement="top"),file=log_fl)
+  
+rm(phila_addr,resid_grp)
 
 ##TABLE 3 ####
 ##BALANCE ON OBSERVABLES
@@ -180,15 +217,39 @@ test_vars<-c("balance_quartile","mv_quartile",
 p_exp<-unique(analysis_data_main,by="cycle"
               )[,table2(treatment,prop=T,dig=Inf)]
 
-{print.xtable(xtable(rbindlist(c(lapply(
+###Get p-values for tests via permutation tests
+####Subset here to minimize memory usage
+uniq_treat<-unique(analysis_data_main[
+  !analysis_data_main[,uniqueN(treatment),
+                      by=cluster_id][V1>1],
+  .(cluster_id,treatment),on="cluster_id"])
+
+####Permutation distribution
+chisq_dist<-
+  replicate(BB,analysis_data_main[
+    #Shuffle treatment, merge back by cluster ID
+    uniq_treat[,trt2:=sample(treatment)],
+    #now perform all the tests
+    c(sapply(test_vars,function(x){
+      unname(chisq.test(get(x),i.trt2)$statistic)}),
+      #properties by day treated separately
+      "properties"=
+        unname(chisq.test(table(i.trt2),p=p_exp)$statistic)),
+    on="cluster_id"])
+
+####Baseline values
+baseline<-
+  analysis_data_main[,c(sapply(test_vars,function(x){
+    unname(chisq.test(get(x),treatment)$statistic)}),
+    "properties"=unname(chisq.test(table(treatment),p=p_exp)$statistic))]
+
+####P value is pct of null dist'n above baseline
+chisq_ps<-rowMeans(chisq_dist > baseline)
+
+{capture.output(print.xtable(xtable(rbindlist(c(lapply(
   #Create one data.table for each test,
   #  then stack them all and print as LaTeX
   test_vars,function(x){
-    #The p-value for the current test -- find the CDF
-    #  of the bootstrapped test statistics, then find
-    #  the proportion of observations exceeding the
-    #  in-sample statistic (i.e., 1-P[test > in-sample])
-    pv<-analysis_data_sown[,chisq.test(get(x),treatment)$p.value]
     #Instead of doing table, count and reshape wide
     dcast(
       analysis_data_main[,.N,keyby=c(x,"treatment")
@@ -196,14 +257,12 @@ p_exp<-unique(analysis_data_main,by="cycle"
                            by=.("Variable"=get(x))
                            ],Variable~treatment,value.var="V2"
       #only want the p-value to show up in the first row
-    )[1L,"$p$-value":=pv]}),
+    )[1L,"$p$-value":=chisq_ps[x]]}),
   #add a data.table for the distribution of properties
   list(data.table(
     "Variable"="Distribution of Properties",
     rbind(analysis_data_main[,table2(treatment,prop=T,dig=Inf)]),
-    "$p$-value"=
-      analysis_data_sown[,chisq.test(table(treatment),
-                                     p=p_exp)$p.value])),
+    "$p$-value"=chisq_ps["properties"])),
   #add one more table to show the expected distribution
   list(data.table("Variable"="Expected Distribution",
                   rbind(p_exp),"$p$-value"=NA)))),
@@ -211,7 +270,7 @@ p_exp<-unique(analysis_data_main,by="cycle"
   align=c("|c|l|c|c|c|c|c|"),label="table:balance",
   digits=2),include.rownames=F,hline.after=c(-1,25:27),
   #don't remove the $ from p-value column so it prints as math
-  sanitize.colnames.function=identity,
+  sanitize.colnames.function=identity,caption.placement="top",
   #use sanitize2 for now to deal properly with left brackets;
   #  check for updates to xtable to see if this is fixed natively
   sanitize.text.function=sanitize2,
@@ -221,11 +280,13 @@ p_exp<-unique(analysis_data_main,by="cycle"
                             "\\hline \nLand Area Quartiles & & & & & \\\\ \n",
                             "\\hline \n\\# Rooms & & & & & \\\\ \n",
                             "\\hline \nYears of Debt & & & & & \\\\ \n",
-                            "\\hline \nCategory & & & & & \\\\ \n")))}
+                            "\\hline \nCategory & & & & & \\\\ \n"))),
+  file=log_fl,append=TRUE)}
+rm(full_delinquent,rest_delinquent,rest_law_firm)
 
 ##TABLE 4 ####
 ##SUMMARY OF EFFECTIVENESS OF EACH SAMPLE
-print.xtable(xtable(rbindlist(lapply(
+capture.output(print.xtable(xtable(rbindlist(lapply(
   all_samples,function(x){
     setkey(x,treatment
            )[,.(.N,smpl=smpl[1],
@@ -250,187 +311,172 @@ print.xtable(xtable(rbindlist(lapply(
   align=paste0("|c|p{2.2cm}|p{1.4cm}|p{1.8cm}|p{1.2cm}|",
                "p{1.2cm}|p{1.4cm}|p{1.4cm}|p{2.2cm}|p{1.8cm}|"),
   digits=c(rep(0,7),1,0,0)),include.rownames=F,hline.after=c(-1,0,4,8,12),
-  floating.environment="sidewaystable")
+  floating.environment="sidewaystable",caption.placement="top"),
+  file=log_fl,append=TRUE)
 
 # Regressions ####
 ##TABLE 5 ####
 ##DIFFERENCE IN MEAN TESTS
-texreg(lapply(all_samples,
+capture.output(texreg(lapply(all_samples,
               function(y)y[,{x<-lm(cum_treated_pmts~treatment)
               names(x$coefficients)<-
-                gsub("[()]|treatment","",names(x$coefficients))
+                rename_fcn(names(x$coefficients))
               coeftest(x, vcov=vcovHC(x))}]),
        custom.model.names=
          c("Main Sample","Non-Commercial Sample",
            "Unique Owner Sample"),
        caption="Estimated Average Treatment Effects: Revenues",
-       caption.above=T,label="dif_mean",stars=c(.01,.05,.1))
+       caption.above=T,label="dif_mean",stars=c(.01,.05,.1)),
+       file=log_fl,append=TRUE)
 
 ##TABLE 6 ####
 ##LOGIT - EVER PAID (I)
-###Perform blocked bootstrap to
-###  get parameter estimates
-BB<-10000
-qs<-c(.005,.025,.05,.95,.975,.995)
-coef_bs<-lapply(all_samples,function(x){
-  setkey(x,cluster_id)
-  coef_dist<-replicate(
-    BB,x[.(sample(unique(cluster_id),replace=T)),
-         glm(ever_paid~treatment,
-             family=binomial)$coefficients])
-  apply(coef_dist,1,
-        function(x)c("SE"=sd(x),quantile(x,qs)))
-})
+epq<-quote(ever_paid)
+pfq<-quote(ever_paid)
+trq<-quote(treatment)
+ctq<-quote(I(land_area/1e3)+I(years_count<=5)+
+             council+category+owner_occ+
+             I(exterior=="Sealed/Compromised")+
+             I(market_value/1e5)+
+             balance_quartile_pretty*treatment)
 
-##REGRESSION TABLES
-###Running regressions
+reg_specs<-
+  list(epI=list("reg_lhs"=epq,"reg_rhs"=trq),
+       epII=list("reg_lhs"=epq,"reg_rhs"=ctq),
+       pfI=list("reg_lhs"=pfq,"reg_rhs"=trq),
+       pfII=list("reg_lhs"=pfq,"reg_rhs"=ctq))
+lapply(all_samples,setkeyv,"cluster_id")
 
-###Model I: LPM of Ever-Paid
-texreg2(regs[paste0(rep("reg1",3),"_",
-                    unlist(lapply(list(analysis_data_main,analysis_data_ncom,
-                                       analysis_data_sown),
-                                  function(x){comment(x)[1]})))],
-        custom.model.names=c("Full Sample","Residential","Residential, Unique Owner"),
-        custom.coef.names=c("Intercept","Threat","Service","Civic"),
-        caption="Model I: Linear Probability Models -- Ever Paid",label="table:modelIa",
-        float.pos="htbp",include.aic=F,include.bic=F,include.loglik=F,
-        include.rsquared=F,include.adjrs=F,include.fstatistic=F,stars=c(.01,.05,.1))
+reg_out<-
+  lapply(reg_specs,function(reg){
+    with(reg,lapply(all_samples,function(dt){
+      regf<-dt[,glm(eval(reg_lhs)~eval(reg_rhs),family=binomial)]
+      names(regf$coefficients)<-
+        rename_fcn(names(regf$coefficients))
+      cl <- makeCluster(detectCores())
+      clusterEvalQ(cl,library("data.table"))
+      clusterExport(cl,"dt",envir=environment())
+      boot_dist<-parSapply(cl,1:BB,function(i,...){
+        dt[.(sample(unique(cluster_id),rep=T)),
+           glm(eval(reg_lhs)~eval(reg_rhs),
+               family=binomial)$coefficients]})
+      stopCluster(cl)
+      bootses<-apply(boot_dist,1,sd)
+      bootps<-coeftest(regf,vcov=unname(var(t(boot_dist))))[,"Pr(>|z|)"]
+      list(mod=regf,ses=bootses,pvals=bootps)}))})
 
+capture.output(texreg(lapply(
+  reg_out[["epI"]],function(x)x$mod),stars=c(.01,.05,.1),
+  custom.model.names=c("Full Sample","Non-Commercial","Sole Owner"),
+  caption="Logistic Regressions for Ever Paid: Compliance",
+  caption.above=TRUE,label="table:ep_log_I",float.pos="htbp",
+  include.aic=FALSE,include.bic=FALSE,include.deviance=FALSE,
+  override.se=lapply(reg_out[["epI"]],function(x)x$ses),
+  override.pval=lapply(reg_out[["epI"]],function(x)x$pvals)),
+  file=log_fl,append=TRUE)
+  
+##TABLE 7 ####
+##LOGIT - EVER PAID (II)
+capture.output(texreg(lapply(
+  reg_out[["epII"]],function(x)x$mod),stars=c(.01,.05,.1),
+  custom.model.names=c("Full Sample","Non-Commercial","Sole Owner"),
+  caption="Logistic Regressions for Ever Paid "%+%
+    "with Interactions: Compliance",omit.coef="XXX$|Intercept",
+  caption.above=TRUE,label="table:ep_log_II",float.pos="htbp",
+  include.aic=FALSE,include.bic=FALSE,include.deviance=FALSE,
+  reorder.coef=c(1:4,7:9,5,10:12,6,13:15),
+  override.se=lapply(reg_out[["epII"]],function(x)x$ses),
+  override.pval=lapply(reg_out[["epII"]],function(x)x$pvals)),
+  file=log_fl,append=TRUE)
 
-###Model I: Logistic of Ever-Paid with Controls, Quartile Interactions
-texreg2(regs[paste(rep("reg1c",3),
-                   unlist(lapply(list(analysis_data_main,analysis_data_ncom,
-                                      analysis_data_sown),
-                                 function(x){comment(x)[1]})),sep="_")],
-        custom.model.names=c("Full Sample","Residential","Residential, Unique Owner"),
-        custom.coef.names=c("Intercept","Threat","Service","Civic",
-                            paste(c("Medium","High","Very High"),"Debt"),
-                            paste0("control",
-                                   c("Land Area","Owes <= 5 Years",
-                                     paste("Dist.",2:10),"Hotels-Apts",
-                                     "Store w. Dwelling","Commercial",
-                                     "Industrial","Vacant","Sealed-Compromised",
-                                     "Homestead","Prop. Val. (\\$100k)")),
-                            paste0(c("Threat","Service","Civic"),"*",
-                                   rep(c("Moderate","High","Very High"),each=3))),
-        omit.coef="Intercept|control",reorder.coef=c(4,5,6,1,7,10,13,2,8,11,14,3,9,12,15),
-        caption="Model I: Logistic Regressions -- Ever Paid",include.deviance=F,
-        label="table:modelIb",float.pos="htbp",include.bic=F,include.aic=F,stars=c(.01,.05,.1))
-
-####***BAND-AID TO WRAP LONG NOTE UNTIL TEXREG UPDATED:***
-custom.note<-
-  gsub("%stars","$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$",
-       paste("%stars. Other controls omitted for brevity: land area,",
-             "length of debt indicator, City Council District dummies,",
-             "dummies for categories (hotels/apartments, stores with",
-             "dwellings, commerical, industrial, and vacant status vs.",
-             "residential status), sealed/compromised indicator,",
-             "owner-occupancy indicator, and property value."))
-cat(paste(paste0("\\multicolumn{",4,"}{l}{\\scriptsize{",
-                 strwrap(custom.note,width=60),"}}"),
-          collapse=" \\\\ \n"),perl=T); rm(custom.note)
-
-###Model I: Predicted Probability of Repayment at Control Means by Quartile
-#### via p_hat = exp(beta*x_bar)/(1+exp(beta*x_bar))
-#### log odds would be exp(beta*x_bar)
-#####first, get the sample means for the variables we don't vary in the table
-#####  (use sample *median* for land area and market value since they're
-#####   so skewed)
-sample_means_control12<-
+##TABLE 8 ####
+##MARGINAL PREDICTIONS - EVER PAID
+###Predicted Probability of Repayment at Control Means by Quartile
+###  via p_hat = exp(beta*x_bar)/(1+exp(beta*x_bar))
+###  log odds would be exp(beta*x_bar)
+####first, get the sample means for the variables we don't vary in the table
+####  (use sample *median* for land area and market value since they're
+####   so skewed)
+sample_means_control<-
   c(1,analysis_data_main[,median(land_area/1e3)],
-    unlist(analysis_data_main[end==1,lapply(list(
+    unlist(analysis_data_main[,lapply(list(
       years_count<=5,council==2,council==3,council==4,
       council==5,council==6,council==7,council==8,council==9,
       council==10,category=="Hotels&Apts",category=="Store w/ Dwelling",
       category=="Commercial",category=="Industrial",category=="Vacant",
-      exterior=="Sealed/Compromised",owner_occ),mean)]),
-    analysis_data_main[end==1,median(market_value/1e5)])
-x_beta_control1<-sum(regs[["reg1c_main"]]$result$coefficients[c(1,8:26)]*sample_means_control12)
+      owner_occ,exterior=="Sealed/Compromised"),mean)]),
+    analysis_data_main[,median(market_value/1e5)])
 
-main_coef<-regs[["reg1c_main"]]$result$coefficients[c(2:7,27:35)]
+tcoefn<-analysis_data_main[,levels(treatment)[-1]]
+bcoefn<-analysis_data_main[,levels(balance_quartile_pretty)[-1]]
+xcoefn<-tcoefn%+%"*"%+%rep(bcoefn,each=3)
+contn<-setdiff(names(reg_out$epII$main$coefficients),
+               c(tcoefn,bcoefn,xcoefn))
+
+x_beta_control<-
+  sum(reg_out$epII$main$coefficients[contn]*sample_means_control)
+
+tcoef<-reg_out$epII$main$coefficients[tcoefn]
+bcoef<-reg_out$epII$main$coefficients[bcoefn]
+xcoef<-reg_out$epII$main$coefficients[xcoefn]
+
 #the idea: add the following matrices to get the latent x*betas for each cell
 #   0 0 0 0      0 1 2 3     0 0 0 0  : T-Threat/S-Service/C-Civic/1-Q1/2-Q2/3-Q3
 #   T T T T      0 1 2 3     0 a d g  : a-Threat*Q1/b-Service*Q1/c-Civic*Q1
 #   S S S S   +  0 1 2 3  +  0 b e h  : d-Threat*Q2/e-Service*Q2/f-Civic*Q2
 #   C C C C      0 1 2 3     0 c f i  : g-Threat*Q3/h-Service*Q3/i-Civic*Q3
 #  (but more parsimonious to specify in list form, casting ex-post as matrix)
-print.xtable2(
-  xtable(matrix(sapply(rep(c(0,main_coef[1:3]),times=4)+
-                         rep(c(0,main_coef[4:6]),each=4)+
-                         c(rep(0,4),rbind(rep(0,3),matrix(main_coef[7:15],ncol=3)))
-                       +x_beta_control1,
-                       function(x){round(100*exp(x)/(1+exp(x)),1)}),ncol=4,
-                dimnames=list(c("Control","Threat","Service","Civic"),
-                              paste(c("Low","Medium","High","Very High"),"Debt"))),
-         caption="Model I: Probability Ever Paid by Treatment, Debt Level at Sample Center",
-         label="table:modelI_marg",align="lcccc"),table.placement="htbp")
+capture.output(print.xtable(xtable(matrix(
+  sapply(rep(c(0,tcoef),times=4)+
+           rep(c(0,bcoef),each=4)+
+           c(embed.mat(matrix(xcoef,ncol=3),4,4,2,2))+
+           x_beta_control,function(x){to.pct(1/(1+exp(-x)))}),
+  ncol=4,dimnames=list(trt.nms,c("LOW","MOD","HIGH","VHIGH"))),
+  caption="Marginal Predictions - Ever Paid",digits=2,
+  label="table:modelI_marg",align="|l|c|c|c|c|"),
+  table.placement="htbp"),file=log_fl,append=TRUE)
 
-###Model II: Logistic of Paid in Full
-####Logistic Coefficients Table: Plain model
-texreg2(regs[paste0(rep("reg2",3),"_",
-                    unlist(lapply(list(analysis_data_main,analysis_data_ncom,
-                                       analysis_data_sown),
-                                  function(x){comment(x)[1]})))],
-        custom.model.names=c("Full Sample","Residential","Residential, Unique Owner"),
-        custom.coef.names=c("Intercept","Threat","Service","Civic"),
-        caption="Model II: Linear Probability Models -- Paid in Full",label="table:modelIIa",
-        float.pos="htbp",include.aic=F,include.bic=F,include.loglik=F,
-        include.rsquared=F,include.adjrs=F,include.fstatistic=F,stars=c(.01,.05,.1))
+##TABLE 9 ####
+##LOGIT - PAID FULL (I)
+capture.output(texreg(lapply(
+  reg_out[["pfI"]],function(x)x$mod),stars=c(.01,.05,.1),
+  custom.model.names=c("Full Sample","Non-Commercial","Sole Owner"),
+  caption="Logistic Regressions for Ever Paid: Compliance",
+  caption.above=TRUE,label="table:ep_log_I",float.pos="htbp",
+  include.aic=FALSE,include.bic=FALSE,include.deviance=FALSE,
+  override.se=lapply(reg_out[["pfI"]],function(x)x$ses),
+  override.pval=lapply(reg_out[["pfI"]],function(x)x$pvals)),
+  file=log_fl,append=TRUE)
 
-####Logistic Coefficients Table: Quartile Interactions
-texreg2(regs[paste(rep("reg2c",3),
-                  unlist(lapply(list(analysis_data_main,analysis_data_ncom,
-                                     analysis_data_sown),
-                                function(x){comment(x)[1]})),sep="_")],
-       custom.model.names=c("Full Sample","Non-Commercial","Sole Owner"),
-       custom.coef.names=c("Intercept","Service","Civic","Threat",
-                           paste("Balance",c("Q2","Q3","Q4")),
-                           paste0("control",
-                                  c("Land Area","Owes <= 5 Years",
-                                    paste("Dist.",2:10),"Hotels-Apts",
-                                    "Store w. Dwelling","Commercial",
-                                    "Industrial","Vacant","Sealed-Compromised",
-                                    "Homestead","Prop. Val. (\\$100k)")),
-                           paste0(c("Service","Civic","Threat"),"*",
-                                  rep(paste("Balance",c("Q2","Q3","Q4")),each=3))),
-       omit.coef="Intercept|control",reorder.coef=c(4,5,6,1,7,10,13,2,8,11,14,3,9,12,15),
-       custom.note=c("%stars. Control coefficients omitted for brevity; see Appendix."),
-       caption="Model II: Logistic Regressions -- Paid in Full",include.deviance=F,
-       label=c("table:modelIIb"),float.pos="htbp",include.bic=F,include.aic=F,stars=c(.01,.05,.1))
+##TABLE 10 ####
+##LOGIT - PAID FULL (II)
+capture.output(texreg(lapply(
+  reg_out[["pfII"]],function(x)x$mod),stars=c(.01,.05,.1),
+  custom.model.names=c("Full Sample","Non-Commercial","Sole Owner"),
+  caption="Logistic Regressions for Ever Paid "%+%
+    "with Interactions: Compliance",omit.coef="XXX$|Intercept",
+  caption.above=TRUE,label="table:ep_log_II",float.pos="htbp",
+  include.aic=FALSE,include.bic=FALSE,include.deviance=FALSE,
+  reorder.coef=c(1:4,7:9,5,10:12,6,13:15),
+  override.se=lapply(reg_out[["pfII"]],function(x)x$ses),
+  override.pval=lapply(reg_out[["pfII"]],function(x)x$pvals)),
+  file=log_fl,append=TRUE)
 
-####***BAND-AID TO WRAP LONG NOTE UNTIL TEXREG UPDATED:***
-custom.note<-
-  gsub("%stars","$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$",
-       paste("%stars. Other controls omitted for brevity: land area,",
-             "length of debt indicator, City Council District dummies,",
-             "dummies for categories (hotels/apartments, stores with",
-             "dwellings, commerical, industrial, and vacant status vs.",
-             "residential status), sealed/compromised indicator,",
-             "owner-occupancy indicator, and property value."))
-cat(paste(paste0("\\multicolumn{",4,"}{l}{\\scriptsize{",
-                 strwrap(custom.note,width=60),"}}"),
-          collapse=" \\\\ \n"),perl=T); rm(custom.note)
+##TABLE 11 ####
+##MARGINAL PREDICTIONS - PAID FULL
+x_beta_control<-
+  sum(reg_out$pfII$main$coefficients[contn]*sample_means_control)
 
-####Marginal Predictions at Control Means
-x_beta_control2<-sum(regs[["reg2c_main"]]$result$coefficients[c(1,8:26)]*sample_means_control12)
+tcoef<-reg_out$pfII$main$coefficients[tcoefn]
+bcoef<-reg_out$pfII$main$coefficients[bcoefn]
+xcoef<-reg_out$pfII$main$coefficients[xcoefn]
 
-tab_mat<-matrix(sapply(rep(c(0,main_coef[1:3]),times=4)+
-                         rep(c(0,main_coef[4:6]),each=4)+
-                         c(rep(0,4),rbind(rep(0,3),matrix(main_coef[7:15],ncol=3)))
-                       +x_beta_control2,
-                       function(x){round(100*exp(x)/(1+exp(x)),1)}),ncol=4,
-                dimnames=list(c("Control","Service","Civic","Threat"),
-                              paste(c("Low","Medium","High","Very High"),"Debt")))
-
-main_coef<-regs[["reg2c_main"]]$result$coefficients[c(2:7,27:35)]
-print.xtable2(
-  xtable(matrix(sapply(rep(c(0,main_coef[1:3]),times=4)+
-                         rep(c(0,main_coef[4:6]),each=4)+
-                         c(rep(0,4),rbind(rep(0,3),matrix(main_coef[7:15],ncol=3)))
-                       +x_beta_control2,
-                       function(x){round(100*exp(x)/(1+exp(x)),1)}),ncol=4,
-                dimnames=list(c("Control","Service","Civic","Threat"),
-                              paste(c("Low","Medium","High","Very High"),"Debt"))),
-         caption="Model II: Probability Paid in Full by Treatment, Debt Level at Sample Center",
-         label="table:modelII_marg",align="lcccc"),table.placement="htbp")
-rm(main_coef,sample_means_control12,x_beta_control2,x_beta_control1)
+capture.output(print.xtable(xtable(matrix(sapply(
+    rep(c(0,tcoef),times=4)+
+      rep(c(0,bcoef),each=4)+
+      c(embed.mat(matrix(xcoef,ncol=3),4,4,2,2))+
+      x_beta_control,function(x){to.pct(1/(1+exp(-x)))}),
+    ncol=4,dimnames=list(trt.nms,c("LOW","MOD","HIGH","VHIGH"))),
+    caption="Marginal Predictions - Paid in Full",digits=2,
+    label="table:modelI_marg",align="|l|c|c|c|c|"),table.placement="htbp"),
+    file=log_fl,append=TRUE)
