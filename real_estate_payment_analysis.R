@@ -434,7 +434,8 @@ capture.output(print.xtable(xtable(matrix(
   ncol=4,dimnames=list(trt.nms,c("LOW","MOD","HIGH","VHIGH"))),
   caption="Marginal Predictions - Ever Paid",digits=2,
   label="table:modelI_marg",align="|l|c|c|c|c|"),
-  table.placement="htbp"),file=log_fl,append=TRUE)
+  table.placement="htbp",caption.placement="top"),
+  file=log_fl,append=TRUE)
 
 ##TABLE 9 ####
 ##LOGIT - PAID FULL (I)
@@ -478,5 +479,6 @@ capture.output(print.xtable(xtable(matrix(sapply(
       x_beta_control,function(x){to.pct(1/(1+exp(-x)))}),
     ncol=4,dimnames=list(trt.nms,c("LOW","MOD","HIGH","VHIGH"))),
     caption="Marginal Predictions - Paid in Full",digits=2,
-    label="table:modelII_marg",align="|l|c|c|c|c|"),table.placement="htbp"),
+    label="table:modelII_marg",align="|l|c|c|c|c|"),
+    table.placement="htbp",caption.placement="top"),
     file=log_fl,append=TRUE)
