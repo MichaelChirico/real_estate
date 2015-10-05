@@ -718,28 +718,32 @@ had a bill remaining of less than \$.61 (= 224).\footnote{The city
   above we obtain between 493 and 633 observations per day.}
 
 
-Table \ref{table:ds} provides descriptive statistics for the full sample 
+Table \ref{table:descriptives} provides descriptive statistics for the full sample 
 for all tardy and delinquent properties as of November, 2014, not (yet) 
 restricted by a sheriff sale, sequestration, or bankruptcy.   Also shown 
 are the descriptive statistics for properties in the restricted sample, 
 and then for  4,927 sample properties that qualify for our experiment.
 
+
+% latex table generated in R 3.2.2 by xtable 1.7-4 package
+% Mon Oct  5 00:57:40 2015
 \begin{table}[htb]
 \begin{center}
-\caption{Descriptive Statistics}\label{table:ds}
-\begin{tabular}{|r|r|r|r|}
+\centering
+\caption{Descriptive Statistics} 
+\label{table:descriptives}
+\begin{tabular}{|r|r|r|r|r|}
   \hline
-   & All  & Restricted & Analysis  \\ 
- & Properties & Properties &  Sample \\ 
+ & All Delinquent & Law Firm & Restricted & Analysis \\ 
   \hline
-Amount Due & \$4409 & \$3761 & \$3465 \\ 
-  Assessed Property Value & \$138867 & \$242604 & \$86691 \\ 
-  Tax Due & \$1586 & \$123 & \$2405 \\ 
-  Years of Debt & 6 & 4 & 4 \\ 
-  \% Residential & 80 & 81 & 80 \\ 
-  \% with Philadelphia Mailing Address & 88 & 82 & 83 \\ 
-  \% Owner-Occupied & 24 & 21 & 22 \\ 
-  Number Observations & 134887 & 29951 & 4927 \\ 
+Amount Due & \$4,409 & \$3,943 & \$3,761 & \$3,465 \\ 
+  Assessed Property Value & \$138,867 & \$79,847 & \$242,604 & \$186,691 \\ 
+  Tax Due & \$1,586 & \$1,008 & \$3,123 & \$2,405 \\ 
+  Years of Debt & 6 & 6 & 4 & 4 \\ 
+  \% Residential & 80 & 78 & 81 & 80 \\ 
+  \% with Philadelphia Mailing Address & 88 & 86 & 82 & 83 \\ 
+  \% Owner-Occupied & 24 & 15 & 21 & 22 \\ 
+  Number Observations & 134,887 & 51,565 & 29,951 & 4,927 \\ 
    \hline
 \end{tabular}
 \end{center}
@@ -747,6 +751,7 @@ NOTE: This table provides some descriptive statistics for all
 properties in Philadelphia, all properties that satisfy our sampling
 restrictions, and the sample used in the analysis.
 \end{table}
+
 
 Note in particular that this sample selection means that our sample
 consists only of properties that are not in the purview of the two law
@@ -812,73 +817,60 @@ assigned to each treatment is exactly as it should be based upon the
 number of days used for the mailing of each treatment.
 
 
-\begin{center}
-\begin{longtable}{| l | c |  c| c| c| c|}
-\caption{Tests of Sample Balance on Observables} \label{table:balance} \\
-\hline 
-  & Threat & Public Service & Civic Duty & Control & $p$-value \\ 
-\hline 
-\endfirsthead
-\multicolumn{3}{c}%
-{{ \tablename\ \thetable{} -- continued from previous page}} \\
-\hline 
-  & Threat & Public Service & Civic Duty & Control & $p$-value \\ 
+% latex table generated in R 3.2.2 by xtable 1.7-4 package
+% Mon Oct  5 00:58:37 2015
+\begin{table}[ht]
+\centering
+\caption{Tests of Sample Balance on Observables} 
+\label{table:balance}
+\begin{tabular}{|l|c|c|c|c|c|}
+  \hline
+Variable & Control & Threat & Public Service & Civic Duty & $p$-value \\ 
   \hline 
-\endhead
-\hline 
-\multicolumn{6}{|l|}{{Continued on next page}} \\ 
-\hline
-\endfoot
-\multicolumn{6}{|l|}{NOTE: This table shows that there are no significant differences in the} \\
-\multicolumn{6}{|l|}{distribution of observed variables among the treatment and control samples.} \\ 
-\hline 
-\endlastfoot
+Taxes Due Quartiles & & & & & \\ 
+$<$ \$300 & 0.22 & 0.10 & 0.40 & 0.28 & 0.00 \\ 
+  \lbrack\$300, \$1300) & 0.24 & 0.08 & 0.46 & 0.22 &  \\ 
+  \lbrack\$1300, \$3300) & 0.23 & 0.11 & 0.45 & 0.20 &  \\ 
+  $>$ \$3300 & 0.18 & 0.11 & 0.48 & 0.23 &  \\ 
+   \hline 
+Market Value Quartiles & & & & & \\ 
+$<$ \$46k & 0.24 & 0.12 & 0.43 & 0.21 & 0.56 \\ 
+  \lbrack\$46k, \$82k) & 0.22 & 0.10 & 0.46 & 0.23 &  \\ 
+  \lbrack\$82k, \$152k) & 0.21 & 0.09 & 0.45 & 0.25 &  \\ 
+  $>$ \$152k & 0.21 & 0.10 & 0.45 & 0.24 &  \\ 
+   \hline 
+Land Area Quartiles & & & & & \\ 
+$<$ 800 sq. ft & 0.22 & 0.10 & 0.45 & 0.23 & 0.92 \\ 
+  \lbrack800, 1200) sq. ft & 0.23 & 0.10 & 0.43 & 0.24 &  \\ 
+  \lbrack1200, 1800) sq. ft & 0.21 & 0.10 & 0.47 & 0.22 &  \\ 
+  $>$ 1800 sq. ft & 0.21 & 0.10 & 0.44 & 0.24 &  \\ 
+   \hline 
+\# Rooms & & & & & \\ 
+0-5 & 0.22 & 0.11 & 0.44 & 0.23 & 0.52 \\ 
+  6 & 0.21 & 0.09 & 0.46 & 0.23 &  \\ 
+  7+ & 0.22 & 0.10 & 0.44 & 0.24 &  \\ 
+   \hline 
+Years of Debt & & & & & \\ 
+1 Years & 0.23 & 0.09 & 0.43 & 0.24 & 0.11 \\ 
+  2 Years & 0.22 & 0.10 & 0.44 & 0.24 &  \\ 
+  3-5 Years & 0.20 & 0.10 & 0.48 & 0.22 &  \\ 
+  6+ Years & 0.20 & 0.13 & 0.47 & 0.20 &  \\ 
+   \hline 
+Category & & & & & \\ 
+Residential & 0.22 & 0.09 & 0.45 & 0.23 & 0.28 \\ 
+  Hotels\&Apts & 0.20 & 0.12 & 0.45 & 0.23 &  \\ 
+  Store w/ Dwelling & 0.21 & 0.09 & 0.48 & 0.22 &  \\ 
+  Commercial & 0.15 & 0.11 & 0.50 & 0.24 &  \\ 
+  Industrial & 0.27 & 0.11 & 0.42 & 0.20 &  \\ 
+  Vacant & 0.25 & 0.13 & 0.39 & 0.23 &  \\ 
+   \hline
+Distribution of Properties & 0.22 & 0.10 & 0.45 & 0.23 & 0.60 \\ 
+   \hline
+Expected Distribution & 0.22 & 0.11 & 0.44 & 0.22 &  \\ 
+   \hline
+\end{tabular}
+\end{table}
 
- Taxes Due Quartiles &  &  &  &  &  \\ 
-  $<$\$300 & 0.22 & 0.4 & 0.28 & 0.1 & 0.2 \\ 
-  \lbrack\$300,\$1300) & 0.24 & 0.47 & 0.22 & 0.08 &  \\ 
-  \lbrack\$1300,\$3300) & 0.23 & 0.45 & 0.2 & 0.11 &  \\ 
-$>$  \$3300 & 0.18 & 0.48 & 0.23 & 0.11 &  \\ 
-   \hline
-Market Value Quartiles &  &  &  &  &  \\ 
-  $<$\$46k & 0.24 & 0.43 & 0.21 & 0.12 & 0.2 \\ 
-  \lbrack\$46k,\$82k) & 0.22 & 0.46 & 0.23 & 0.1 &  \\ 
-  \lbrack\$82k,\$152k) & 0.21 & 0.45 & 0.25 & 0.09 &  \\ 
-$>$  \$152k & 0.21 & 0.45 & 0.24 & 0.1 &  \\ 
-   \hline
-Land Area Quartiles &  &  &  &  &  \\ 
-  $<$800 sq. ft. & 0.22 & 0.45 & 0.23 & 0.1 & 0.83 \\ 
-  \lbrack800,1200) sq. ft. & 0.23 & 0.43 & 0.24 & 0.1 &  \\ 
-  \lbrack1200,1800) sq. ft. & 0.21 & 0.47 & 0.22 & 0.1 &  \\ 
-  $>$1800 sq. ft. & 0.21 & 0.44 & 0.24 & 0.1 &  \\ 
-   \hline
-Distribution of Properties & 0.22 & 0.45 & 0.23 & 0.1 & 0.08 \\ 
-   \hline
-Expected Distribution & 0.22 & 0.44 & 0.22 & 0.11 &  \\ 
-   \hline
- \# Rooms &  &  &  &  &  \\ 
-  0-5 & 0.22 & 0.44 & 0.23 & 0.11 & 0.32 \\ 
-  6 & 0.21 & 0.46 & 0.23 & 0.09 &  \\ 
-  7+ & 0.22 & 0.44 & 0.24 & 0.1 &  \\ 
-   \hline
-Years of Debt &  &  &  &  &  \\ 
-  1 Year & 0.23 & 0.43 & 0.24 & 0.09 & 0.32 \\ 
-  2 Years & 0.22 & 0.44 & 0.24 & 0.1 &  \\ 
-  3-5 Years & 0.2 & 0.48 & 0.22 & 0.1 &  \\ 
-  6+ Years & 0.2 & 0.47 & 0.2 & 0.13 &  \\ 
-   \hline
-Category &  &  &  &  &  \\ 
-  Residential & 0.22 & 0.45 & 0.23 & 0.09 & 0.07 \\ 
-  Hotels\&Apts & 0.2 & 0.45 & 0.23 & 0.12 &  \\ 
-  Store w. Dwell. & 0.21 & 0.48 & 0.22 & 0.09 &  \\ 
-  Commercial & 0.15 & 0.5 & 0.24 & 0.11 &  \\ 
-  Industrial & 0.27 & 0.42 & 0.2 & 0.11 &  \\ 
-  Vacant Land & 0.25 & 0.39 & 0.23 & 0.13 &  \\ 
-   \hline
-Expected Distribution & 0.22 & 0.44 & 0.22 & 0.11 &  \\ 
-   \hline
-\end{longtable}
-\end{center}
 
 As can be seen from Table \ref{table:balance} randomization appears to
 have been successful.  The properties are strongly randomly
@@ -910,32 +902,35 @@ percent of properties that paid the City anything and the percent that
 paid off their tax debt in full in our sample period.
 
 
+% latex table generated in R 3.2.2 by xtable 1.7-4 package
+% Mon Oct  5 00:58:37 2015
 \begin{sidewaystable}[htbp]
-\caption{Estimated Average Treatment Effects: Revenues}  \label{table:summary}
-\bigskip
 \centering
-\begin{tabular}{|p{1.3cm}|p{1.3cm}|p{1.3cm}|p{1.3cm}|p{2cm}|p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.6cm}|}
+\caption{Estimated Average Treatment Effects: Revenues} 
+\label{table:summary}
+\begin{tabular}{|p{2.2cm}|p{1.4cm}|p{1.8cm}|p{1.2cm}|p{1.2cm}|p{1.4cm}|p{1.4cm}|p{2.2cm}|p{1.8cm}|}
   \hline
-Sample & Group & Treated Days & No. Treated & Total Taxes Owed & Percent Ever Paid & Percent Paid in Full & Dollars Received & Dollars Per Day Treated & Dollars above Control Per Day & Total Generated over All Days \\ 
+Sample & Treatment (Properties) & Total Debt Owed & Percent Ever Paid & Percent Paid in Full & Dollars Received & Percent Debt Received & Dollars above Control Per Property & Total Surplus over All Properties \\ 
   \hline
- & Threat & 1 & 499 & \$1,839,826 & 14 &  8 & \$71,176 & \$71,176 & \$10,883 & \$ 10,883 \\ 
-   & Public Service & 4 & 2,211 & \$8,003,148 & 15 &  7 & \$447,728 & \$111,932 & \$51,639 & \$206,557 \\ 
-  I & Civic Duty & 2 & 1,142 & \$3,794,900 & 18 & 12 & \$152,217 & \$76,109 & \$15,816 & \$ 31,632 \\ 
-  & Control & 2 & 1,075 & \$3,294,516 & 16 & 10 & \$120,585 & \$60,293 & \$     0 & \$      0 \\ 
+Full & Control (n=1,075) & \$3,294,516 & 16 & 10 & \$120,585 & 3.7 & \$0 & \$0 \\ 
+  (N=4,927) & Threat (n=499) & \$1,839,826 & 14 & 8 & \$71,176 & 3.9 & \$30 & \$15,202 \\ 
+   & Public Service (n=2,211) & \$8,003,148 & 15 & 7 & \$447,728 & 5.6 & \$90 & \$199,714 \\ 
+   & Civic Duty (n=1,142) & \$3,794,900 & 18 & 12 & \$152,217 & 4.0 & \$21 & \$24,116 \\ 
    \hline
- & Threat & 1 & 480 & \$1,657,379 & 15 &  8 & \$71,176 & \$71,176 & \$11,142 & \$11,142 \\ 
- & Public Service & 4 & 2,122 & \$7,024,458 & 15 &  7 & \$288,758 & \$72,189 & \$12,155 & \$48,621 \\ 
-II & Civic Duty & 2 & 1,099 & \$3,350,147 & 19 & 12 & \$146,227 & \$73,114 & \$13,079 & \$26,158 \\ 
- & Control & 2 & 1,048 & \$2,930,759 & 16 & 10 & \$120,069 & \$60,034 & \$     0 & \$     0 \\ 
+Non-Commercial & Control (n=1,048) & \$2,930,759 & 16 & 10 & \$120,069 & 4.1 & \$0 & \$0 \\ 
+  (N=4,749) & Threat (n=480) & \$1,657,379 & 15 & 8 & \$71,176 & 4.3 & \$34 & \$16,183 \\ 
+   & Public Service (n=2,122) & \$7,024,458 & 15 & 7 & \$288,758 & 4.1 & \$22 & \$45,642 \\ 
+   & Civic Duty (n=1,099) & \$3,350,147 & 19 & 12 & \$146,227 & 4.4 & \$18 & \$20,315 \\ 
    \hline
- & Threat & 1 & 406 & \$1,437,902 & 15 &  9 & \$51,309 & \$51,309 & \$18,011 & \$ 18,011 \\ 
- & Public Service & 4 & 1,754 & \$6,956,034 & 16 &  7 & \$418,767 & \$104,692 & \$71,393 & \$285,572 \\ 
-  III & Civic Duty & 2 & 891 & \$3,331,168 & 20 & 13 & \$130,016 & \$65,008 & \$31,710 & \$ 63,419 \\ 
- & Control & 2 & 837 & \$3,007,232 & 16 &  9 & \$66,597 & \$33,299 & \$     0 & \$      0 \\ 
+Unique Owner & Control (n=837) & \$3,007,232 & 16 & 9 & \$66,597 & 2.2 & \$0 & \$0 \\ 
+  (N=3,888) & Threat (n=406) & \$1,437,902 & 15 & 9 & \$51,309 & 3.6 & \$47 & \$19,005 \\ 
+   & Public Service (n=1,754) & \$6,956,034 & 16 & 7 & \$418,767 & 6.0 & \$159 & \$279,207 \\ 
+   & Civic Duty (n=891) & \$3,331,168 & 20 & 13 & \$130,016 & 3.9 & \$66 & \$59,123 \\ 
    \hline
-\multicolumn{11}{l}{NOTE: The table shows how much additional revenues were generated by the different treatments.} \\
+\multicolumn{9}{l}{NOTE: The table shows how much additional revenues were generated by the different treatments.} \\
 \end{tabular}
 \end{sidewaystable}
+
 
 We also report the dollars in revenue raised per day, which ranges
 from \$60,292 in the control group to \$111,931 in the Public Service
@@ -959,41 +954,25 @@ treatments.  Because the nine remaining days were not distributed
 evenly among treatments, there is a sample size imbalance across treatments.}.  
 
 
-\begin{table}[htbp]
-\caption{Difference in Mean Tests}\label{dif_mean}
+\begin{table}
+\caption{Estimated Average Treatment Effects: Revenues}
 \begin{center}
-\begin{tabular}{|c|c|c|}
+\begin{tabular}{|l|c|c|c|}
 \hline
-\multicolumn{3}{|c|}{Main Sample} \\
+               & Main Sample & Non-Commercial Sample & Unique Owner Sample \\
 \hline
-parameter & estimate & std error \\
+Intercept      & $112.17^{***}$ & $114.57^{***}$ & $79.57^{***}$ \\
+               & $(17.52)$      & $(17.96)$      & $(12.73)$     \\
+Threat         & $30.46$        & $33.71$        & $46.81$       \\
+               & $(36.18)$      & $(37.47)$      & $(29.86)$     \\
+Public Service & $90.33$        & $21.51$        & $159.18^{**}$ \\
+               & $(57.85)$      & $(26.97)$      & $(70.50)$     \\
+Civic Duty     & $21.12$        & $18.49$        & $66.36^{*}$   \\
+               & $(33.90)$      & $(34.97)$      & $(38.75)$     \\
 \hline
-Intercept&  $112.17^{***}$ & 17.52 \\
-Threat & 30.47  & 36.18 \\
-Public Service & 90.33 & 57.85 \\ 
-Civic Duty& 21.12 & 33.90 \\
-\hline
-\multicolumn{3}{|c|}{Non-Commercial Sample} \\
-\hline
-parameter & estimate & std error \\
-\hline
-Intercept & $114.56^{***}$ & 17.95 \\
-Threat & 33.71 &  37.46 \\
-Public Service & 21.51 &  26.97 \\
-Civic Duty & 18.48 & 34.97 \\
-\hline
-\multicolumn{3}{|c|}{Unique Owner Sample} \\
-\hline
-parameter & estimate & std error \\
-\hline
-Intercept &  $79.56^{***}$ &  12.73  \\
-Threat & 46.81 &  29.86 \\ 
-Public Service & $159.18^{*}$ & 70.50 \\ 
-Civic  Duty & 66.35 &  38.74 \\
-\hline
-\multicolumn{3}{|l|}{$^{***}p<0.001$, $^{**}p<0.01$,  $p<0.05$.} \\
-\hline
+\multicolumn{4}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
 \end{tabular}
+\label{dif_mean}
 \end{center}
 Note that the intercept captures the baseline effectiveness of the
 control group. The coefficients of the treatments measure the
@@ -1135,10 +1114,10 @@ the property qualified for a low income homestead exemption.
 
 \subsection{Results}
   
-Table \ref{XX} summarizes the estimates and the estimated standard
+Table \ref{table:ep_log_I} summarizes the estimates and the estimated standard
 errors for the three samples that we considered above. We report
 robust standard errors that are clustered to deal with multiple
-ownership. As can be seen from Table \ref{XX}, the Public Service appeal and
+ownership. As can be seen from Table \ref{table:ep_log_I}, the Public Service appeal and
 the threat treatments had no significant effect on ``ever paid" at the
 conclusion of the 30 day payment period.  The Civic Duty treatment is
 consistently positive and statistically significant at least the 10
@@ -1146,25 +1125,26 @@ percent level of confidence in the full sample and at the 5
 percent level for the sample of sole owners.
 
 \begin{table}[htbp]
-\caption{Logistic Regressions for Ever Paid: Compliance}\label{XX}
+\caption{Logistic Regressions for Ever Paid: Compliance}
+\label{table:ep_log_I}
 \begin{center}
-\begin{tabular}{| l |  c | c | c |}
+\begin{tabular}{l c c c }
 \hline
                & Full Sample & Non-Commercial & Sole Owner \\
 \hline
 Intercept      & $-1.69^{***}$ & $-1.67^{***}$ & $-1.68^{***}$ \\
-               & $(0.08)$      & $(0.08)$      & $(0.10)$      \\
-Public Service          & $-0.07$       & $-0.10$       & $0.04$        \\
-               & $(0.10)$      & $(0.10)$      & $(0.12)$      \\
-Civic Duty           & $0.21$        & $0.19$        & $0.30^{*}$    \\
-               & $(0.11)$      & $(0.11)$      & $(0.13)$      \\
+               & $(0.11)$      & $(0.11)$      & $(0.09)$      \\
 Threat         & $-0.09$       & $-0.06$       & $-0.03$       \\
-               & $(0.15)$      & $(0.15)$      & $(0.17)$      \\
+               & $(0.17)$      & $(0.17)$      & $(0.17)$      \\
+Public Service & $-0.07$       & $-0.10$       & $0.04$        \\
+               & $(0.13)$      & $(0.13)$      & $(0.12)$      \\
+Civic Duty     & $0.21$        & $0.19$        & $0.30^{**}$   \\
+               & $(0.13)$      & $(0.14)$      & $(0.13)$      \\
 \hline
 Log Likelihood & -2136.16      & -2068.89      & -1758.95      \\
 Num. obs.      & 4927          & 4749          & 3888          \\
 \hline
-\multicolumn{4}{l}{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$.} \\
+\multicolumn{4}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}} \\
 \multicolumn{4}{l}{NOTE: This table reports the parameter estimates from the} \\
 \multicolumn{4}{l}{basic Logit Model that uses ``ever paid" as outcome.}
 \end{tabular}
@@ -1180,67 +1160,59 @@ HIGH, and VHIGH - and the interaction of those variables with our
 three treatments.  The variable LOW is omitted from the regression so
 all results provide comparisons to the behavior of those in the higher
 debt levels to taxpayers in the lowest level of taxes owed.  Table
-\ref{YY} summarizes the estimates and the estimated standard errors
+\ref{table:ep_log_II} summarizes the estimates and the estimated standard errors
 for the full sample and the two subsamples.
 
+
+\begin{table}[htbp]
+\caption{Logistic Regressions for Ever Paid with Interactions: Compliance}
 \begin{center}
-\begin{longtable}{| l | c |  c| c|}
-\caption{Logistic Regressions for Ever Paid with Interactions: Compliance} \label{YY} \\
-\hline 
- & Full Sample & Non-Commercial & Sole Owner \\
-\hline 
-\endfirsthead
-\multicolumn{4}{c}%
-{{\tablename\ \thetable{} -- continued from previous page}} \\
+\begin{tabular}{|l|c|c|c|}
 \hline
-& Full Sample & Non-Commercial & Sole Owner \\
-\hline 
-\endhead
-\hline \multicolumn{4}{|l|}{{Continued on next page}} \\ \hline
-\endfoot
-\hline 
-\multicolumn{4}{l}{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$. Control coefficients omitted.} \\
-\multicolumn{4}{l}{NOTE: This table reports the parameter estimates from the} \\
-\multicolumn{4}{l}{Logit Model with interactions that uses ``ever paid" as outcome.}
-\endlastfoot
-Balance MOD        & $-0.46^{*}$   & $-0.52^{*}$   & $-0.33$       \\
-                  & $(0.21)$      & $(0.22)$      & $(0.24)$      \\
-Balance HIGH        & $-1.03^{***}$ & $-0.97^{***}$ & $-1.54^{***}$ \\
-                  & $(0.24)$      & $(0.24)$      & $(0.30)$      \\
-Balance VHIGH        & $-1.25^{***}$ & $-1.15^{***}$ & $-1.36^{***}$ \\
-                  & $(0.30)$      & $(0.30)$      & $(0.33)$      \\
-Public Service             & $-0.30$       & $-0.34$       & $-0.34$       \\
-                  & $(0.18)$      & $(0.19)$      & $(0.20)$      \\
-Public Service*Balance MOD  & $0.00$        & $0.00$        & $0.00$        \\
-                  & $(0.00)$      & $(0.00)$      & $(0.00)$      \\
-Public Service*Balance HIGH  & $0.06$        & $0.08$        & $-0.11$       \\
-                  & $(0.16)$      & $(0.16)$      & $(0.18)$      \\
-Public Service*Balance VHIGH  & $0.40^{*}$    & $0.42^{*}$    & $0.33$        \\
-                  & $(0.20)$      & $(0.20)$      & $(0.21)$      \\
-Civic Duty              & $0.16$        & $0.13$        & $0.21$        \\
-                  & $(0.19)$      & $(0.19)$      & $(0.21)$      \\
-Civic Duty*Balance MOD   & $0.54^{**}$   & $0.58^{***}$  & $0.58^{**}$   \\
-                  & $(0.17)$      & $(0.17)$      & $(0.18)$      \\
-Civic Duty*Balance HIGH   & $-0.08$       & $-0.07$       & $-0.19$       \\
-                  & $(0.17)$      & $(0.17)$      & $(0.18)$      \\
-Civic Duty*Balance VHIGH   & $-0.49^{**}$  & $-0.45^{*}$   & $-0.61^{**}$  \\
-                  & $(0.17)$      & $(0.17)$      & $(0.19)$      \\
-Threat            & $-0.05$       & $-0.01$       & $-0.13$       \\
-                  & $(0.26)$      & $(0.26)$      & $(0.29)$      \\
-Threat*Balance MOD & $0.07$        & $0.10$        & $0.11$        \\
-                  & $(0.16)$      & $(0.16)$      & $(0.17)$      \\
-Threat*Balance HIGH & $-0.50^{**}$  & $-0.49^{**}$  & $-0.64^{***}$ \\
-                  & $(0.17)$      & $(0.18)$      & $(0.19)$      \\
-Threat*Balance VHIGH & $-0.04$       & $-0.03$       & $-0.20$       \\
-                  & $(0.16)$      & $(0.16)$      & $(0.17)$      \\
+                             & Full Sample & Non-Commercial & Sole Owner \\
 \hline
-Log Likelihood    & -2010.55      & -1948.32      & -1639.28      \\
-Num. obs.         & 4927          & 4749          & 3888          \\
-\end{longtable}
+Balance MOD                  & $-0.46^{*}$   & $-0.52^{**}$  & $-0.33$       \\
+                             & $(0.24)$      & $(0.25)$      & $(0.24)$      \\
+Balance HIGH                 & $-1.03^{***}$ & $-0.97^{***}$ & $-1.54^{***}$ \\
+                             & $(0.27)$      & $(0.27)$      & $(0.31)$      \\
+Balance VHIGH                & $-1.25^{***}$ & $-1.15^{***}$ & $-1.36^{***}$ \\
+                             & $(0.34)$      & $(0.32)$      & $(0.34)$      \\
+Threat                       & $-0.05$       & $-0.01$       & $-0.13$       \\
+                             & $(0.29)$      & $(0.29)$      & $(0.30)$      \\
+Threat*Balance MOD           & $-0.27$       & $-0.27$       & $-0.22$       \\
+                             & $(0.45)$      & $(0.46)$      & $(0.46)$      \\
+Threat*Balance HIGH          & $0.40$        & $0.38$        & $0.94^{*}$    \\
+                             & $(0.44)$      & $(0.44)$      & $(0.48)$      \\
+Threat*Balance VHIGH         & $-0.07$       & $-0.20$       & $-0.19$       \\
+                             & $(0.62)$      & $(0.56)$      & $(1.26)$      \\
+Public Service               & $-0.30$       & $-0.34^{*}$   & $-0.34$       \\
+                             & $(0.20)$      & $(0.21)$      & $(0.21)$      \\
+Public Service*Balance MOD   & $0.02$        & $0.10$        & $0.10$        \\
+                             & $(0.31)$      & $(0.32)$      & $(0.30)$      \\
+Public Service*Balance HIGH  & $0.53^{*}$    & $0.53$        & $1.07^{***}$  \\
+                             & $(0.32)$      & $(0.33)$      & $(0.36)$      \\
+Public Service*Balance VHIGH & $0.70^{*}$    & $0.62^{*}$    & $0.92^{**}$   \\
+                             & $(0.38)$      & $(0.37)$      & $(0.39)$      \\
+Civic Duty                   & $0.16$        & $0.13$        & $0.21$        \\
+                             & $(0.21)$      & $(0.22)$      & $(0.22)$      \\
+Civic Duty*Balance MOD       & $-0.23$       & $-0.09$       & $-0.30$       \\
+                             & $(0.33)$      & $(0.33)$      & $(0.32)$      \\
+Civic Duty*Balance HIGH      & $0.27$        & $0.15$        & $0.59$        \\
+                             & $(0.35)$      & $(0.37)$      & $(0.40)$      \\
+Civic Duty*Balance VHIGH     & $-0.13$       & $-0.14$       & $-0.06$       \\
+                             & $(0.43)$      & $(0.42)$      & $(0.44)$      \\
+\hline
+Log Likelihood               & -2010.63      & -1948.32      & -1639.28      \\
+Num. obs.                    & 4927          & 4749          & 3888          \\
+\hline
+\multicolumn{4}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
+\end{tabular}
+\label{table:ep_log_II}
 \end{center}
+\end{table}
 
 
-Table \ref{YY} shows the indicator variables for taxes owed by
+Table \ref{table:ep_log_II} shows the indicator variables for taxes owed by
 quartile are significantly negative - that is, the more a taxpayer
 owes the less likely he or she is to pay their taxes.  The Civic Duty
 treatment helps to moderate this growing negative effect of tax debt,
@@ -1260,28 +1232,27 @@ conclusion here is that a targeted treatment strategy is the most
 effective approach for encouraging tax participation for this sample
 of tardy Philadelphia taxpayers.
 
+
+% latex table generated in R 3.2.2 by xtable 1.7-4 package
+% Mon Oct  5 01:46:07 2015
 \begin{table}[htbp]
-\caption{Marginal  Predictions -- Ever Paid}  \label{ZZ} 
-\bigskip
-\begin{center}
-\begin{tabular}{| l | c | c | c | c |}
+\centering
+\begin{tabular}{|l|c|c|c|c|}
   \hline
  & LOW & MOD & HIGH & VHIGH \\ 
   \hline
-Control & 23.40 & 16.10 & 9.80 & 8.00 \\ 
-  Public Service & 18.50 & 12.70 & 12.10 & 11.40 \\ 
-  Civic Duty & 26.40 & 15.20 & 14.40 & 8.20 \\ 
-  Threat & 22.40 & 12.20 & 13.40 & 7.10 \\ 
+Control & 23.35 & 16.13 & 9.82 & 7.99 \\ 
+  Threat & 22.42 & 12.23 & 13.41 & 7.12 \\ 
+  Public Service & 18.45 & 12.69 & 12.10 & 11.45 \\ 
+  Civic Duty & 26.37 & 15.23 & 14.38 & 8.25 \\ 
    \hline
-\multicolumn{5}{l}{NOTE: This table reports the marginal effects} \\
-\multicolumn{5}{l}{from the Logit Model with interactions that uses} \\
-\multicolumn{5}{l}{``ever paid" as outcome.} \\
 \end{tabular}
-\end{center}
+\caption{Marginal Predictions - Ever Paid} 
+\label{table:modelI_marg}
 \end{table}
 
 
-Table \ref{ZZ} shows the marginal predictions for the probability that
+Table \ref{table:modelI_marg} shows the marginal predictions for the probability that
 a most-tardy taxpayer in each treatment group and for each quartile of
 taxes owed will make some payment (``ever paid").  The values here
 represent the predicted probability of payment, computed for the
@@ -1303,7 +1274,7 @@ larger matter: When do tardy taxpayers pay their full amount of taxes
 owed?  The ever-paid outcome does not differentiate between taxpayers
 that made full payment and those who made only a partial contribution.
 
-Table \ref{VV} presents the results for the Logit specification for
+Table \ref{table:pf_log_I} presents the results for the Logit specification for
 the outcome ``paid in full" by the end of our 30 day payment period.
 Again the analysis is separated into the full sample and the
 two subsamples.  The results are similar to those for ``ever paid."
@@ -1312,33 +1283,32 @@ discourages full payment while the Civic Duty letter encourages full
 payment.
 
 \begin{table}[htbp]
-\caption{Logistic Regressions for Paid in Full: Compliance}\label{VV}
+\caption{Logistic Regressions for Paid in Full: Compliance}
 \begin{center}
-\begin{tabular}{| l c | c | c | }
+\begin{tabular}{l c c c }
 \hline
                & Full Sample & Non-Commercial & Sole Owner \\
 \hline
 Intercept      & $-2.23^{***}$ & $-2.22^{***}$ & $-2.29^{***}$ \\
-               & $(0.10)$      & $(0.10)$      & $(0.12)$      \\
-Public Service          & $-0.42^{**}$  & $-0.44^{**}$  & $-0.29$       \\
-               & $(0.13)$      & $(0.14)$      & $(0.15)$      \\
-Civic Duty           & $0.24$        & $0.24$        & $0.41^{**}$   \\
-               & $(0.14)$      & $(0.14)$      & $(0.16)$      \\
+               & $(0.14)$      & $(0.14)$      & $(0.12)$      \\
 Threat         & $-0.21$       & $-0.18$       & $-0.04$       \\
-               & $(0.19)$      & $(0.20)$      & $(0.21)$      \\
+               & $(0.22)$      & $(0.23)$      & $(0.21)$      \\
+Public Service & $-0.42^{**}$  & $-0.44^{***}$ & $-0.29^{*}$   \\
+               & $(0.17)$      & $(0.17)$      & $(0.15)$      \\
+Civic Duty     & $0.24$        & $0.24$        & $0.41^{***}$  \\
+               & $(0.17)$      & $(0.17)$      & $(0.15)$      \\
 \hline
 Log Likelihood & -1435.15      & -1395.06      & -1175.05      \\
 Num. obs.      & 4927          & 4749          & 3888          \\
 \hline
-\multicolumn{4}{l}{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$.} \\
-\multicolumn{4}{l}{NOTE: This table reports the parameter estimates from the} \\
-\multicolumn{4}{l}{basic Logit Model that uses ``paid in full" as outcome.}
+\multicolumn{4}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
 \end{tabular}
+\label{table:pf_log_I}
 \end{center}
 \end{table}
 
 
-Table \ref{WW} presents the results that allow for the influence of
+Table \ref{table:pf_log_II} presents the results that allow for the influence of
 taxes owed - MOD, HIGH, and VHIGH - on ``paid in full."  Owing more
 taxes reduces the likelihood of paying in full and the negative effect
 increases with the level of taxes owed.  These effects are even larger
@@ -1353,90 +1323,80 @@ payment is the Civic Duty letter, and this is particularly so for
 those with low and moderate levels of taxes owed.
 
 
+\begin{table}[htbp]
+\caption{Logistic Regressions for Paid in Full with Interactions: Compliance}
 \begin{center}
-\begin{longtable}{| l | c |  c| c|}
-\caption{Logistic Regressions for Paid in Full with Interactions: Compliance} \label{WW} \\
-\hline 
- & Full Sample & Non-Commercial & Sole Owner \\
-\hline 
-\endfirsthead
-\multicolumn{4}{c}%
-{{ \tablename\ \thetable{} -- continued from previous page}} \\
+\begin{tabular}{|l|c|c|c|}
 \hline
-& Full Sample & Non-Commercial & Sole Owner \\
-\hline 
-\endhead
-\hline \multicolumn{4}{|l|}{{Continued on next page}} \\ \hline
-\endfoot
-\hline 
-\multicolumn{4}{l}{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$. Control coefficients omitted.} \\
-\multicolumn{4}{l}{NOTE: This table reports the parameter estimates from the} \\
-\multicolumn{4}{l}{Logit Model with interactions that uses ``paid in full" as outcome.}
-\endlastfoot
-Balance MOD        & $-1.28^{***}$ & $-1.42^{***}$ & $-1.35^{***}$ \\
-                  & $(0.27)$      & $(0.28)$      & $(0.31)$      \\
-Balance HIGH        & $-2.32^{***}$ & $-2.18^{***}$ & $-3.18^{***}$ \\
-                  & $(0.39)$      & $(0.37)$      & $(0.61)$      \\
-Balance VHIGH        & $-3.27^{***}$ & $-2.85^{***}$ & $-3.83^{***}$ \\
-                  & $(0.74)$      & $(0.61)$      & $(1.03)$      \\
-Public Service             & $-0.45^{*}$   & $-0.49^{*}$   & $-0.49^{*}$   \\
-                  & $(0.19)$      & $(0.20)$      & $(0.22)$      \\
-Public Service*Balance MOD  & $0.00$        & $0.00$        & $0.00$        \\
-                  & $(0.00)$      & $(0.00)$      & $(0.00)$      \\
-Public Service*Balance HIGH  & $-0.27$       & $-0.23$       & $-0.54^{*}$   \\
-                  & $(0.23)$      & $(0.24)$      & $(0.26)$      \\
-Public Service*Balance VHIGH  & $0.61^{*}$    & $0.65^{*}$    & $0.49$        \\
-                  & $(0.26)$      & $(0.26)$      & $(0.27)$      \\
-Civic Duty  & $0.25$        & $0.22$        & $0.29$        \\
-                  & $(0.19)$      & $(0.19)$      & $(0.22)$      \\
-Civic Duty*Balance MOD   & $1.01^{*}$    & $0.99^{*}$    & $1.06^{*}$    \\
-                  & $(0.42)$      & $(0.42)$      & $(0.46)$      \\
-Civic Duty*Balance HIGH   & $-0.18$       & $-0.13$       & $-0.33$       \\
-                  & $(0.25)$      & $(0.25)$      & $(0.26)$      \\
-Civic Duty*Balance VHIGH   & $-0.39$       & $-0.32$       & $-0.54^{*}$   \\
-                  & $(0.23)$      & $(0.23)$      & $(0.25)$      \\
-Threat            & $-0.07$       & $-0.03$       & $-0.05$       \\
-                  & $(0.27)$      & $(0.27)$      & $(0.29)$      \\
-Threat*Balance MOD & $0.21$        & $0.25$        & $0.13$        \\
-                  & $(0.22)$      & $(0.22)$      & $(0.24)$      \\
-Threat*Balance HIGH & $-0.64^{**}$  & $-0.65^{**}$  & $-0.80^{**}$  \\
-                  & $(0.25)$      & $(0.25)$      & $(0.27)$      \\
-Threat*Balance VHIGH & $0.20$        & $0.22$        & $-0.03$       \\
-                  & $(0.22)$      & $(0.22)$      & $(0.24)$      \\
+                             & Full Sample & Non-Commercial & Sole Owner \\
 \hline
-Log Likelihood    & -1150.17      & -1120.45      & -919.68       \\
-Num. obs.         & 4927          & 4749          & 3888          \\
-\end{longtable}
+Balance MOD                  & $-1.25^{***}$ & $-1.38^{***}$ & $-1.30^{***}$ \\
+                             & $(0.31)$      & $(0.32)$      & $(0.30)$      \\
+Balance HIGH                 & $-1.96^{***}$ & $-1.86^{***}$ & $-2.54^{***}$ \\
+                             & $(0.55)$      & $(0.46)$      & $(0.87)$      \\
+Balance VHIGH                & $-2.65$       & $-2.42$       & $-3.90$       \\
+                             & $(2.76)$      & $(2.00)$      & $(6.39)$      \\
+Threat                       & $-0.10$       & $-0.07$       & $-0.10$       \\
+                             & $(0.30)$      & $(0.30)$      & $(0.30)$      \\
+Threat*Balance MOD           & $-0.39$       & $-0.31$       & $-0.32$       \\
+                             & $(1.19)$      & $(1.19)$      & $(1.62)$      \\
+Threat*Balance HIGH          & $0.27$        & $0.20$        & $0.79$        \\
+                             & $(0.87)$      & $(0.74)$      & $(1.40)$      \\
+Threat*Balance VHIGH         & $-0.00$       & $-0.33$       & $0.99$        \\
+                             & $(5.26)$      & $(5.56)$      & $(9.11)$      \\
+Public Service               & $-0.45^{**}$  & $-0.48^{**}$  & $-0.48^{**}$  \\
+                             & $(0.21)$      & $(0.22)$      & $(0.22)$      \\
+Public Service*Balance MOD   & $-0.09$       & $0.10$        & $0.07$        \\
+                             & $(0.39)$      & $(0.41)$      & $(0.39)$      \\
+Public Service*Balance HIGH  & $0.32$        & $0.29$        & $0.80$        \\
+                             & $(0.61)$      & $(0.53)$      & $(0.91)$      \\
+Public Service*Balance VHIGH & $0.13$        & $-0.18$       & $1.69$        \\
+                             & $(2.81)$      & $(2.12)$      & $(6.40)$      \\
+Civic Duty                   & $0.23$        & $0.21$        & $0.28$        \\
+                             & $(0.22)$      & $(0.23)$      & $(0.22)$      \\
+Civic Duty*Balance MOD       & $-0.25$       & $-0.11$       & $-0.12$       \\
+                             & $(0.42)$      & $(0.43)$      & $(0.41)$      \\
+Civic Duty*Balance HIGH      & $-0.38$       & $-0.43$       & $-0.13$       \\
+                             & $(0.68)$      & $(0.61)$      & $(1.27)$      \\
+Civic Duty*Balance VHIGH     & $-0.25$       & $-0.48$       & $1.01$        \\
+                             & $(3.08)$      & $(2.42)$      & $(6.67)$      \\
+\hline
+Log Likelihood               & -1210.73      & -1179.75      & -967.31       \\
+Num. obs.                    & 4927          & 4749          & 3888          \\
+\hline
+\multicolumn{4}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
+\end{tabular}
+\label{table:pf_log_II}
 \end{center}
+\end{table}
 
 
-As for \ref{ZZ}, the impact of tax debt owed on full compliance is
+As for \ref{table:modelI_marg}, the impact of tax debt owed on full compliance is
 seen most clearly by computing the marginal propensity for payment in
-full by each treatment for each level of debt owed; see \ref{TT}.
+full by each treatment for each level of debt owed; see \ref{table:modelI_marg}.
 Again the Civic Duty letter has the strongest effect on the decision
 of these very tardy taxpayers to pay their taxes, here to meet their
 full obligations.
 
 
+% latex table generated in R 3.2.2 by xtable 1.7-4 package
+% Mon Oct  5 01:46:07 2015
 \begin{table}[htbp]
-\caption{Marginal Predictions -- Paid in Full}  \label{TT}
-\bigskip
-\begin{center}
-\begin{tabular}{| l | c | c | c | c |}
+\centering
+\begin{tabular}{|l|c|c|c|c|}
   \hline
  & LOW & MOD & HIGH & VHIGH \\ 
   \hline
-Control & 19.90 & 6.40 & 2.40 & 0.90 \\ 
-  Public Service & 13.60 & 4.00 & 2.90 & 1.20 \\ 
-  Civic Duty & 24.10 & 6.90 & 3.10 & 1.80 \\ 
-  Threat & 18.80 & 3.50 & 4.20 & 0.90 \\ 
+Control & 21.36 & 7.22 & 3.68 & 1.87 \\ 
+  Threat & 19.68 & 4.55 & 4.31 & 1.69 \\ 
+  Public Service & 14.80 & 4.34 & 3.26 & 1.37 \\ 
+  Civic Duty & 25.55 & 7.10 & 3.18 & 1.84 \\ 
    \hline
-\multicolumn{5}{l}{NOTE: This table reports the marginal effects} \\
-\multicolumn{5}{l}{from the Logit Model with interactions that uses} \\
-\multicolumn{5}{l}{``paid in full" as outcome.} \\
 \end{tabular}
-\end{center}
+\caption{Marginal Predictions - Paid in Full} 
+\label{table:modelI_marg}
 \end{table}
+
 
 Our study reveals there is heterogeneity in response to different
 treatments.  A preferred overall strategy might take advantage of

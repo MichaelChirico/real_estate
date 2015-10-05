@@ -19,7 +19,6 @@ library(funchir)
 library(data.table)
 library(texreg)
 library(xtable)
-library(multiwayvcov)
 write.packages(code_wd%+%"logs/real_estate_payment_"%+%
                  "analysis_session.txt")
 
@@ -307,7 +306,7 @@ capture.output(print.xtable(xtable(rbindlist(lapply(
                     dol.form(tot_pmt/N-tot_pmt[1]/N[1]),
                   "Total Surplus over All Properties"=
                     dol.form(tot_pmt-tot_pmt[1]/N[1]*N))]})),
-  caption=c("Summary of Effectiveness of Treatment"),label="table:summary",
+  caption=c("Estimated Average Treatment Effects: Revenues"),label="table:summary",
   align=paste0("|c|p{2.2cm}|p{1.4cm}|p{1.8cm}|p{1.2cm}|",
                "p{1.2cm}|p{1.4cm}|p{1.4cm}|p{2.2cm}|p{1.8cm}|"),
   digits=c(rep(0,7),1,0,0)),include.rownames=F,hline.after=c(-1,0,4,8,12),
@@ -332,7 +331,7 @@ capture.output(texreg(lapply(all_samples,
 ##TABLE 6 ####
 ##LOGIT - EVER PAID (I)
 epq<-quote(ever_paid)
-pfq<-quote(ever_paid)
+pfq<-quote(paid_full)
 trq<-quote(treatment)
 ctq<-quote(I(land_area/1e3)+I(years_count<=5)+
              council+category+owner_occ+
@@ -349,6 +348,7 @@ lapply(all_samples,setkeyv,"cluster_id")
 
 reg_out<-
   lapply(reg_specs,function(reg){
+    print(as.character(reg$reg_lhs))
     with(reg,lapply(all_samples,function(dt){
       regf<-dt[,glm(eval(reg_lhs)~eval(reg_rhs),family=binomial)]
       names(regf$coefficients)<-
@@ -410,15 +410,15 @@ sample_means_control<-
 tcoefn<-analysis_data_main[,levels(treatment)[-1]]
 bcoefn<-analysis_data_main[,levels(balance_quartile_pretty)[-1]]
 xcoefn<-tcoefn%+%"*"%+%rep(bcoefn,each=3)
-contn<-setdiff(names(reg_out$epII$main$coefficients),
+contn<-setdiff(names(reg_out$epII$main$mod$coefficients),
                c(tcoefn,bcoefn,xcoefn))
 
 x_beta_control<-
-  sum(reg_out$epII$main$coefficients[contn]*sample_means_control)
+  sum(reg_out$epII$main$mod$coefficients[contn]*sample_means_control)
 
-tcoef<-reg_out$epII$main$coefficients[tcoefn]
-bcoef<-reg_out$epII$main$coefficients[bcoefn]
-xcoef<-reg_out$epII$main$coefficients[xcoefn]
+tcoef<-reg_out$epII$main$mod$coefficients[tcoefn]
+bcoef<-reg_out$epII$main$mod$coefficients[bcoefn]
+xcoef<-reg_out$epII$main$mod$coefficients[xcoefn]
 
 #the idea: add the following matrices to get the latent x*betas for each cell
 #   0 0 0 0      0 1 2 3     0 0 0 0  : T-Threat/S-Service/C-Civic/1-Q1/2-Q2/3-Q3
@@ -441,8 +441,8 @@ capture.output(print.xtable(xtable(matrix(
 capture.output(texreg(lapply(
   reg_out[["pfI"]],function(x)x$mod),stars=c(.01,.05,.1),
   custom.model.names=c("Full Sample","Non-Commercial","Sole Owner"),
-  caption="Logistic Regressions for Ever Paid: Compliance",
-  caption.above=TRUE,label="table:ep_log_I",float.pos="htbp",
+  caption="Logistic Regressions for Paid in Full: Compliance",
+  caption.above=TRUE,label="table:pf_log_I",float.pos="htbp",
   include.aic=FALSE,include.bic=FALSE,include.deviance=FALSE,
   override.se=lapply(reg_out[["pfI"]],function(x)x$ses),
   override.pval=lapply(reg_out[["pfI"]],function(x)x$pvals)),
@@ -453,9 +453,9 @@ capture.output(texreg(lapply(
 capture.output(texreg(lapply(
   reg_out[["pfII"]],function(x)x$mod),stars=c(.01,.05,.1),
   custom.model.names=c("Full Sample","Non-Commercial","Sole Owner"),
-  caption="Logistic Regressions for Ever Paid "%+%
+  caption="Logistic Regressions for Paid in Full "%+%
     "with Interactions: Compliance",omit.coef="XXX$|Intercept",
-  caption.above=TRUE,label="table:ep_log_II",float.pos="htbp",
+  caption.above=TRUE,label="table:pf_log_II",float.pos="htbp",
   include.aic=FALSE,include.bic=FALSE,include.deviance=FALSE,
   reorder.coef=c(1:4,7:9,5,10:12,6,13:15),
   override.se=lapply(reg_out[["pfII"]],function(x)x$ses),
@@ -465,11 +465,11 @@ capture.output(texreg(lapply(
 ##TABLE 11 ####
 ##MARGINAL PREDICTIONS - PAID FULL
 x_beta_control<-
-  sum(reg_out$pfII$main$coefficients[contn]*sample_means_control)
+  sum(reg_out$pfII$main$mod$coefficients[contn]*sample_means_control)
 
-tcoef<-reg_out$pfII$main$coefficients[tcoefn]
-bcoef<-reg_out$pfII$main$coefficients[bcoefn]
-xcoef<-reg_out$pfII$main$coefficients[xcoefn]
+tcoef<-reg_out$pfII$main$mod$coefficients[tcoefn]
+bcoef<-reg_out$pfII$main$mod$coefficients[bcoefn]
+xcoef<-reg_out$pfII$main$mod$coefficients[xcoefn]
 
 capture.output(print.xtable(xtable(matrix(sapply(
     rep(c(0,tcoef),times=4)+
@@ -478,5 +478,5 @@ capture.output(print.xtable(xtable(matrix(sapply(
       x_beta_control,function(x){to.pct(1/(1+exp(-x)))}),
     ncol=4,dimnames=list(trt.nms,c("LOW","MOD","HIGH","VHIGH"))),
     caption="Marginal Predictions - Paid in Full",digits=2,
-    label="table:modelI_marg",align="|l|c|c|c|c|"),table.placement="htbp"),
+    label="table:modelII_marg",align="|l|c|c|c|c|"),table.placement="htbp"),
     file=log_fl,append=TRUE)
