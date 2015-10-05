@@ -159,12 +159,33 @@ rest_delinquent<-
                   &returned_mail_flag=="NO"]
 #To compare properties assigned to outside law firms
 #  to those in our sample (all other restrictions being equal)
-rest_law_firm<-
-  full_delinquent[payment_agreement=="N"
-                  &abate_exempt_code %in% c("","     ","\\    ")
-                  &case_status!=""&sheriff_sale=="N"
-                  &bankruptcy=="N"&sequestration=="N"
-                  &returned_mail_flag=="NO"]
+law_firm<-full_delinquent[case_status!=""]
+
+#Not included in paper: numbers about law firms vs. in-house
+#  sample:
+#  in_house<-full_delinquent[case_status==""]
+#  #All numbers for law firms are from corresponding
+#  #  moments applied to law_firm
+#  #in-house mean/median balance
+#  in_house[,.(mean(calc_total_due),median(calc_total_due))]
+#  #in-house mean/median assessment
+#  in_house[,.(mean(total_assessment,na.rm=T),
+#              median(total_assessment,na.rm=T))]
+#  #in-house mean/median debt tenure
+#  in_house[,.(mean(years_count),median(years_count))]
+#  #in-house owner occupancy, payment agreement,
+#  #  and sheriff's sale prevalence
+#  in_house[,.(mean(homestead>0,na.rm=T),
+#              mean(payment_agreement=="N"),
+#              mean(sheriff_sale=="N"))]
+#  #Regression suggesting law firms get the highest-return
+#  #  properties, i.e., those that have highest unexplained balance
+#  full_delinquent[
+#    total_assessment>0,
+#    summary(lm(log(calc_total_due)~
+#                 I(case_status!="")+log(total_assessment)+
+#                 payment_agreement+sheriff_sale+
+#                 I(homestead>0)+years_count))]
 
 #We count an address as in Philadelphia when:
 #  1) Mailing address is blank -- this means the
@@ -181,12 +202,15 @@ phila_addr<-quote(mail_address %in% c("","                    ")|
                     (grepl("PH",mail_city)&!grepl("[XMR]",mail_city)))
 capture.output(print.xtable(xtable(sapply(list(
   "All Delinquent"=full_delinquent,
-  "Law Firm"=rest_law_firm,
+  "Law Firm"=law_firm,
   "Restricted"=rest_delinquent,
   "Analysis"=analysis_data_main[(end)]),
-  function(y)y[,.(`Amount Due`=dol.form(mean(calc_total_due)),
-                  `Assessed Property Value`=
+  function(y)y[,.(`Average Amount Due`=dol.form(mean(calc_total_due)),
+                  `Median Amount Due`=dol.form(median(calc_total_due)),
+                  `Average Assessed Property Value`=
                     dol.form(mean(total_assessment,na.rm=T)),
+                  `Median Assessed Property Value`=
+                    dol.form(median(total_assessment,na.rm=T)),
                   `Tax Due`=
                     dol.form(mean(net_tax_value_after_homestead,
                                   na.rm=T)),
@@ -314,19 +338,28 @@ capture.output(print.xtable(xtable(rbindlist(lapply(
   file=log_fl,append=TRUE)
 
 # Regressions ####
+##All tests equipped with bootstrap-clustered SEs:
+lapply(all_samples,setkeyv,"cluster_id")
+
 ##TABLE 5 ####
 ##DIFFERENCE IN MEAN TESTS
-capture.output(texreg(lapply(all_samples,
-              function(y)y[,{x<-lm(cum_treated_pmts~treatment)
-              names(x$coefficients)<-
-                rename_fcn(names(x$coefficients))
-              coeftest(x, vcov=vcovHC(x))}]),
-       custom.model.names=
-         c("Main Sample","Non-Commercial Sample",
-           "Unique Owner Sample"),
-       caption="Estimated Average Treatment Effects: Revenues",
-       caption.above=T,label="dif_mean",stars=c(.01,.05,.1)),
-       file=log_fl,append=TRUE)
+capture.output(texreg(lapply(
+  all_samples,function(y){
+    reg_out<-y[,lm(cum_treated_pmts~treatment+log(total_due_at_mailing))]
+    names(reg_out$coefficients)<-
+      rename_fcn(names(reg_out$coefficients))
+    boot_dist<-
+      replicate(BB,y[.(sample(unique(cluster_id),rep=T)),
+                     lm(cum_treated_pmts~
+                          treatment+log(total_due_at_mailing)
+                        )$coefficients])
+    coeftest(reg_out, vcov=unname(var(t(boot_dist))))}),
+  custom.model.names=
+    c("Main Sample","Non-Commercial Sample",
+      "Unique Owner Sample"),
+  caption="Estimated Average Treatment Effects: Revenues",
+  caption.above=T,label="dif_mean",stars=c(.01,.05,.1),
+  omit.coef="XXX$"),file=log_fl,append=TRUE)
 
 ##TABLE 6 ####
 ##LOGIT - EVER PAID (I)
@@ -344,7 +377,6 @@ reg_specs<-
        epII=list("reg_lhs"=epq,"reg_rhs"=ctq),
        pfI=list("reg_lhs"=pfq,"reg_rhs"=trq),
        pfII=list("reg_lhs"=pfq,"reg_rhs"=ctq))
-lapply(all_samples,setkeyv,"cluster_id")
 
 reg_out<-
   lapply(reg_specs,function(reg){
@@ -375,6 +407,7 @@ capture.output(texreg(lapply(
   override.pval=lapply(reg_out[["epI"]],function(x)x$pvals)),
   file=log_fl,append=TRUE)
   
+
 ##TABLE 7 ####
 ##LOGIT - EVER PAID (II)
 capture.output(texreg(lapply(
