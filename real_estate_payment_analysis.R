@@ -21,30 +21,33 @@ library(texreg)
 library(xtable)
 library(parallel)
 library(lmtest)
+#Log available upon request
 write.packages(code_wd%+%"logs/real_estate_payment_"%+%
                  "analysis_session.txt")
 
 trt.nms <- c("Control","Threat","Public Service","Civic Duty")
-trt.col <- c(Control="black",Threat="red",
-             "Public Service"="blue", "Civic Duty"="green")
 
+#For consistent naming of coefficients in regression tables
 rename_coef<-function(obj){
   nms<-names(obj$coefficients)
   indx<-!grepl("treatment|"%+%
                  "balance_quartile_pretty",nms)
+  #Add XXX to coefficients we'll exclude
   nms[indx]<-nms[indx]%+%"XXX"
   nms<-gsub("treatment","",nms)
   nms<-gsub("balance_quartile_pretty","",nms)
+  #More common to see * for interactions
   nms<-gsub(":","*",nms,fixed=TRUE)
+  #LaTeX needs & to be escaped
   nms<-gsub("&","\\&",nms,fixed=TRUE)
+  #Switch printing order
   nms<-gsub("(.*)\\*(.*)","\\2*\\1",nms)
   names(obj$coefficients)<-nms
   obj
 }
 
 #Set up Analysis Data Sets ####
-analysis_data_main<-
-  fread("analysis_file_end_only_act.csv")
+analysis_data_main<-fread("analysis_file_end_only_act.csv")
 #CLUSTERS DEFINED AT THE OWNER LEVEL
 #OWNER DEFINED AS ANYONE WITH IDENTICAL NAME & MAILING ADDRESS
 clust<-c("legal_name","mail_address")
@@ -53,28 +56,29 @@ analysis_data_main[,cluster_id:=.GRP,by=clust]
 ###tidying up data classifications
 factors<-c("treatment","category","exterior","council")
 analysis_data_main[,(factors):=lapply(.SD,as.factor),.SDcols=factors]
+####Order treatments so that Control comes first
 analysis_data_main[,treatment:=factor(treatment,levels=trt.nms)]
-#since read as strings, order is out of whack
+####since read as strings, order is out of whack
 analysis_data_main[,council:=factor(council,levels=paste0(1:10))]
 cat_ord <- c("Residential","Hotels&Apts","Store w/ Dwelling",
              "Commercial","Industrial","Vacant")
 analysis_data_main[,category:=factor(category,levels=cat_ord)]
 rm(factors,cat_ord)
 
-##create some variables which can be defined on the main data set
-## and passed through without change to the subsamples
+###create some variables which can be defined on the main data set
+###  and passed through without change to the subsamples
 analysis_data_main[,treatment_count:=uniqueN(opa_no),by=treatment]
 analysis_data_main[,treatment_days :=uniqueN(cycle), by=treatment]
 
+###discretize these variables for balance tests
 analysis_data_main[,years_cut:=cut(years_count,include.lowest=T,
                                    breaks=c(0,1,2,5,40),
                                    labels=c(1:2,"3-5","6+")%+%" Years")]
 analysis_data_main[,rooms_cut:=cut(rooms,breaks=c(0,5,6,20),
                                    include.lowest=T,labels=c("0-5","6","7+"))]
 
-##DEFINE DATA SETS FOR THE SUBSAMPLES
+##DEFINE DATA SETS & TAGS FOR THE SUBSAMPLES
 ###MAIN SAMPLE
-#### (reset factor levels once leave-out sample is eliminated)
 analysis_data_main[,smpl:="Full"]
 ###NON-COMMERCIAL PROPERTIES
 analysis_data_ncom<-
@@ -90,6 +94,7 @@ comment(analysis_data_main)<-c("main","Full Sample","analysis_data_main")
 comment(analysis_data_ncom)<-c("non_comm","Non-Commercial Properties","analysis_data_ncom")
 comment(analysis_data_sown)<-c("single_owner","Unique-Owner Properties","analysis_data_sown")
 
+##Store data sets in a list for simple looping
 all_samples<-list("main"=analysis_data_main,
                   "non_comm"=analysis_data_ncom,
                   "single_owner"=analysis_data_sown)
@@ -97,22 +102,24 @@ all_samples<-list("main"=analysis_data_main,
 for (dt in all_samples){
   ##Define the sample-specific variables:
   ## sample quartiles for balance due, market value, and land area
-  
   dummy<-copy(dt)
   
   qs <- c(.25,.5,.75)
   dummy[,balance_quartile:={
     x<-"$"%+%round(quantile(total_due,qs),-2)
+    ##Add pretty labels for table output
     lbs<-c("< "%+%x[1],paste0("[",x[1],", ",x[2],")"),
            paste0("[",x[2],", ",x[3],")"),"> "%+%x[3])
     create_quantiles(total_due,4,labels=lbs)}]
   
+  ##Identical, but prettier names for regression output
   dummy[,balance_quartile_pretty:=
           create_quantiles(total_due,4,
                            labels="Balance "%+%
                              c("LOW","MOD","HIGH","VHIGH"))]
   
   dummy[,mv_quartile:={
+    ##Divide by 1000 to express in $1000 units
     x<-"$"%+%round(quantile(total_assessment/1000,qs))%+%"k"
     lbs<-c("< "%+%x[1],paste0("[",x[1],", ",x[2],")"),
            paste0("[",x[2],", ",x[3],")"),"> "%+%x[3])
@@ -126,7 +133,7 @@ for (dt in all_samples){
     create_quantiles(land_area,4,labels=lbs)}]
   
   assign(comment(dt)[3],dummy)
-}; rm(dt,dummy)
+}; rm(dt,dummy,qs)
 
 ###Unfortunately, since list made a copy,
 ###  all_samples was not updated, either.
@@ -137,11 +144,13 @@ all_samples<-list("main"=analysis_data_main,
 
 #Results ####
 ##TABLE 1
-##  Produced by Bob
+##  Produced by Bob Inman (inman@wharton.upenn.edu)
 
 ##TABLE 2 ####
 ##MAIN DESCRIPTIVES TABLE
-##  Using full and restricted samples for comparison
+##  Using full, restricted and law firm samples for comparison
+##  **NOTE: These files contain some sensitive information and
+##  **       as such may be prevented from public release **
 full_delinquent<-fread(data_wd%+%"dor_data_15_oct_encrypted.csv")
 resid_grp <- c("apartmentLarge","apartmentSmall","condo",
                "house","house ","miscResidential","")
@@ -158,7 +167,7 @@ rest_delinquent<-
 #  to those in our sample (all other restrictions being equal)
 law_firm<-full_delinquent[case_status!=""]
 
-#Not included in paper: numbers about law firms vs. in-house
+#Mentioned in paper: numbers about law firms vs. in-house
 #  sample:
 #  in_house<-full_delinquent[case_status==""]
 #  #All numbers for law firms are from corresponding
@@ -241,6 +250,13 @@ p_exp<-unique(analysis_data_main,by="cycle"
 ###Get p-values for tests via permutation tests
 ####Subset here to minimize memory usage
 uniq_treat<-unique(analysis_data_main[
+  #Given imperfect randomization, we had
+  #  7 owners (as we define them) who were
+  #  inadvertently given 2 treatments; all appear
+  #  to be unique people (i.e., not 2 John Smiths):
+  #  Ervin Shienbaum, James Cunningham, Louise Johnson,
+  #  Green Homes Real Estate LP, JA Properties LLC,
+  #  Albert P. Wachlin, and Rolando Gautier.
   !analysis_data_main[,uniqueN(treatment),
                       by=cluster_id][V1>1],
   .(cluster_id,treatment),on="cluster_id"])
@@ -271,7 +287,7 @@ chisq_ps<-rowMeans(chisq_dist > baseline)
   #Create one data.table for each test,
   #  then stack them all and print as LaTeX
   test_vars,function(x){
-    #Instead of doing table, count and reshape wide
+    #Instead of using table, count and reshape wide
     dcast(
       analysis_data_main[,.N,keyby=c(x,"treatment")
                          ][,.(treatment,N/sum(N)),
@@ -303,7 +319,8 @@ chisq_ps<-rowMeans(chisq_dist > baseline)
                             "\\hline \nYears of Debt & & & & & \\\\ \n",
                             "\\hline \nCategory & & & & & \\\\ \n"))),
   file=log_fl,append=TRUE)}
-rm(full_delinquent,rest_delinquent,law_firm)
+rm(full_delinquent,rest_delinquent,law_firm,
+   chisq_dist,uniq_treat,baseline,p_exp)
 
 ##TABLE 4 ####
 ##SUMMARY OF EFFECTIVENESS OF EACH SAMPLE
@@ -325,10 +342,13 @@ capture.output(print.xtable(xtable(rbindlist(lapply(
                   "Dollars Received"=dol.form(tot_pmt),
                   "Percent Debt Received"=to.pct(tot_pmt/tot_due,dig=1),
                   "Dollars above Control Per Property"=
+                 #Since treatments ordered (keyed on treatment),
+                 #  [1] is the index corresponding to control
                     dol.form(tot_pmt/N-tot_pmt[1]/N[1]),
                   "Total Surplus over All Properties"=
                     dol.form(tot_pmt-tot_pmt[1]/N[1]*N))]})),
   caption=c("Estimated Average Treatment Effects: Revenues"),label="table:summary",
+  #First column (|c|) is eliminated by include.rownames=F
   align=paste0("|c|p{2.2cm}|p{1.4cm}|p{1.8cm}|p{1.2cm}|",
                "p{1.2cm}|p{1.4cm}|p{1.4cm}|p{2.2cm}|p{1.8cm}|"),
   digits=c(rep(0,7),1,0,0)),include.rownames=F,hline.after=c(-1,0,4,8,12),
@@ -339,6 +359,8 @@ capture.output(print.xtable(xtable(rbindlist(lapply(
 ##All tests equipped with bootstrap-clustered SEs:
 lapply(all_samples,setkeyv,"cluster_id")
 
+##Have to quote the model formulas so that 
+##  they don't evaluate until we're in the datas' frames
 tpfq<-quote(total_paid~treatment+log(total_due))
 epIfq<-quote(ever_paid~treatment+I(total_due/1e3))
 epIIfq<-quote(ever_paid~I(land_area/1e3)+I(years_count<=5)+
@@ -348,26 +370,38 @@ epIIfq<-quote(ever_paid~I(land_area/1e3)+I(years_count<=5)+
                 balance_quartile_pretty*treatment)
 
 reg_output<-lapply(all_samples,function(dt){
+  #Baseline regressions
   regs<-list(tp=dt[,lm(eval(tpfq))],
              epI=dt[,glm(eval(epIfq),family=binomial)],
              epII=dt[,glm(eval(epIIfq),family=binomial)])
+  
+  #Parallelize bootstrap replications since MLE can be timely
   cl <- makeCluster(8L,outfile="") #8 cores on main machine, via detectCores()
   clusterEvalQ(cl,library("data.table"))
   clusterExport(cl,c("dt","tpfq","epIfq","epIIfq"),envir=environment())
   cat("Bootstrap time! ",comment(dt)[2],"\n")
   boot_dist<-Reduce(rbind,parLapply(cl,1:BB,function(ii,...){
+    #Progress counter
     if (ii %% 500 == 0) cat("Replication",ii,"\n")
+    #Resample at the owner (cluster) level, with replacement
     dt[.(sample(unique(cluster_id),rep=T)),
+       #Only keep coefficients
        .(tp=list(lm(eval(tpfq))$coefficients),
          epI=list(glm(eval(epIfq),family=binomial)$coefficients),
          epII=list(glm(eval(epIIfq),family=binomial)$coefficients))]}))
   stopCluster(cl)
+  
+  #Bootstrap parameter vector variance & SDs
   vars<-lapply(boot_dist,function(x)var(Reduce(rbind,x)))
   ses<-lapply(vars,function(x)sqrt(diag(x)))
+  #(note that we impose symmetry here; some inspection
+  #   of the bootstrap parameter distributions
+  #   suggested this was reasonable)
   ps<-lapply(c(tp="tp",epI="epI",epII="epII"),
              function(mod)coeftest(regs[[mod]],
                                    vcov=vars[[mod]])[,4L])
   list("reg"=regs,"SE"=ses,"p.val"=ps)})
+rm(tpfq,epIfq,epIIfq)
 
 ##TABLE 5 ####
 ##DIFFERENCE IN MEAN TESTS
@@ -379,6 +413,7 @@ capture.output(texreg(
   override.pval=lapply(reg_output,function(y)y$p.val$tp),
   caption.above=T,label="dif_mean",stars=c(.01,.05,.1),
   include.rsquared=F,include.adjrs=F,include.rmse=F,
+  #Exclude Intercept & Log coefficients
   omit.coef="XXX$",float.pos="htbp"),file=log_fl,append=TRUE)
 
 ##TABLE 6 ####
@@ -405,6 +440,7 @@ capture.output(texreg(
   override.pval=lapply(reg_output,function(y)y$p.val$epII),
   caption.above=TRUE,label="table:ep_log_II",float.pos="htbp",
   include.aic=FALSE,include.bic=FALSE,include.deviance=FALSE,
+  #Really wish the reorder.coef part could be done more robustly
   reorder.coef=c(1:4,7:9,5,10:12,6,13:15)),file=log_fl,append=TRUE)
 
 ##TABLE 8 ####
@@ -413,8 +449,8 @@ capture.output(texreg(
 ###  via p_hat = exp(beta*x_bar)/(1+exp(beta*x_bar))
 ###  log odds would be exp(beta*x_bar)
 ####first, get the sample means for the variables we don't vary in the table
-####  (use sample *median* for land area and market value since they're
-####   so skewed)
+####  (use sample *median* for land area and market value
+####   since they're so skewed)
 sample_means_control<-
   c(1,analysis_data_main[,median(land_area/1e3)],
     unlist(analysis_data_main[,lapply(list(
@@ -425,16 +461,20 @@ sample_means_control<-
       owner_occ,exterior=="Sealed/Compromised"),mean)]),
     analysis_data_main[,median(total_assessment/1e5)])
 
+#Get the names of the relevant coefficients to ensure we
+#  extract the right things
 tcoefn<-analysis_data_main[,levels(treatment)[-1]]
 bcoefn<-analysis_data_main[,levels(balance_quartile_pretty)[-1]]
 xcoefn<-tcoefn%+%"*"%+%rep(bcoefn,each=3)
+## all the rest
 contn<-setdiff(names(rename_coef(
   reg_output$main$reg$epII)$coefficients),
   c(tcoefn,bcoefn,xcoefn))
 
 x_beta_control<-
   sum(rename_coef(
-    reg_output$main$reg$epII)$coefficients[contn]*sample_means_control)
+    reg_output$main$reg$epII)$coefficients[contn]*
+      sample_means_control)
 
 tcoef<-rename_coef(reg_output$main$reg$epII)$coefficients[tcoefn]
 bcoef<-rename_coef(reg_output$main$reg$epII)$coefficients[bcoefn]
@@ -456,3 +496,4 @@ capture.output(print.xtable(xtable(matrix(
   label="table:modelI_marg",align="|l|c|c|c|c|"),
   table.placement="htbp",caption.placement="top"),
   file=log_fl,append=TRUE)
+
