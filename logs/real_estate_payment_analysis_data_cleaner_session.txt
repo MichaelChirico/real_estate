@@ -1,4 +1,4 @@
-Package info for code run on 2015-09-30 16:10:26:
+Package info for code run on 2015-10-07 00:14:53:
 R version 3.2.2 (2015-08-14)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Ubuntu 14.04.3 LTS

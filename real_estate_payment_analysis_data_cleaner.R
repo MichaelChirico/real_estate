@@ -76,8 +76,6 @@ rm(payments)
 
 ##DELINQUENCY DATA
 dor_data_oct<-fread(data_wd%+%"dor_data_15_oct_encrypted.csv")
-dates<-c("date_latest_pmt","max_period","min_period")
-dor_data_oct[,(dates):=lapply(.SD,as.Date,format="%Y%m%d"),.SDcols=dates]; rm(dates)
 #Found/approximated by hand the council districts for some properties where missing
 dor_data_oct[,council_flag:=FALSE]
 cz<-c("council","zip")
@@ -86,7 +84,7 @@ ccf<-c("council","council_flag")
 setkeyv(dor_data_oct[.("","19130"),(ccf):=.("5",T)],cz)
 setkeyv(dor_data_oct[.("",c("19125","19147")),(ccf):=.("1",T)],cz)
 setkeyv(dor_data_oct[.("","19138"),(ccf):=.("8",T)],cz)
-dor_data_oct[,council:=factor(council,levels=1:10)]; rm(cz,ccf)           
+dor_data_oct[,council:=factor(council,levels=1:10)]; rm(cz,ccf) 
 
 #Add flags for owner occupancy (as proxied by whether a
 #  homestead exemption is taken) and residential zoning 
@@ -118,11 +116,12 @@ dor_data_oct<-dor_data_oct[sequestration=="N",]
 #### (Drop 1429(5%) additional properties; 29951 remain)
 dor_data_oct<-dor_data_oct[returned_mail_flag=="NO",]
 ###Now cut out the fat
-dor_data_oct[,c("account_id","street_code","house_no","returned_mail_flag",
-                "collag_"%+%c("count","max","min","principal","rcv_total","calc_total"),
-                "building_code","bldg_desc","city","state","zip",
-                "azavea_nbhd","payment_agreement"%+%c("","_agency","_org","_status"),
-                "sequestration","bankruptcy","sheriff_sale","case_status"):=NULL]
+keepvars<-c("legal_name","mail_address","council",
+            "opa_no","years_count","mail_city",
+            "calc_total_due","total_assessment",
+            "net_tax_value_after_homestead",
+            "residential","owner_occ")
+dor_data_oct<-dor_data_oct[,keepvars,with=F]
 
 ##Property characteristics
 opa_data<-setnames(fread(data_wd%+%"prop2014.txt",
@@ -240,14 +239,14 @@ setkey(payments_by_day,posting_rel)
 ##Use the balance from the day prior to mailing because the
 ##  day-of balance includes any day-of payments
 payments_by_day[payments_by_day[.(-1L),.(opa_no,current_balance)],
-                total_due_at_mailing:=i.current_balance,
+                total_due:=i.current_balance,
                 on="opa_no"]
 ##Now delete those properties who had paid off their debt by mailing day
 ## AND those who owed less than .607 (=exp(-.5)), rounded
-payments_by_day<-payments_by_day[total_due_at_mailing>.61,]
+payments_by_day<-payments_by_day[total_due>.61,]
 ##Now round up those with balances less than $1 to $1 to keep all log values nonnegative
 ##  (total of 18 people adjusted as of September 20, 2015)
-payments_by_day[total_due_at_mailing<1,total_due_at_mailing:=1]
+payments_by_day[total_due<1,total_due:=1]
 
 #To get all cycles on even footing, align the analysis period
 #  by cycle (and hence by treatment)
@@ -256,25 +255,24 @@ max_length<-payments_by_day[,max(as.integer(posting_rel)),by=cycle][,min(V1)]
 payments_by_day<-payments_by_day[.(0:max_length)]
 
 #Define cumulative payments 
-payments_by_day[,cum_treated_pmts:=cumsum(-balance_change),by=opa_no]
+payments_by_day[,total_paid:=cumsum(-balance_change),by=opa_no]
 
 #Define ever-paid indicator variable
 # (among RELEVANT payments)
-payments_by_day[,ever_paid:=cum_treated_pmts>0]
-
-#Define variable indicating date of first payment (NA if never)
-payments_by_day[(ever_paid),date_of_first_payment:=min(posting),by=opa_no]
-payments_by_day[(ever_paid),date_of_first_payment_rel:=min(posting_rel),by=opa_no]
+payments_by_day[,ever_paid:=total_paid>0]
 
 #Define paid-in-full indicator variable
 # (among RELEVANT payments) as
 #  the account being at least 95% repaid
-payments_by_day[,paid_full:=cum_treated_pmts>=.95*total_due_at_mailing]
+payments_by_day[,paid_full:=total_paid>=.95*total_due]
 
 #Define indicator to get end of period
 payments_by_day[,end:=(posting_rel==max_length)]; rm(max_length)
 
 #Finally, write the data sets to be loaded in the analysis file
-write.csv(payments_by_day,file="analysis_file.csv",quote=T,row.names=F)
-write.csv(payments_by_day[(end&!fidelity_flag)],
+keepvars<-c(keepvars,"treatment","category","exterior",
+            "cycle","rooms","total_due","land_area",
+            "ever_paid","paid_full","total_paid")
+
+write.csv(payments_by_day[(end&!fidelity_flag),keepvars,with=F],
           file="analysis_file_end_only_act.csv",quote=T,row.names=F)
