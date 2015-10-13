@@ -24,6 +24,7 @@ library(data.table)
 library(texreg)
 library(sandwich)
 library(xtable)
+library(readxl)
 library(xlsx)
 library(sp)
 library(doParallel)
@@ -41,193 +42,207 @@ get.col<-function(st){
 }
 
 #Data Import ####
-##Main outcomes data
+##Block I: Main Sample
 ### total_due is pre-study balance
 ### current_balance is as of July 22, 2015
 ### total_paid is the accrual between June 1, 2015
 ###   and July 22, 2015
-data_r2<-{setkey(setnames(setDT(read.xlsx3(
+mainI<-{setnames(setDT(read.xlsx3(
   data_wd%+%"Payments and Balance Penn Letter Experiment_150727.xlsx",
-  colIndex=c(2,5,7:15),
+  colIndex=c(2,5,8,9,13:15),
   sheetName="DETAILS",header=T,startRow=9,stringsAsFactors=F,
-  colClasses=abbr_to_colClass("cidndn","512111"))),
-  c("opa_no","treatment","pre_15_balance",
-    "paid_full","ever_paid","years_count",
-    "period_min","period_max","current_balance",
-    "earliest_pmt","total_paid")),opa_no,treatment)}
-###Re-set indicators as T/F instead of Y/N
-inds<-c("pre_15_balance","paid_full","ever_paid")
-data_r2[,(inds):=lapply(.SD,function(x)x=="Y"),.SDcols=inds]
-data_r2[,paid_full:=!paid_full]
+  colClasses=abbr_to_colClass("cnDn","4111"))),
+  c("opa_no","treat15","paid_full","ever_paid",
+    "current_balance","earliest_pmt","total_paid"))}
 
-###Define two alternative treatments:
-###  Collapse Big/Small or Focus on Big/Small
-data_r2[grepl("Big",treatment),big_small:="Big"]
-data_r2[is.na(big_small),big_small:="Small"]
+##Block II: Holdout Sample
+holdoutII<-{setnames(setDT(read.xlsx3(
+  data_wd%+%"req20150709_PennLetterExperiment_"%+%
+    "v2_Commissioners Control Details.xlsx",
+  colIndex=c(2,8,9,12:14),
+  sheetName="DETAILS",header=T,startRow=9,stringsAsFactors=F,
+  colClasses=abbr_to_colClass("cnDn","3111"))),
+  c("opa_no","paid_full","ever_paid",
+    "current_balance","earliest_pmt","total_paid")
+  )[,treat15:="Holdout"]}
 
-data_r2[,main_treat:=gsub("_.*","",treatment)]
-####Reorder main treatments for plotting purposes
-trt.nms<-c("Control","Amenities","Moral",
-             "Duty","Lien","Sheriff","Peer")
-data_r2[,treatment:=factor(treatment,
-                           paste0(rep(trt.nms,each=2),
-                                  c("_Small_","_Big_"))%+%
-                             "Envelope")]
-data_r2[,main_treat:=
-          factor(main_treat,trt.nms)]
+###The following account changed OPA # between samples,
+###  See correspondence with Darryl Watson dated:
+###    Tue, Sep 15, 2015 at 4:09 PM
+###  (should also be able to corroborate with Account ID)
 
-##Original experiment data
-###Merge what we need into main data
-data_r2<-data_r2[fread("./round_two/round_2_full_data.csv",
-                       drop="treatment"),on="opa_no"]
+update_opas<-data.table(old="057027304",
+                        new="057026500")
+holdoutII[update_opas,opa_no:=i.old,on=c("opa_no"="new")]
 
-##Property coordinates
-data_r2[setDT(read.xlsx3(
-  data_wd%+%"req20150709_PennLetter"%+%
-    "Experiment_v3_Coordinates.xlsx",
-  sheetName="TREATMENT",colIndex=c(2,4,5),
-  colClasses=c("character",rep("numeric",2)))),
-  `:=`(longitude=X_LONG,latitude=Y_LAT),
-  on=c(opa_no="BRT.NUMBER")
-  #supplement with coordinates done by hand & flag
-  ][fread(data_wd%+%"round_2_supplement_lon_lat_main.csv"),
-    `:=`(longitude=i.longitude,latitude=i.latitude,
-         flag_hand_geocode=TRUE),on="opa_no"]
+##Block III: Follow-up Sample (September 2015)
+followupIII<-setDT(read_excel(
+  data_wd%+%"req20150709_PennLetterExperiment (September 2015 update).xlsx",
+  sheet="DETAILS",skip=7,na=c("NULL","-"),
+  col_names=c("x","opa_no","x","x","latitude","longitude",
+              rep("x",5),"paid_full","ever_paid","pmt_agr",
+              rep("x",3),"current_balance","earliest_pmt",
+              "total_paid","pmt_agr_type","pmt_agr_status",
+              "pmt_agr_start","pmt_agr_amt"),
+  #Deleting last row b/c read_excel read too many rows
+  col_types=abbr_to_colClass("tnttndnt","42921114"))
+  )[,earliest_pmt:=as.Date(earliest_pmt)][-.N,!"x",with=F]
 
-##Sheriff's Sale property coordinates
-sheriffs_delinquent<-
+###The following accounts changed OPA #s between samples,
+###  See correspondence with Darryl Watson dated:
+###    Tue, Sep 15, 2015 at 4:09 PM
+###  (should also be able to corroborate with Account ID)
+update_opas<-data.table(old=c("151102600","884350465"),
+                        new=c("151102610","881577275"))
+followupIII[update_opas,opa_no:=i.old,on=c("opa_no"="new")]
+                
+##Block IV: Main Sample Background Data
+mainBGIV<-fread("./round_two/round_2_full_data.csv",drop="treatment")
+
+##Block V: Holdout Sample Background Data
+holdBGV<-fread("holdout_sample.csv")
+
+##Block VI: Supplemental Geocoding Data
+geosuppVI<-fread(data_wd%+%"round_2_supplement_lon_lat.csv")
+
+##Block VII: Spatial Data for Sheriff's Sale properties
+geosherVII<-
   fread(data_wd%+%"/sheriffs_sales/"%+%
           "delinquent_sold_used_round_2_w_lon_lat.csv",
         select=c("address","longitude","latitude"))
 
+##Quilting time!
+### Framework:
+###  I  III IV VI VII
+###  II III  V VI  -
+bgvars<-names(mainBGIV)%\%"opa_no"
+geovars<-c("latitude","longitude")
+updvars<-c("paid_full","ever_paid","current_balance",
+           "earliest_pmt","total_paid")
+properties<-
+  setnames(rbind(mainI,holdoutII),
+           updvars,updvars%+%"_jul"
+           )[setnames(followupIII,updvars,updvars%+%"_aug"),
+             on="opa_no"
+             ][rbind(mainBGIV,holdBGV,fill=T),
+               (bgvars):=mget("i."%+%bgvars),on="opa_no"
+               ][geosuppVI,(geovars):=mget("i."%+%geovars),
+                 on="opa_no"]
+
 addrs<-"example_address_"%+%1:3
 for (addr in addrs){
   ll<-addr%+%c("_longitude","_latitude")
-  data_r2[sheriffs_delinquent,
-          (ll):=list(i.longitude,i.latitude),
-          on=setNames("address",addr)]
-  data_r2[!is.na(longitude),addr%+%"_distance":=
-            spDists(x=cbind(longitude,latitude),
-                    y=Reduce(cbind,mget(ll)),
-                    longlat=T,diagonal=T)]
+  properties[geosherVII,(ll):=
+               .(i.longitude,i.latitude),
+             on=setNames("address",addr)]
+  #Should update this if we ever add corresponding
+  #  SS/Amenities for holdout properties for comparison
+  properties[treat15!="Holdout",addr%+%"_distance":=
+               spDists(x=cbind(longitude,latitude),
+                       y=Reduce(cbind,mget(ll)),
+                       longlat=T,diagonal=T)]
 }
 
-data_r2[,sheriff_distance_min:=
-          do.call("pmin",mget(addrs%+%"_distance"))]
+properties[,sheriff_distance_min:=
+             do.call("pmin",mget(addrs%+%"_distance"))]
 
-data_r2[,sheriff_distance_mean:=
-          rowMeans(Reduce(cbind,mget(addrs%+%"_distance")))]
+properties[,sheriff_distance_mean:=
+             rowMeans(Reduce(cbind,mget(addrs%+%"_distance")))]
 
+##Data Clean-up
+###Re-set indicators as T/F instead of Y/N
+inds<-c("paid_full_jul","ever_paid_jul",
+        "paid_full_aug","ever_paid_aug","pmt_agr")
+properties[,(inds):=lapply(.SD,function(x)x=="Y"),.SDcols=inds]
+###Paid Full actually stored opposite because 
+###  question in data is: "Does property have a balance?"
+properties[,paid_full_jul:=!paid_full_jul]
+properties[,paid_full_aug:=!paid_full_aug]
 
-##Holdout data
-data_holdout<-{
-  setkey(rbind(
-    data_r2,setnames(setDT(read.xlsx3(
-      data_wd%+%"req20150709_PennLetterExperiment_"%+%
-        "v2_Commissioners Control Details.xlsx",
-      colIndex=c(2,7:14),
-      sheetName="DETAILS",header=T,startRow=9,stringsAsFactors=F,
-      colClasses=abbr_to_colClass("cdndn","42111"))),
-      c("opa_no","pre_15_balance","paid_full",
-        "ever_paid","period_min","period_max",
-        "current_balance","earliest_pmt",
-        "total_paid")
-    )[,c("main_treat","treatment"):="Holdout"
-      ][,(inds):=lapply(.SD,function(x)x=="Y"),
-        .SDcols=inds
-        ][,paid_full:=!paid_full
-          ][fread("holdout_sample.csv"),
-            owner1:=owner1,on="opa_no"],fill=T),opa_no)}
-data_holdout[,main_treat:=factor(main_treat,c("Holdout",trt.nms))]
-
-###Coordinates for holdout
-data_holdout[setDT(read.xlsx3(
-  data_wd%+%"req20150709_PennLetter"%+%
-    "Experiment_v3_Coordinates.xlsx",
-  sheetName="CONTROL",colIndex=c(2,4,5),
-  colClasses=c("character",rep("numeric",2)))),
-  `:=`(latitude=Y_LAT,longitude=X_LONG),
-  on=c(opa_no="BRT")
-  #supplement with coordinates done by hand & flag
-  ][fread(data_wd%+%"round_2_supplement_lon_lat_holdout.csv"),
-    `:=`(longitude=i.longitude,latitude=i.latitude,
-         flag_hand_geocode=TRUE),on="opa_no"]
-
-
-###Define some flags
-#### Was more than one treatment received at this mailing address?
-data_r2[,flag_multiple_address:=uniqueN(treatment)>1,
+##Define some flags
+### Is this a holdout property?
+properties[,holdout:=treat15=="Holdout"]
+### Was more than one treatment received at this mailing address?
+properties[,flag_multiple_address:=uniqueN(treat15)>1,
         by=.(mail_address,mail_city,mail_state)]
-#### Did this owner receive more than one letter?
-data_r2[,flag_multiple_property:=.N>1,by=owner1]
-#### Is more than one year of taxes owed 
-####   (should all be 1; some noise in sample selection)
-data_r2[,flag_years_count:=years_count>1]
-#### Was this owner in both the holdout sample and the treatment panel?
-data_r2[,flag_holdout_overlap:=
-          owner1 %in% unique(unlist(fread(
-            "holdout_sample.csv",select="owner1")))]
-data_holdout[treatment=="Holdout",
-             flag_main_sample_overlap:=
-               owner1 %in% data_holdout[treatment!="Holdout",
-                                        unique(owner1)]]
-#### Was this property treated in Round 1?
-data_r2[,flag_round_one:=
-          opa_no %in% fread("analysis_file.csv",select=c("opa_no","cycle")
-                            )[cycle>=33,unique(opa_no)]]
-#### Does this property have any of the
-####   tax exemptions excluded in Round 1?
-data_r2[fread(data_wd%+%"prop2015.txt",select=c("PARCEL","XMPT CD")),
+### Did this owner receive more than one letter?
+properties[,flag_multiple_property:=.N>1,by=owner1]
+### Was this owner in both the holdout sample and the treatment panel?
+properties[,flag_holdout_overlap:=any(treat15=="Holdout")&
+             any(treat15!="Holdout"),by=owner1]
+### Was this property treated in Round 1?
+properties[,flag_round_one_overlap:=
+          opa_no %in% fread("analysis_file_end_only_act.csv",
+                            select=c("opa_no"))[,unique(opa_no)]]
+### Does this property have any of the
+###   tax exemptions excluded in Round 1?
+properties[fread(data_wd%+%"prop2015.txt",select=c("PARCEL","XMPT CD")),
         flag_abate_exempt:=`i.XMPT CD`!="",on=c(opa_no="PARCEL")]
 
-###Get owner-level versions of data, keeping only key analysis variables
-data_r2_own<-setkey(
-  data_r2[,.(main_treat=main_treat[1L],
-             treatment=treatment[1L],
-             big_small=big_small[1L],
-             ever_paid=any(ever_paid),
-             paid_full=all(paid_full),
-             total_paid=sum(total_paid),
-             total_due=sum(total_due)),
-          by=owner1],treatment)
+###Define alternative treatment sets:
+####14 treatments (exclude holdout)
+properties[(!holdout),treat14:=treat15]
+####2 & 3 treatments (big vs. small (vs. holdout))
+properties[(!holdout),treat3:=gsub("(.*)_(.*)_(.*)","\\2",treat15)]
+properties[(holdout),treat3:=treat15]
+properties[(!holdout),treat2:=treat3]
+####7 & 8 treatments (main treatments)
+properties[(!holdout),treat7:=gsub("_.*","",treat14)]
+properties[(!holdout),treat8:=treat7]
+properties[(holdout),treat8:=treat15]
+####Reorder main treatments for plotting purposes
+trt.nms<-c("Control","Amenities","Moral",
+           "Duty","Lien","Sheriff","Peer")
+properties[,treat14:=factor(treat14,
+                            paste0(rep(trt.nms,each=2),
+                                   c("_Small_","_Big_"))%+%
+                              "Envelope")]
+properties[,treat15:=factor(treat15,
+                            c("Holdout",levels(treat14)))]
+properties[,treat8:=factor(treat8,c("Holdout",trt.nms))]
+properties[,treat7:=factor(treat7,trt.nms)]
 
-####  Dropping the top
+properties[,treat3:=factor(treat3,c("Holdout","Small","Big"))]
+properties[,treat2:=factor(treat2,c("Small","Big"))]
+
+###Get owner-level version of data, keeping only key analysis variables
+owners<-
+  properties[,.(treat2 = treat2[1L],
+                treat3 = treat3[1L],
+                treat7 = treat7[1L],
+                treat8 = treat8[1L],
+                treat14=treat14[1L],
+                treat15=treat15[1L],
+                ever_paid_jul=any(ever_paid_jul),
+                paid_full_aug=all(paid_full_aug),
+                total_paid_jul=sum(total_paid_jul),
+                total_paid_aug=sum(total_paid_aug),
+                total_due=sum(total_due),
+                pmt_agr1=any(pmt_agr),
+                pmt_agrA=all(pmt_agr)),
+             by=owner1]
+
+###  Subsample Flags
 ####  a) 1% and b) 5% of accounts by repayment numbers
-data_r2_own_x01<-
-  data_r2_own[total_paid<quantile(total_paid,.99)]
-data_r2_own_x05<-
-  data_r2_own[total_paid<quantile(total_paid,.95)]
+owners[(!holdout),flag_top01:=total_due>=quantile(total_due,.99)]
+owners[(!holdout),flag_top05:=total_due>=quantile(total_due,.95)]
 
-data_holdout_own<-
-  data_holdout[,.(main_treat=main_treat[1],
-                  treatment=treatment[1],
-                  ever_paid=any(ever_paid),
-                  paid_full=all(paid_full),
-                  total_paid=sum(total_paid),
-                  total_due=sum(total_due)),
-               by=owner1]
-
-data_holdout_own_x01<-
-  data_holdout_own[total_paid<quantile(total_paid,.99)]
-data_holdout_own_x05<-
-  data_holdout_own[total_paid<quantile(total_paid,.95)]
-
-####Single-owner property subsample
-data_r2_own_so<-
-  data_r2_own[data_r2[!(flag_multiple_property),
-                      .(owner1)],on="owner1"]
+####  Same, now including holdout sample population
+owners[,flag_top01_h:=total_due>=quantile(total_due,.99)]
+owners[,flag_top05_h:=total_due>=quantile(total_due,.95)]
 
 #Fidelity Checks ####
 ##Returned Mail Rates by Envelope Size
 big_returns<-26+17+75+12+16+4+4+192
 small_returns<-766+9
 returns<-c(big_returns,small_returns)
-xtable(matrix(rbind(returns,100*returns/data_r2[,.N,by=big_small]$N),
+xtable(matrix(rbind(returns,100*returns/
+                      properties[(!holdout),.N,by=treat2]$N),
               ncol=2,dimnames=list(c("Count","Percentage"),
                                    paste(c("Large","Small"),
                                          "Envelopes"))),
        caption="Returned Mail by Envelope Type",
-       label="table_return_env",digits=matrix(c(0,0,0,1,0,1),ncol=3))
+       label="table:return_env",digits=matrix(c(0,0,0,1,0,1),ncol=3))
 
 ##Letter Content Fidelity Checks
 print.xtable(xtable(matrix(cbind(
@@ -243,7 +258,7 @@ print.xtable(xtable(matrix(cbind(
   dimnames=list(1:15,c("Envelope Size","OPA No.",
                        "Balance","Treatment","Correct Content?"))),
   caption="OPA Numbers Checked for Content Fidelity",
-  label="table_content_fidelity"),include.rownames=F)
+  label="table:content_fidelity"),include.rownames=F)
                               
 
 #Analysis ####
@@ -264,12 +279,12 @@ mneppftp<-quote(.(mean(ever_paid),
 eppftp<-c("ep","pf","tp")
 bootlist<-{
   #By owner, big vs. small
-  list(o2=list(dt=data_r2_own,tr="big_small",
+  list(o2=list(dt=properties_own,tr="big_small",
                exprs=mneppftp,nms=eppftp,fn="2_own",
                tl="Big/Small",lv=c("Small","Big"),nx=.75,
                sp=3,yl=c(2,10),dn=quote(NULL)),
        #By owner, main 7 treatments
-       o7=list(dt=data_r2_own,tr="main_treat",
+       o7=list(dt=properties_own,tr="main_treat",
                exprs=quote(.(mean(ever_paid),mean(paid_full),
                              mean(total_paid),
                              median(total_paid[total_paid>0]),
@@ -278,30 +293,30 @@ bootlist<-{
                tl="Treatment",lv=trt.nms,nx=.75,
                sp=NULL,yl=NULL,dn=quote(NULL)),
        #By owner, main 7 treatments, single-owner properties
-       o7so=list(dt=data_r2_own_so,tr="main_treat",
+       o7so=list(dt=properties_own_so,tr="main_treat",
                  exprs=mneppftp,nms=eppftp,fn="7_own_so",
                  tl="Treatment\nSingle-Owner Properties",
                  lv=trt.nms,nx=.75,sp=NULL,
                  yl=NULL,dn=quote(NULL)),
        #By owner, main 7 treatments,
        #  exclude 5% extreme payers
-       o71=list(dt=data_r2_own_x01,tr="main_treat",
+       o71=list(dt=properties_own_x01,tr="main_treat",
                 exprs=mneppftp,nms=eppftp,fn="7_own_x01",
                 tl="Treatment\nExcluding Top 1% of Payers",
                 lv=trt.nms,nx=.75,sp=NULL,
                 yl=NULL,dn=quote(NULL)),
        #By owner, main 7 treatments,
        #  exclude 10% extreme payers
-       o75=list(dt=data_r2_own_x05,tr="main_treat",
+       o75=list(dt=properties_own_x05,tr="main_treat",
                 exprs=mneppftp,nms=eppftp,fn="7_own_x05",
                 tl="Treatment\nExcluding Top 5% of Payers",
                 lv=trt.nms,nx=.75,sp=NULL,
                 yl=NULL,dn=quote(NULL)),
        #By owner, full 14 treatments
-       o14=list(dt=data_r2_own,tr="treatment",
+       o14=list(dt=properties_own,tr="treatment",
                 exprs=mneppftp,nms=eppftp,fn="14_own",
                 tl="Treatment / Big/Small",
-                lv=data_r2_own[,levels(treatment)],nx=.5,
+                lv=properties_own[,levels(treatment)],nx=.5,
                 sp=NULL,yl=NULL,dn=quote(rep(c(-1,30),.N))))}
 
 boot.cis<-{
@@ -334,21 +349,21 @@ boot.cis<-{
 ###Now add confidence intervals for more complicated
 ###  scenario--results at the property level,
 ###  clustering by owner by resampling owners
-setkey(data_r2,main_treat)
-owners<-sapply(paste0(data_r2[,unique(main_treat)]),
-               function(x)data_r2[.(x),unique(owner1)],
+setkey(properties,main_treat)
+owners<-sapply(paste0(properties[,unique(main_treat)]),
+               function(x)properties[.(x),unique(owner1)],
                USE.NAMES=T)
-setkey(data_r2,owner1)
+setkey(properties,owner1)
 boot.cis$p7<-{
   list("dt"=setnames(
     data.table(t(sapply(
       trt.nms,function(x)apply(
         replicate(BB,unlist(
-          data_r2[.(sample(owners[[x]],rep=T)),
+          properties[.(sample(owners[[x]],rep=T)),
                   eval(mneppftp)])),1,
         quantile,c(.025,.975)),
       USE.NAMES=T)),keep.rownames=T
-      )[data_r2[,eval(mneppftp),keyby=main_treat],
+      )[properties[,eval(mneppftp),keyby=main_treat],
         on=c(rn="main_treat")],
     c("main_treat",rep(eppftp,each=2)%+%
         c(".ci.lo",".ci.hi"),eppftp)),
@@ -422,24 +437,24 @@ pdf2(img_wd%+%"box_whisk_pos_paid_7_own.pdf")
 par(mar=c(2.6,5.1,4.1,1.1))
 boxplot(total_paid~main_treat,horizontal=T,
         cex.axis=.8,xaxt="n",boxwex=.5,
-        data=data_r2_own[total_paid>0],las=1,
+        data=properties_own[total_paid>0],las=1,
         col=get.col(trt.nms),log="x",notch=T,
         main="Distributions of Positive "%+%
           "Payments\nBy Treatment")
 axis(side=1,at=10^(0:5),cex.axis=.8,
      labels=paste0("$",formatC(as.integer(10^(0:5)),
                                big.mark=",")))
-abline(v=data_r2_own[total_paid>0&
+abline(v=properties_own[total_paid>0&
                        main_treat=="Control",
                      median(total_paid)],lty=2)
 dev.off2()
 
 ## Probability Repayment by Quartile
-data_r2_own[,total_due_quartile:=
+properties_own[,total_due_quartile:=
               create_quantiles(total_due,4)]
 ###Ever Paid
 print.xtable(xtable(setnames(dcast(
-  data_r2_own[,mean(ever_paid),
+  properties_own[,mean(ever_paid),
               keyby=.(main_treat,total_due_quartile)],
   main_treat~total_due_quartile,value.var="V1"),
   c("Treatment","Q"%+%1:4)),
@@ -449,7 +464,7 @@ print.xtable(xtable(setnames(dcast(
 
 ###Paid Full
 print.xtable(xtable(setnames(dcast(
-  data_r2_own[,mean(paid_full),
+  properties_own[,mean(paid_full),
               keyby=.(main_treat,total_due_quartile)],
   main_treat~total_due_quartile,value.var="V1"),
   c("Treatment","Q"%+%1:4)),
@@ -469,7 +484,7 @@ phila_azav_quad@data<-setDT(phila_azav_quad@data)
 phila_azav_quad@data[,orig:=1:.N]
 phila_azav_quad@data<-
   phila_azav_quad@data[
-    dcast(data_r2[,mean(ever_paid),
+    dcast(properties[,mean(ever_paid),
                   keyby=.(main_treat,azavea_quad)
                   ][CJ(unique(main_treat),
                        unique(phila_azav_quad@data$quadrant))
@@ -523,7 +538,7 @@ dev.off2()
 
 ##Financial Analysis ####
 lyx.xtable(xtable(
-  data_r2_own[,.(.N,
+  properties_own[,.(.N,
              tot_due=sum(total_due),
              ev_pd=mean(ever_paid),pd_fl=mean(paid_full),
              tot_pmt=sum(total_paid)),keyby=main_treat
@@ -542,12 +557,12 @@ lyx.xtable(xtable(
     "p{1.6cm}|p{1.4cm}|p{2.2cm}|p{1.8cm}|",
   digits=c(rep(0,6),1,0,0)),include.rownames=F)
 
-sapply(list(list(dt=data_r2_own,fl="7_own",tl="",
+sapply(list(list(dt=properties_own,fl="7_own",tl="",
                  tr="main_treat",rf="Control"),
-            list(dt=data_r2_own_x01,fl="7_own_x01",
+            list(dt=properties_own_x01,fl="7_own_x01",
                  tl="\nTop 1% of Payers Removed",
                  tr="main_treat",rf="Control"),
-            list(dt=data_r2_own_x05,fl="7_own_x05",
+            list(dt=properties_own_x05,fl="7_own_x05",
                  tl="\nTop 5% of Payers Removed",
                  tr="main_treat",rf="Control"),
             list(dt=data_holdout_own,fl="8_own",
@@ -558,14 +573,14 @@ sapply(list(list(dt=data_r2_own,fl="7_own",tl="",
                  fl="8_own_control",
                  tl="\nControl vs. Holdout",tr="main_treat",
                  rf="Holdout"),
-            list(dt=data_r2_own,fl="2_own",
+            list(dt=properties_own,fl="2_own",
                  tl="\nBig vs. Small",
                  tr="big_small",rf="Small"),
-            list(dt=data_r2_own[main_treat%in%
+            list(dt=properties_own[main_treat%in%
                                   c("Control","Lien")],
                  fl="7_own_lien",tr="main_treat",
                  tl="\nLien vs. Control",rf="Control"),
-            list(dt=data_r2_own[main_treat%in%
+            list(dt=properties_own[main_treat%in%
                                   c("Control","Lien","Peer")],
                  fl="7_own_lien.peer",tr="main_treat",
                  tl="\nLien & Peer vs. Control",rf="Control")),
@@ -592,3 +607,59 @@ sapply(list(list(dt=data_r2_own,fl="7_own",tl="",
            text(x=0,y=par("usr")[4]*.6,
                 labels=round(100*ecdf(dist)(0),1)%+%"%-ile")
            dev.off2()})})
+
+##Time Series Analysis ####
+date_range<-
+  properties[,do.call("seq",c(as.list(range(earliest_pmt,na.rm=T)),
+                           "by"="day"))]
+date_range2<-date_range[seq(1,length(date_range),by=7)]
+pdf2(img_wd%+%"cum_haz_ever_paid.pdf")
+matplot(date_range,t(sapply(
+  date_range,function(x){
+    properties[,to.pct(sum(ever_paid[earliest_pmt<=x],na.rm=T)/.N),keyby=main_treat]$V1
+  })),type="l",lty=1,lwd=3,col=get.col(trt.nms),
+  main="Cumulative Partial Participation by Treatment",
+  xaxt="n",xlab="",ylab="Percent Ever Paid",las=1)
+axis(side=1,at=date_range2,labels=format(date_range2,"%B %d"),
+     las=1,cex.axis=.75)
+legend("topleft",legend=trt.nms,col=get.col(trt.nms),
+       lwd=3,y.intersp=.5,bty="n")
+dev.off2()
+
+pdf2(img_wd%+%"cum_haz_paid_full.pdf")
+matplot(date_range,t(sapply(
+  date_range,function(x){
+    properties[,to.pct(sum(paid_full[earliest_pmt<=x],na.rm=T)/.N),keyby=main_treat]$V1
+  })),type="l",lty=1,lwd=3,col=get.col(trt.nms),
+  main="Cumulative FullParticipation by Treatment",
+  xaxt="n",xlab="",ylab="Percent Paid Full",las=1)
+axis(side=1,at=date_range2,labels=format(date_range2,"%B %d"),
+     las=1,cex.axis=.75)
+legend("topleft",legend=trt.nms,col=get.col(trt.nms),
+       lwd=3,y.intersp=.5,bty="n")
+dev.off2()
+
+#NEED TO DO AT OWNER LEVEL
+properties_own[,.(0,mean(ever_paid),mean(ever_paid_aug)),keyby=main_treat
+            ][,{xmx<-nx.mlt(max(V3),.1)
+            plot(0,xaxt="n",yaxt="n",bty="n",pch="",ylab="",
+                 xlab="",xlim=c(0,xmx),ylim=c(0,8),
+                 main="3-Month Follow-Up Ever Paid Rates")
+            yl<-1:.N; yu<-yl+.8
+            rect(V1,yl,V2,yu,col=get.col(main_treat))
+            rect(V2,yl,V3,yu,col=get.col(main_treat),density=50)
+            axis(side=1,at=seq(0,xmx,by=.1),pos=.8)
+            axis(side=2,at=.5*(yl+yu),tick=F,las=1,
+                 labels=main_treat,pos=0)}]
+
+properties_own[,.(0,mean(paid_full),mean(paid_full_aug)),keyby=main_treat
+            ][,{xmx<-nx.mlt(max(V3),.1)
+            plot(0,xaxt="n",yaxt="n",bty="n",pch="",ylab="",
+                 xlab="",xlim=c(0,xmx),ylim=c(0,8),
+                 main="3-Month Follow-Up Paid Full Rates")
+            yl<-1:.N; yu<-yl+.8
+            rect(V1,yl,V2,yu,col=get.col(main_treat),density=85)
+            rect(V2,yl,V3,yu,col=get.col(main_treat))
+            axis(side=1,at=seq(0,xmx,by=.1),pos=.8)
+            axis(side=2,at=.5*(yl+yu),tick=F,las=1,
+                 labels=main_treat,pos=0)}]
