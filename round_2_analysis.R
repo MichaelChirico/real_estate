@@ -41,6 +41,13 @@ get.col<-function(st){
   cols[as.character(st)]
 }
 
+#since min(NA,na.rm=T) is Inf when I'd prefer NA
+#  note that I'm setting my preferred default
+min2<-function(..., na.rm = TRUE){
+  m <- do.call("min",c(list(...),na.rm=na.rm))
+  if (is.infinite(m)) NA else m
+}
+
 #Data Import ####
 ##Block I: Main Sample
 ### total_due is pre-study balance
@@ -123,7 +130,7 @@ updvars<-c("paid_full","ever_paid","current_balance",
 properties<-
   setnames(rbind(mainI,holdoutII),
            updvars,updvars%+%"_jul"
-           )[setnames(followupIII,updvars,updvars%+%"_aug"),
+           )[setnames(followupIII,updvars,updvars%+%"_sep"),
              on="opa_no"
              ][rbind(mainBGIV,holdBGV,fill=T),
                (bgvars):=mget("i."%+%bgvars),on="opa_no"
@@ -153,12 +160,15 @@ properties[,sheriff_distance_mean:=
 ##Data Clean-up
 ###Re-set indicators as T/F instead of Y/N
 inds<-c("paid_full_jul","ever_paid_jul",
-        "paid_full_aug","ever_paid_aug","pmt_agr")
+        "paid_full_sep","ever_paid_sep","pmt_agr")
 properties[,(inds):=lapply(.SD,function(x)x=="Y"),.SDcols=inds]
 ###Paid Full actually stored opposite because 
 ###  question in data is: "Does property have a balance?"
 properties[,paid_full_jul:=!paid_full_jul]
-properties[,paid_full_aug:=!paid_full_aug]
+properties[,paid_full_sep:=!paid_full_sep]
+
+properties[,paid_part_jul:=ever_paid_jul&!paid_full_jul]
+properties[,paid_part_sep:=ever_paid_sep&!paid_full_sep]
 
 ##Define some flags
 ### Is this a holdout property?
@@ -219,14 +229,30 @@ owners<-
                #Not sure what to do with overlaps...
                holdout=all(holdout),
                ever_paid_jul=any(ever_paid_jul),
-               ever_paid_aug=any(ever_paid_aug),
+               ever_paid_sep=any(ever_paid_sep),
                paid_full_jul=all(paid_full_jul),
-               paid_full_aug=all(paid_full_aug),
+               paid_full_sep=all(paid_full_sep),
+               paid_part_jul=any(ever_paid_jul)&
+                 !all(paid_full_jul),
+               paid_part_sep=any(ever_paid_sep)&
+                 !all(paid_full_sep),
                total_paid_jul=sum(total_paid_jul),
-               total_paid_aug=sum(total_paid_aug),
+               total_paid_sep=sum(total_paid_sep),
+               earliest_pmt_jul=
+                 if (all(is.na(earliest_pmt_jul))){
+                   as.Date(NA)
+                   }else{min(earliest_pmt_jul)},
+               earliest_pmt_sep=
+                 if (all(is.na(earliest_pmt_sep))){
+                   as.Date(NA)
+                   }else{min(earliest_pmt_sep)},
                total_due=sum(total_due),
                pmt_agr1=any(pmt_agr),
                pmt_agrA=all(pmt_agr),
+               pmt_agr_start=
+                 if (all(is.na(pmt_agr_start))){
+                   as.Date(NA)
+                 }else{min(pmt_agr_start)},
                flag_holdout_overlap=
                  flag_holdout_overlap[1L],
                .N),
@@ -273,6 +299,7 @@ print.xtable(xtable(matrix(cbind(
   label="table:content_fidelity"),include.rownames=F)
                               
 rm(big_returns,small_returns,returns)
+
 #Analysis ####
 ## Bootstrap simulations ####
 ###Number of repetitions for all bootstrap
@@ -285,65 +312,70 @@ BB<-1e4
 ###  the key changing parameters in this list;
 ###  also store a bunch of plotting parameters
 ###  since we'll use the result of this list for that
-mneppftp<-quote(.(mean(ever_paid_jul),
-                   mean(paid_full_jul),
-                   mean(total_paid_jul)))
-mneppftp2<-quote(.(mean(ever_paid_jul),
-                   mean(ever_paid_aug),
-                   mean(paid_full_jul),
-                   mean(paid_full_aug),
-                   mean(total_paid_jul),
-                   mean(total_paid_aug)))
-eppftp<-c("epj","pfj","tpj")
-eppftp2<-c("epj","epa","pfj","pfa","tpj","tpa")
+out_main_q<-quote(.(mean(ever_paid_jul),
+                    mean(paid_full_jul),
+                    mean(paid_part_jul),
+                    mean(total_paid_jul)))
+out_main2_q<-quote(.(mean(ever_paid_jul),
+                     mean(ever_paid_sep),
+                     mean(paid_full_jul),
+                     mean(paid_full_sep),
+                     mean(paid_part_jul),
+                     mean(paid_part_sep),
+                     mean(total_paid_jul),
+                     mean(total_paid_sep)))
+out_main_n<-c("epj","pfj","pPj","tpj")
+out_main2_n<-c("epj","eps","pfj","pfs",
+               "pPj","pPs","tpj","tps")
 bootlist<-{
   #By owner, big vs. small
   list(o2=list(dt=owners[(!holdout)],tr="treat2",
-               exprs=mneppftp2,nms=eppftp2,fn="2_own",
+               exprs=out_main2_q,nms=out_main2_n,fn="2_own",
                tl="Big/Small",lv=owners[,levels(treat2)],
                nx=.75,sp=3,yl=c(2,10),dn=quote(NULL)),
        #By owner, main 7 treatments
        o7=list(dt=owners[(!holdout)],tr="treat7",
-               exprs=quote(.(mean(ever_paid_jul),mean(ever_paid_aug),
-                             mean(paid_full_jul),mean(paid_full_aug),
-                             mean(total_paid_jul),mean(total_paid_aug),
+               exprs=quote(.(mean(ever_paid_jul),mean(ever_paid_sep),
+                             mean(paid_full_jul),mean(paid_full_sep),
+                             mean(paid_part_jul),mean(paid_part_sep),
+                             mean(total_paid_jul),mean(total_paid_sep),
                              median(total_paid_jul[total_paid_jul>0]),
-                             median(total_paid_aug[total_paid_aug>0]),
+                             median(total_paid_sep[total_paid_sep>0]),
                              mean(total_paid_jul[total_paid_jul>0]),
-                             mean(total_paid_aug[total_paid_aug>0]),
+                             mean(total_paid_sep[total_paid_sep>0]),
                              mean(pmt_agr1),mean(pmt_agrA))),
-               nms=c(eppftp2,"mdj","mda","ppj","ppa","pa1","paA"),
+               nms=c(out_main2_n,"mdj","mds","ppj","pps","pa1","paA"),
                fn="7_own",tl="Treatment",lv=trt.nms,nx=.75,
                sp=NULL,yl=NULL,dn=quote(NULL)),
        #By owner, main 7 treatments, single-owner properties
        o7so=list(dt=owners[(unq_own&!holdout)],tr="treat7",
-                 exprs=mneppftp2,nms=eppftp2,fn="7_own_so",
+                 exprs=out_main2_q,nms=out_main2_n,fn="7_own_so",
                  tl="Treatment\nSingle-Owner Properties",
                  lv=trt.nms,nx=.75,sp=NULL,
                  yl=NULL,dn=quote(NULL)),
        #By owner, main 7 treatments,
        #  exclude 1% extreme debtors
        o71=list(dt=owners[(!flag_top01&!holdout)],tr="treat7",
-                exprs=mneppftp,nms=eppftp,fn="7_own_x01",
+                exprs=out_main_q,nms=out_main_n,fn="7_own_x01",
                 tl="Treatment\nExcluding Top 1% of Debtors",
                 lv=trt.nms,nx=.75,sp=NULL,
                 yl=NULL,dn=quote(NULL)),
        #By owner, main 7 treatments,
        #  exclude 5% extreme debtors
        o75=list(dt=owners[(!flag_top05&!holdout)],tr="treat7",
-                exprs=mneppftp,nms=eppftp,fn="7_own_x05",
+                exprs=out_main_q,nms=out_main_n,fn="7_own_x05",
                 tl="Treatment\nExcluding Top 5% of Debtors",
                 lv=trt.nms,nx=.75,sp=NULL,
                 yl=NULL,dn=quote(NULL)),
        #By owner, main 7 treatments + holdout
        o8=list(dt=owners[(!flag_holdout_overlap)],
-               tr="treat8",exprs=mneppftp2,nms=eppftp2,
+               tr="treat8",exprs=out_main2_q,nms=out_main2_n,
                fn="8_own",tl="Treatment\nIncluding Holdout Sample",
                lv=owners[,levels(treat8)],nx=.75,
                sp=NULL,yl=NULL,dn=quote(NULL)),
        #By owner, full 14 treatments
        o14=list(dt=owners[(!holdout)],tr="treat14",
-                exprs=mneppftp,nms=eppftp,fn="14_own",
+                exprs=out_main_q,nms=out_main_n,fn="14_own",
                 tl="Treatment / Big/Small",
                 lv=owners[,levels(treat14)],nx=.5,
                 sp=NULL,yl=NULL,dn=quote(rep(c(-1,30),.N))))}
@@ -388,14 +420,14 @@ boot.cis$p7<-{
       trt.nms,function(x)apply(
         replicate(BB,unlist(
           properties[.(sample(own_list[[x]],rep=T)),
-                  eval(mneppftp)])),1,
+                  eval(out_main_q)])),1,
         quantile,c(.025,.975)),
       USE.NAMES=T)),keep.rownames=T
       )[properties[!is.na(treat7),
-                   eval(mneppftp),keyby=treat7],
+                   eval(out_main_q),keyby=treat7],
         on=c(rn="treat7")],
-    c("treat7",rep(eppftp,each=2)%+%
-        c(".ci.lo",".ci.hi"),eppftp)),
+    c("treat7",rep(out_main_n,each=2)%+%
+        c(".ci.lo",".ci.hi"),out_main_n)),
     fn="7_prop",tr="treat7",
     tl="Treatment\nProperty Level, SEs "%+%
       "Clustered by Owner",rf="Control",
@@ -405,32 +437,38 @@ boot.cis$p7<-{
 type.params<-{list(list(mfn="bar_plot_ever_paid_jul_",xn="epj",trans=to.pct,
                         mtl="Percent Ever Paid (July)",xlb="Percent",xup=5,
                         tps=c("o2","o7","o7so","o71","o75","p7","o8","o14")),
-                   list(mfn="bar_plot_ever_paid_aug_",xn="epa",trans=to.pct,
-                        mtl="Percent Ever Paid (Aug.)",xlb="Percent",xup=5,
+                   list(mfn="bar_plot_ever_paid_sep_",xn="eps",trans=to.pct,
+                        mtl="Percent Ever Paid (Sep.)",xlb="Percent",xup=5,
                         tps=c("o2","o7","o7so","o8")),
                    list(mfn="bar_plot_paid_full_jul_",xn="pfj",trans=to.pct,
                         mtl="Percent Paid Full (July)",xlb="Percent",xup=5,
                         tps=c("o2","o7","o7so","o71","o75","p7","o8","o14")),
-                   list(mfn="bar_plot_paid_full_aug_",xn="pfa",trans=to.pct,
-                        mtl="Percent Paid Full (Aug.)",xlb="Percent",xup=5,
+                   list(mfn="bar_plot_paid_full_sep_",xn="pfs",trans=to.pct,
+                        mtl="Percent Paid Full (Sep.)",xlb="Percent",xup=5,
+                        tps=c("o2","o7","o7so","o8")),
+                   list(mfn="bar_plot_paid_part_jul_",xn="pPj",trans=to.pct,
+                        mtl="Percent Paid Partial (July)",xlb="Percent",xup=5,
+                        tps=c("o2","o7","o7so","o71","o75","p7","o8","o14")),
+                   list(mfn="bar_plot_paid_part_sep_",xn="pPs",trans=to.pct,
+                        mtl="Percent Paid Partial (Sep.)",xlb="Percent",xup=5,
                         tps=c("o2","o7","o7so","o8")),
                    list(mfn="bar_plot_aver_paid_jul_",xn="tpj",trans=identity,
                         mtl="Average Paid (July)",xlb="$",xup=10,
                         tps=c("o2","o7","o7so","o71","o75","p7","o8","o14")),
-                   list(mfn="bar_plot_aver_paid_aug_",xn="tpa",trans=identity,
-                        mtl="Average Paid (Aug.)",xlb="$",xup=10,
+                   list(mfn="bar_plot_aver_paid_sep_",xn="tps",trans=identity,
+                        mtl="Average Paid (Sep.)",xlb="$",xup=10,
                         tps=c("o2","o7","o7so","o8")),
                    list(mfn="bar_plot_med_pos_paid_jul_",xn="mdj",trans=identity,
                         mtl="Median Positive Amount Paid (July)",xlb="$",
                         tps=c("o7"),xup=10),
-                   list(mfn="bar_plot_med_pos_paid_aug_",xn="mda",trans=identity,
-                        mtl="Median Positive Amount Paid (Aug.)",xlb="$",
+                   list(mfn="bar_plot_med_pos_paid_sep_",xn="mds",trans=identity,
+                        mtl="Median Positive Amount Paid (Sep.)",xlb="$",
                         tps=c("o7"),xup=10),
                    list(mfn="bar_plot_avg_pos_paid_jul_",xn="ppj",trans=identity,
                         mtl="Average Positive Amount Paid (July)",xlb="$",
                         tps=c("o7"),xup=10),
-                   list(mfn="bar_plot_avg_pos_paid_aug_",xn="ppa",trans=identity,
-                        mtl="Average Positive Amount Paid (Aug.)",xlb="$",
+                   list(mfn="bar_plot_avg_pos_paid_sep_",xn="pps",trans=identity,
+                        mtl="Average Positive Amount Paid (Sep.)",xlb="$",
                         tps=c("o7"),xup=10),
                    list(mfn="bar_plot_pct_pmt_agr_one_",xn="pa1",trans=to.pct,
                         mtl="Percent with >=1 Payment Agreement",xlb="$",
@@ -628,27 +666,24 @@ sapply(list(list(dt=owners[(!holdout)],fl="7_own",tl="",
            dev.off2()})})
 
 ##Time Series Analysis ####
-sapply(list(list(dt=properties[(!holdout)],vr="ever_paid",
+sapply(list(list(dt=owners[(!holdout)],vr="ever_paid",
                  mn="jul",Mn=" (July)",Vr="Ever Paid",
                  tl="Partial Participation"),
-            list(dt=properties[(!holdout)],vr="ever_paid",
-                 mn="aug",Mn=" (Aug.)",Vr="Ever Paid",
+            list(dt=owners[(!holdout)],vr="ever_paid",
+                 mn="sep",Mn=" (Sep.)",Vr="Ever Paid",
                  tl="Partial Participation"),
-            list(dt=properties[(!holdout)],vr="paid_full",
+            list(dt=owners[(!holdout)],vr="paid_full",
                  mn="jul",Mn=" (July)",Vr="Paid Full",
                  tl="Full Participation"),
-            list(dt=properties[(!holdout)],vr="paid_full",
-                 mn="aug",Mn=" (Aug.)",Vr="Paid Full",
-                 tl="Full Participation"),
-            list(dt=properties[(!holdout)],vr="pmt_agr",
-                 mn="start",Mn="",Vr="in P.A.",
-                 tl="Entrance to Payment Agreement")),
+            list(dt=owners[(!holdout)],vr="paid_full",
+                 mn="sep",Mn=" (Sep.)",Vr="Paid Full",
+                 tl="Full Participation")),
        function(x){
          with(x,{
            dt.rng<-dt[,{rng<-range(get("earliest_pmt_"%+%mn),na.rm=T)
            seq(from=rng[1],to=rng[2],by="day")}]
            dt.rng2<-dt.rng[seq(1,length(dt.rng),by=7)]
-           pdf2(paste0(wds["img"],"cum_haz_",vr,"_",mn,".pdf"))
+           pdf2(paste0(wds["img"],"cum_haz_",vr,"_",mn,"_7_own.pdf"))
            matplot(dt.rng,t(sapply(
              dt.rng,function(tt){
                dt[,{var<-get(vr%+%"_"%+%mn)
@@ -665,17 +700,17 @@ sapply(list(list(dt=properties[(!holdout)],vr="ever_paid",
            dev.off2()})})
 
 dt.rng<-
-  properties[(!holdout),{rng<-range(pmt_agr_start,na.rm=T)
+  owners[(!holdout),{rng<-range(pmt_agr_start,na.rm=T)
   seq(from=rng[1],to=rng[2],by="day")}]
 dt.rng2<-dt.rng[seq(1,length(dt.rng),by=7)]
-pdf2(wds["img"]%+%"cum_haz_pmt_agr.pdf")
+pdf2(wds["img"]%+%"cum_haz_pmt_agr_7_own.pdf")
 matplot(dt.rng,t(sapply(
   dt.rng,function(tt){
-    properties[(!holdout),
+    owners[(!holdout),
                to.pct(sum(pmt_agr_start<=tt,na.rm=T)/.N),
                keyby=treat7]$V1})),
   type="l",lty=1,lwd=3,col=get.col(trt.nms),
-  main="Cumulative Entrance to Payment Agreements by Treatment",
+  main="Cumulative Entrance to Payment Agreements\nby Treatment",
   xaxt="n",xlab="",ylab="Percent in P.A.",las=1)
 axis(side=1,at=dt.rng2,labels=format(dt.rng2,"%B %d"),
      las=1,cex.axis=.75)
@@ -683,8 +718,8 @@ legend("topleft",legend=trt.nms,col=get.col(trt.nms),
        lwd=3,y.intersp=.5,bty="n")
 dev.off2()
 
-#NEED TO DO AT OWNER LEVEL
-owners[(!holdout),.(0,mean(ever_paid_jul),mean(ever_paid_aug)),
+pdf2(wds["img"]%+%"bar_plot_ever_paid_followup_7_own.pdf")
+owners[(!holdout),.(0,mean(ever_paid_jul),mean(ever_paid_sep)),
        keyby=treat7
        ][,{xmx<-nx.mlt(max(V3),.1)
        plot(0,xaxt="n",yaxt="n",bty="n",pch="",ylab="",
@@ -696,16 +731,19 @@ owners[(!holdout),.(0,mean(ever_paid_jul),mean(ever_paid_aug)),
        axis(side=1,at=seq(0,xmx,by=.1),pos=.8)
        axis(side=2,at=.5*(yl+yu),tick=F,las=1,
             labels=treat7,pos=0)}]
+dev.off2()
 
-owners[(!holdout),.(0,mean(paid_full_jul),mean(paid_full_aug)),
+pdf2(wds["img"]%+%"bar_plot_paid_full_followup_7_own.pdf")
+owners[(!holdout),.(0,mean(paid_full_jul),mean(paid_full_sep)),
        keyby=treat7
             ][,{xmx<-nx.mlt(max(V3),.1)
             plot(0,xaxt="n",yaxt="n",bty="n",pch="",ylab="",
                  xlab="",xlim=c(0,xmx),ylim=c(0,8),
                  main="3-Month Follow-Up Paid Full Rates")
             yl<-1:.N; yu<-yl+.8
-            rect(V1,yl,V2,yu,col=get.col(treat7),density=85)
-            rect(V2,yl,V3,yu,col=get.col(treat7))
+            rect(V1,yl,V2,yu,col=get.col(treat7))
+            rect(V2,yl,V3,yu,col=get.col(treat7),density=85)
             axis(side=1,at=seq(0,xmx,by=.1),pos=.8)
             axis(side=2,at=.5*(yl+yu),tick=F,las=1,
                  labels=treat7,pos=0)}]
+dev.off2()
