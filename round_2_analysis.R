@@ -38,7 +38,7 @@ get.col<-function(st){
   cols<-c(Big="blue",Small="red",Control="blue",Amenities="yellow",
           Moral="cyan",Duty="darkgreen",Lien="red",Sheriff="orchid",
           Peer="orange",Holdout="darkgray")
-  cols[as.character(st)]
+  cols[gsub("\\s.*","",as.character(st))]
 }
 
 #since min(NA,na.rm=T) is Inf when I'd prefer NA
@@ -84,15 +84,15 @@ holdoutII[update_opas,opa_no:=i.old,on=c("opa_no"="new")]
 
 ##Block III: Follow-up Sample (September 2015)
 followupIII<-setDT(read_excel(
-  wds["data"]%+%"req20150709_PennLetterExperiment (September 2015 update).xlsx",
+  wds["data"]%+%"req20150709_PennLetterExperiment (September 2015 update) v2.xlsx",
   sheet="DETAILS",skip=7,na=c("NULL","-"),
   col_names=c("x","opa_no","x","x","latitude","longitude",
               rep("x",5),"paid_full","ever_paid","pmt_agr",
               rep("x",3),"current_balance","earliest_pmt",
               "total_paid","pmt_agr_type","pmt_agr_status",
-              "pmt_agr_start","pmt_agr_amt"),
+              "pmt_agr_start","pmt_agr_amt","x"),
   #Deleting last row b/c read_excel read too many rows
-  col_types=abbr_to_colClass("tnttndntdt","4292111211"))
+  col_types=abbr_to_colClass("tnttndntdt","4292111212"))
   )[,c("earliest_pmt","pmt_agr_start"):=
       lapply(list(earliest_pmt,pmt_agr_start),as.Date)][-.N,!"x",with=F]
 
@@ -170,6 +170,8 @@ properties[,paid_full_sep:=!paid_full_sep]
 properties[,paid_part_jul:=ever_paid_jul&!paid_full_jul]
 properties[,paid_part_sep:=ever_paid_sep&!paid_full_sep]
 
+properties[,treat15:=gsub("\\sE.*","",gsub("_"," ",treat15))]
+
 ##Define some flags
 ### Is this a holdout property?
 properties[,holdout:=treat15=="Holdout"]
@@ -198,16 +200,15 @@ properties[(!holdout),treat3:=gsub("(.*)_(.*)_(.*)","\\2",treat15)]
 properties[(holdout),treat3:=treat15]
 properties[(!holdout),treat2:=treat3]
 ####7 & 8 treatments (main treatments)
-properties[(!holdout),treat7:=gsub("_.*","",treat14)]
+properties[(!holdout),treat7:=gsub("\\s.*","",treat14)]
 properties[(!holdout),treat8:=treat7]
 properties[(holdout),treat8:=treat15]
 ####Reorder main treatments for plotting purposes
 trt.nms<-c("Control","Amenities","Moral",
            "Duty","Lien","Sheriff","Peer")
 properties[,treat14:=factor(treat14,
-                            paste0(rep(trt.nms,each=2),
-                                   c("_Small_","_Big_"))%+%
-                              "Envelope")]
+                            paste(rep(trt.nms,each=2),
+                                  c("Small","Big")))]
 properties[,treat15:=factor(treat15,
                             c("Holdout",levels(treat14)))]
 properties[,treat8:=factor(treat8,c("Holdout",trt.nms))]
@@ -221,7 +222,7 @@ rm(mainI,holdoutII,followupIII,mainBGIV,
    bgvars,geovars,inds,updvars,addrs,ll)
 
 ###Get owner-level version of data, keeping only key analysis variables
-owners<-
+owners<-{
   properties[order(treat14),
              .(treat2 = treat2[1L],treat3 = treat3[1L],
                treat7 = treat7[1L],treat8 = treat8[1L],
@@ -256,7 +257,7 @@ owners<-
                flag_holdout_overlap=
                  flag_holdout_overlap[1L],
                .N),
-             by=owner1]
+             by=owner1]}
 
 ###  Subsample Flags
 ####  a) 1% and b) 5% of accounts by repayment numbers
@@ -547,16 +548,18 @@ phila_azav_quad@data<-setDT(phila_azav_quad@data)
 phila_azav_quad@data[,orig:=1:.N]
 phila_azav_quad@data<-
   phila_azav_quad@data[
-    dcast(properties[,mean(ever_paid_jul),
-                  keyby=.(treat7,azavea_quad)
-                  ][CJ(levels(treat7),
-                       unique(phila_azav_quad@data$quadrant))
-                    ][is.na(V1),V1:=0
-                      ][,.(treat7,
-                           ep.over.control=
-                             V1-V1[treat7=="Control"]),
-                        by=azavea_quad][!treat7=="Control"],
-          azavea_quad~treat7,value.var="ep.over.control"),
+    dcast(properties[(!holdout),
+                     .(epj=mean(ever_paid_jul),
+                       eps=mean(ever_paid_sep)),
+                     keyby=.(treat7,azavea_quad)
+                     ][,.(treat7,
+                          epj.over.control=
+                            epj-epj[treat7=="Control"],
+                          eps.over.control=
+                            eps-eps[treat7=="Control"]),
+                       by=azavea_quad][!treat7=="Control"],
+          azavea_quad~treat7,
+          value.var=c("epj","eps")%+%".over.control"),
     on=c(quadrant="azavea_quad")][order(orig)]
 
 scale.value<-function(x,nn=1000,
@@ -571,20 +574,21 @@ scale.value<-function(x,nn=1000,
   ramp[sapply(x,min.or.na)]
 }
 
-pdf2(wds["img"]%+%"cartogram_quadrant_ever_paid_jul.pdf")
 ncols<-31
+pdf2(wds["img"]%+%"cartogram_quadrant_ever_paid_jul.pdf")
 layout(mat=matrix(c(1:7,7,7),byrow=T,nrow=3),
        heights=c(.475,.475,.05))
 par(mar=c(0,0,1.1,0),
     oma=c(5.1,4.1,4.1,1.1))
+vn<-"epj.over.control_"
 for (trt in trt.nms[-1]){
   plot(phila_azav_quad,col=phila_azav_quad@
-         data[,scale.value(get(trt),nn=ncols,rng=c(-.15,.15),
+         data[,scale.value(get(vn%+%trt),nn=ncols,rng=c(-.15,.15),
                            cols=c(get.col("Control"),
                                   "white",get.col(trt)))],
        main=trt,cex.main=.9)
-  text(coordinates(phila_azav_quad),font=2,cex=.4,
-       labels=phila_azav_quad@data[,paste0(quadrant)])
+  text(coordinates(phila_azav_quad),font=2,
+       labels=phila_azav_quad@data[,to.pct(get(vn%+%trt),dig=1)])
 }
 par(mar=c(0,0,0.1,0))
 plot(NA,type="n",ann=FALSE,xlim=c(1,2),ylim=c(1,2),
@@ -594,7 +598,34 @@ rect(xs[-(ncols+1)],1,
      xs[-1],2,col=colorRampPalette(c("blue","white","black")
                                    )(ncols))
 mtext(c("-15%","even","15%"),at=c(1,1.5,2),side=3,adj=c(0,.5,1))
-title("Cartogram: Ever Paid by City Sector\n"%+%
+title("Cartogram: Ever Paid (July) by City Sector\n"%+%
+        "Percentage above Control",outer=T)
+dev.off2()
+
+pdf2(wds["img"]%+%"cartogram_quadrant_ever_paid_sep.pdf")
+layout(mat=matrix(c(1:7,7,7),byrow=T,nrow=3),
+       heights=c(.475,.475,.05))
+par(mar=c(0,0,1.1,0),
+    oma=c(5.1,4.1,4.1,1.1))
+vn<-"eps.over.control_"
+for (trt in trt.nms[-1]){
+  plot(phila_azav_quad,col=phila_azav_quad@
+         data[,scale.value(get(vn%+%trt),nn=ncols,rng=c(-.15,.15),
+                           cols=c(get.col("Control"),
+                                  "white",get.col(trt)))],
+       main=trt,cex.main=.9)
+  text(coordinates(phila_azav_quad),font=2,
+       labels=phila_azav_quad@data[,to.pct(get(vn%+%trt),dig=1)])
+}
+par(mar=c(0,0,0.1,0))
+plot(NA,type="n",ann=FALSE,xlim=c(1,2),ylim=c(1,2),
+     xaxt="n",yaxt="n",bty="n")
+xs<-seq(1,2,length.out=ncols+1)
+rect(xs[-(ncols+1)],1,
+     xs[-1],2,col=colorRampPalette(c("blue","white","black")
+     )(ncols))
+mtext(c("-15%","even","15%"),at=c(1,1.5,2),side=3,adj=c(0,.5,1))
+title("Cartogram: Ever Paid (Sep.) by City Sector\n"%+%
         "Percentage above Control",outer=T)
 dev.off2()
 
