@@ -80,9 +80,17 @@ exper.data.map<-
 
 #Import shapefiles for delinquent
 #  properties & Philadelphia ZIP codes
-sheriffs_map_delinquent<-
+sheriffs_delinquent_map<-
   readShapePoints(wds["gis"]%+%"delinquent_sold_year_to_may_15_nad.shp",
                   proj4string=CRS("+init=epsg:2272"))
+##Restrict to those that actually
+##  appear in our experiment
+sheriffs_delinquent_map<-
+  sheriffs_delinquent_map[
+    sheriffs_delinquent_map@data$opa_no %in% 
+      sheriffs_delinquent$opa_no,]
+
+#External shapefiles
 phila_zip<-
   readShapePoly(wds["gis"]%+%"Philadelphia_Zipcodes_Poly201302.shp",
                 proj4string=CRS("+init=epsg:2272"))
@@ -91,6 +99,20 @@ phila_azav<-
     wds["gis"]%+%"Neighborhoods_Philadelphia_with_quadrants.shp",
     proj4string=CRS("+init=epsg:2272")),
     CRS("+proj=longlat +datum=WGS84"))
+
+phila_ward<-
+  readShapePoly(wds["gis"]%+%
+                  "PhiladelphiaPoliticalWardDivisions201403.shp",
+                proj4string=CRS("+init=epsg:2272"))
+
+#Spatial Joins ####
+#Add some extra geographic indicators for merging
+#  with various other geospatial databases
+##Political Ward Division
+exper.data.map@data$political_ward<-
+  (exper.data.map %over% phila_ward)$DIVISION_N
+##Sheriff's Sale Voronoi Polygons
+### ** SEE BELOW **
 
 #Geocoding ####
 ##Sheriff's Sales
@@ -130,20 +152,8 @@ phila_azav_carto<-quick.carto(phila_azav,phila_azav$count)
 phila_azav_quad@data[exper.data[,.N,by=azavea_quad],
                      count:=i.N,on=c(quadrant="azavea_quad")]
 phila_azav_quad_carto<-quick.carto(phila_azav_quad,phila_azav_quad$count)
-##Export
-writeSpatialShape(phila_azav_carto,
-                  wds["gis"]%+%"Azavea_Neighborhood_cartogram_r2")
-writeSpatialShape(phila_azav_quad,
-                  wds["gis"]%+%"Azavea_Quadrants")
-writeSpatialShape(phila_azav_quad_carto,
-                  wds["gis"]%+%"Azavea_Quadrant_cartogram_r2")
 
 #Voronoi Polygons ####
-sheriffs_map_in_sample<-
-  sheriffs_map_delinquent[
-    sheriffs_map_delinquent@data$opa_no %in% 
-      sheriffs_delinquent$opa_no,]
-
 sheriffs_map_in_sample_voronoi<-
   voronoi(sheriffs_map_in_sample,
           box=phila_zip@bbox,
@@ -158,9 +168,6 @@ sheriffs_map_in_sample_voronoi<-
                             slot,name="ID")),
     sheriffs_map_in_sample_voronoi@data)
 
-writeSpatialShape(sheriffs_map_in_sample_voronoi,
-                  wds["data"]%+%"round_2_used_sheriff_voronoi")
-
 sheriffs_map_in_sample_voronoi@data<-
   setDT(sheriffs_map_in_sample_voronoi@data)
 
@@ -171,11 +178,6 @@ exper.data.map@data$nearest_sheriff<-
   (exper.data.map %over% 
      sheriffs_map_in_sample_voronoi)$opa_no
 
-#will need nearest_sheriff in analysis
-write.csv(exper.data.map@data[c("opa_no","nearest_sheriff")],
-          file=wds["data"]%+%"round_2_nearest_sheriff.csv",
-          quote=TRUE,row.names=FALSE)
-
 sheriffs_map_in_sample_voronoi@data[
   setDT(exper.data.map@data)[,.N,by=nearest_sheriff],
   count:=i.N,on=c(opa_no="nearest_sheriff")]
@@ -185,5 +187,24 @@ sheriffs_map_in_sample_voronoi_carto<-
   quick.carto(sheriffs_map_in_sample_voronoi,
               sheriffs_map_in_sample_voronoi$count)
 
+#Data Export ####
+##Spatial Joins mappings
+sjoins<-c("opa_no","nearest_sheriff","political_ward")
+write.csv(exper.data.map@data[sjoins],
+          file=wds["data"]%+%"round_2_nearest_sheriff.csv",
+          quote=TRUE,row.names=FALSE)
+
+##Shapefiles
+###Cartograms
+writeSpatialShape(phila_azav_carto,
+                  wds["gis"]%+%"Azavea_Neighborhood_cartogram_r2")
+writeSpatialShape(phila_azav_quad,
+                  wds["gis"]%+%"Azavea_Quadrants")
+writeSpatialShape(phila_azav_quad_carto,
+                  wds["gis"]%+%"Azavea_Quadrant_cartogram_r2")
+
+###Voronoi Polygons
+writeSpatialShape(sheriffs_map_in_sample_voronoi,
+                  wds["data"]%+%"round_2_used_sheriff_voronoi")
 writeSpatialShape(sheriffs_map_in_sample_voronoi_carto,
                   wds["sher"]%+%"round_2_sheriffs_voronoi_cartogram")

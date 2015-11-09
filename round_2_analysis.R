@@ -651,12 +651,25 @@ sheriff_voronoi@data<-
   sheriff_voronoi@data[
     properties[(!holdout),mean(ever_paid_jul),
                by=.(nearest_sheriff,treat7)
-               ][,treat7[which.max(V1)],
-                 by=nearest_sheriff],
-    best_treat:=i.V1,on=c(opa_no="nearest_sheriff")][order(orig)]
+               ][properties[(!holdout),mean(ever_paid_jul),
+                            by=treat7],V2:=i.V1,on="treat7"
+                 ][,.(treat7[which.max(V1-V2)],
+                      treat7[which.max(V1)]),
+                   by=nearest_sheriff],
+    `:=`(best_treat_rel=i.V1,
+         best_treat_abs=i.V2),
+    on=c(opa_no="nearest_sheriff")][order(orig)]
+
+par(mfrow=c(1,2))
+plot(sheriff_voronoi,
+     col=get.col(sheriff_voronoi@data$best_treat_abs),
+     main="Scored Absolutely")
 
 plot(sheriff_voronoi,
-     col=get.col(sheriff_voronoi@data$best_treat))
+     col=get.col(sheriff_voronoi@data$best_treat_rel),
+     main="Scored Relatively")
+mtext(line=-1,text="Voronoi Cartogram of Mentioned Properties"%+%
+        "\nBest-Performing Treatment Locally",outer=TRUE)
 
 ##Financial Analysis ####
 lyx.xtable(xtable(
