@@ -18,7 +18,8 @@ setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 wds<-c(data="/media/data_drive/real_estate/",
        img="./papers_presentations/round_two/images/analysis/",
        gis="/media/data_drive/gis_data/PA/",
-       code="./analysis_code/")
+       code="./analysis_code/",
+       sher="/media/data_drive/real_estate/sheriffs_sales/")
 library(funchir)
 library(data.table)
 library(texreg)
@@ -539,7 +540,7 @@ print.xtable(xtable(setnames(dcast(
   
 
 ##Geospatial Analysis ####
-###map of Philadelphia for overlay
+###Ever paid by quadrant, July & September
 phila_azav_quad<-
   readShapePoly(
     wds["gis"]%+%"Azavea_Quadrant_cartogram_r2.shp")
@@ -629,6 +630,34 @@ title("Cartogram: Ever Paid (Sep.) by City Sector\n"%+%
         "Percentage above Control",outer=T)
 dev.off2()
 
+###Most responsive treatment by mentioned Sheriff's Sale
+###  property -- among the properties for which a given
+###  (mentioned, i.e., actually represented in actual
+###   treatments) sheriff's-sold property is the closest
+###  such property, which treatment had the highest
+###  response rate?
+sheriff_voronoi<-
+  readShapePoly(wds["sher"]%+%
+                  "round_2_sheriffs_voronoi_cartogram")
+
+#Done by copying for now; check GH FR #1310 for updates
+sheriff_voronoi@data<-setDT(sheriff_voronoi@data)
+sheriff_voronoi@data[,orig:=1:.N]
+
+properties[fread(wds["data"]%+%"round_2_nearest_sheriff.csv"),
+           nearest_sheriff:=i.nearest_sheriff,on="opa_no"]
+
+sheriff_voronoi@data<-
+  sheriff_voronoi@data[
+    properties[(!holdout),mean(ever_paid_jul),
+               by=.(nearest_sheriff,treat7)
+               ][,treat7[which.max(V1)],
+                 by=nearest_sheriff],
+    best_treat:=i.V1,on=c(opa_no="nearest_sheriff")][order(orig)]
+
+plot(sheriff_voronoi,
+     col=get.col(sheriff_voronoi@data$best_treat))
+
 ##Financial Analysis ####
 lyx.xtable(xtable(
   owners[(!holdout),
@@ -711,22 +740,29 @@ sapply(list(list(dt=owners[(!holdout)],vr="ever_paid",
                  tl="Full Participation")),
        function(x){
          with(x,{
+           #Get range of data
            dt.rng<-dt[,{rng<-range(get("earliest_pmt_"%+%mn),na.rm=T)
            seq(from=rng[1],to=rng[2],by="day")}]
+           #For pretty printing, get once/week subset
            dt.rng2<-dt.rng[seq(1,length(dt.rng),by=7)]
            pdf2(paste0(wds["img"],"cum_haz_",vr,"_",mn,"_7_own.pdf"))
            matplot(dt.rng,t(sapply(
              dt.rng,function(tt){
                dt[,{var<-get(vr%+%"_"%+%mn)
                dts<-get("earliest_pmt_"%+%mn)
+               #Total ever paid (at least once) by tt
+               #  divided by total in group (.N)
                to.pct(sum(var[dts<=tt],na.rm=T)/.N)},
-               keyby=treat7]$V1})),
-             type="l",lty=1,lwd=3,col=get.col(trt.nms),
-             main="Cumulative "%+%tl%+%" by Treatment"%+%Mn,
-             xaxt="n",xlab="",ylab="Percent "%+%Vr,las=1)
+               keyby=treat7][,{x<-V1[treat7!="Control"]
+               x-V1[treat7=="Control"]}]})),
+             type="l",lty=1,lwd=3,col=get.col(trt.nms[-1]),
+             main=paste0("Cumulative ",tl," by Treatment",
+                         Mn,"\nRelative to Control"),
+             xaxt="n",xlab="",ylab="Percent "%+%Vr%+%" vs. Control",las=1)
            axis(side=1,at=dt.rng2,labels=format(dt.rng2,"%B %d"),
                 las=1,cex.axis=.75)
-           legend("topleft",legend=trt.nms,col=get.col(trt.nms),
+           legend("topleft",legend=trt.nms[-1],
+                  col=get.col(trt.nms[-1]),
                   lwd=3,y.intersp=.5,bty="n")
            dev.off2()})})
 

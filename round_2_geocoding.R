@@ -9,23 +9,25 @@
 rm(list=ls(all=T))
 gc()
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
-data_wd<-"/media/data_drive/real_estate/"
-gis_wd<-"/media/data_drive/gis_data/PA/"
-code_wd<-"./analysis_code/"
-library(funchir)
+wds<-c(data="/media/data_drive/real_estate/",
+       gis="/media/data_drive/gis_data/PA/",
+       sher="/media/data_drive/real_estate/sheriffs_sales/",
+       code="./analysis_code/")
 library(data.table)
 library(maptools)
 library(ggmap)
+library(funchir) #ggmap attaches ggplot which also has a %+% function
 library(getcartr)
 library(deldir)
 library(sp)
 library(xlsx)
-write.packages(code_wd%+%"logs/round_2_"%+%
+write.packages(wds["code"]%+%"logs/round_2_"%+%
                  "geocoding_session.txt")
 
 #Copied & personalized from Carson Farmer here:
 #  http://carsonfarmer.com/2009/09/voronoi-polygons-with-r/
-voronoi = function(layer,box=NULL,proj4string=layer@proj4string) {
+voronoi = function(layer,box=NULL,proj4string=layer@proj4string,
+                   idcol=NULL) {
   crds <- layer@coords
   colnames(crds)<-c("x","y")
   rw <- c(t(box))
@@ -36,7 +38,7 @@ voronoi = function(layer,box=NULL,proj4string=layer@proj4string) {
              ID=as.character(tl$ptNum))
   })
   SP = SpatialPolygons(polys,proj4string=proj4string)
-  DF <- data.frame(crds, 
+  DF <- data.frame(crds, idcol = layer@data[idcol],
                    row.names=sapply(slot(SP, 'polygons'),function(x)slot(x, 'ID')))
   
   SpatialPolygonsDataFrame(SP, data = DF)
@@ -50,7 +52,7 @@ used_sheriff<-unique(unlist(fread(
 
 ##Get OPA Numbers for those addresses for merging
 sheriffs_delinquent<-
-  fread(data_wd%+%"/sheriffs_sales/"%+%
+  fread(wds["sher"]%+%
           "delinquent_sold_year_to_may_15.csv",
         select=c("opa_no","address")
         )[address%in%used_sheriff]
@@ -59,14 +61,14 @@ sheriffs_delinquent<-
 exper.data<-
   fread("./round_two/round_2_full_data.csv"
         )[setDT(read.xlsx3(
-          data_wd%+%"req20150709_PennLetter"%+%
+          wds["data"]%+%"req20150709_PennLetter"%+%
             "Experiment_v3_Coordinates.xlsx",
           sheetName="TREATMENT",colIndex=c(2,4,5),
           colClasses=c("character",rep("numeric",2)))),
           `:=`(longitude=X_LONG,latitude=Y_LAT),
           on=c(opa_no="BRT.NUMBER")
           #supplement with coordinates done by hand & flag
-          ][fread(data_wd%+%"round_2_supplement_lon_lat_main.csv"),
+          ][fread(wds["data"]%+%"round_2_supplement_lon_lat.csv"),
             `:=`(longitude=i.longitude,latitude=i.latitude),on="opa_no"]
 
 exper.data.map<-
@@ -79,13 +81,14 @@ exper.data.map<-
 #Import shapefiles for delinquent
 #  properties & Philadelphia ZIP codes
 sheriffs_map_delinquent<-
-  readShapePoints(gis_wd%+%"delinquent_sold_year_to_may_15_nad.shp",
+  readShapePoints(wds["gis"]%+%"delinquent_sold_year_to_may_15_nad.shp",
                   proj4string=CRS("+init=epsg:2272"))
 phila_zip<-
-  readShapePoly(gis_wd%+%"Philadelphia_Zipcodes_Poly201302.shp")
+  readShapePoly(wds["gis"]%+%"Philadelphia_Zipcodes_Poly201302.shp",
+                proj4string=CRS("+init=epsg:2272"))
 phila_azav<-
   spTransform(readShapePoly(
-    gis_wd%+%"Neighborhoods_Philadelphia_with_quadrants.shp",
+    wds["gis"]%+%"Neighborhoods_Philadelphia_with_quadrants.shp",
     proj4string=CRS("+init=epsg:2272")),
     CRS("+proj=longlat +datum=WGS84"))
 
@@ -103,11 +106,11 @@ sheriffs_delinquent[,c("longitude","latitude"):=
                       geocode(paste0(address,", Philadelphia PA ",zip),
                               source="google")]
 ###Write output
-write.csv(sheriffs_delinquent,file=data_wd%+%"/sheriffs_sales/"%+%
+write.csv(sheriffs_delinquent,file=wds["sher"]%+%
             "delinquent_sold_used_round_2_w_lon_lat.csv",
           row.names=F)
 
-#Shapefile aggregation
+#Shapefile aggregation ####
 phila_azav_quad<-
   unionSpatialPolygons(phila_azav,
                        IDs=phila_azav$quadrant,
@@ -129,11 +132,11 @@ phila_azav_quad@data[exper.data[,.N,by=azavea_quad],
 phila_azav_quad_carto<-quick.carto(phila_azav_quad,phila_azav_quad$count)
 ##Export
 writeSpatialShape(phila_azav_carto,
-                  gis_wd%+%"Azavea_Neighborhood_cartogram_r2")
+                  wds["gis"]%+%"Azavea_Neighborhood_cartogram_r2")
 writeSpatialShape(phila_azav_quad,
-                  gis_wd%+%"Azavea_Quadrants")
+                  wds["gis"]%+%"Azavea_Quadrants")
 writeSpatialShape(phila_azav_quad_carto,
-                  gis_wd%+%"Azavea_Quadrant_cartogram_r2")
+                  wds["gis"]%+%"Azavea_Quadrant_cartogram_r2")
 
 #Voronoi Polygons ####
 sheriffs_map_in_sample<-
@@ -143,6 +146,44 @@ sheriffs_map_in_sample<-
 
 sheriffs_map_in_sample_voronoi<-
   voronoi(sheriffs_map_in_sample,
-          box=phila_zip@bbox)
+          box=phila_zip@bbox,
+          idcol="opa_no")
 
-x<-exper.data.map %over% sheriffs_map_in_sample_voronoi
+#Clip Voronoi output to Philadelphia borders
+sheriffs_map_in_sample_voronoi<-
+  SpatialPolygonsDataFrame(
+    gIntersection(sheriffs_map_in_sample_voronoi,
+                  gUnaryUnion(phila_zip),byid=T,
+                  id=sapply(sheriffs_map_in_sample_voronoi@polygons,
+                            slot,name="ID")),
+    sheriffs_map_in_sample_voronoi@data)
+
+writeSpatialShape(sheriffs_map_in_sample_voronoi,
+                  wds["data"]%+%"round_2_used_sheriff_voronoi")
+
+sheriffs_map_in_sample_voronoi@data<-
+  setDT(sheriffs_map_in_sample_voronoi@data)
+
+#Add column to experimental data mapping
+#  each property to its nearest Sheriff-Sold
+#  property (as mentioned in the letters)
+exper.data.map@data$nearest_sheriff<-
+  (exper.data.map %over% 
+     sheriffs_map_in_sample_voronoi)$opa_no
+
+#will need nearest_sheriff in analysis
+write.csv(exper.data.map@data[c("opa_no","nearest_sheriff")],
+          file=wds["data"]%+%"round_2_nearest_sheriff.csv",
+          quote=TRUE,row.names=FALSE)
+
+sheriffs_map_in_sample_voronoi@data[
+  setDT(exper.data.map@data)[,.N,by=nearest_sheriff],
+  count:=i.N,on=c(opa_no="nearest_sheriff")]
+
+##Voronoi cartogram
+sheriffs_map_in_sample_voronoi_carto<-
+  quick.carto(sheriffs_map_in_sample_voronoi,
+              sheriffs_map_in_sample_voronoi$count)
+
+writeSpatialShape(sheriffs_map_in_sample_voronoi_carto,
+                  wds["sher"]%+%"round_2_sheriffs_voronoi_cartogram")
