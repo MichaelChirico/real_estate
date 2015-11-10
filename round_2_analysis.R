@@ -147,6 +147,10 @@ cens.ed.data<-
                c("lt_gr_9","lt_gr_12","hs_deg","some_coll",
                  "assoc_deg","bach_deg","grad_deg")))
 
+###Census Tract-Level Data on Median income
+###  (via ACS 2013 5-year tables, as
+###   encapsulated in table S1903, and
+###   retrieved from American FactFinder)
 cens.inc.data<-
   setnames(fread(wds["cens"]%+%
                    "ACS_13_5YR_S1903_with_ann.csv",
@@ -155,11 +159,31 @@ cens.inc.data<-
                  colClasses=c(GEO.id2="character",
                               HC02_EST_VC02="numeric")),
            c("census_tract","ct_median_hh_income"))
-           
+
+##Ward Division-Level Voter Registration Data
+###  Via e-mail & phone exchange with Daniel A. Pearson,
+###  Principal Assistant Office of City Commissioner Al Schmidt
+###  Data accurate through November 10, 2015
+kp.col<-c("Precinct","Dem","Rep","Ind","Total")
+reg.data<-
+  setDT(read_excel(
+    wds["data"]%+%"Qualified Voter Lisiting 2015 Primary.xlsx",
+    #Check: https://github.com/hadley/readxl/issues/147
+    #  to see if this workaround of specifying nrows
+    #  has updated
+    sheet=1,na=c("","Totals:"))
+    )[-.N][,Precinct:=sprintf("%04d",Precinct)
+           ][,kp.col,with=FALSE
+             ][,.(political_ward=Precinct,
+                  pct_democrat=Dem/Total,
+                  pct_republican=Rep/Total,
+                  pct_independent=Ind/Total)]
+  
 geoindVIII<-
   fread(wds["data"]%+%"round_2_spatial_regions.csv"
         )[cens.ed.data,on="census_tract",nomatch=0L
-          ][cens.inc.data,on="census_tract",nomatch=0L]
+          ][cens.inc.data,on="census_tract",nomatch=0L
+            ][reg.data,on="political_ward",nomatch=0L]
                 
         
 ##Quilting time!
@@ -872,3 +896,22 @@ owners[(!holdout),.(0,mean(paid_full_jul),mean(paid_full_sep)),
             axis(side=2,at=.5*(yl+yu),tick=F,las=1,
                  labels=treat7,pos=0)}]
 dev.off2()
+
+##Heterogeneity Analysis ####
+###Percentage of Democrat Voters
+pdf2(wds["img"]%+%"bar_plot_hetero_ever_paid_7_pct_democrat.pdf")
+dcast(properties[(!holdout),mean(ever_paid_sep),
+                 keyby=.(treat7,demq=create_quantiles(pct_democrat,4))],
+      treat7~demq,value.var="V1"
+      )[,barplot(as.matrix(.SD[,paste0(1:4),with=F]),
+                 beside=T,col=get.col(treat7),
+                 names.arg="Q"%+%1:4,las=1,
+                 main="Ever Paid by Quartile of % Registered Democrat")]
+dev.off2()
+
+###Median Household Income
+dcast(properties[(!holdout&!is.na(ct_median_hh_income)),mean(ever_paid_sep),
+                 keyby=.(treat7,incq=create_quantiles(ct_median_hh_income,4))],
+      treat7~incq,value.var="V1"
+)[,barplot(as.matrix(.SD[,paste0(1:4),with=F]),
+           beside=T,col=get.col(treat7))]
