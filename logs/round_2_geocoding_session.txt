@@ -1,4 +1,4 @@
-Package info for code run on 2015-11-09 00:38:08:
+Package info for code run on 2015-11-09 21:58:55:
 R version 3.2.2 (2015-08-14)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Ubuntu 14.04.3 LTS
@@ -9,16 +9,16 @@ locale:
  [9] LC_ADDRESS=en_US.UTF-8        LC_TELEPHONE=en_US.UTF-8      LC_MEASUREMENT=en_US.UTF-8    LC_IDENTIFICATION=en_US.UTF-8
 
 attached base packages:
-[1] parallel  stats     graphics  grDevices utils     datasets  methods   base     
+[1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] RgoogleMaps_1.2.0.7 doParallel_1.0.8    iterators_1.0.7     foreach_1.4.2       readxl_0.1.0.9000   xtable_1.7-4       
- [7] sandwich_2.3-4      texreg_1.35         xlsx_0.5.7          xlsxjars_0.6.1      rJava_0.9-7         deldir_0.1-9       
-[13] getcartr_1.01       Rcartogram_0.2-2    GISTools_0.7-4      rgeos_0.3-12        MASS_7.3-44         RColorBrewer_1.1-2 
-[19] funchir_0.1.1       ggmap_2.5.2         ggplot2_1.0.1       maptools_0.8-36     sp_1.1-1            data.table_1.9.7   
+ [1] xlsx_0.5.7         xlsxjars_0.6.1     rJava_0.9-7        deldir_0.1-9       getcartr_1.01      Rcartogram_0.2-2  
+ [7] GISTools_0.7-4     rgeos_0.3-12       MASS_7.3-44        RColorBrewer_1.1-2 funchir_0.1.1      ggmap_2.5.2       
+[13] ggplot2_1.0.1      maptools_0.8-36    sp_1.1-1           data.table_1.9.7  
 
 loaded via a namespace (and not attached):
- [1] Rcpp_0.12.1      plyr_1.8.3       tools_3.2.2      digest_0.6.8     gtable_0.1.2     lattice_0.20-33  png_0.1-7       
- [8] mapproj_1.2-4    rgdal_1.0-6      proto_0.3-10     stringr_1.0.0    maps_2.3-11      grid_3.2.2       jpeg_0.1-8      
-[15] foreign_0.8-66   RJSONIO_1.3-0    reshape2_1.4.1   magrittr_1.5     codetools_0.2-14 scales_0.2.5     geosphere_1.4-3 
-[22] colorspace_1.2-6 stringi_0.5-9003 munsell_0.4.2    chron_2.3-47     rjson_0.2.15     zoo_1.7-12      
+ [1] Rcpp_0.12.1         plyr_1.8.3          tools_3.2.2         digest_0.6.8        gtable_0.1.2        lattice_0.20-33    
+ [7] png_0.1-7           mapproj_1.2-4       rgdal_1.0-6         proto_0.3-10        stringr_1.0.0       RgoogleMaps_1.2.0.7
+[13] maps_2.3-11         grid_3.2.2          jpeg_0.1-8          foreign_0.8-66      RJSONIO_1.3-0       reshape2_1.4.1     
+[19] magrittr_1.5        scales_0.2.5        geosphere_1.4-3     colorspace_1.2-6    stringi_0.5-9003    munsell_0.4.2      
+[25] chron_2.3-47        rjson_0.2.15       

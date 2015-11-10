@@ -19,7 +19,8 @@ wds<-c(data="/media/data_drive/real_estate/",
        img="./papers_presentations/round_two/images/analysis/",
        gis="/media/data_drive/gis_data/PA/",
        code="./analysis_code/",
-       sher="/media/data_drive/real_estate/sheriffs_sales/")
+       sher="/media/data_drive/real_estate/sheriffs_sales/",
+       cens="/media/data_drive/census/")
 library(funchir)
 library(data.table)
 library(texreg)
@@ -120,10 +121,51 @@ geosherVII<-
           "delinquent_sold_used_round_2_w_lon_lat.csv",
         select=c("address","longitude","latitude"))
 
+##Block VIII: Assorted Geographic Indicators
+##  (as well as associated supplemental stats)
+
+###Census Tract-Level Data on Education
+###  (via ACS 2013 5-year tables, as
+###   encapsulated in table S1501, and
+###   retrieved from American FactFinder)
+### VC08: % (age 25+) with: <9th grade
+### VC09: % (age 25+) with: 9th - 12th grade
+### VC10: % (age 25+) with: HS degree
+### VC11: % (age 25+) with: Some college
+### VC12: % (age 25+) with: Associate's degree
+### VC13: % (age 25+) with: Bachelor's degree
+### VC14: % (age 25+) with: Grad./prof. degree
+cens.kp<-"HC01_EST_VC"%+%ntostr(8:14,2)
+cens.ed.data<-
+  setnames(fread(wds["cens"]%+%
+                   "ACS_13_5YR_S1501_with_ann.csv",
+                 select=c("GEO.id2",cens.kp),na.strings="-",
+                 colClasses="character"
+                 )[,(cens.kp):=lapply(.SD,as.numeric),
+                   .SDcols=cens.kp],
+           c("census_tract","ct_ed_"%+%
+               c("lt_gr_9","lt_gr_12","hs_deg","some_coll",
+                 "assoc_deg","bach_deg","grad_deg")))
+
+cens.inc.data<-
+  setnames(fread(wds["cens"]%+%
+                   "ACS_13_5YR_S1903_with_ann.csv",
+                 select=c("GEO.id2","HC02_EST_VC02"),
+                 na.strings="-",
+                 colClasses=c(GEO.id2="character",
+                              HC02_EST_VC02="numeric")),
+           c("census_tract","ct_median_hh_income"))
+           
+geoindVIII<-
+  fread(wds["data"]%+%"round_2_spatial_regions.csv"
+        )[cens.ed.data,on="census_tract",nomatch=0L
+          ][cens.inc.data,on="census_tract",nomatch=0L]
+                
+        
 ##Quilting time!
 ### Framework:
-###  I  III IV VI VII
-###  II III  V VI  -
+###  I  III IV VI VII VIII
+###  II III  V VI  -  VIII
 bgvars<-names(mainBGIV)%\%"opa_no"
 geovars<-c("latitude","longitude")
 updvars<-c("paid_full","ever_paid","current_balance",
@@ -136,7 +178,8 @@ properties<-
              ][rbind(mainBGIV,holdBGV,fill=T),
                (bgvars):=mget("i."%+%bgvars),on="opa_no"
                ][geosuppVI,(geovars):=mget("i."%+%geovars),
-                 on="opa_no"]
+                 on="opa_no"
+                 ][geoindVIII,on="opa_no"]
 
 addrs<-"example_address_"%+%1:3
 for (addr in addrs){
@@ -157,6 +200,8 @@ properties[,sheriff_distance_min:=
 
 properties[,sheriff_distance_mean:=
              rowMeans(Reduce(cbind,mget(addrs%+%"_distance")))]
+
+
 
 ##Data Clean-up
 ###Re-set indicators as T/F instead of Y/N
@@ -219,8 +264,8 @@ properties[,treat3:=factor(treat3,c("Holdout","Small","Big"))]
 properties[,treat2:=factor(treat2,c("Small","Big"))]
 
 rm(mainI,holdoutII,followupIII,mainBGIV,
-   holdBGV,geosuppVI,geosherVII,update_opas,
-   bgvars,geovars,inds,updvars,addrs,ll)
+   holdBGV,geosuppVI,geosherVII,geoindVIII,
+   update_opas,bgvars,geovars,inds,updvars,addrs,ll)
 
 ###Get owner-level version of data, keeping only key analysis variables
 owners<-{
@@ -649,9 +694,9 @@ properties[fread(wds["data"]%+%"round_2_nearest_sheriff.csv"),
 
 sheriff_voronoi@data<-
   sheriff_voronoi@data[
-    properties[(!holdout),mean(ever_paid_jul),
+    properties[(!holdout),mean(pmt_agr),
                by=.(nearest_sheriff,treat7)
-               ][properties[(!holdout),mean(ever_paid_jul),
+               ][properties[(!holdout),mean(pmt_agr),
                             by=treat7],V2:=i.V1,on="treat7"
                  ][,.(treat7[which.max(V1-V2)],
                       treat7[which.max(V1)]),
