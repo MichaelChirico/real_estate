@@ -128,24 +128,18 @@ geosherVII<-
 ###  (via ACS 2013 5-year tables, as
 ###   encapsulated in table S1501, and
 ###   retrieved from American FactFinder)
-### VC08: % (age 25+) with: <9th grade
-### VC09: % (age 25+) with: 9th - 12th grade
-### VC10: % (age 25+) with: HS degree
-### VC11: % (age 25+) with: Some college
-### VC12: % (age 25+) with: Associate's degree
 ### VC13: % (age 25+) with: Bachelor's degree
 ### VC14: % (age 25+) with: Grad./prof. degree
-cens.kp<-"HC01_EST_VC"%+%ntostr(8:14,2)
+cens.kp<-"HC01_EST_VC"%+%13:14
 cens.ed.data<-
-  setnames(fread(wds["cens"]%+%
-                   "ACS_13_5YR_S1501_with_ann.csv",
-                 select=c("GEO.id2",cens.kp),na.strings="-",
-                 colClasses="character"
-                 )[,(cens.kp):=lapply(.SD,as.numeric),
-                   .SDcols=cens.kp],
-           c("census_tract","ct_ed_"%+%
-               c("lt_gr_9","lt_gr_12","hs_deg","some_coll",
-                 "assoc_deg","bach_deg","grad_deg")))
+  fread(wds["cens"]%+%
+          "ACS_13_5YR_S1501_with_ann.csv",
+        select=c("GEO.id2",cens.kp),na.strings="-",
+        colClasses="character"
+        )[,.(census_tract=GEO.id2,
+             pct_coll_grad=
+               as.numeric(HC01_EST_VC13)+
+               as.numeric(HC01_EST_VC14))]
 
 ###Census Tract-Level Data on Median income
 ###  (via ACS 2013 5-year tables, as
@@ -900,18 +894,61 @@ dev.off2()
 ##Heterogeneity Analysis ####
 ###Percentage of Democrat Voters
 pdf2(wds["img"]%+%"bar_plot_hetero_ever_paid_7_pct_democrat.pdf")
-dcast(properties[(!holdout),mean(ever_paid_sep),
+layout(mat=matrix(1:2,nrow=2),
+       heights=c(.9,.1))
+dcast(properties[(!holdout),to.pct(mean(ever_paid_sep)),
                  keyby=.(treat7,demq=create_quantiles(pct_democrat,4))],
       treat7~demq,value.var="V1"
       )[,barplot(as.matrix(.SD[,paste0(1:4),with=F]),
                  beside=T,col=get.col(treat7),
                  names.arg="Q"%+%1:4,las=1,
-                 main="Ever Paid by Quartile of % Registered Democrat")]
+                 main="% Ever Paid by Quartile of % Registered Democrat")]
+par(mar=c(0,4.1,0,2.1))
+plot(NA,type="n",ann=FALSE,xlim=par("usr")[1:2],ylim=c(1,2),
+     xaxt="n",yaxt="n",bty="n")
+legend("bottom",legend=trt.nms,col=get.col(trt.nms),ncol=4,
+       cex=.8,pch=15,bty="n",pt.cex=2,
+       text.width=diff(par("usr")[1:2])/6)
 dev.off2()
 
 ###Median Household Income
-dcast(properties[(!holdout&!is.na(ct_median_hh_income)),mean(ever_paid_sep),
-                 keyby=.(treat7,incq=create_quantiles(ct_median_hh_income,4))],
+pdf2(wds["img"]%+%"bar_plot_hetero_ever_paid_7_med_income.pdf")
+layout(mat=matrix(1:2,nrow=2),
+       heights=c(.9,.1))
+dcast(properties[(!holdout&!is.na(ct_median_hh_income)),
+                 to.pct(mean(ever_paid_sep)),
+                 keyby=.(treat7,incq=create_quantiles(
+                   ct_median_hh_income,4))],
       treat7~incq,value.var="V1"
-)[,barplot(as.matrix(.SD[,paste0(1:4),with=F]),
-           beside=T,col=get.col(treat7))]
+      )[,barplot(as.matrix(.SD[,paste0(1:4),with=F]),
+           beside=T,col=get.col(treat7),
+           names.arg="Q"%+%1:4,las=1,
+           main="% Ever Paid by Quartile of Median HH Income")]
+par(mar=c(0,4.1,0,2.1))
+plot(NA,type="n",ann=FALSE,xlim=par("usr")[1:2],ylim=c(1,2),
+     xaxt="n",yaxt="n",bty="n")
+legend("bottom",legend=trt.nms,col=get.col(trt.nms),ncol=4,
+       cex=.8,pch=15,bty="n",pt.cex=2,
+       text.width=diff(par("usr")[1:2])/6)
+dev.off2()
+
+###Percentage of College Graduates
+pdf2(wds["img"]%+%"bar_plot_hetero_ever_paid_7_pct_college.pdf")
+layout(mat=matrix(1:2,nrow=2),
+       heights=c(.9,.1))
+dcast(properties[(!holdout&!is.na(pct_coll_grad)),
+                 to.pct(mean(ever_paid_sep)),
+                 keyby=.(treat7,eduq=create_quantiles(
+                   pct_coll_grad,4))],
+      treat7~eduq,value.var="V1"
+      )[,barplot(as.matrix(.SD[,paste0(1:4),with=F]),
+           beside=T,col=get.col(treat7),
+           names.arg="Q"%+%1:4,las=1,
+           main="% Ever Paid by Quartile of % College Graduates")]
+par(mar=c(0,4.1,0,2.1))
+plot(NA,type="n",ann=FALSE,xlim=par("usr")[1:2],ylim=c(1,2),
+     xaxt="n",yaxt="n",bty="n")
+legend("bottom",legend=trt.nms,col=get.col(trt.nms),ncol=4,
+       cex=.8,pch=15,bty="n",pt.cex=2,
+       text.width=diff(par("usr")[1:2])/6)
+dev.off2()
