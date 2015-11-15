@@ -15,34 +15,13 @@ wds<-c(data="/media/data_drive/real_estate/",
        code="./analysis_code/")
 library(data.table)
 library(maptools)
-library(ggmap)
+library(ggmap) #used for ggmap::geocode
 library(funchir) #ggmap attaches ggplot which also has a %+% function
 library(getcartr)
-library(deldir)
 library(sp)
 library(xlsx)
 write.packages(wds["code"]%+%"logs/round_2_"%+%
                  "geocoding_session.txt")
-
-#Copied & personalized from Carson Farmer here:
-#  http://carsonfarmer.com/2009/09/voronoi-polygons-with-r/
-voronoi = function(layer,box=NULL,proj4string=layer@proj4string,
-                   idcol=NULL) {
-  crds <- layer@coords
-  colnames(crds)<-c("x","y")
-  rw <- c(t(box))
-  tlz <- tile.list(deldir(data.frame(crds),rw=rw))
-  wrap<-function(x)rbind(x, x[1,])
-  polys = lapply(tlz,function(tl){
-    Polygons(list(Polygon(wrap(cbind(tl$x,tl$y)))), 
-             ID=as.character(tl$ptNum))
-  })
-  SP = SpatialPolygons(polys,proj4string=proj4string)
-  DF <- data.frame(crds, idcol = layer@data[idcol],
-                   row.names=sapply(slot(SP, 'polygons'),function(x)slot(x, 'ID')))
-  
-  SpatialPolygonsDataFrame(SP, data = DF)
-}
 
 #Data Import ####
 ##Addresses mentioned in any letter in Round 2
@@ -121,9 +100,6 @@ exper.data.map@data$political_ward<-
 exper.data.map@data$census_tract<-
   (exper.data.map %over% phila_ctract)$GEOID10
 
-##Sheriff's Sale Voronoi Polygons
-### ** SEE BELOW **
-
 #Geocoding ####
 ##Sheriff's Sales
 ###Overlap properties to ZIPs to assign ZIPs; merge
@@ -163,40 +139,6 @@ phila_azav_quad@data[exper.data[,.N,by=azavea_quad],
                      count:=i.N,on=c(quadrant="azavea_quad")]
 phila_azav_quad_carto<-quick.carto(phila_azav_quad,phila_azav_quad$count)
 
-#Voronoi Polygons ####
-sheriffs_delinquent_voronoi<-
-  voronoi(sheriffs_delinquent_map,
-          box=phila_zip@bbox,
-          idcol="opa_no")
-
-#Clip Voronoi output to Philadelphia borders
-sheriffs_delinquent_voronoi<-
-  SpatialPolygonsDataFrame(
-    gIntersection(sheriffs_delinquent_voronoi,
-                  gUnaryUnion(phila_zip),byid=T,
-                  id=sapply(sheriffs_delinquent_voronoi@polygons,
-                            slot,name="ID")),
-    sheriffs_delinquent_voronoi@data)
-
-sheriffs_delinquent_voronoi@data<-
-  setDT(sheriffs_delinquent_voronoi@data)
-
-#Add column to experimental data mapping
-#  each property to its nearest Sheriff-Sold
-#  property (as mentioned in the letters)
-exper.data.map@data$nearest_sheriff<-
-  (exper.data.map %over% 
-     sheriffs_delinquent_voronoi)$opa_no
-
-sheriffs_delinquent_voronoi@data[
-  setDT(exper.data.map@data)[,.N,by=nearest_sheriff],
-  count:=i.N,on=c(opa_no="nearest_sheriff")]
-
-##Voronoi cartogram
-sheriffs_delinquent_voronoi_carto<-
-  quick.carto(sheriffs_delinquent_voronoi,
-              sheriffs_delinquent_voronoi$count)
-
 #Data Export ####
 ##Spatial Joins mappings
 sjoins<-c("opa_no","nearest_sheriff","political_ward",
@@ -213,9 +155,3 @@ writeSpatialShape(phila_azav_quad,
                   wds["gis"]%+%"Azavea_Quadrants")
 writeSpatialShape(phila_azav_quad_carto,
                   wds["gis"]%+%"Azavea_Quadrant_cartogram_r2")
-
-###Voronoi Polygons
-writeSpatialShape(sheriffs_delinquent_voronoi,
-                  wds["data"]%+%"round_2_used_sheriff_voronoi")
-writeSpatialShape(sheriffs_delinquent_voronoi_carto,
-                  wds["sher"]%+%"round_2_sheriffs_voronoi_cartogram")

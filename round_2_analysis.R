@@ -282,8 +282,9 @@ properties[,treat3:=factor(treat3,c("Holdout","Small","Big"))]
 properties[,treat2:=factor(treat2,c("Small","Big"))]
 
 rm(mainI,holdoutII,followupIII,mainBGIV,
-   holdBGV,geosuppVI,geosherVII,geoindVIII,
-   update_opas,bgvars,geovars,inds,updvars,addrs,ll)
+   holdBGV,geosuppVI,geosherVII,geoindVIII,addr
+   update_opas,bgvars,geovars,inds,updvars,addrs,ll,
+   cens.inc.data,cens.ed.data,cens.kp,reg.data,)
 
 ###Get owner-level version of data, keeping only key analysis variables
 owners<-{
@@ -693,46 +694,7 @@ title("Cartogram: Ever Paid (Sep.) by City Sector\n"%+%
         "Percentage above Control",outer=T)
 dev.off2()
 
-###Most responsive treatment by mentioned Sheriff's Sale
-###  property -- among the properties for which a given
-###  (mentioned, i.e., actually represented in actual
-###   treatments) sheriff's-sold property is the closest
-###  such property, which treatment had the highest
-###  response rate?
-sheriff_voronoi<-
-  readShapePoly(wds["sher"]%+%
-                  "round_2_sheriffs_voronoi_cartogram")
 
-#Done by copying for now; check GH FR #1310 for updates
-sheriff_voronoi@data<-setDT(sheriff_voronoi@data)
-sheriff_voronoi@data[,orig:=1:.N]
-
-properties[fread(wds["data"]%+%"round_2_nearest_sheriff.csv"),
-           nearest_sheriff:=i.nearest_sheriff,on="opa_no"]
-
-sheriff_voronoi@data<-
-  sheriff_voronoi@data[
-    properties[(!holdout),mean(pmt_agr),
-               by=.(nearest_sheriff,treat7)
-               ][properties[(!holdout),mean(pmt_agr),
-                            by=treat7],V2:=i.V1,on="treat7"
-                 ][,.(treat7[which.max(V1-V2)],
-                      treat7[which.max(V1)]),
-                   by=nearest_sheriff],
-    `:=`(best_treat_rel=i.V1,
-         best_treat_abs=i.V2),
-    on=c(opa_no="nearest_sheriff")][order(orig)]
-
-par(mfrow=c(1,2))
-plot(sheriff_voronoi,
-     col=get.col(sheriff_voronoi@data$best_treat_abs),
-     main="Scored Absolutely")
-
-plot(sheriff_voronoi,
-     col=get.col(sheriff_voronoi@data$best_treat_rel),
-     main="Scored Relatively")
-mtext(line=-1,text="Voronoi Cartogram of Mentioned Properties"%+%
-        "\nBest-Performing Treatment Locally",outer=TRUE)
 
 ##Financial Analysis ####
 lyx.xtable(xtable(
