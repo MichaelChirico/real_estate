@@ -43,6 +43,11 @@ get.col<-function(st){
   cols[gsub("\\s.*","",as.character(st))]
 }
 
+txt.col<-function(st){
+  cols<-c("black","white")
+  cols[st%in%c("Big","Control","Duty")+1]
+}
+
 #since min(NA,na.rm=T) is Inf when I'd prefer NA
 #  note that I'm setting my preferred default
 min2<-function(..., na.rm = TRUE){
@@ -281,10 +286,8 @@ properties[,treat7:=factor(treat7,trt.nms)]
 properties[,treat3:=factor(treat3,c("Holdout","Small","Big"))]
 properties[,treat2:=factor(treat2,c("Small","Big"))]
 
-rm(mainI,holdoutII,followupIII,mainBGIV,
-   holdBGV,geosuppVI,geosherVII,geoindVIII,addr
-   update_opas,bgvars,geovars,inds,updvars,addrs,ll,
-   cens.inc.data,cens.ed.data,cens.kp,reg.data,)
+rm(list=ls()%\%c("owners","properties","trt.nms",
+                 "wds","get.col","min2"))
 
 ###Get owner-level version of data, keeping only key analysis variables
 owners<-{
@@ -694,7 +697,51 @@ title("Cartogram: Ever Paid (Sep.) by City Sector\n"%+%
         "Percentage above Control",outer=T)
 dev.off2()
 
+###Most responsive treatment by Azavea Quadrant
+phila_azav_quad@data<-
+  phila_azav_quad@data[
+    properties[(!holdout),
+               {tps<-total_paid_sep
+               .(tp=mean(tps[tps>0]),
+                 pd=sum(tps)/sum(total_due),
+                 mp=median(tps[tps>0]))},
+               by=.(treat7,azavea_quad)
+               ][,.(tp=treat7[which.max(tp)],
+                    pd=treat7[which.min(pd)],
+                    mp=treat7[which.max(mp)]),by=azavea_quad],
+    `:=`(trt_avg_pos_paid=i.tp,
+         trt_prop_debt_paid=i.pd,
+         trt_med_pos_paid=i.mp),on=c(quadrant="azavea_quad")]
 
+pdf2(wds["img"]%+%"map_best_trt_avg_pos_paid_sep_7_prop.pdf")
+plot(phila_azav_quad,
+     col=get.col(phila_azav_quad@data$trt_avg_pos_paid),
+     main="Treatment with Highest Average Positive Payment"%+%
+       "\nBy Azavea Quadrant in September")
+text(coordinates(phila_azav_quad),
+     labels=phila_azav_quad@data$trt_avg_pos_paid,
+     col=txt.col(phila_azav_quad@data$trt_avg_pos_paid))
+dev.off2()
+
+pdf2(wds["img"]%+%"map_best_trt_prop_debt_paid_sep_7_prop.pdf")
+plot(phila_azav_quad,
+     col=get.col(phila_azav_quad@data$trt_prop_debt_paid),
+     main="Treatment with Highest Percentage Debt Payoff"%+%
+       "\nBy Azavea Quadrant in September")
+text(coordinates(phila_azav_quad),
+     labels=phila_azav_quad@data$trt_prop_debt_paid,
+     col=txt.col(phila_azav_quad@data$trt_prop_debt_paid))
+dev.off2()
+
+pdf2(wds["img"]%+%"map_best_trt_med_pos_paid_sep_7_prop.pdf")
+plot(phila_azav_quad,
+     col=get.col(phila_azav_quad@data$trt_med_pos_paid),
+     main="Treatment with Highest Median Positive Payment"%+%
+       "\nBy Azavea Quadrant in September")
+text(coordinates(phila_azav_quad),
+     labels=phila_azav_quad@data$trt_med_pos_paid,
+     col=txt.col(phila_azav_quad@data$trt_med_pos_paid))
+dev.off2()
 
 ##Financial Analysis ####
 lyx.xtable(xtable(
