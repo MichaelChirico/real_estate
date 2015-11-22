@@ -183,12 +183,20 @@ geoindVIII<-
         )[cens.ed.data,on="census_tract",nomatch=0L
           ][cens.inc.data,on="census_tract",nomatch=0L
             ][reg.data,on="political_ward",nomatch=0L]
+
+###Other Background Data
+###  From OPA-issued Property Data CD
+###  (certified for 2015, received May 2014)
+opabgIX<-
+  setnames(fread(wds["data"]%+%"prop2015.txt",
+                 select=c("PARCEL","MV","CAT CD","XMPT CD")),
+           c("opa_no","assessed_mv","category","exempt_code"))
                 
         
 ##Quilting time!
 ### Framework:
-###  I  III IV VI VII VIII
-###  II III  V VI  -  VIII
+###  I  III IV VI VII VIII IX
+###  II III  V VI  -  VIII IX
 bgvars<-names(mainBGIV)%\%"opa_no"
 geovars<-c("latitude","longitude")
 updvars<-c("paid_full","ever_paid","current_balance",
@@ -201,8 +209,14 @@ properties<-
              ][rbind(mainBGIV,holdBGV,fill=T),
                (bgvars):=mget("i."%+%bgvars),on="opa_no"
                ][geosuppVI,(geovars):=mget("i."%+%geovars),
-                 on="opa_no"
-                 ][geoindVIII,on="opa_no"]
+                 on="opa_no"]
+
+nms<-names(geoindVIII)%\%"opa_no"
+properties[geoindVIII,(nms):=mget("i."%+%nms),on="opa_no"]
+
+properties[opabgIX,`:=`(assessed_mv=as.numeric(i.assessed_mv),
+                        residential=i.category=="1",
+                        exempt_code=i.exempt_code),on="opa_no"]
 
 addrs<-"example_address_"%+%1:3
 for (addr in addrs){
@@ -258,8 +272,7 @@ properties[,flag_round_one_overlap:=
                             select=c("opa_no"))[,unique(opa_no)]]
 ### Does this property have any of the
 ###   tax exemptions excluded in Round 1?
-properties[fread(wds["data"]%+%"prop2015.txt",select=c("PARCEL","XMPT CD")),
-        flag_abate_exempt:=`i.XMPT CD`!="",on=c(opa_no="PARCEL")]
+properties[,flag_abate_exempt:=exempt_code!=""]
 
 ###Define alternative treatment sets:
 ####14 treatments (exclude holdout)
@@ -287,7 +300,7 @@ properties[,treat3:=factor(treat3,c("Holdout","Small","Big"))]
 properties[,treat2:=factor(treat2,c("Small","Big"))]
 
 rm(list=ls()%\%c("owners","properties","trt.nms",
-                 "wds","get.col","min2"))
+                 "wds","get.col"))
 
 ###Get owner-level version of data, keeping only key analysis variables
 owners<-{
@@ -368,6 +381,30 @@ print.xtable(xtable(matrix(cbind(
   label="table:content_fidelity"),include.rownames=F)
                               
 rm(big_returns,small_returns,returns)
+
+#Descriptive Stats ####
+#We count an address as in Philadelphia when:
+#  Mailing city contains "PH" but NOT
+# "X","M", or "R" -- this eliminates
+#  Alpharetta (GA), Gulph Mills (PA),
+#  Memphis (TN), Mount Ephraim (NJ), Phoenix (AZ),
+#  and Phoenixville (PA). This in particular
+#  captures most (but perhaps not all)
+#  of the multitudinous typos for Philadelphia.
+print.xtable(xtable(
+  t(properties[,.(`Number Observations`=prettyNum(.N,big.mark=","),
+                `Amount Due`=dol.form(mean(total_due)),
+                `Assessed Property Value`=
+                  dol.form(mean(assessed_mv,na.rm=T)),
+                `% Residential`=
+                  to.pct(mean(residential,na.rm=T),dig=0),
+                `% with Philadelphia Mailing Address`=
+                  to.pct(mean(grepl("PH",mail_city)&
+                                !grepl("[XMR]",mail_city)),dig=0))]),
+  caption=c("Descriptive Statistics"),align=c("|c|c|"),
+  label="table:descriptives"),caption.placement="top")
+
+rm(phila_addr,resid_grp)
 
 #Analysis ####
 ## Bootstrap simulations ####
