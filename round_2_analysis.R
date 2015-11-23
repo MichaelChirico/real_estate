@@ -16,7 +16,8 @@ rm(list=ls(all=T))
 gc()
 setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 wds<-c(data="/media/data_drive/real_estate/",
-       img="./papers_presentations/round_two/images/analysis/",
+       imga="./papers_presentations/round_two/images/analysis/",
+       imgb="./papers_presentations/round_two/images/balance/",
        gis="/media/data_drive/gis_data/PA/",
        code="./analysis_code/",
        sher="/media/data_drive/real_estate/sheriffs_sales/",
@@ -32,6 +33,7 @@ library(sp)
 library(doParallel)
 library(RgoogleMaps)
 library(maptools)
+library(lmtest)
 write.packages(wds["code"]%+%"logs/round_2_"%+%
                  "analysis_session.txt")
 
@@ -329,6 +331,9 @@ owners<-{
                    as.Date(NA)
                    }else{min(earliest_pmt_sep)},
                total_due=sum(total_due),
+               current_balance_sep=
+                 sum(current_balance_sep),
+               assessed_mv=sum(assessed_mv),
                pmt_agr1=any(pmt_agr),
                pmt_agrA=all(pmt_agr),
                pmt_agr_start=
@@ -337,6 +342,14 @@ owners<-{
                  }else{min(pmt_agr_start)},
                flag_holdout_overlap=
                  flag_holdout_overlap[1L],
+               flag_round_one_overlap=
+                 any(flag_round_one_overlap),
+               residential=all(residential),
+               phila_mailing=
+                 all(grepl("PH",mail_city)&
+                       !grepl("[XMR]",mail_city)),
+               sheriff_distance_mean=
+                 mean(sheriff_distance_mean,na.rm=T),
                .N),
              by=owner1]}
 
@@ -392,25 +405,108 @@ rm(big_returns,small_returns,returns)
 #  captures most (but perhaps not all)
 #  of the multitudinous typos for Philadelphia.
 print.xtable(xtable(
-  t(properties[,.(`Number Observations`=prettyNum(.N,big.mark=","),
-                `Amount Due`=dol.form(mean(total_due)),
-                `Assessed Property Value`=
-                  dol.form(mean(assessed_mv,na.rm=T)),
-                `% Residential`=
-                  to.pct(mean(residential,na.rm=T),dig=0),
-                `% with Philadelphia Mailing Address`=
-                  to.pct(mean(grepl("PH",mail_city)&
-                                !grepl("[XMR]",mail_city)),dig=0))]),
-  caption=c("Descriptive Statistics"),align=c("|c|c|"),
-  label="table:descriptives"),caption.placement="top")
+  t(owners[(!holdout),
+           .(`Number Observations`=prettyNum(.N,big.mark=","),
+             `Amount Due (June)`=dol.form(mean(total_due)),
+             `Assessed Property Value`=
+               dol.form(mean(assessed_mv,na.rm=T)),
+             `% Residential`=
+               to.pct(mean(residential,na.rm=T),dig=0),
+             `% with Philadelphia Mailing Address`=
+               to.pct(mean(phila_mailing),dig=0),
+             `Distance to Sheriff's Sale (km)`=
+               round(mean(sheriff_distance_mean),dig=1),
+             `% with Unique Owner`=
+               to.pct(mean(unq_own),dig=1),
+             `% Overlap with Holdout`=
+               to.pct(mean(flag_holdout_overlap),dig=1),
+             `% Overlap with Round 1`=
+               to.pct(mean(flag_round_one_overlap),dig=1),
+             `% Ever Paid (September)`=
+               to.pct(mean(ever_paid_sep),dig=1),
+             `% Paid in Full (Sep)`=
+               to.pct(mean(paid_full_sep),dig=1),
+             `Amount Due (September)`=
+               dol.form(mean(current_balance_sep)),
+             `% in Payment Agreement`=
+               to.pct(mean(pmt_agr1),dig=1))]),
+  caption=c("Descriptive Statistics (Owners)"),align=c("|c|c|"),
+  label="table:descriptives"),caption.placement="top",
+  include.colnames=F)
 
-rm(phila_addr,resid_grp)
+#Balance on Observables ####
+##Graphic Tests
+###Log Balance by Letter
+pdf2(wds["imgb"]%+%"dist_log_due_by_trt_7_box.pdf")
+par(mar=c(2.6,5.1,4.1,2.1))
+boxplot(total_due~treat7,data=owners,
+        main="Box Plots of Log Debt\nOwner Level, By Treatment",
+        log="x",xaxt="n",cex.axis=.8,
+        col=get.col(trt.nms),notch=T,
+        boxwex=.5,horizontal=T,las=1,xlab="")
+axis(side=1,at=10^(1:6),cex.axis=.8,
+     labels="$"%+%formatC(
+       10^(1:6),big.mark=","))
+abline(v=owners[treat7=="Control",median(total_due)],lty=2)
+dev.off2()
+
+##Bar Plot: Number of Properties and Owners by Letter
+properties[(!holdout),
+           .(.N,uniqueN(owner1)),keyby=treat7
+           ][,{pdf2(wds["imgb"]%+%"number_prop_own_by_trt_7_bar.pdf")
+             layout(mat=matrix(1:2),heights=c(.8,.2))
+             par(mar=c(1,4.1,4.1,2.1))
+             x<-barplot(c(rbind(N,V2)),names.arg=rep(treat7,each=2),las=3,
+                        main="Numbers of Properties and Owners\nBy Treatment",
+                        col=get.col(rep(trt.nms,each=2)),
+                        density=rep(c(-1,20),.N),cex.names=.75,
+                        ylim=c(0,1.3*max(N)))
+             par(mar=rep(0,4))
+             plot(0,0,type="n",ann=F,axes=F,xlim=range(x))
+             legend(max(x)/2,0,bty="n",xjust=.3,
+                    legend=c("# Properties","# Owners"),
+                    density=c(-1,20),horiz=T,text.width=5)
+             dev.off2()}]
+
+###Balance Table
+####p-values to be binded in
+
+lmfp<-function(formula){
+  #extract F-statistic & DoF from LM call
+  mdf<-summary(do.call("lm",list(formula=formula)))$fstatistic
+  #copied (ported) from print.summary.lm
+  unname(pf(mdf[1L], mdf[2L], mdf[3L], lower.tail = FALSE))
+}
+
+pvs<-data.table(treat7="$p$-value",
+                rbind(sapply(c(
+                  `Amount Due (June)`="total_due",
+                  `Assessed Property Value`="assessed_mv",
+                  `% with Unique Owner`="unq_own",
+                  `% Overlap with Holdout`="flag_holdout_overlap",
+                  `# Properties per Owner`="N"),
+                  function(x)owners[(!holdout),lmfp(get(x)~treat7)])),
+                `# Owners`=
+                  owners[(!holdout),chisq.test(table(treat7))$p.value])
+
+print.xtable(xtable(dcast(melt(rbind(
+  owners[(!holdout),
+         .(`Amount Due (June)`=mean(total_due),
+           `Assessed Property Value`=mean(assessed_mv,na.rm=T),
+           `% with Unique Owner`=to.pct(mean(unq_own)),
+           `% Overlap with Holdout`=to.pct(mean(flag_holdout_overlap)),
+           `# Properties per Owner`=mean(N),
+           `# Owners`=.N),keyby=treat7],pvs),
+  id.vars="treat7",variable.name="Variable"),Variable~treat7),
+  caption="Balance on Observables",label="table:balance",
+  digits=cbind(matrix(c(2,0,1,2,2,0),nrow=6,ncol=9),rep(2,6))),
+  include.rownames=F,sanitize.colnames.function=identity)
 
 #Analysis ####
 ## Bootstrap simulations ####
 ###Number of repetitions for all bootstrap
 ###  exercises
-BB<-1e4
+BB<-5000
 
 ###Point Estimate CIs ####
 ###For the standard confidence intervals,
@@ -587,7 +683,7 @@ sapply(type.params,
        function(y){
          with(y,sapply(boot.cis[tps],function(lst){
            with(lst,
-             dt[order(get(tr)),{pdf2(wds["img"]%+%mfn%+%fn%+%".pdf")
+             dt[order(get(tr)),{pdf2(wds["imga"]%+%mfn%+%fn%+%".pdf")
                par(mar=c(5.1,5.1,4.1,1.6))
                vals<-lapply(mget(xn%+%c("",".ci.lo",".ci.hi")),trans)
                ind<-which(get(tr)==rf)
@@ -601,9 +697,99 @@ sapply(type.params,
                abline(v=c(vals[[2]][ind],vals[[3]][ind]),lty=2)
                dev.off2()}])}))})
 
+##Regression Tables ####
+all_samples<-list("main"=owners[(!holdout)],
+                  "non_comm"=owners[(residential)],
+                  "single_owner"=owners[(unq_own)])
+lapply(all_samples,setkeyv,"owner1")
+
+###Have to quote the model formulas so that 
+###  they don't evaluate until we're in the datas' frames
+tpfq<-quote(total_paid_sep~treat7)
+epfq<-quote(ever_paid_sep~treat7)
+pafq<-quote(pmt_agr1~treat7)
+
+reg_output<-lapply(all_samples,function(dt){
+  #Baseline regressions
+  regs<-list(tp=dt[,lm(eval(tpfq))],
+             ep=dt[,glm(eval(epfq),family=binomial)],
+             pa=dt[,glm(eval(pafq),family=binomial)])
+  owns<-dt[,unique(owner1)]
+  
+  #Parallelize bootstrap replications since MLE can be timely
+  cl <- makeCluster(8L,outfile="") #8 cores on main machine, via detectCores()
+  clusterEvalQ(cl,library("data.table"))
+  clusterExport(cl,c("dt","owns","tpfq","epfq","pafq"),envir=environment())
+  boot_dist<-Reduce(rbind,parLapply(cl,1:BB,function(ii,...){
+    #Progress counter
+    if (ii %% 625 == 0) cat("Replication",ii,"\n")
+    #Resample at the owner (cluster) level, with replacement
+    dt[.(sample(owns,rep=T)),
+       #Only keep coefficients
+       .(tp=list(lm(eval(tpfq))$coefficients),
+         ep=list(glm(eval(epfq),family=binomial)$coefficients),
+         pa=list(glm(eval(pafq),family=binomial)$coefficients))]}))
+  stopCluster(cl)
+  
+  #Bootstrap parameter vector variance & SDs
+  vars<-lapply(boot_dist,function(x)var(Reduce(rbind,x)))
+  ses<-lapply(vars,function(x)sqrt(diag(x)))
+  #(note that we impose symmetry here; some inspection
+  #   of the bootstrap parameter distributions
+  #   suggested this was reasonable)
+  ps<-lapply(c(tp="tp",ep="ep",pa="pa"),
+             function(mod)coeftest(regs[[mod]],
+                                   vcov=vars[[mod]])[,4L])
+  list("reg"=regs,"SE"=ses,"p.val"=ps)})
+rm(tpfq,epfq,pafq)
+
+###Difference in Mean Tests
+rename_coef<-function(obj){
+  nms<-names(obj$coefficients)
+  indx<-!grepl("treat7",nms)
+  #Add XXX to coefficients we'll exclude
+  nms[indx]<-nms[indx]%+%"XXX"
+  nms<-gsub("treat7","",nms)
+  names(obj$coefficients)<-nms
+  obj
+}
+
+texreg(
+  lapply(reg_output,function(y)rename_coef(y$reg$tp)),
+  custom.model.names=c("Main Sample","Residential","Unique Owner"),
+  caption="Estimated Average Treatment Effects: Revenues",
+  override.se=lapply(reg_output,function(y)y$SE$tp),
+  override.pval=lapply(reg_output,function(y)y$p.val$tp),
+  caption.above=T,label="dif_mean",stars=c(.01,.05,.1),
+  include.rsquared=F,include.adjrs=F,include.rmse=F,
+  #Exclude Intercept & Log coefficients
+  omit.coef="XXX$",float.pos="htbp")
+
+###Logit - Ever Paid
+texreg(
+  lapply(reg_output,function(y)rename_coef(y$reg$ep)),
+  custom.model.names=c("Full Sample","Residential","Unique Owner"),
+  caption="Logistic Regressions for Ever Paid: Compliance",
+  override.se=lapply(reg_output,function(y)y$SE$ep),
+  override.pval=lapply(reg_output,function(y)y$p.val$ep),
+  caption.above=T,label="table:ep_log",stars=c(.01,.05,.1),
+  omit.coef="XXX$",float.pos="htbp",include.aic=FALSE,
+  include.bic=FALSE,include.deviance=FALSE)
+
+###Logit - Any Payment Agreement
+texreg(
+  lapply(reg_output,function(y)rename_coef(y$reg$pa)),
+  custom.model.names=c("Full Sample","Residential","Unique Owner"),
+  caption="Logistic Regressions for Any Payment Agreement",
+  override.se=lapply(reg_output,function(y)y$SE$pa),
+  override.pval=lapply(reg_output,function(y)y$p.val$pa),
+  caption.above=T,label="table:pa_log",stars=c(.01,.05,.1),
+  omit.coef="XXX$",float.pos="htbp",include.aic=FALSE,
+  include.bic=FALSE,include.deviance=FALSE)
+
 ##Box and Whisker Plots ####
 ###Box-and-Whisker Repayment Distribution (among Payers)
-pdf2(wds["img"]%+%"box_whisk_pos_paid_jul_7_own.pdf")
+pdf2(wds["imga"]%+%"box_whisk_pos_paid_jul_7_own.pdf")
 par(mar=c(2.6,5.1,4.1,1.1))
 boxplot(total_paid_jul~treat7,horizontal=T,
         cex.axis=.8,xaxt="n",boxwex=.5,
@@ -680,7 +866,7 @@ scale.value<-function(x,nn=1000,
 }
 
 ncols<-31
-pdf2(wds["img"]%+%"cartogram_quadrant_ever_paid_jul.pdf")
+pdf2(wds["imga"]%+%"cartogram_quadrant_ever_paid_jul.pdf")
 layout(mat=matrix(c(1:7,7,7),byrow=T,nrow=3),
        heights=c(.475,.475,.05))
 par(mar=c(0,0,1.1,0),
@@ -707,7 +893,7 @@ title("Cartogram: Ever Paid (July) by City Sector\n"%+%
         "Percentage above Control",outer=T)
 dev.off2()
 
-pdf2(wds["img"]%+%"cartogram_quadrant_ever_paid_sep.pdf")
+pdf2(wds["imga"]%+%"cartogram_quadrant_ever_paid_sep.pdf")
 layout(mat=matrix(c(1:7,7,7),byrow=T,nrow=3),
        heights=c(.475,.475,.05))
 par(mar=c(0,0,1.1,0),
@@ -750,7 +936,7 @@ phila_azav_quad@data<-
          trt_prop_debt_paid=i.pd,
          trt_med_pos_paid=i.mp),on=c(quadrant="azavea_quad")]
 
-pdf2(wds["img"]%+%"map_best_trt_avg_pos_paid_sep_7_prop.pdf")
+pdf2(wds["imga"]%+%"map_best_trt_avg_pos_paid_sep_7_prop.pdf")
 plot(phila_azav_quad,
      col=get.col(phila_azav_quad@data$trt_avg_pos_paid),
      main="Treatment with Highest Average Positive Payment"%+%
@@ -760,7 +946,7 @@ text(coordinates(phila_azav_quad),
      col=txt.col(phila_azav_quad@data$trt_avg_pos_paid))
 dev.off2()
 
-pdf2(wds["img"]%+%"map_best_trt_prop_debt_paid_sep_7_prop.pdf")
+pdf2(wds["imga"]%+%"map_best_trt_prop_debt_paid_sep_7_prop.pdf")
 plot(phila_azav_quad,
      col=get.col(phila_azav_quad@data$trt_prop_debt_paid),
      main="Treatment with Highest Percentage Debt Payoff"%+%
@@ -770,7 +956,7 @@ text(coordinates(phila_azav_quad),
      col=txt.col(phila_azav_quad@data$trt_prop_debt_paid))
 dev.off2()
 
-pdf2(wds["img"]%+%"map_best_trt_med_pos_paid_sep_7_prop.pdf")
+pdf2(wds["imga"]%+%"map_best_trt_med_pos_paid_sep_7_prop.pdf")
 plot(phila_azav_quad,
      col=get.col(phila_azav_quad@data$trt_med_pos_paid),
      main="Treatment with Highest Median Positive Payment"%+%
@@ -831,7 +1017,7 @@ sapply(list(list(dt=owners[(!holdout)],fl="7_own",tl="",
              function(y){tpx<-dt[.(y),total_paid_jul]
              replicate(BB,mean(sample(tpx,rep=T)))})) %*%
              dt[,.N,by=tr]$N
-           pdf2(wds["img"]%+%"histogram_surplus_jul_"%+%fl%+%".pdf")
+           pdf2(wds["imga"]%+%"histogram_surplus_jul_"%+%fl%+%".pdf")
            hist(dist,xaxt="n",xlab="$ Received above "%+%rf,
                 main="Distribution of (Bootstrapped) Total Surplus"%+%
                   "\nAcross All Treatments (July)"%+%tl,col="cyan",breaks=50)
@@ -867,7 +1053,7 @@ sapply(list(list(dt=owners[(!holdout)],vr="ever_paid",
            seq(from=rng[1],to=rng[2],by="day")}]
            #For pretty printing, get once/week subset
            dt.rng2<-dt.rng[seq(1,length(dt.rng),by=7)]
-           pdf2(paste0(wds["img"],"cum_haz_",vr,"_",mn,"_7_own.pdf"))
+           pdf2(paste0(wds["imga"],"cum_haz_",vr,"_",mn,"_7_own.pdf"))
            matplot(dt.rng,t(sapply(
              dt.rng,function(tt){
                dt[,{var<-get(vr%+%"_"%+%mn)
@@ -892,7 +1078,7 @@ dt.rng<-
   owners[(!holdout),{rng<-range(pmt_agr_start,na.rm=T)
   seq(from=rng[1],to=rng[2],by="day")}]
 dt.rng2<-dt.rng[seq(1,length(dt.rng),by=7)]
-pdf2(wds["img"]%+%"cum_haz_pmt_agr_7_own.pdf")
+pdf2(wds["imga"]%+%"cum_haz_pmt_agr_7_own.pdf")
 matplot(dt.rng,t(sapply(
   dt.rng,function(tt){
     owners[(!holdout),
@@ -907,7 +1093,7 @@ legend("topleft",legend=trt.nms,col=get.col(trt.nms),
        lwd=3,y.intersp=.5,bty="n")
 dev.off2()
 
-pdf2(wds["img"]%+%"bar_plot_ever_paid_followup_7_own.pdf")
+pdf2(wds["imga"]%+%"bar_plot_ever_paid_followup_7_own.pdf")
 owners[(!holdout),.(0,mean(ever_paid_jul),mean(ever_paid_sep)),
        keyby=treat7
        ][,{xmx<-nx.mlt(max(V3),.1)
@@ -922,7 +1108,7 @@ owners[(!holdout),.(0,mean(ever_paid_jul),mean(ever_paid_sep)),
             labels=treat7,pos=0)}]
 dev.off2()
 
-pdf2(wds["img"]%+%"bar_plot_paid_full_followup_7_own.pdf")
+pdf2(wds["imga"]%+%"bar_plot_paid_full_followup_7_own.pdf")
 owners[(!holdout),.(0,mean(paid_full_jul),mean(paid_full_sep)),
        keyby=treat7
             ][,{xmx<-nx.mlt(max(V3),.1)
@@ -939,7 +1125,7 @@ dev.off2()
 
 ##Heterogeneity Analysis ####
 ###Percentage of Democrat Voters
-pdf2(wds["img"]%+%"bar_plot_hetero_ever_paid_7_pct_democrat.pdf")
+pdf2(wds["imga"]%+%"bar_plot_hetero_ever_paid_7_pct_democrat.pdf")
 layout(mat=matrix(1:2,nrow=2),
        heights=c(.9,.1))
 dcast(properties[(!holdout),to.pct(mean(ever_paid_sep)),
@@ -958,7 +1144,7 @@ legend("bottom",legend=trt.nms,col=get.col(trt.nms),ncol=4,
 dev.off2()
 
 ###Median Household Income
-pdf2(wds["img"]%+%"bar_plot_hetero_ever_paid_7_med_income.pdf")
+pdf2(wds["imga"]%+%"bar_plot_hetero_ever_paid_7_med_income.pdf")
 layout(mat=matrix(1:2,nrow=2),
        heights=c(.9,.1))
 dcast(properties[(!holdout&!is.na(ct_median_hh_income)),
@@ -979,7 +1165,7 @@ legend("bottom",legend=trt.nms,col=get.col(trt.nms),ncol=4,
 dev.off2()
 
 ###Percentage of College Graduates
-pdf2(wds["img"]%+%"bar_plot_hetero_ever_paid_7_pct_college.pdf")
+pdf2(wds["imga"]%+%"bar_plot_hetero_ever_paid_7_pct_college.pdf")
 layout(mat=matrix(1:2,nrow=2),
        heights=c(.9,.1))
 dcast(properties[(!holdout&!is.na(pct_coll_grad)),
