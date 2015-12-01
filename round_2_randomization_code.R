@@ -202,11 +202,11 @@ treatments<-paste0(rep(c("Sheriff","Lien","Moral","Amenities",
 ## Block randomization on balance due--sort on balance due and
 ##   assign treatments at random evenly in blocks of n_treatments
 setkey(setkey(data,owner1)[data[,sum(total_due),by=owner1][order(-V1)][
-  ,grp:=rep(1:ceiling(.N/length(treatments)),
+  ,rand_id:=rep(1:ceiling(.N/length(treatments)),
             each=length(treatments),length.out=.N)
   ][,treatment:=sample(treatments,size=.N),
-    by=grp][,c("grp","treatment"):=
-              list(NULL,as.factor(treatment))],treatment:=as.factor(i.treatment)],
+    by=rand_id][,treatment:=as.factor(treatment)],
+  treatment:=as.factor(i.treatment)],
   treatment)
 
 ## Output full data file for future analysis
