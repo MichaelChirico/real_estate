@@ -4,6 +4,14 @@
 #Michael Chirico
 #July 29, 2015
 
+#Note: See e-mail "now we're in a hurry" from cloef@sas.upenn.edu
+#  for confirmation that June 12 is the day small envelope
+#  versions were sent to the DoR Mail Room.
+#   See e-mail "Status" from rmcfadden@lawlerdirect.com
+#  or "Next steps?" (from same) on June 22
+#  for confirmation that June 23 is the postage date for
+#  the large envelopes sent by Lawler Direct.
+
 #Setup: Random Seed, Packages,
 #  Working Directory, Convenient Functions ####
 ##Random Seed
@@ -114,7 +122,7 @@ update_opas<-data.table(old=c("151102600","884350465"),
 followupIII[update_opas,opa_no:=i.old,on=c("opa_no"="new")]
                 
 ##Block IV: Main Sample Background Data
-mainBGIV<-fread("./round_two/round_2_full_data.csv",drop="treatment")
+mainBGIV<-fread("./round_2_full_data.csv",drop="treatment")
 
 ##Block V: Holdout Sample Background Data
 holdBGV<-fread("holdout_sample.csv")
@@ -228,6 +236,7 @@ for (addr in addrs){
              on=setNames("address",addr)]
   #Should update this if we ever add corresponding
   #  SS/Amenities for holdout properties for comparison
+  #**Note: Distance is in kilometers (see ?spDists)**
   properties[treat15!="Holdout",addr%+%"_distance":=
                spDists(x=cbind(longitude,latitude),
                        y=Reduce(cbind,mget(ll)),
@@ -280,7 +289,7 @@ properties[,flag_abate_exempt:=exempt_code!=""]
 ####14 treatments (exclude holdout)
 properties[(!holdout),treat14:=treat15]
 ####2 & 3 treatments (big vs. small (vs. holdout))
-properties[(!holdout),treat3:=gsub("(.*)_(.*)_(.*)","\\2",treat15)]
+properties[(!holdout),treat3:=gsub("(.*) (.*)","\\2",treat15)]
 properties[(holdout),treat3:=treat15]
 properties[(!holdout),treat2:=treat3]
 ####7 & 8 treatments (main treatments)
@@ -1184,3 +1193,20 @@ legend("bottom",legend=trt.nms,col=get.col(trt.nms),ncol=4,
        cex=.8,pch=15,bty="n",pt.cex=2,
        text.width=diff(par("usr")[1:2])/6)
 dev.off2()
+
+#Robustness Checks ####
+##Randomization Block Sensitivity
+dcast(
+  properties[(!holdout),
+             properties[!rand_id %in% .BY[[1]]&!holdout,
+                        mean(total_paid_sep), by=treat7],
+             keyby=rand_id],rand_id~treat7,value.var="V1"
+  )[,matplot(rand_id,.SD[,trt.nms,with=F],type="l",lty=1,lwd=3,
+             col=get.col(trt.nms))]
+
+dcast(properties[(!holdout),mean(ever_paid_sep),
+           by=.(treat7,rid20=floor((rand_id-1)/100))],
+      rid20~treat7,value.var="V1"
+      )[,matplot(rid20,.SD[,trt.nms,with=F],type="l",
+                 lty=1,lwd=3,col=get.col(trt.nms))]
+  

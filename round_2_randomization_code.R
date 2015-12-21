@@ -206,11 +206,12 @@ setkey(setkey(data,owner1)[data[,sum(total_due),by=owner1][order(-V1)][
             each=length(treatments),length.out=.N)
   ][,treatment:=sample(treatments,size=.N),
     by=rand_id][,treatment:=as.factor(treatment)],
-  treatment:=as.factor(i.treatment)],
+  `:=`(treatment=as.factor(i.treatment),
+       rand_id=i.rand_id)],
   treatment)
 
 ## Output full data file for future analysis
-write.csv(data,file="round_2_full_data.csv",row.names=F)
+write.csv(data,file="round_2_full_data.csv",row.names=FALSE)
 
 ## For pretty output, format total_due as a number with $ and commas:
 data[,total_due:=paste0("$",gsub("\\s","",formatC(total_due,format="f",big.mark=",",digits=2)))]

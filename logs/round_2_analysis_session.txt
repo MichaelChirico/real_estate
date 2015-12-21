@@ -1,23 +1,21 @@
-Package info for code run on 2015-11-30 22:26:23:
+Package info for code run on 2015-12-20 19:10:44:
 R version 3.2.2 (2015-08-14)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Ubuntu 14.04.3 LTS
 
 locale:
- [1] LC_CTYPE=en_US.UTF-8          LC_NUMERIC=C                  LC_TIME=en_US.UTF-8          
- [4] LC_COLLATE=en_US.UTF-8        LC_MONETARY=en_US.UTF-8       LC_MESSAGES=en_US.UTF-8      
- [7] LC_PAPER=en_US.UTF-8          LC_NAME=en_US.UTF-8           LC_ADDRESS=en_US.UTF-8       
-[10] LC_TELEPHONE=en_US.UTF-8      LC_MEASUREMENT=en_US.UTF-8    LC_IDENTIFICATION=en_US.UTF-8
+ [1] LC_CTYPE=en_US.UTF-8          LC_NUMERIC=C                  LC_TIME=en_US.UTF-8           LC_COLLATE=en_US.UTF-8       
+ [5] LC_MONETARY=en_US.UTF-8       LC_MESSAGES=en_US.UTF-8       LC_PAPER=en_US.UTF-8          LC_NAME=en_US.UTF-8          
+ [9] LC_ADDRESS=en_US.UTF-8        LC_TELEPHONE=en_US.UTF-8      LC_MEASUREMENT=en_US.UTF-8    LC_IDENTIFICATION=en_US.UTF-8
 
 attached base packages:
 [1] parallel  stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] lmtest_0.9-34       zoo_1.7-12          maptools_0.8-36     RgoogleMaps_1.2.0.7 doParallel_1.0.8   
- [6] iterators_1.0.7     foreach_1.4.2       sp_1.1-1            xlsx_0.5.7          xlsxjars_0.6.1     
-[11] rJava_0.9-7         readxl_0.1.0.9000   xtable_1.7-4        sandwich_2.3-4      texreg_1.35        
-[16] data.table_1.9.7    funchir_0.1.1      
+ [1] lmtest_0.9-34       zoo_1.7-12          maptools_0.8-36     RgoogleMaps_1.2.0.7 doParallel_1.0.8    iterators_1.0.7    
+ [7] foreach_1.4.2       sp_1.1-1            xlsx_0.5.7          xlsxjars_0.6.1      rJava_0.9-7         readxl_0.1.0.9000  
+[13] xtable_1.7-4        sandwich_2.3-4      texreg_1.35         data.table_1.9.7    funchir_0.1.1      
 
 loaded via a namespace (and not attached):
-[1] Rcpp_0.12.1      lattice_0.20-33  tools_3.2.2      grid_3.2.2       png_0.1-7        RJSONIO_1.3-0   
-[7] codetools_0.2-14 foreign_0.8-66   chron_2.3-47    
+[1] Rcpp_0.12.1      lattice_0.20-33  tools_3.2.2      grid_3.2.2       png_0.1-7        RJSONIO_1.3-0    codetools_0.2-14 foreign_0.8-66  
+[9] chron_2.3-47    
