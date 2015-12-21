@@ -117,3 +117,13 @@ dcast(properties[(!holdout),mean(ever_paid_sep),
       cut~treat7,value.var="V1"
       )[,matplot(1:.N,.SD[,!"cut",wi=F],type="l",lty=1,lwd=3,
                  col=get.col(trt.nms))]
+
+# Randomization block-level SEs for EP 3-month
+
+setkey(owners,rand_id)
+apply(replicate(5e3,owners[.(sample(unique(rand_id),rep=T)),
+                        mean(ever_paid_sep),keyby=treat8
+                        ][,{x<-V1[treat8!="Holdout"]
+                        setNames(x-V1[treat8=="Holdout"],
+                                 trt.nms)}]),
+      1,quantile,c(.025,.975))

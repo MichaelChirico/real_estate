@@ -221,6 +221,13 @@ properties<-
                ][geosuppVI,(geovars):=mget("i."%+%geovars),
                  on="opa_no"]
 
+#Replace randomization block ID for those in holdout
+## First, anyone in overlap simply gets their original block
+properties[,rand_id:=unique(na.omit(rand_id)),by=owner1]
+## Now append the rest to the end
+RM<-properties[,max(rand_id,na.rm=T)]
+properties[is.na(rand_id),rand_id:=.GRP+RM,by=owner1]
+
 nms<-names(geoindVIII)%\%"opa_no"
 properties[geoindVIII,(nms):=mget("i."%+%nms),on="opa_no"]
 
@@ -319,6 +326,7 @@ owners<-{
              .(treat2 = treat2[1L],treat3 = treat3[1L],
                treat7 = treat7[1L],treat8 = treat8[1L],
                treat14=treat14[1L],treat15=treat15[1L],
+               rand_id=rand_id[1L],
                #Not sure what to do with overlaps...
                holdout=all(holdout),
                ever_paid_jul=any(ever_paid_jul),
