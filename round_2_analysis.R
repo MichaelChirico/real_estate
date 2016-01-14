@@ -226,7 +226,7 @@ properties<-
 properties[,rand_id:=unique(na.omit(rand_id)),by=owner1]
 ## Now append the rest to the end
 RM<-properties[,max(rand_id,na.rm=T)]
-properties[is.na(rand_id),rand_id:=.GRP+RM,by=owner1]
+properties[is.na(rand_id),rand_id:=.GRP%%14+RM+1,by=owner1]
 
 nms<-names(geoindVIII)%\%"opa_no"
 properties[geoindVIII,(nms):=mget("i."%+%nms),on="opa_no"]

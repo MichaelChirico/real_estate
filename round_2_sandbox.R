@@ -100,6 +100,10 @@ text(expdates,1.2*par("usr")[3],pos=4,
 
 # Distance and deterrance ####
 sheriffs_delinquent_map<-
+  readShapePoints(wds["gis"]%+%"delinquent_sold_year_to_may_15_nad.shp",
+                  proj4string=CRS("+init=epsg:2272"))
+
+sheriffs_delinquent_map<-
   spTransform(sheriffs_delinquent_map,CRS("+proj=longlat +datum=WGS84"))
 
 #guess at quantiles of distances among all properties
@@ -118,7 +122,7 @@ dcast(properties[(!holdout),mean(ever_paid_sep),
       )[,matplot(1:.N,.SD[,!"cut",wi=F],type="l",lty=1,lwd=3,
                  col=get.col(trt.nms))]
 
-# Randomization block-level SEs for EP 3-month
+# Randomization block-level SEs for EP 3-month ####
 
 setkey(owners,rand_id)
 apply(replicate(5e3,owners[.(sample(unique(rand_id),rep=T)),
@@ -127,3 +131,140 @@ apply(replicate(5e3,owners[.(sample(unique(rand_id),rep=T)),
                         setNames(x-V1[treat8=="Holdout"],
                                  trt.nms)}]),
       1,quantile,c(.025,.975))
+
+DT <- data.table( A= c(2,5,4,-2,4), 
+                  B= c(1000,1100,1375,1650,1485), 
+                  C= c(50,55,68.75,82.5,74.25), 
+                  D= c(100,275,275,-165,297))
+DT
+
+DT <- data.table(A = c(2, 5, 4, -2, 4),
+                 B = c(1000, rep(NA, 4)),
+                 C = numeric(5),
+                 D = numeric(5))
+
+DT[1, c("C", "D") := .(.05 * B, .05 * A * B)]
+
+sapply(2:nrow(DT),function(nn){
+  new_B <- DT[nn - 1L, B + D]
+  DT[nn, c("B", "C", "D") := .(new_B, .05 * new_B, .05 * A * new_B)]
+})
+
+# Trying to do propensity score matching (rounds 1 & 2) ####
+rm(list=ls(all=TRUE))
+gc()
+library(rpart)
+library(data.table)
+library(funchir)
+library(xlsx)
+
+setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
+wds <- c(data="/media/data_drive/real_estate/")
+
+full_data <- fread(wds["data"]%+%"prop2014.txt")[nchar(PARCEL)==9]
+round_one<-fread("analysis_file_end_only_act.csv")
+round_two<-setnames(setDT(read.xlsx3(
+  wds["data"]%+%"Payments and Balance Penn Letter Experiment_150727.xlsx",
+  colIndex=c(2,5,8,9,13:15),
+  sheetName="DETAILS",header=T,startRow=9,stringsAsFactors=F,
+  colClasses=abbr_to_colClass("cnDn","4111"))),
+  c("opa_no","treat15","paid_full","ever_paid",
+    "current_balance","earliest_pmt","total_paid"))
+
+setnames(full_data, 
+         c("OWNER1","CENSUS","ZIP","WD GEO","SALE DATE",
+           "SALE PR","SALE TY","UNF","MV","TX LND","TX BLDG",
+           "XMPT LND","XMPT BLDG","CAT CD","XMPT CD","BLDG CD",
+           "ZONE","LND USE","AREA USE","SITE TYP","FRT","DPT",
+           "SHP","TOT AREA","TOP","GRG TYP","GRG SP","VIEW",
+           "STORIES","GEN CONST","TYP DWELL","EXT COND",
+           "QLT GRD","FLR PLAN","NO RM"),
+         c("owner1","census","zip","ward_geo","sale_date",
+           "sale_price","sale_type","unfinished","market_value",
+           "taxable_land","taxable_bldg","exempt_land",
+           "exempt_bldg","category","exempt_code","bldg_code",
+           "zoning","land_use","area_use","site_type","frontage",
+           "depth","shape","total_area","topography","garage_type",
+           "garage_spaces","view","stories","construction",
+           "dwell_type","exterior","quality_grade","floor_plan","rooms"))
+
+full_data[,zip5:=substr(zip,1,5)]
+full_data[,sale_year:=as.integer(substr(sale_date,1,4))]
+full_data[,mult_own:= .N > 1, by = owner1]
+
+full_data[round_one, round_1_treat := i.treatment,
+          on = c(PARCEL="opa_no")]
+
+full_data[round_two, round_2_treat := i.treat15,
+          on = c(PARCEL="opa_no")]
+
+full_data[ , round_1 := !is.na(round_1_treat)]
+
+full_data[ , round_2 := !is.na(round_2_treat)]
+
+full_data[ , in_sample := (round_1 | round_2)]
+
+nums <- c("sale_year","sale_price","market_value","taxable_land",
+          "taxable_bldg","exempt_land","exempt_bldg",
+          "frontage","depth","total_area","garage_spaces",
+          "stories","rooms")
+
+full_data[,(nums):=lapply(.SD,as.numeric),.SDcols=nums]
+
+fact <- c("census","zip5","ward_geo","sale_type","unfinished",
+          "category","exempt_code","bldg_code","zoning","land_use",
+          "area_use","site_type","shape","topography","garage_type",
+          "view","construction","dwell_type","exterior",
+          "quality_grade","floor_plan")
+
+full_data[,(fact):=lapply(.SD,as.factor),.SDcols=fact]
+
+x<-full_data[,propens:=
+               predict(glm(in_sample~category+exempt_land+
+                             market_value,family=binomial),
+                       .SD[,.(in_sample,category,exempt_land,
+                              market_value)])]
+
+opas<-full_data[(round_1|round_2)&propens%between%c(-3.1,-2.9),PARCEL]
+
+round_one[opa_no%in%opas,mean(ever_paid),keyby=treatment]
+round_one[,mean(ever_paid),keyby=treatment]
+round_two[,mean(ever_paid=="Y"),.(gsub("_.*","",treat15))]
+round_two[opa_no%in%opas,mean(ever_paid=="Y"),.(gsub("_.*","",treat15))]
+
+# Evaluating marginal effects of # letters received ####
+
+properties[owner1%in%properties[ , if(all(flag_holdout_overlap)&
+                 any(treat8=="Control")) owner1,owner1]$V1,.N]
+
+some_letters<-properties[(flag_holdout_overlap|
+                            treat15=="Holdout"),
+                         .(let_rec=.N-sum(treat15=="Holdout"),
+                           ever_paid_sep = any(ever_paid_sep)),
+                         by=owner1]
+
+setkey(some_letters,owner1)
+
+cis<-dcast(rbindlist(replicate(
+  5000,some_letters[.(sample(owner1,rep=T))
+                  ][let_rec<=10,
+                    mean(ever_paid_sep),keyby=let_rec],
+  simplify=FALSE),idcol=TRUE
+)[,quantile(V1,c(.025,.975)),by=let_rec],
+let_rec~c("low","high")[rowid(let_rec)],value.var="V1")
+
+png("~/Desktop/number_letters.png")
+cis[,matplot(let_rec,cbind(low,high),
+             lty=2,type="l",lwd=3,col="black",
+             xlab="Letters Received",ylab="Ever Paid (Sep)",
+             main="Evidence for Effect of Quantity Received")]
+some_letters[let_rec<=10,mean(ever_paid_sep),
+             keyby=let_rec
+             ][,lines(let_rec,V1,lty=1,lwd=3,col="blue")]
+cis[,abline(h=high[1L],lty=3,lwd=2,col="red")]
+dev.off()
+
+some_letters[let_rec<=10,
+             .(`Percent Ever Paid (Sep.)`=
+                 mean(ever_paid_sep)),
+             keyby=.(`Letters Received`=let_rec)]
