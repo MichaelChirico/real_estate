@@ -30,6 +30,8 @@ wds<-c(data="/media/data_drive/real_estate/",
        code="./analysis_code/",
        sher="/media/data_drive/real_estate/sheriffs_sales/",
        cens="/media/data_drive/census/")
+#Michael Chirico's function of convenience packages;
+#  install via devtools::install_github("MichaelChirico/funchir")
 library(funchir)
 library(data.table)
 library(texreg)
