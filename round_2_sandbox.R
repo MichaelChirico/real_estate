@@ -128,8 +128,7 @@ setkey(owners,rand_id)
 apply(replicate(5e3,owners[.(sample(unique(rand_id),rep=T)),
                         mean(ever_paid_sep),keyby=treat8
                         ][,{x<-V1[treat8!="Holdout"]
-                        setNames(x-V1[treat8=="Holdout"],
-                                 trt.nms)}]),
+                        trt.nms%=%x-V1[treat8=="Holdout"]}]),
       1,quantile,c(.025,.975))
 
 DT <- data.table( A= c(2,5,4,-2,4), 
@@ -234,37 +233,426 @@ round_two[opa_no%in%opas,mean(ever_paid=="Y"),.(gsub("_.*","",treat15))]
 
 # Evaluating marginal effects of # letters received ####
 
-properties[owner1%in%properties[ , if(all(flag_holdout_overlap)&
-                 any(treat8=="Control")) owner1,owner1]$V1,.N]
-
 some_letters<-properties[(flag_holdout_overlap|
                             treat15=="Holdout"),
-                         .(let_rec=.N-sum(treat15=="Holdout"),
+                         .(let_rec=cut(.N-sum(treat15=="Holdout"),
+                                       c(0:3,5,10,200),right=F,
+                                       labels=c(0,1,2,"3-4","5-9","10+")),
                            ever_paid_sep = any(ever_paid_sep)),
                          by=owner1]
+BB<-7000
+marg<-
+  rbindlist(replicate(
+    BB,some_letters[sample(.N,rep=T),
+                    mean(ever_paid_sep),
+                    keyby=let_rec],
+    simplify=FALSE),idcol=TRUE
+  )[,c("low","high")%=%as.list(quantile(V1,c(.025,.975))),
+    by=let_rec][some_letters[,.(avg=mean(ever_paid_sep)),
+                             keyby=let_rec],on="let_rec"]
 
-setkey(some_letters,owner1)
+marg[,{pdf2(wds["imga"]%+%"marginal_effect_of_letters_all.pdf")
+  x<-barplot(avg,names.arg=let_rec,col="cyan",xlab="Letters Received",
+             ylim=c(0,max(`97.5%`)+.05),ylab="Probability Ever Paid",
+             main="Marginal Effects of Receiving Letters")
+  arrows(x,`2.5%`,x,`97.5%`,
+         angle=90,code=3,lwd=1,length=.05)
+  text(x,`97.5%`,pos=3,cex=.6,
+       labels="n = "%+%
+         prettyNum(some_letters[,.N,keyby=let_rec]$N,
+                   big.mark=","))
+  dev.off2()}]
 
-cis<-dcast(rbindlist(replicate(
-  5000,some_letters[.(sample(owner1,rep=T))
-                  ][let_rec<=10,
-                    mean(ever_paid_sep),keyby=let_rec],
-  simplify=FALSE),idcol=TRUE
-)[,quantile(V1,c(.025,.975)),by=let_rec],
-let_rec~c("low","high")[rowid(let_rec)],value.var="V1")
 
-png("~/Desktop/number_letters.png")
-cis[,matplot(let_rec,cbind(low,high),
-             lty=2,type="l",lwd=3,col="black",
-             xlab="Letters Received",ylab="Ever Paid (Sep)",
-             main="Evidence for Effect of Quantity Received")]
-some_letters[let_rec<=10,mean(ever_paid_sep),
-             keyby=let_rec
-             ][,lines(let_rec,V1,lty=1,lwd=3,col="blue")]
-cis[,abline(h=high[1L],lty=3,lwd=2,col="red")]
-dev.off()
 
-some_letters[let_rec<=10,
-             .(`Percent Ever Paid (Sep.)`=
-                 mean(ever_paid_sep)),
-             keyby=.(`Letters Received`=let_rec)]
+
+some_letters<-
+  properties[,if(all(treat15=="Holdout")|
+                 (all(treat8%in%
+                      c("Holdout","Control"))&
+                  any(treat8=="Holdout")))
+    .(let_rec=cut(.N-sum(treat8=="Holdout"),
+                  c(0:3,5,10,200),right=F,
+                  labels=c(0,1,2,"3-4","5-9","10+")),
+      ever_paid_sep = any(ever_paid_sep)),
+    by=owner1]
+BB<-7000
+marg<-
+  rbindlist(replicate(
+    BB,some_letters[sample(.N,rep=T),
+                    mean(ever_paid_sep),
+                    keyby=let_rec],
+    simplify=FALSE),idcol=TRUE
+  )[,as.list(quantile(V1,c(.025,.975))),
+    by=let_rec][some_letters[,.(avg=mean(ever_paid_sep)),
+                             keyby=let_rec],on="let_rec"]
+
+marg[,{pdf2(wds["imga"]%+%"marginal_effect_of_letters_cont.pdf")
+  x<-barplot(avg,names.arg=let_rec,col="cyan",xlab="Letters Received",
+             ylim=c(0,max(`97.5%`)+.05),ylab="Probability Ever Paid",
+             main="Marginal Effects of Receiving Letters"%+%
+               "\nControl Overlap Only")
+  arrows(x,`2.5%`,x,`97.5%`,
+         angle=90,code=3,lwd=1,length=.05)
+  text(x,`97.5%`,pos=3,cex=.6,
+       labels="n = "%+%
+         prettyNum(some_letters[,.N,keyby=let_rec]$N,
+                   big.mark=","))
+  dev.off2()}]
+
+
+
+some_letters<-
+  properties[,if(.N==2)
+    .(let_rec=.N-sum(treat8=="Holdout"),
+      ever_paid_sep = any(ever_paid_sep)),
+    by=owner1]
+BB<-7000
+marg<-
+  rbindlist(replicate(
+    BB,some_letters[sample(.N,rep=T),
+                    mean(ever_paid_sep),
+                    keyby=let_rec],
+    simplify=FALSE),idcol=TRUE
+  )[,as.list(quantile(V1,c(.025,.975))),
+    by=let_rec][some_letters[,.(avg=mean(ever_paid_sep)),
+                             keyby=let_rec],on="let_rec"]
+
+marg[,{pdf2(wds["imga"]%+%"marginal_effect_of_letters_two_prop.pdf")
+  x<-barplot(avg,names.arg=let_rec,col="cyan",xlab="Letters Received",
+             ylim=c(0,max(`97.5%`)+.05),ylab="Probability Ever Paid",
+             main="Marginal Effects of Receiving Letters"%+%
+               "\nOwners of Two Properties")
+  arrows(x,`2.5%`,x,`97.5%`,
+         angle=90,code=3,lwd=1,length=.05)
+  text(x,`97.5%`,pos=3,cex=.6,
+       labels="n = "%+%
+         prettyNum(some_letters[,.N,keyby=let_rec]$N,
+                   big.mark=","))
+  dev.off2()}]
+
+# Cumulative Hazards with CIs ####
+dt.rng<-owners[(!holdout),{rng<-range(get("earliest_pmt_dec"),na.rm=T)
+seq(from=rng[1],to=rng[2],by="day")}]
+#For pretty printing, get once/week subset
+dt.rng2<-dt.rng[seq(1,length(dt.rng),length.out=7)]
+snap.dates<-owners[,do.call("c",sapply(
+  .SD,max,na.rm=T,simplify=F)),
+  .SDcols="earliest_pmt_"%+%c("jul","sep")]
+
+
+date.dt <- 
+  CJ(treat7 = trt.nms, date = dt.rng,
+     unique=TRUE, sorted = FALSE)
+cum_haz<-owners[(!holdout),sum(ever_paid_dec)+0.,
+                keyby=.(treat7,earliest_pmt_dec)
+                ][,.(ep=cumsum(V1[idx<-!is.na(earliest_pmt_dec)]),
+                     date=earliest_pmt_dec[idx]),by=treat7
+                  ][owners[(!holdout),.N,treat7],ep:=ep/i.N,on="treat7"
+                    ][date.dt, on = c("treat7", "date"), roll = TRUE
+                      ][,.(treat6=treat7[idx<-treat7!="Control"],
+                           ep=ep[idx]-ep[!idx]),by=date]
+
+setkey(owners,rand_id)
+randids<-owners[(!holdout),unique(rand_id)]
+BB <- 5000
+cis <- dcast(rbindlist(lapply(integer(BB), function(...){
+  dt <- owners[(!holdout)][.(sample(randids,rep=T))]
+  dt[,sum(ever_paid_dec)+0.,keyby=.(treat7,earliest_pmt_dec)
+     ][,.(ep=cumsum(V1[idx<-!is.na(earliest_pmt_dec)]),
+          date=earliest_pmt_dec[idx]),by=treat7
+       ][dt[,.N,treat7],ep:=ep/i.N,on="treat7"
+         ][date.dt, on = c("treat7", "date"),roll = TRUE
+           ][,.(treat6=treat7[idx<-treat7!="Control"],
+                ep=ep[idx]-ep[!idx]),by=date]}),idcol="bootID"
+  )[,quantile(ep, c(.025, .975), na.rm=T), by = .(treat6, date)],
+  treat6+date~c("low","high")[rowid(treat6,date)],value.var="V1")
+
+dcast(cum_haz[cis,on=c("treat6","date")],
+      date~treat6,value.var=c("low","ep","high")
+      )[,{pdf2(wds["imga"]%+%"cum_haz_ever_paid_dec_7_own_cis.pdf")
+        par(mfrow=c(2,3),
+              mar=c(0,0,1.1,0),
+              oma=c(7.1,4.1,4.1,1.1))
+        ylm <- range(.SD[,!"date",with=F])
+        axl <- list(list(at=dt.rng2,las=2,
+                         labels=format(dt.rng2,"%b %d")),
+                    list())
+        for (ii in 1:6){
+          tr <- (trt.nms%\%"Control")[ii]
+          matplot(date, do.call("cbind",mget(c("low_","ep_","high_")%+%tr)),
+                  type="l",lty=c(2,1,2),col=get.col(tr),
+                  lwd=3,xaxt="n",yaxt="n",ylim=ylm)
+          abline(h = 0, col = "black", lwd = 2)
+          abline(v = snap.dates, col = "black", lty = 2)
+          tile.axes(ii,2,3,axl)
+          title(tr)}
+        title("Cumulative Partial Participation (Dec.)"%+%
+                "\nRelative to Control",outer=T)
+        mtext("Date",side=1,outer=T,line=5.5)
+        mtext("Probability Ever Paid vs. Control",
+              side=2,outer=T,line=2.5)
+        dev.off2()}]
+
+
+
+date.dt <- 
+  CJ(treat8 = c("Holdout","Control"), date = dt.rng,
+     unique=TRUE, sorted = FALSE)
+cum_haz<-owners[treat8%in%c("Holdout","Control"),
+                sum(ever_paid_dec)+0.,
+                keyby=.(treat8,earliest_pmt_dec)
+                ][,.(ep=cumsum(V1[idx<-!is.na(earliest_pmt_dec)]),
+                     date=earliest_pmt_dec[idx]),by=treat8
+                  ][owners[treat8%in%c("Holdout","Control"),.N,treat8],
+                    ep:=ep/i.N,on="treat8"
+                    ][date.dt, on = c("treat8", "date"), roll = TRUE
+                      ][,.(ep=ep[idx<-treat8=="Control"]-ep[!idx]),by=date]
+
+BB <- 5000
+cis <- dcast(rbindlist(lapply(integer(BB), function(...){
+  dt <- owners[treat8%in%c("Holdout","Control")][sample(.N,rep=T)]
+  dt[,sum(ever_paid_dec)+0.,keyby=.(treat8,earliest_pmt_dec)
+     ][,.(ep=cumsum(V1[idx<-!is.na(earliest_pmt_dec)]),
+          date=earliest_pmt_dec[idx]),by=treat8
+       ][dt[,.N,treat8],ep:=ep/i.N,on="treat8"
+         ][date.dt, on = c("treat8", "date"),roll = TRUE
+           ][,.(ep=ep[idx<-treat8=="Control"]-ep[!idx]),
+             by=date]}),idcol="bootID"
+)[,quantile(ep, c(.025, .975), na.rm=T), by = date],
+date~c("low","high")[rowid(date)],value.var="V1")
+
+cum_haz[cis,on=c("date")
+        ][,{pdf2(wds["imga"]%+%"cum_haz_ever_paid_dec_cont_hold_own_cis.pdf")
+          matplot(date, do.call("cbind",mget(c("low","ep","high"))),
+                  type="l",lty=c(2,1,2),col=get.col("Control"),
+                  xaxt="n",lwd=3,xlab="Date",
+                  ylab="Probability Ever Paid vs. Holdout")
+          axis(side=1,at=dt.rng2,labels=format(dt.rng2,"%b %d"))
+          abline(h = 0, col = "black", lwd = 2)
+          title("Cumulative Partial Participation (Dec.)"%+%
+                  "\nControl vs. Holdout")
+          dev.off2()}]
+
+
+
+date.dt <- 
+  CJ(treat2 = c("Small","Big"), date = dt.rng,
+     unique=TRUE, sorted = FALSE)
+cum_haz<-owners[(!holdout),
+                sum(ever_paid_dec)+0.,
+                keyby=.(treat2,earliest_pmt_dec)
+                ][,.(ep=cumsum(V1[idx<-!is.na(earliest_pmt_dec)]),
+                     date=earliest_pmt_dec[idx]),by=treat2
+                  ][owners[(!holdout),.N,treat2],
+                    ep:=ep/i.N,on="treat2"
+                    ][date.dt, on = c("treat2", "date"), roll = TRUE
+                      ][,.(ep=ep[idx<-treat2=="Big"]-ep[!idx]),by=date]
+
+BB <- 5000
+cis <- dcast(rbindlist(lapply(integer(BB), function(...){
+  dt <- owners[(!holdout)][.(sample(randids,rep=T))]
+  dt[,sum(ever_paid_dec)+0.,keyby=.(treat2,earliest_pmt_dec)
+     ][,.(ep=cumsum(V1[idx<-!is.na(earliest_pmt_dec)]),
+          date=earliest_pmt_dec[idx]),by=treat2
+       ][dt[,.N,treat2],ep:=ep/i.N,on="treat2"
+         ][date.dt, on = c("treat2", "date"),roll = TRUE
+           ][,.(ep=ep[idx<-treat2=="Big"]-ep[!idx]),
+             by=date]}),idcol="bootID"
+)[,quantile(ep, c(.025, .975), na.rm=T), by = date],
+date~c("low","high")[rowid(date)],value.var="V1")
+
+cum_haz[cis,on=c("date")
+        ][,{pdf2(wds["imga"]%+%"cum_haz_ever_paid_dec_2_own_cis.pdf")
+          matplot(date, do.call("cbind",mget(c("low","ep","high"))),
+                  type="l",lty=c(2,1,2),col=get.col("Control"),
+                  xaxt="n",lwd=3,xlab="Date",
+                  ylab="Probability Ever Paid vs. Small")
+          axis(side=1,at=dt.rng2,labels=format(dt.rng2,"%b %d"))
+          abline(h = 0, col = "black", lwd = 2)
+          title("Cumulative Partial Participation (Dec.)"%+%
+                  "\nBig vs. Small")
+          dev.off2()}]
+
+
+
+pfcs<-c("pfj","pfs","pfd")
+cis<-dcast(rbindlist(lapply(integer(BB), function(...){
+  dt <- owners[(!holdout)][.(sample(randids, rep = T))]
+  dt[,.(pfj=mean(paid_full_jul),
+        pfs=mean(paid_full_sep),
+        pfd=mean(paid_full_dec)),by=treat7
+     ][,.(treat6=treat7[idx<-treat7!="Control"],
+          pfj=pfj[idx]-pfj[!idx],
+          pfs=pfs[idx]-pfs[!idx],
+          pfd=pfd[idx]-pfd[!idx])]}),idcol="bootID"
+)[,lapply(.SD,quantile,c(.025,.975)),
+  .SDcols=pfcs,by=treat6],
+treat6~c("low","high")[rowid(treat6)],
+value.var=pfcs)
+
+
+trt.nms6<-trt.nms%\%"Control"
+
+pdf2(wds["imga"]%+%"cum_haz_paid_full_dec_7_own_cis.pdf")
+Pfcs<-"paid_full_"%+%c("jul","sep","dec")
+bpx<-owners[(!holdout),lapply(.SD,mean),by=treat7,
+            .SDcols=Pfcs
+            ][,barplot(do.call("rbind",sapply(Pfcs,function(p)
+              (x<-get(p))[idx<-treat7!="Control"]-x[!idx],
+              simplify=F)),beside=T,
+              col=rep(get.col(trt.nms6),each=3),
+              ylim=range(cis[,!"treat6",with=F]),
+              density=20*3^(0:2))]
+title("Proportion Paid in Full Across Time"%+%
+        "\nVersus Control")
+legend("topleft",legend=trt.nms6,bty="n",y.intersp=.2,
+       col=get.col(trt.nms6),lty=1,lwd=7)
+legend("bottomright",bty="n",y.intersp=.2,adj=1,
+       legend=owners[(!holdout),
+                     paste0(c("J: ","S: ","D: "),
+                            format(do.call("c",sapply(
+                              .SD,max,na.rm=T,simplify=F)),
+                            "%b %d")),
+                     .SDcols="earliest_pmt_"%+%
+                       c("jul","sep","dec")])
+text(bpx,0,labels=rep(c("J","S","D"),6),cex=.5)
+
+cis[,arrows(bpx,do.call("rbind",mget(pfcs%+%"_low")),
+            bpx,do.call("rbind",mget(pfcs%+%"_high")),
+            angle=90,code=3,lwd=1,length=.05)]
+dev.off2()
+
+
+pdf2(wds["imga"]%+%"cum_haz_paid_full_dec_pairs_own_cis.pdf")
+par(mfrow=c(1,2),oma=c(0,0,1,0))
+cis<-rbindlist(lapply(integer(BB), function(...){
+  dt <- owners[treat8%in%c("Holdout","Control")][sample(.N, rep = T)]
+  dt[,.(pfj=mean(paid_full_jul),
+        pfs=mean(paid_full_sep),
+        pfd=mean(paid_full_dec)),by=treat8
+     ][,lapply(.SD[,!"treat8",with=F],diff)]}),idcol="bootID"
+)[,lapply(.SD,quantile,c(.025,.975)),
+  .SDcols=pfcs]
+
+bpx<-owners[treat8%in%c("Holdout","Control"),
+            lapply(.SD,mean),keyby=treat8,.SDcols=Pfcs
+            ][,barplot(sapply(.SD[,!"treat8",with=F],diff),
+                       space=0,names.arg="",
+                       beside=T,col=rep(get.col("Control"),3),
+                       ylim=range(cis),density=20*3^(0:2))]
+title("Control vs. Holdout")
+text(bpx,0,labels=c("J","S","D"))
+
+cis[,arrows(bpx,unlist(.SD[1]),
+            bpx,unlist(.SD[2]),
+            angle=90,code=3,lwd=1,length=.05)]
+
+
+cis<-rbindlist(lapply(integer(BB), function(...){
+  dt <- owners[(!holdout)][.(sample(randids, rep = T))]
+  dt[,.(pfj=mean(paid_full_jul),
+        pfs=mean(paid_full_sep),
+        pfd=mean(paid_full_dec)),by=treat2
+     ][,lapply(.SD[,!"treat2",with=F],diff)]}),idcol="bootID"
+)[,lapply(.SD,quantile,c(.025,.975)),
+  .SDcols=pfcs]
+
+bpx<-owners[(!holdout),
+            lapply(.SD,mean),keyby=treat2,.SDcols=Pfcs
+            ][,barplot(sapply(.SD[,!"treat2",with=F],diff),space=0,
+                       beside=T,col=rep(get.col("Big"),3),
+                       ylim=range(cis),
+                       density=20*3^(0:2))]
+title("Big vs. Small")
+text(bpx,0,labels=c("J","S","D"))
+
+cis[,arrows(bpx,unlist(.SD[1]),
+            bpx,unlist(.SD[2]),
+            angle=90,code=3,lwd=1,length=.05)]
+title("Proportion Paid in Full Across Time",outer=T)
+dev.off2()
+
+# Significance of Azavea Quad-level results ####
+
+vre<-"ever_paid_"%+%c("jul","sep","dec")
+vrp<-"paid_full_"%+%c("jul","sep","dec")
+vrs<-c(vre,vrp)
+
+setkey(properties,rand_id)
+randids<-owners[(!holdout),unique(rand_id)]
+
+BB<-5000
+marg<-dcast(rbindlist(lapply(integer(BB),function(...)
+  properties[(!holdout)][.(sample(randids,rep=T)),
+                         lapply(.SD,mean),keyby=.(treat7,azavea_quad),.SDcols=vrs
+                         ][,c(list(treat7=treat7[idx<-treat7!="Control"]),
+                              lapply(.SD[,!"treat7",with=F],
+                                     function(x)x[idx]-x[!idx])),
+                           by=azavea_quad]),idcol="BootID"
+  )[,c(list(CI=c("low","high")),
+       lapply(.SD,quantile,c(.025,.975))),
+       by=.(azavea_quad,treat7),.SDcols=vrs],
+  azavea_quad+treat7~CI,value.var=vrs
+  )[properties[(!holdout),lapply(.SD,mean),
+               keyby=.(treat7,azavea_quad),.SDcols=vrs
+               ][,c(list(treat7=treat7[idx<-treat7!="Control"]),
+                    lapply(.SD[,!"treat7",with=F],
+                           function(x)x[idx]-x[!idx])),
+                 by=azavea_quad],on=c("azavea_quad","treat7")]
+
+pdf2(wds["imga"]%+%"neighborhood_ever_paid_over_time.pdf")
+par(mfrow=c(2,3),mar=c(0,0,1,0),oma=c(5.1,4.1,4.1,1.1))
+rng <- 1.03*marg[,range(.SD[,grep("ever_paid",
+                                  names(marg)),with=F])]
+for (ii in 1:length(aq<-marg[,unique(azavea_quad)])){
+  marg[azavea_quad==aq[ii],{
+    bpx<-barplot(do.call("rbind",mget(vre)),beside=T,
+                 col=rep(get.col(treat7),each=3),
+                 density=20*3^(0:2),ylim=rng,yaxt="n")
+    if(ii %% 3 == 1) axis(side = 2)
+    text(bpx,0,labels=rep(c("J","S","D"),6),cex=.4)
+    title(aq[ii],cex.main=.8)
+    arrows(bpx,do.call("rbind",mget(vre%+%"_low")),
+           bpx,do.call("rbind",mget(vre%+%"_high")),
+           angle=90,code=3,lwd=.5,length=.01,lty=1)}]
+  box()
+}
+title("Proportion Ever Paid Over Time"%+%
+        "\nBy Azavea Quadrant, vs. Control",
+      outer=T)
+dev.off2()
+
+pdf2(wds["imga"]%+%"neighborhood_paid_full_over_time.pdf")
+par(mfrow=c(2,3),mar=c(0,0,1,0),oma=c(5.1,4.1,4.1,1.1))
+rng <- 1.03*marg[,range(.SD[,grep("paid_full",
+                                  names(marg)),with=F])]
+for (ii in 1:length(aq<-marg[,unique(azavea_quad)])){
+  marg[azavea_quad==aq[ii],{
+    bpx<-barplot(do.call("rbind",mget(vrp)),beside=T,
+                 col=rep(get.col(treat7),each=3),
+                 density=20*3^(0:2),ylim=rng,yaxt="n")
+    if(ii %% 3 == 1) axis(side = 2)
+    text(bpx,0,labels=rep(c("J","S","D"),6),cex=.4)
+    title(aq[ii],cex.main=.8)
+    arrows(bpx,do.call("rbind",mget(vrp%+%"_low")),
+           bpx,do.call("rbind",mget(vrp%+%"_high")),
+           angle=90,code=3,lwd=.5,length=.01,lty=1)}]
+  box()
+}
+title("Proportion Paid Full Over Time"%+%
+        "\nBy Azavea Quadrant, vs. Control",
+      outer=T)
+dev.off2()
+
+# paid_full time series ####
+
+setkey(properties,treat8)
+
+payments[properties[,.N,treat8], treat8_N:=i.N, on = "treat8"]
+
+payments[,sum(paid_full)/properties[.(.BY[[2]]),.N],.(valid,treat8)
+         ][CJ(valid=valid,treat8=treat8,unique=T),
+           on=c("valid","treat8")]
+
+payments[,properties[.(.BY[[2]]),.N],.(valid,treat8)]

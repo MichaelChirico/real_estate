@@ -110,9 +110,9 @@ followupIII<-setDT(read_excel(
               rep("x",3),"current_balance","earliest_pmt",
               "total_paid","pmt_agr_type","pmt_agr_status",
               "pmt_agr_start","pmt_agr_amt","x"),
-  #Deleting last row b/c read_excel read too many rows
   col_types=abbr_to_colClass("tnttndntdt","4292111212"))
   )[,c("earliest_pmt","pmt_agr_start"):=
+      #Deleting last row b/c read_excel read too many rows
       lapply(list(earliest_pmt,pmt_agr_start),as.Date)][-.N,!"x",with=F]
 
 ###The following accounts changed OPA #s between samples,
@@ -122,23 +122,47 @@ followupIII<-setDT(read_excel(
 update_opas<-data.table(old=c("151102600","884350465"),
                         new=c("151102610","881577275"))
 followupIII[update_opas,opa_no:=i.old,on=c("opa_no"="new")]
-                
-##Block IV: Main Sample Background Data
-mainBGIV<-fread("./round_2_full_data.csv",drop="treatment")
 
-##Block V: Holdout Sample Background Data
-holdBGV<-fread("holdout_sample.csv")
+##Block IV: Follow-up Sample (December 2015)
+followupIV<-setDT(read_excel(
+  wds["data"]%+%"req20150709_PennLetterExperiment (December 2015 update) v2.xlsx",
+  sheet="DETAILS",skip=7,na=c("NULL","-"),
+  col_names=c("account","opa_no",rep("x",9),
+              "paid_full","ever_paid","pmt_agr",
+              rep("x",3),"current_balance","earliest_pmt",
+              "total_paid","pmt_agr_type","pmt_agr_status",
+              "pmt_agr_start","pmt_agr_amt","x"),
+  #Deleting last row b/c read_excel read too many rows
+  col_types=abbr_to_colClass("tnttnnntnt","4292111212"))
+  )[,c("earliest_pmt","pmt_agr_start"):=
+      lapply(.(earliest_pmt,pmt_agr_start),
+             as.Date,origin=as.Date("1899-12-30"))
+    ][-.N,!"x",with=F]
 
-##Block VI: Supplemental Geocoding Data
-geosuppVI<-fread(wds["data"]%+%"round_2_supplement_lon_lat.csv")
+###In addition to the two from the three-month sample,
+###  two more properties have updated OPAs.
+###  **INSERT E-MAIL META DATA FROM DOR CONFIRMATION**
+update_opas<-
+  data.table(old=c("151102600","884350465","882932475","213155700"),
+             new=c("151102610","881577275","882932476","881081460"))
+followupIV[update_opas,opa_no:=i.old,on=c("opa_no"="new")]
 
-##Block VII: Spatial Data for Sheriff's Sale properties
-geosherVII<-
+##Block V: Main Sample Background Data
+mainBGV<-fread("./round_2_full_data.csv",drop="treatment")
+
+##Block VI: Holdout Sample Background Data
+holdBGVI<-fread("holdout_sample.csv")
+
+##Block VII: Supplemental Geocoding Data
+geosuppVII<-fread(wds["data"]%+%"round_2_supplement_lon_lat.csv")
+
+##Block VIII: Spatial Data for Sheriff's Sale properties
+geosherVIII<-
   fread(wds["data"]%+%"/sheriffs_sales/"%+%
           "delinquent_sold_used_round_2_w_lon_lat.csv",
         select=c("address","longitude","latitude"))
 
-##Block VIII: Assorted Geographic Indicators
+##Block IX: Assorted Geographic Indicators
 ##  (as well as associated supplemental stats)
 
 ###Census Tract-Level Data on Education
@@ -190,16 +214,16 @@ reg.data<-
                   pct_republican=Rep/Total,
                   pct_independent=Ind/Total)]
   
-geoindVIII<-
+geoindIX<-
   fread(wds["data"]%+%"round_2_spatial_regions.csv"
         )[cens.ed.data,on="census_tract",nomatch=0L
           ][cens.inc.data,on="census_tract",nomatch=0L
             ][reg.data,on="political_ward",nomatch=0L]
 
-###Other Background Data
+###Block X: Other Background Data
 ###  From OPA-issued Property Data CD
 ###  (certified for 2015, received May 2014)
-opabgIX<-
+opabgX<-
   setnames(fread(wds["data"]%+%"prop2015.txt",
                  select=c("PARCEL","MV","CAT CD","XMPT CD")),
            c("opa_no","assessed_mv","category","exempt_code"))
@@ -207,40 +231,37 @@ opabgIX<-
         
 ##Quilting time!
 ### Framework:
-###  I  III IV VI VII VIII IX
-###  II III  V VI  -  VIII IX
-bgvars<-names(mainBGIV)%\%"opa_no"
+###  I  III IV V  VII VIII IX X
+###  II III IV VI VII   -  IX X
+bgvars<-names(mainBGV)%\%"opa_no"
 geovars<-c("latitude","longitude")
 updvars<-c("paid_full","ever_paid","current_balance",
            "earliest_pmt","total_paid")
+updvars2<-c(updvars,"pmt_agr","pmt_agr_type",
+            "pmt_agr_status","pmt_agr_start","pmt_agr_amt")
 properties<-
   setnames(rbind(mainI,holdoutII),
            updvars,updvars%+%"_jul"
-           )[setnames(followupIII,updvars,updvars%+%"_sep"),
+           )[setnames(followupIII,updvars2,updvars2%+%"_sep"),
              on="opa_no"
-             ][rbind(mainBGIV,holdBGV,fill=T),
-               (bgvars):=mget("i."%+%bgvars),on="opa_no"
-               ][geosuppVI,(geovars):=mget("i."%+%geovars),
-                 on="opa_no"]
+             ][setnames(followupIV,updvars2,updvars2%+%"_dec"),
+               on="opa_no"
+               ][rbind(mainBGV,holdBGVI,fill=T),
+                 (bgvars):=mget("i."%+%bgvars),on="opa_no"
+                 ][geosuppVII,(geovars):=mget("i."%+%geovars),
+                   on="opa_no"]
 
-#Replace randomization block ID for those in holdout
-## First, anyone in overlap simply gets their original block
-properties[,rand_id:=unique(na.omit(rand_id)),by=owner1]
-## Now append the rest to the end
-RM<-properties[,max(rand_id,na.rm=T)]
-properties[is.na(rand_id),rand_id:=.GRP%%14+RM+1,by=owner1]
+nms<-names(geoindIX)%\%"opa_no"
+properties[geoindIX,(nms):=mget("i."%+%nms),on="opa_no"]
 
-nms<-names(geoindVIII)%\%"opa_no"
-properties[geoindVIII,(nms):=mget("i."%+%nms),on="opa_no"]
-
-properties[opabgIX,`:=`(assessed_mv=as.numeric(i.assessed_mv),
-                        residential=i.category=="1",
-                        exempt_code=i.exempt_code),on="opa_no"]
+properties[opabgX,`:=`(assessed_mv=as.numeric(i.assessed_mv),
+                       residential=i.category=="1",
+                       exempt_code=i.exempt_code),on="opa_no"]
 
 addrs<-"example_address_"%+%1:3
 for (addr in addrs){
   ll<-addr%+%c("_longitude","_latitude")
-  properties[geosherVII,(ll):=
+  properties[geosherVIII,(ll):=
                .(i.longitude,i.latitude),
              on=setNames("address",addr)]
   #Should update this if we ever add corresponding
@@ -261,17 +282,22 @@ properties[,sheriff_distance_mean:=
 
 
 ##Data Clean-up
+###Account ID with extra whitespace
+properties[,account:=gsub("\\s","",account)]
 ###Re-set indicators as T/F instead of Y/N
 inds<-c("paid_full_jul","ever_paid_jul",
-        "paid_full_sep","ever_paid_sep","pmt_agr")
+        "paid_full_sep","ever_paid_sep",
+        "paid_full_dec","ever_paid_dec",
+        "pmt_agr_sep","pmt_agr_dec")
 properties[,(inds):=lapply(.SD,function(x)x=="Y"),.SDcols=inds]
 ###Paid Full actually stored opposite because 
 ###  question in data is: "Does property have a balance?"
-properties[,paid_full_jul:=!paid_full_jul]
-properties[,paid_full_sep:=!paid_full_sep]
+pf <- "paid_full_"%+%c("jul","sep","dec")
+properties[,(pf):=lapply(.SD,`!`),.SDcols=pf]
 
 properties[,paid_part_jul:=ever_paid_jul&!paid_full_jul]
 properties[,paid_part_sep:=ever_paid_sep&!paid_full_sep]
+properties[,paid_part_dec:=ever_paid_dec&!paid_full_dec]
 
 properties[,treat15:=gsub("\\sE.*","",gsub("_"," ",treat15))]
 
@@ -333,14 +359,19 @@ owners<-{
                holdout=all(holdout),
                ever_paid_jul=any(ever_paid_jul),
                ever_paid_sep=any(ever_paid_sep),
+               ever_paid_dec=any(ever_paid_dec),
                paid_full_jul=all(paid_full_jul),
                paid_full_sep=all(paid_full_sep),
+               paid_full_dec=all(paid_full_dec),
                paid_part_jul=any(ever_paid_jul)&
                  !all(paid_full_jul),
                paid_part_sep=any(ever_paid_sep)&
                  !all(paid_full_sep),
+               paid_part_dec=any(ever_paid_dec)&
+                 !all(paid_full_dec),
                total_paid_jul=sum(total_paid_jul),
                total_paid_sep=sum(total_paid_sep),
+               total_paid_dec=sum(total_paid_dec),
                earliest_pmt_jul=
                  if (all(is.na(earliest_pmt_jul))){
                    as.Date(NA)
@@ -349,16 +380,30 @@ owners<-{
                  if (all(is.na(earliest_pmt_sep))){
                    as.Date(NA)
                    }else{min(earliest_pmt_sep)},
+               earliest_pmt_dec=
+                 if (all(is.na(earliest_pmt_dec))){
+                   as.Date(NA)
+                 }else{min(earliest_pmt_dec)},
                total_due=sum(total_due),
+               current_balance_jul=
+                 sum(current_balance_jul),
                current_balance_sep=
                  sum(current_balance_sep),
+               current_balance_dec=
+                 sum(current_balance_dec),
                assessed_mv=sum(assessed_mv),
-               pmt_agr1=any(pmt_agr),
-               pmt_agrA=all(pmt_agr),
-               pmt_agr_start=
-                 if (all(is.na(pmt_agr_start))){
+               pmt_agr1_sep=any(pmt_agr_sep),
+               pmt_agr1_dec=any(pmt_agr_dec),
+               pmt_agrA_sep=all(pmt_agr_sep),
+               pmt_agrA_dec=all(pmt_agr_dec),
+               pmt_agr_start_sep=
+                 if (all(is.na(pmt_agr_start_sep))){
                    as.Date(NA)
-                 }else{min(pmt_agr_start)},
+                 }else{min(pmt_agr_start_sep)},
+               pmt_agr_start_dec=
+                 if (all(is.na(pmt_agr_start_dec))){
+                   as.Date(NA)
+                 }else{min(pmt_agr_start_dec)},
                flag_holdout_overlap=
                  flag_holdout_overlap[1L],
                flag_round_one_overlap=
@@ -382,6 +427,35 @@ owners[,flag_top01_h:=total_due>=quantile(total_due,.99)]
 owners[,flag_top05_h:=total_due>=quantile(total_due,.95)]
 
 owners[,unq_own:=N==1]
+
+getv <- c("treat"%+%c(2,3,7,8,14,15),
+          "rand_id","total_due")
+
+payments <- setDT(read_excel(
+  wds["data"]%+%
+    "req20150709_PennLetterExperiment "%+%
+    "(December 2015 update) v2.xlsx",
+  sheet="PAYMENT DETAILS",skip=1,
+  col_names=c("account","period","valid","past_due"
+              ,"principal","total_paid"),
+  col_types=abbr_to_colClass("tn","15"))
+  )[,c("period","valid"):=
+      lapply(.(period,valid),as.Date,
+             origin=as.Date("1899-12-30"))
+    ][format(as.Date(valid)-past_due,"%Y")==2015
+      ][,account:=gsub("\\s*","",account)
+        ][,.(period = max(period),
+             past_due = min(past_due),
+             principal = sum(principal),
+             total_paid = sum(total_paid)),
+          by = .(account, valid)
+          ][properties,
+            (getv):=mget("i."%+%getv),
+            on="account"]
+
+payments[order(valid),c("paid_full","cum_paid"):=
+         {cp <- cumsum(total_paid)
+         .(cp >= total_due, cp)},by=account]
 
 #Fidelity Checks ####
 ##Returned Mail Rates by Envelope Size
@@ -533,21 +607,28 @@ BB<-5000
 ###  the key changing parameters in this list;
 ###  also store a bunch of plotting parameters
 ###  since we'll use the result of this list for that
-out_main_q<-quote(.(mean(ever_paid_jul),
-                    mean(paid_full_jul),
-                    mean(paid_part_jul),
-                    mean(total_paid_jul)))
+out_main_q<-
+  parse(text=paste0(".(",
+                    paste(paste0("mean(",c("ever_paid",
+                                           "paid_full",
+                                           "paid_part",
+                                           "total_paid"),"_jul)"),
+                          collapse=","),")"))
 out_main2_q<-quote(.(mean(ever_paid_jul),
                      mean(ever_paid_sep),
+                     mean(ever_paid_dec),
                      mean(paid_full_jul),
                      mean(paid_full_sep),
+                     mean(paid_full_dec),
                      mean(paid_part_jul),
                      mean(paid_part_sep),
+                     mean(paid_part_dec),
                      mean(total_paid_jul),
-                     mean(total_paid_sep)))
+                     mean(total_paid_sep),
+                     mean(total_paid_dec)))
 out_main_n<-c("epj","pfj","pPj","tpj")
-out_main2_n<-c("epj","eps","pfj","pfs",
-               "pPj","pPs","tpj","tps")
+out_main2_n<-c("epj","eps","epd","pfj","pfs","pfd",
+               "pPj","pPs","pPd","tpj","tps","tpd")
 bootlist<-{
   #By owner, big vs. small
   list(o2=list(dt=owners[(!holdout)],tr="treat2",
@@ -557,15 +638,21 @@ bootlist<-{
        #By owner, main 7 treatments
        o7=list(dt=owners[(!holdout)],tr="treat7",
                exprs=quote(.(mean(ever_paid_jul),mean(ever_paid_sep),
+                             mean(ever_paid_dec),
                              mean(paid_full_jul),mean(paid_full_sep),
+                             mean(paid_full_dec),
                              mean(paid_part_jul),mean(paid_part_sep),
+                             mean(paid_part_sep),
                              mean(total_paid_jul),mean(total_paid_sep),
+                             mean(total_paid_dec),
                              median(total_paid_jul[total_paid_jul>0]),
                              median(total_paid_sep[total_paid_sep>0]),
                              mean(total_paid_jul[total_paid_jul>0]),
                              mean(total_paid_sep[total_paid_sep>0]),
-                             mean(pmt_agr1),mean(pmt_agrA))),
-               nms=c(out_main2_n,"mdj","mds","ppj","pps","pa1","paA"),
+                             mean(pmt_agr1_sep),mean(pmt_agrA_sep),
+                             mean(pmt_agr1_dec),mean(pmt_agrA_dec))),
+               nms=c(out_main2_n,"mdj","mds","ppj",
+                     "pps","pa1s","paAs","pa1d","paAd"),
                fn="7_own",tl="Treatment",lv=trt.nms,nx=.75,
                sp=NULL,yl=NULL,dn=quote(NULL)),
        #By owner, main 7 treatments, single-owner properties
@@ -661,11 +748,17 @@ type.params<-{list(list(mfn="bar_plot_ever_paid_jul_",xn="epj",trans=to.pct,
                    list(mfn="bar_plot_ever_paid_sep_",xn="eps",trans=to.pct,
                         mtl="Percent Ever Paid (Sep.)",xlb="Percent",xup=5,
                         tps=c("o2","o7","o7so","o8")),
+                   list(mfn="bar_plot_ever_paid_dec_",xn="epd",trans=to.pct,
+                        mtl="Percent Ever Paid (Dec.)",xlb="Percent",xup=5,
+                        tps=c("o2","o7","o7so","o8")),
                    list(mfn="bar_plot_paid_full_jul_",xn="pfj",trans=to.pct,
                         mtl="Percent Paid Full (July)",xlb="Percent",xup=5,
                         tps=c("o2","o7","o7so","o71","o75","p7","o8","o14")),
                    list(mfn="bar_plot_paid_full_sep_",xn="pfs",trans=to.pct,
                         mtl="Percent Paid Full (Sep.)",xlb="Percent",xup=5,
+                        tps=c("o2","o7","o7so","o8")),
+                   list(mfn="bar_plot_paid_full_dec_",xn="pfd",trans=to.pct,
+                        mtl="Percent Paid Full (Dec.)",xlb="Percent",xup=5,
                         tps=c("o2","o7","o7so","o8")),
                    list(mfn="bar_plot_paid_part_jul_",xn="pPj",trans=to.pct,
                         mtl="Percent Paid Partial (July)",xlb="Percent",xup=5,
@@ -673,11 +766,17 @@ type.params<-{list(list(mfn="bar_plot_ever_paid_jul_",xn="epj",trans=to.pct,
                    list(mfn="bar_plot_paid_part_sep_",xn="pPs",trans=to.pct,
                         mtl="Percent Paid Partial (Sep.)",xlb="Percent",xup=5,
                         tps=c("o2","o7","o7so","o8")),
+                   list(mfn="bar_plot_paid_part_dec_",xn="pPd",trans=to.pct,
+                        mtl="Percent Paid Partial (Dec.)",xlb="Percent",xup=5,
+                        tps=c("o2","o7","o7so","o8")),
                    list(mfn="bar_plot_aver_paid_jul_",xn="tpj",trans=identity,
                         mtl="Average Paid (July)",xlb="$",xup=10,
                         tps=c("o2","o7","o7so","o71","o75","p7","o8","o14")),
                    list(mfn="bar_plot_aver_paid_sep_",xn="tps",trans=identity,
                         mtl="Average Paid (Sep.)",xlb="$",xup=10,
+                        tps=c("o2","o7","o7so","o8")),
+                   list(mfn="bar_plot_aver_paid_dec_",xn="tpd",trans=identity,
+                        mtl="Average Paid (Dec.)",xlb="$",xup=10,
                         tps=c("o2","o7","o7so","o8")),
                    list(mfn="bar_plot_med_pos_paid_jul_",xn="mdj",trans=identity,
                         mtl="Median Positive Amount Paid (July)",xlb="$",
@@ -691,11 +790,17 @@ type.params<-{list(list(mfn="bar_plot_ever_paid_jul_",xn="epj",trans=to.pct,
                    list(mfn="bar_plot_avg_pos_paid_sep_",xn="pps",trans=identity,
                         mtl="Average Positive Amount Paid (Sep.)",xlb="$",
                         tps=c("o7"),xup=10),
-                   list(mfn="bar_plot_pct_pmt_agr_one_",xn="pa1",trans=to.pct,
-                        mtl="Percent with >=1 Payment Agreement",xlb="$",
+                   list(mfn="bar_plot_pct_pmt_agr_one_sep_",xn="pa1s",trans=to.pct,
+                        mtl="Percent with >=1 Payment Agreement (Sep.)",xlb="$",
                         tps=c("o7"),xup=5),
-                   list(mfn="bar_plot_pct_pmt_agr_all_",xn="paA",trans=to.pct,
-                        mtl="Percent with All in Payment Agreement",xlb="$",
+                   list(mfn="bar_plot_pct_pmt_agr_all_sep_",xn="paAs",trans=to.pct,
+                        mtl="Percent with All in Payment Agreement (Sep.)",xlb="$",
+                        tps=c("o7"),xup=5),
+                   list(mfn="bar_plot_pct_pmt_agr_one_dec_",xn="pa1d",trans=to.pct,
+                        mtl="Percent with >=1 Payment Agreement (Dec.)",xlb="$",
+                        tps=c("o7"),xup=5),
+                   list(mfn="bar_plot_pct_pmt_agr_all_dec_",xn="paAd",trans=to.pct,
+                        mtl="Percent with All in Payment Agreement (Dec.)",xlb="$",
                         tps=c("o7"),xup=5))}
 
 sapply(type.params,
@@ -849,7 +954,7 @@ print.xtable(xtable(setnames(dcast(
   
 
 ##Geospatial Analysis ####
-###Ever paid by quadrant, July & September
+###Ever paid by quadrant, July, September & December
 phila_azav_quad<-
   readShapePoly(
     wds["gis"]%+%"Azavea_Quadrant_cartogram_r2.shp")
@@ -860,16 +965,23 @@ phila_azav_quad@data<-
   phila_azav_quad@data[
     dcast(properties[(!holdout),
                      .(epj=mean(ever_paid_jul),
-                       eps=mean(ever_paid_sep)),
+                       eps=mean(ever_paid_sep),
+                       epd=mean(ever_paid_dec),
+                       pfj=mean(paid_full_jul),
+                       pfs=mean(paid_full_sep),
+                       pfd=mean(paid_full_dec)),
                      keyby=.(treat7,azavea_quad)
                      ][,.(treat7,
                           epj.over.control=
-                            epj-epj[treat7=="Control"],
-                          eps.over.control=
-                            eps-eps[treat7=="Control"]),
+                            epj-epj[idx<-treat7=="Control"],
+                          eps.over.control=eps-eps[idx],
+                          epd.over.control=epd-epd[idx],
+                          pfj.over.control=pfj-pfj[idx],
+                          pfs.over.control=pfs-pfs[idx],
+                          pfd.over.control=pfd-pfd[idx]),
                        by=azavea_quad][!treat7=="Control"],
           azavea_quad~treat7,
-          value.var=c("epj","eps")%+%".over.control"),
+          value.var=c("epj","eps","epd","pfj","pfs","pfd")%+%".over.control"),
     on=c(quadrant="azavea_quad")][order(orig)]
 
 scale.value<-function(x,nn=1000,
@@ -877,10 +989,8 @@ scale.value<-function(x,nn=1000,
                       rng=range(x,na.rm=T)){
   ramp<-colorRampPalette(cols)(nn)
   xseq<-seq(from=rng[1],to=rng[2],length.out=nn)
-  min.or.na<-function(y){
-    z<-which.min(abs(xseq-y))
-    if (length(z))z else NA
-  }
+  min.or.na<-function(y)
+    if (length(z<-which.min(abs(xseq-y)))) z else NA
   ramp[sapply(x,min.or.na)]
 }
 
@@ -936,6 +1046,114 @@ rect(xs[-(ncols+1)],1,
      )(ncols))
 mtext(c("-15%","even","15%"),at=c(1,1.5,2),side=3,adj=c(0,.5,1))
 title("Cartogram: Ever Paid (Sep.) by City Sector\n"%+%
+        "Percentage above Control",outer=T)
+dev.off2()
+
+pdf2(wds["imga"]%+%"cartogram_quadrant_ever_paid_dec.pdf")
+layout(mat=matrix(c(1:7,7,7),byrow=T,nrow=3),
+       heights=c(.475,.475,.05))
+par(mar=c(0,0,1.1,0),
+    oma=c(5.1,4.1,4.1,1.1))
+vn<-"epd.over.control_"
+for (trt in trt.nms[-1]){
+  plot(phila_azav_quad,col=phila_azav_quad@
+         data[,scale.value(get(vn%+%trt),nn=ncols,rng=c(-.15,.15),
+                           cols=c(get.col("Control"),
+                                  "white",get.col(trt)))],
+       main=trt,cex.main=.9)
+  text(coordinates(phila_azav_quad),font=2,
+       labels=phila_azav_quad@data[,to.pct(get(vn%+%trt),dig=1)])
+}
+par(mar=c(0,0,0.1,0))
+plot(NA,type="n",ann=FALSE,xlim=c(1,2),ylim=c(1,2),
+     xaxt="n",yaxt="n",bty="n")
+xs<-seq(1,2,length.out=ncols+1)
+rect(xs[-(ncols+1)],1,
+     xs[-1],2,col=colorRampPalette(c("blue","white","black")
+     )(ncols))
+mtext(c("-15%","even","15%"),at=c(1,1.5,2),side=3,adj=c(0,.5,1))
+title("Cartogram: Ever Paid (Dec.) by City Sector\n"%+%
+        "Percentage above Control",outer=T)
+dev.off2()
+
+pdf2(wds["imga"]%+%"cartogram_quadrant_paid_full_jul.pdf")
+layout(mat=matrix(c(1:7,7,7),byrow=T,nrow=3),
+       heights=c(.475,.475,.05))
+par(mar=c(0,0,1.1,0),
+    oma=c(5.1,4.1,4.1,1.1))
+vn<-"pfj.over.control_"
+for (trt in trt.nms[-1]){
+  plot(phila_azav_quad,col=phila_azav_quad@
+         data[,scale.value(get(vn%+%trt),nn=ncols,rng=c(-.15,.15),
+                           cols=c(get.col("Control"),
+                                  "white",get.col(trt)))],
+       main=trt,cex.main=.9)
+  text(coordinates(phila_azav_quad),font=2,
+       labels=phila_azav_quad@data[,to.pct(get(vn%+%trt),dig=1)])
+}
+par(mar=c(0,0,0.1,0))
+plot(NA,type="n",ann=FALSE,xlim=c(1,2),ylim=c(1,2),
+     xaxt="n",yaxt="n",bty="n")
+xs<-seq(1,2,length.out=ncols+1)
+rect(xs[-(ncols+1)],1,
+     xs[-1],2,col=colorRampPalette(c("blue","white","black")
+     )(ncols))
+mtext(c("-15%","even","15%"),at=c(1,1.5,2),side=3,adj=c(0,.5,1))
+title("Cartogram: Paid Full (Jul.) by City Sector\n"%+%
+        "Percentage above Control",outer=T)
+dev.off2()
+
+pdf2(wds["imga"]%+%"cartogram_quadrant_paid_full_sep.pdf")
+layout(mat=matrix(c(1:7,7,7),byrow=T,nrow=3),
+       heights=c(.475,.475,.05))
+par(mar=c(0,0,1.1,0),
+    oma=c(5.1,4.1,4.1,1.1))
+vn<-"pfs.over.control_"
+for (trt in trt.nms[-1]){
+  plot(phila_azav_quad,col=phila_azav_quad@
+         data[,scale.value(get(vn%+%trt),nn=ncols,rng=c(-.15,.15),
+                           cols=c(get.col("Control"),
+                                  "white",get.col(trt)))],
+       main=trt,cex.main=.9)
+  text(coordinates(phila_azav_quad),font=2,
+       labels=phila_azav_quad@data[,to.pct(get(vn%+%trt),dig=1)])
+}
+par(mar=c(0,0,0.1,0))
+plot(NA,type="n",ann=FALSE,xlim=c(1,2),ylim=c(1,2),
+     xaxt="n",yaxt="n",bty="n")
+xs<-seq(1,2,length.out=ncols+1)
+rect(xs[-(ncols+1)],1,
+     xs[-1],2,col=colorRampPalette(c("blue","white","black")
+     )(ncols))
+mtext(c("-15%","even","15%"),at=c(1,1.5,2),side=3,adj=c(0,.5,1))
+title("Cartogram: Paid Full (Sep.) by City Sector\n"%+%
+        "Percentage above Control",outer=T)
+dev.off2()
+
+pdf2(wds["imga"]%+%"cartogram_quadrant_paid_full_dec.pdf")
+layout(mat=matrix(c(1:7,7,7),byrow=T,nrow=3),
+       heights=c(.475,.475,.05))
+par(mar=c(0,0,1.1,0),
+    oma=c(5.1,4.1,4.1,1.1))
+vn<-"pfd.over.control_"
+for (trt in trt.nms[-1]){
+  plot(phila_azav_quad,col=phila_azav_quad@
+         data[,scale.value(get(vn%+%trt),nn=ncols,rng=c(-.15,.15),
+                           cols=c(get.col("Control"),
+                                  "white",get.col(trt)))],
+       main=trt,cex.main=.9)
+  text(coordinates(phila_azav_quad),font=2,
+       labels=phila_azav_quad@data[,to.pct(get(vn%+%trt),dig=1)])
+}
+par(mar=c(0,0,0.1,0))
+plot(NA,type="n",ann=FALSE,xlim=c(1,2),ylim=c(1,2),
+     xaxt="n",yaxt="n",bty="n")
+xs<-seq(1,2,length.out=ncols+1)
+rect(xs[-(ncols+1)],1,
+     xs[-1],2,col=colorRampPalette(c("blue","white","black")
+     )(ncols))
+mtext(c("-15%","even","15%"),at=c(1,1.5,2),side=3,adj=c(0,.5,1))
+title("Cartogram: Paid Full (Dec.) by City Sector\n"%+%
         "Percentage above Control",outer=T)
 dev.off2()
 
@@ -1059,11 +1277,17 @@ sapply(list(list(dt=owners[(!holdout)],vr="ever_paid",
             list(dt=owners[(!holdout)],vr="ever_paid",
                  mn="sep",Mn=" (Sep.)",Vr="Ever Paid",
                  tl="Partial Participation"),
+            list(dt=owners[(!holdout)],vr="ever_paid",
+                 mn="dec",Mn=" (Dec.)",Vr="Ever Paid",
+                 tl="Partial Participation"),
             list(dt=owners[(!holdout)],vr="paid_full",
                  mn="jul",Mn=" (July)",Vr="Paid Full",
                  tl="Full Participation"),
             list(dt=owners[(!holdout)],vr="paid_full",
                  mn="sep",Mn=" (Sep.)",Vr="Paid Full",
+                 tl="Full Participation"),
+            list(dt=owners[(!holdout)],vr="paid_full",
+                 mn="dec",Mn=" (Dec.)",Vr="Paid Full",
                  tl="Full Participation")),
        function(x){
          with(x,{
