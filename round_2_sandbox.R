@@ -647,12 +647,88 @@ dev.off2()
 
 # paid_full time series ####
 
+payments_o <- payments[order(treat14), .(principal = sum(principal),
+                            total_paid = sum(total_paid),
+                            rand_id = rand_id[1L]),
+                       by = .(owner1, valid)
+                       ][owners, c("total_due","treat8") := 
+                           .(i.total_due, treat8), on = "owner1"
+                         ][,c("cum_paid","paid_full"):=
+                             {cp<-cumsum(total_paid)
+                             .(cp, cp >= total_due)}, by = owner1]
+
+payments_o[owners,.SD,on="owner1"]
+
+payments_o[owner1 %in% properties[
+
+
 setkey(properties,treat8)
 
-payments[properties[,.N,treat8], treat8_N:=i.N, on = "treat8"]
+payments[, treat8_N:=i.N, on = "treat8"]
 
-payments[,sum(paid_full)/properties[.(.BY[[2]]),.N],.(valid,treat8)
-         ][CJ(valid=valid,treat8=treat8,unique=T),
-           on=c("valid","treat8")]
+setkey(payments,treat8,valid)
 
-payments[,properties[.(.BY[[2]]),.N],.(valid,treat8)]
+dt.rng<-payments[treat8!="Holdout",{rng<-range(valid)
+seq(from=rng[1],to=rng[2],by="day")}]
+
+png("~/Desktop/pf_cum_hz_prelim.png")
+dcast(rbindlist(lapply(dt.rng, function(tt){
+  unique(payments[valid<=tt],by="account",fromLast=TRUE
+         )[,.(dt=tt,pf=sum(paid_full)),by=treat8]})
+  )[properties[,.N,treat8],paid_full:=pf/i.N,on="treat8"],
+  dt~treat8,value.var="paid_full"
+  )[,matplot(dt,y<-.SD[,!"dt",with=F],type="l",lty=1,lwd=3,
+             col=get.col(names(y)))]
+legend("topleft",legend=c("Holdout",trt.nms),
+       col=get.col(c("Holdout",trt.nms)),lwd=3)
+dev.off()
+
+unique(payments,by="account",fromLast=TRUE)[,sum(paid_full),treat8]
+
+properties[unique(payments,by="account",fromLast=TRUE),
+           table(paid_full_dec, i.paid_full,
+                 useNA="ifany"),
+           on="account"]
+
+write.csv(rbind(properties[account%in%unique(payments,by="account",fromLast=TRUE
+       )[properties,on="account"][is.na(cum_paid),account]&total_paid_dec!=0,
+       .(account,cum_paid=NA,total_paid_jul,total_paid_sep,total_paid_dec)],
+unique(payments,by="account",fromLast=TRUE
+       )[properties,on="account"
+         ][abs(cum_paid-total_paid_dec) > 1,
+           .(account,cum_paid,total_paid_jul,
+             total_paid_sep,total_paid_dec)]),file="~/Desktop/payment_mismatch.csv",
+row.names=F)
+
+unique(payments_o,by="owner1",fromLast=TRUE
+       )[,.(payments=as.numeric(sum(paid_full))),keyby=treat8
+         ][owners[,.(.N,to.pct(mean(paid_full_dec),dig=1)),treat8],
+           `:=`(payments=to.pct(payments/i.N,dig=1),
+                main_data=i.V2),on="treat8"]
+
+properties[,.(main_data=to.pct(mean(paid_full_dec),dig=1)),keyby=treat8]
+
+
+unique(payments_o,by="owner1",fromLast=TRUE
+       )[,.(payments=as.numeric(sum(paid_full))),keyby=treat8
+         ][owners[,.(.N,own_main=to.pct(mean(paid_full_dec),dig=1)),treat8
+                  ],`:=`(payments=to.pct(payments/i.N,dig=1),
+                         own_main=i.own_main),on="treat8"][]
+
+dt.rng<-payments_o[,{rng<-range(valid)
+seq(from=rng[1],to=rng[2],by="day")}]
+
+png("~/Desktop/pf_cum_hz_prelim_own.png")
+dcast(rbindlist(lapply(dt.rng, function(tt){
+  unique(payments_o[valid<=tt],by="owner1",fromLast=TRUE
+  )[,.(dt=tt,pf=sum(paid_full)),by=treat8]})
+)[owners[,.N,treat8],paid_full:=pf/i.N,on="treat8"],
+dt~treat8,value.var="paid_full"
+)[,matplot(dt,y<-.SD[,!"dt",with=F],type="l",lty=1,lwd=3,
+           col=get.col(names(y)))]
+legend("topleft",legend=c("Holdout",trt.nms),
+       col=get.col(c("Holdout",trt.nms)),lwd=3)
+dev.off()
+
+ownsmp<-properties[treat8=="Holdout",sample(unique(owner1),10)]
+ownsmp2<-properties[treat8=="Holdout",sample(unique(owner1),5)]

@@ -429,7 +429,7 @@ owners[,flag_top05_h:=total_due>=quantile(total_due,.95)]
 owners[,unq_own:=N==1]
 
 getv <- c("treat"%+%c(2,3,7,8,14,15),
-          "rand_id","total_due")
+          "rand_id","total_due","owner1")
 
 payments <- setDT(read_excel(
   wds["data"]%+%
@@ -449,11 +449,14 @@ payments <- setDT(read_excel(
              principal = sum(principal),
              total_paid = sum(total_paid)),
           by = .(account, valid)
-          ][properties,
-            (getv):=mget("i."%+%getv),
-            on="account"]
+          ][properties,.SD,on="account"
+            ][properties,(getv):=mget("i."%+%getv),
+              on="account"
+              ][is.na(valid),c("valid","total_paid"):=
+                                 .(as.Date("2015-06-01"),0)]
 
-payments[order(valid),c("paid_full","cum_paid"):=
+payments[order(valid),
+         c("paid_full","cum_paid"):=
          {cp <- cumsum(total_paid)
          .(cp >= total_due, cp)},by=account]
 

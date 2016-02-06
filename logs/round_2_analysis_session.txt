@@ -1,4 +1,4 @@
-Package info for code run on 2016-02-02 19:27:57:
+Package info for code run on 2016-02-05 17:32:41:
 R version 3.2.2 (2015-08-14)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Ubuntu 14.04.3 LTS
@@ -12,10 +12,10 @@ attached base packages:
 [1] parallel  stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] lmtest_0.9-34       zoo_1.7-12          maptools_0.8-36     RgoogleMaps_1.2.0.7 doParallel_1.0.8    iterators_1.0.7     foreach_1.4.2      
- [8] sp_1.1-1            xlsx_0.5.7          xlsxjars_0.6.1      rJava_0.9-7         readxl_0.1.0.9000   sandwich_2.3-4      texreg_1.35        
-[15] xtable_1.7-4        funchir_0.1.1       data.table_1.9.7   
+ [1] lmtest_0.9-34       zoo_1.7-12          maptools_0.8-36     RgoogleMaps_1.2.0.7 doParallel_1.0.8    iterators_1.0.7    
+ [7] foreach_1.4.2       sp_1.1-1            xlsx_0.5.7          xlsxjars_0.6.1      rJava_0.9-7         readxl_0.1.0.9000  
+[13] xtable_1.7-4        sandwich_2.3-4      texreg_1.35         data.table_1.9.7    funchir_0.1.1      
 
 loaded via a namespace (and not attached):
-[1] Rcpp_0.12.1      lattice_0.20-33  tools_3.2.2      grid_3.2.2       png_0.1-7        RJSONIO_1.3-0    codetools_0.2-14 foreign_0.8-66  
-[9] chron_2.3-47    
+[1] Rcpp_0.12.1      lattice_0.20-33  tools_3.2.2      grid_3.2.2       png_0.1-7        RJSONIO_1.3-0    codetools_0.2-14
+[8] foreign_0.8-66   chron_2.3-47    
