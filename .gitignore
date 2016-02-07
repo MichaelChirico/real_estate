@@ -1,2 +1,10 @@
 #no sense tracking .pdfs
 *.pdf
+
+#no need for html until further notice
+*.html
+
+#presentation-associated folders
+micro_lunch_160301_cache/
+micro_lunch_160301-figure/
+micro_lunch_160301_files/
