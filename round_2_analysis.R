@@ -46,7 +46,7 @@ library(doParallel)
 library(RgoogleMaps)
 library(maptools)
 library(lmtest)
-write.packages(".logs/round_2_analysis_session.txt")
+write.packages(mn%+%"analysis_code/logs/round_2_analysis_session.txt")
 
 #Convenient Functions 
 get.col<-function(st){
@@ -315,7 +315,7 @@ properties[,flag_holdout_overlap:=any(treat15=="Holdout")&
              any(treat15!="Holdout"),by=owner1]
 ### Was this property treated in Round 1?
 properties[,flag_round_one_overlap:=
-          opa_no %in% fread("analysis_file_end_only_act.csv",
+          opa_no %in% fread(wds["proj"]%+%"analysis_file_end_only_act.csv",
                             select=c("opa_no"))[,unique(opa_no)]]
 ### Does this property have any of the
 ###   tax exemptions excluded in Round 1?
