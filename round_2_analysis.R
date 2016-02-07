@@ -14,6 +14,7 @@
 
 #Setup: Random Seed, Packages,
 #  Working Directory, Convenient Functions ####
+## @knitr setup
 ##Random Seed
 ###Alternating digits (1,3,...) of
 ###  my CVS Extra Care card number
@@ -22,14 +23,15 @@ set.seed(4746966)
 ##Packages
 rm(list=ls(all=T))
 gc()
-setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
-wds<-c(data="/media/data_drive/real_estate/",
-       imga="./papers_presentations/round_two/images/analysis/",
-       imgb="./papers_presentations/round_two/images/balance/",
-       gis="/media/data_drive/gis_data/PA/",
-       code="./analysis_code/",
-       sher="/media/data_drive/real_estate/sheriffs_sales/",
-       cens="/media/data_drive/census/")
+setwd((mn<-"~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")%+% 
+        "analysis_code/")
+wds<-c(data=(dwd<-"/media/data_drive/")%+%"real_estate/",
+       proj=mn,
+       imga=mn%+%"/papers_presentations/round_two/images/analysis/",
+       imgb=mn%+%"/papers_presentations/round_two/images/balance/",
+       gis=dwd%+%"gis_data/PA/",
+       sher=dwd%+%"real_estate/sheriffs_sales/",
+       cens=dwd%+%"census/")
 #Michael Chirico's function of convenience packages;
 #  install via devtools::install_github("MichaelChirico/funchir")
 library(funchir)
@@ -44,8 +46,7 @@ library(doParallel)
 library(RgoogleMaps)
 library(maptools)
 library(lmtest)
-write.packages(wds["code"]%+%"logs/round_2_"%+%
-                 "analysis_session.txt")
+write.packages(".logs/round_2_analysis_session.txt")
 
 #Convenient Functions 
 get.col<-function(st){
@@ -148,10 +149,10 @@ update_opas<-
 followupIV[update_opas,opa_no:=i.old,on=c("opa_no"="new")]
 
 ##Block V: Main Sample Background Data
-mainBGV<-fread("./round_2_full_data.csv",drop="treatment")
+mainBGV<-fread(wds["proj"]%+%"/round_2_full_data.csv",drop="treatment")
 
 ##Block VI: Holdout Sample Background Data
-holdBGVI<-fread("holdout_sample.csv")
+holdBGVI<-fread(wds["proj"]%+%"holdout_sample.csv")
 
 ##Block VII: Supplemental Geocoding Data
 geosuppVII<-fread(wds["data"]%+%"round_2_supplement_lon_lat.csv")
@@ -461,6 +462,7 @@ payments[order(valid),
          .(cp >= total_due, cp)},by=account]
 
 #Fidelity Checks ####
+## @knitr fidelity
 ##Returned Mail Rates by Envelope Size
 big_returns<-26+17+75+12+16+4+4+192
 small_returns<-766+9

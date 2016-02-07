@@ -1,0 +1,49 @@
+---
+title: "Notification Strategies for Tax Recovery"
+author: "Michael Chirico^[The research presented here was supported in part by the Institute of Education Sciences, U.S. Department of Education, through Grant \\#R305B090015 to the University of Pennsylvania. The opinions expressed are those of the presenter and do not represent the views of the Institute or the U.S. Department of Education.], Robert Inman, Charles Loeffler, John MacDonald, Holger Sieg"
+date: "March 1, 2016"
+output: 
+  beamer_presentation: 
+    keep_tex: yes
+---
+
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(cache=TRUE)
+knitr::read_chunk("round_2_analysis.R")
+```
+
+
+## Motivation
+```{r first, echo=FALSE}
+<<setup>>
+  x <- dol.form(properties[,sum(total_due)])
+```
+
+I have access to `r x`.
+
+
+
+This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+
+[^1]: The research presented here was supported in part by the Institute of Education Sciences, U.S. Department of Education, through Grant \#R305B090015 to the University of Pennsylvania. The opinions expressed are those of the presenter and do not represent the views of the Institute or the U.S. Department of Education.
+
+## Slide with Bullets
+
+- Bullet 1
+- Bullet 2
+- Bullet 3
+
+## Slide with R Code and Output
+
+```{r}
+summary(cars)
+```
+
+## Slide with Plot
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
