@@ -16,24 +16,35 @@ knitr::read_chunk("round_2_analysis.R")
 ## Motivation
 ```{r first, echo=FALSE, results = "hide"}
 <<setup>>
-  x <- dol.form(properties[,sum(total_due)])
+library(funchir)
+out_taxes <- fread(wds["data"]%+%"Real_Estate_Tax_Balances_151222.csv",
+                   select=c("Tax Period","Total")
+                   )[`Tax Period`!=2016]
+out_taxes[ , due := as.numeric(gsub("\\$","",Total))]
+
+taxes_owed <- out_taxes[,dol.form(sum(due))]
 ```
 
-I have access to `r x`.
 
+* Tax non-compliance is ubiquitous in both developed and undeveloped economies
 
+    + OECD estimates: 14.2% in developed economies, 37% in undeveloped
 
-This is an R Markdown presentation. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+* The City of Philadelphia is currently owed `r taxes_owed` in outstanding Real Estate Taxes.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document.
+    + About 15% of all properties in the city were out of compliance in March 2015.
+   
+    + Roughly 5% of the City's annual operating budget.
 
-[^1]: The research presented here was supported in part by the Institute of Education Sciences, U.S. Department of Education, through Grant \#R305B090015 to the University of Pennsylvania. The opinions expressed are those of the presenter and do not represent the views of the Institute or the U.S. Department of Education.
+## Motivation
 
-## Slide with Bullets
+* Much existing literature focuses on sleight-of-hand -- non- or under-reporting of assets/income in environments where enforcement is scant or verifiability is costly.
 
-- Bullet 1
-- Bullet 2
-- Bullet 3
+* No such fallback for real estate taxes
+ 
+    + Costs of establishing an office of assessment are sunk
+   
+    + Exact tax value of each property is determined by the city and reported to the taxpayer (reversal)
 
 ## Slide with R Code and Output
 

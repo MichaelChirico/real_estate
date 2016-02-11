@@ -23,15 +23,6 @@ set.seed(4746966)
 ##Packages
 rm(list=ls(all=T))
 gc()
-setwd((mn<-"~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")%+% 
-        "analysis_code/")
-wds<-c(data=(dwd<-"/media/data_drive/")%+%"real_estate/",
-       proj=mn,
-       imga=mn%+%"/papers_presentations/round_two/images/analysis/",
-       imgb=mn%+%"/papers_presentations/round_two/images/balance/",
-       gis=dwd%+%"gis_data/PA/",
-       sher=dwd%+%"real_estate/sheriffs_sales/",
-       cens=dwd%+%"census/")
 #Michael Chirico's function of convenience packages;
 #  install via devtools::install_github("MichaelChirico/funchir")
 library(funchir)
@@ -46,6 +37,15 @@ library(doParallel)
 library(RgoogleMaps)
 library(maptools)
 library(lmtest)
+setwd((mn<-"~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")%+% 
+        "analysis_code/")
+wds<-c(data=(dwd<-"/media/data_drive/")%+%"real_estate/",
+       proj=mn,
+       imga=mn%+%"/papers_presentations/round_two/images/analysis/",
+       imgb=mn%+%"/papers_presentations/round_two/images/balance/",
+       gis=dwd%+%"gis_data/PA/",
+       sher=dwd%+%"real_estate/sheriffs_sales/",
+       cens=dwd%+%"census/")
 write.packages(mn%+%"analysis_code/logs/round_2_analysis_session.txt")
 
 #Convenient Functions 

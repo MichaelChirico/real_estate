@@ -573,6 +573,158 @@ cis[,arrows(bpx,unlist(.SD[1]),
 title("Proportion Paid in Full Across Time",outer=T)
 dev.off2()
 
+
+#### NOW FOR PAID FULL ####
+
+
+dt.rng<-payments[treat8!="Holdout",{rng<-range(valid)
+seq(from=rng[1],to=rng[2],by="day")}]
+
+payments_o <- payments[order(treat14), .(principal = sum(principal),
+                                         total_paid = sum(total_paid),
+                                         rand_id = rand_id[1L]),
+                       by = .(owner1, valid)
+                       ][owners, c("total_due","treat8") := 
+                           .(i.total_due, treat8), on = "owner1"
+                         ][,c("cum_paid","paid_full"):=
+                         {cp<-cumsum(total_paid)
+                         .(cp, cp >= total_due)}, by = owner1]
+
+owners[unique(payments_o[(paid_full)][order(valid)], by = "owner1"),
+       date_paid_full := i.valid, on = "owner1"]
+
+
+#For pretty printing, get once/week subset
+dt.rng2<-dt.rng[seq(1,length(dt.rng),length.out=7)]
+
+
+date.dt <- 
+  CJ(treat7 = trt.nms, date = dt.rng,
+     unique=TRUE, sorted = FALSE)
+cum_haz<-owners[!holdout&!is.na(date_paid_full),
+                 .N,keyby=.(treat7,date_paid_full)
+                ][,.(pf=cumsum(N)+0.,date=date_paid_full),by=treat7
+                  ][owners[(!holdout),.N,treat7],pf:=pf/i.N,on="treat7"
+                    ][date.dt, on = c("treat7", "date"), roll = TRUE
+                      ][,.(treat6=treat7[idx<-treat7!="Control"],
+                           pf=pf[idx]-pf[!idx]),by=date]
+
+setkey(owners,rand_id)
+randids<-owners[(!holdout),unique(rand_id)]
+BB <- 5000
+cis <- dcast(rbindlist(lapply(integer(BB), function(...){
+  dt <- owners[(!holdout)][.(sample(randids,rep=T)),nomatch=0L]
+  dt[!is.na(date_paid_full),.N,keyby=.(treat7,date_paid_full)
+     ][,.(pf=cumsum(N)+0.,date=date_paid_full),by=treat7
+       ][dt[,.N,treat7],pf:=pf/i.N,on="treat7"
+         ][date.dt, on = c("treat7", "date"),roll = TRUE
+           ][,.(treat6=treat7[idx<-treat7!="Control"],
+                pf=pf[idx]-pf[!idx]),by=date]}),idcol="bootID"
+)[is.na(pf),pf:=0
+  ][,quantile(pf, c(.025, .975), na.rm=T), 
+    by = .(treat6, date)],
+treat6+date~c("low","high")[rowid(treat6,date)],value.var="V1")
+
+dcast(cum_haz[cis,on=c("treat6","date")],
+      date~treat6,value.var=c("low","pf","high")
+)[,{pdf2(wds["imga"]%+%"cum_haz_paid_full_dec_7_own_cis.pdf")
+  par(mfrow=c(2,3),
+      mar=c(0,0,1.1,0),
+      oma=c(7.1,4.1,4.1,1.1))
+  ylm <- range(.SD[,!"date",with=F])
+  axl <- list(list(at=dt.rng2,las=2,
+                   labels=format(dt.rng2,"%b %d")),
+              list())
+  for (ii in 1:6){
+    tr <- (trt.nms%\%"Control")[ii]
+    matplot(date, do.call("cbind",mget(c("low_","pf_","high_")%+%tr)),
+            type="l",lty=c(2,1,2),col=get.col(tr),
+            lwd=3,xaxt="n",yaxt="n",ylim=ylm)
+    abline(h = 0, col = "black", lwd = 2)
+    tile.axes(ii,2,3,axl)
+    title(tr)}
+  title("Cumulative Full Repayment (Dec.)"%+%
+          "\nRelative to Control",outer=T)
+  mtext("Date",side=1,outer=T,line=5.5)
+  mtext("Probability Paid Full vs. Control",
+        side=2,outer=T,line=2.5)
+  dev.off2()}]
+
+
+
+date.dt <- 
+  CJ(treat8 = c("Holdout","Control"), date = dt.rng,
+     unique=TRUE, sorted = FALSE)
+cum_haz<-owners[treat8%in%c("Holdout","Control")&
+                  !is.na(date_paid_full),.N,
+                keyby=.(treat8,date_paid_full)
+                ][,.(pf=cumsum(N)+0.,date=date_paid_full),by=treat8
+                  ][owners[treat8%in%c("Holdout","Control"),.N,treat8],
+                    pf:=pf/i.N,on="treat8"
+                    ][date.dt, on = c("treat8", "date"), roll = TRUE
+                      ][,.(pf=pf[idx<-treat8=="Control"]-pf[!idx]),by=date]
+
+BB <- 5000
+cis <- dcast(rbindlist(lapply(integer(BB), function(...){
+  dt <- owners[treat8%in%c("Holdout","Control")][sample(.N,rep=T)]
+  dt[!is.na(date_paid_full),.N,keyby=.(treat8,date_paid_full)
+     ][,.(pf=cumsum(N)+0.,date=date_paid_full),by=treat8
+       ][dt[,.N,treat8],pf:=pf/i.N,on="treat8"
+         ][date.dt, on = c("treat8", "date"),roll = TRUE
+           ][,.(pf=pf[idx<-treat8=="Control"]-pf[!idx]),
+             by=date]}),idcol="bootID"
+)[is.na(pf),pf:=0][,quantile(pf, c(.025, .975), na.rm=T), by = date],
+date~c("low","high")[rowid(date)],value.var="V1")
+
+cum_haz[cis,on=c("date")
+        ][,{pdf2(wds["imga"]%+%"cum_haz_paid_full_dec_cont_hold_own_cis.pdf")
+          matplot(date, do.call("cbind",mget(c("low","pf","high"))),
+                  type="l",lty=c(2,1,2),col=get.col("Control"),
+                  xaxt="n",lwd=3,xlab="Date",
+                  ylab="Probability Paid Full vs. Holdout")
+          axis(side=1,at=dt.rng2,labels=format(dt.rng2,"%b %d"))
+          abline(h = 0, col = "black", lwd = 2)
+          title("Cumulative Full Repayment (Dec.)"%+%
+                  "\nControl vs. Holdout")
+          dev.off2()}]
+
+
+
+date.dt <- 
+  CJ(treat2 = c("Small","Big"), date = dt.rng,
+     unique=TRUE, sorted = FALSE)
+cum_haz<-owners[(!holdout)&!is.na(date_paid_full),
+                .N,keyby=.(treat2,date_paid_full)
+                ][,.(pf=cumsum(N)+0.,date=date_paid_full),by=treat2
+                  ][owners[(!holdout),.N,treat2],
+                    pf:=pf/i.N,on="treat2"
+                    ][date.dt, on = c("treat2", "date"), roll = TRUE
+                      ][,.(pf=pf[idx<-treat2=="Big"]-pf[!idx]),by=date]
+
+BB <- 5000
+cis <- dcast(rbindlist(lapply(integer(BB), function(...){
+  dt <- owners[(!holdout)][.(sample(randids,rep=T))]
+  dt[!is.na(date_paid_full),.N,keyby=.(treat2,date_paid_full)
+     ][,.(pf=cumsum(N)+0.,date=date_paid_full),by=treat2
+       ][dt[,.N,treat2],pf:=pf/i.N,on="treat2"
+         ][date.dt, on = c("treat2", "date"),roll = TRUE
+           ][,.(pf=pf[idx<-treat2=="Big"]-pf[!idx]),
+             by=date]}),idcol="bootID"
+)[is.na(pf),pf:=0][,quantile(pf, c(.025, .975), na.rm=T), by = date],
+date~c("low","high")[rowid(date)],value.var="V1")
+
+cum_haz[cis,on=c("date")
+        ][,{pdf2(wds["imga"]%+%"cum_haz_paid_full_dec_2_own_cis.pdf")
+          matplot(date, do.call("cbind",mget(c("low","pf","high"))),
+                  type="l",lty=c(2,1,2),col=get.col("Control"),
+                  xaxt="n",lwd=3,xlab="Date",
+                  ylab="Probability Paid Full vs. Small")
+          axis(side=1,at=dt.rng2,labels=format(dt.rng2,"%b %d"))
+          abline(h = 0, col = "black", lwd = 2)
+          title("Cumulative Full Repayment (Dec.)"%+%
+                  "\nBig vs. Small")
+          dev.off2()}]
+
 # Significance of Azavea Quad-level results ####
 
 vre<-"ever_paid_"%+%c("jul","sep","dec")
@@ -647,6 +799,10 @@ dev.off2()
 
 # paid_full time series ####
 
+
+dt.rng<-payments[treat8!="Holdout",{rng<-range(valid)
+seq(from=rng[1],to=rng[2],by="day")}]
+
 payments_o <- payments[order(treat14), .(principal = sum(principal),
                             total_paid = sum(total_paid),
                             rand_id = rand_id[1L]),
@@ -668,8 +824,7 @@ payments[, treat8_N:=i.N, on = "treat8"]
 
 setkey(payments,treat8,valid)
 
-dt.rng<-payments[treat8!="Holdout",{rng<-range(valid)
-seq(from=rng[1],to=rng[2],by="day")}]
+
 
 png("~/Desktop/pf_cum_hz_prelim.png")
 dcast(rbindlist(lapply(dt.rng, function(tt){
