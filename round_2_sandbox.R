@@ -593,37 +593,60 @@ payments_o <- payments[order(treat14), .(principal = sum(principal),
 owners[unique(payments_o[(paid_full)][order(valid)], by = "owner1"),
        date_paid_full := i.valid, on = "owner1"]
 
+#how do the payments-file-generated #s differ from those suggested by the city?
+unique(payments_o,by="owner1",fromLast=TRUE
+       )[,.(`Paid Full (Payments)` = sum(paid_full)+0.),by=treat8
+         ][owners[,.(.N, `Paid Full (City's Indicator)` = mean(paid_full_dec)),by=treat8],
+           `:=`(`Paid Full (City's Indicator)` = to.pct(`Paid Full (City's Indicator)`,dig=1),
+                `Paid Full (Payments)` = to.pct(`Paid Full (Payments)`/i.N,dig=1)),
+           on = "treat8"][,Difference:=abs(`Paid Full (Payments)` - `Paid Full (City's Indicator)`)][]
 
 #For pretty printing, get once/week subset
 dt.rng2<-dt.rng[seq(1,length(dt.rng),length.out=7)]
 
-
+trt.3 <- c("Holdout","Control","Lien")
 date.dt <- 
-  CJ(treat7 = trt.nms, date = dt.rng,
+  CJ(treat8 = trt.3, date = dt.rng,
      unique=TRUE, sorted = FALSE)
-cum_haz<-owners[!holdout&!is.na(date_paid_full),
-                 .N,keyby=.(treat7,date_paid_full)
-                ][,.(pf=cumsum(N)+0.,date=date_paid_full),by=treat7
-                  ][owners[(!holdout),.N,treat7],pf:=pf/i.N,on="treat7"
-                    ][date.dt, on = c("treat7", "date"), roll = TRUE
-                      ][,.(treat6=treat7[idx<-treat7!="Control"],
-                           pf=pf[idx]-pf[!idx]),by=date]
+cum_haz<-owners[treat8%in%trt.3&!is.na(date_paid_full),
+                 .N,keyby=.(treat8,date_paid_full)
+                ][,.(pf=cumsum(N)+0.,date=date_paid_full),by=treat8
+                  ][owners[treat8%in%trt.3,
+                           .N,treat8],pf:=pf/i.N,on="treat8"
+                    ][date.dt, on = c("treat8", "date"), roll = TRUE
+                      ][is.na(pf), pf:=0]
 
-setkey(owners,rand_id)
-randids<-owners[(!holdout),unique(rand_id)]
 BB <- 5000
-cis <- dcast(rbindlist(lapply(integer(BB), function(...){
-  dt <- owners[(!holdout)][.(sample(randids,rep=T)),nomatch=0L]
-  dt[!is.na(date_paid_full),.N,keyby=.(treat7,date_paid_full)
-     ][,.(pf=cumsum(N)+0.,date=date_paid_full),by=treat7
-       ][dt[,.N,treat7],pf:=pf/i.N,on="treat7"
-         ][date.dt, on = c("treat7", "date"),roll = TRUE
-           ][,.(treat6=treat7[idx<-treat7!="Control"],
-                pf=pf[idx]-pf[!idx]),by=date]}),idcol="bootID"
-)[is.na(pf),pf:=0
-  ][,quantile(pf, c(.025, .975), na.rm=T), 
-    by = .(treat6, date)],
-treat6+date~c("low","high")[rowid(treat6,date)],value.var="V1")
+cis <- dcast(dcast(rbindlist(lapply(integer(BB), function(...){
+  dt <- owners[treat8%in%trt.3
+               ][sample(.N, rep = TRUE),
+                 .(date_paid_full,treat8)]
+  dt[!is.na(date_paid_full),.N,keyby=.(treat8,date_paid_full)
+     ][,.(pf=cumsum(N)+0.,date=date_paid_full),by=treat8
+       ][dt[,.N,treat8],pf:=pf/i.N,on="treat8"
+         ][date.dt, on = c("treat8", "date"),roll = TRUE
+           ][is.na(pf), pf:=0]}),idcol="bootID"
+)[,quantile(pf, c(.025, .975), na.rm=T), 
+    by = .(treat8, date)],
+treat8+date~c("low","high")[rowid(treat8,date)],value.var="V1"
+)[cum_haz, pf:=i.pf, on = c("treat8","date")],
+date~treat8,value.var=c("low","pf","high"))
+
+cis[,{
+  pdf(wds["imga"]%+%"cum_haz_pf_7_absolute_w_cis.pdf")
+  matplot(date,x<-.SD[,!"date",with=F],
+          lty = 2-(ci<-grepl("pf", names(x))),
+          type = "l", lwd = 2+ci,
+          col = get.col(gsub(".*_","",names(x))),
+          xlab = "Date", xaxt = "n",las = 2,
+          ylab = "Proportion Paid Full",
+          main = "Proportion Paid in Full Over Time")
+  axis(side = 1, at = dt.rng2,
+       labels = format(dt.rng2, "%b %d"))
+  legend("bottomright",lwd = 3,lty=1,
+         col = get.col(trt.3),
+         legend = trt.3)
+  dev.off()}]
 
 dcast(cum_haz[cis,on=c("treat6","date")],
       date~treat6,value.var=c("low","pf","high")

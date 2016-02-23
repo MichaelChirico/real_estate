@@ -16,15 +16,23 @@ knitr::read_chunk("round_2_analysis.R")
 ## Motivation
 ```{r first, echo=FALSE, results = "hide"}
 <<setup>>
+library(data.table)
 library(funchir)
-out_taxes <- fread(wds["data"]%+%"Real_Estate_Tax_Balances_151222.csv",
-                   select=c("Tax Period","Total")
-                   )[`Tax Period`!=2016]
-out_taxes[ , due := as.numeric(gsub("\\$","",Total))]
+out_taxes <- fread(wds["data"] %+% "Real_Estate_Tax_Balances_151222.csv",
+                   select = c("Tax Period", "Total")
+                   )[`Tax Period` != 2016]
+out_taxes[ , due := as.numeric(gsub("\\$", "", Total))]
 
-taxes_owed <- out_taxes[,dol.form(sum(due))]
+taxes_owed <- out_taxes[ , dol.form(sum(due))]
+
+jul_del_lien_cont_ep <-
+  owners[ , to.pct(mean(ever_paid_jul[treat7 == "Lien"]) - 
+                     mean(ever_paid_jul[treat7 == "Control"]), dig = 0)]
+
+dec_del_lien_cont_ep <-
+  owners[ , to.pct(mean(ever_paid_dec[treat7 == "Lien"]) -
+                     mean(ever_paid_dec[treat7 == "Control"]), dig = 0)]
 ```
-
 
 * Tax non-compliance is ubiquitous in both developed and undeveloped economies
 
@@ -45,6 +53,66 @@ taxes_owed <- out_taxes[,dol.form(sum(due))]
     + Costs of establishing an office of assessment are sunk
    
     + Exact tax value of each property is determined by the city and reported to the taxpayer (reversal)
+    
+* Alternative explanations
+
+    + Discontent with provided public goods
+    
+    + Low tax morale
+    
+    + Missing social norms
+    
+    + Perceived unfairness of taxation
+
+## Motivation
+
+* Costs of containing culture of non-payment can quickly spiral
+
+    + Fewer people pay $\Rightarrow$ harder to exact widespread compliance from a fixed budget $\Rightarrow$ spread of noncompliance as perceived likelihood of apprehension decreases
+    
+    + Cost of enforcement through augmented seizures can soon exceed potential recoveries
+    
+    + To sustain public goods outlay, tax rates must rise -- potentially inducing further noncompliance
+    
+    + Alternative of reduced expenditures may also create rogues through diminished tax morale
+    
+* Low-cost interventions offer a potential lighthouse in this hurricane spiral
+
+    + Targeted messaging in mailers
+    
+    + Notification frequency
+    
+    + Shape, color, style manipulation
+    
+    + Public shaming
+    
+## Overview of Treatments
+
+* Simultaneous (randomized) evaluation and head-to-head comparison of a variety of letter-based recovery nudges
+
+    + Message targeting: 3 pairs of treatments with wording varied to target different compliance motives
+    
+    + Style cues: Half of treatments were delivered in large-format ($9$'' x $12$'')envelopes, the rest in standard-sized ($4 \frac18$'' x $9 \frac12$'') envelopes.
+    
+    + Frequency: Some owners with multiple properties only received treatments on a subset of their holdings.
+    
+* All told, 15 treatment groups (including Holdout & Control groups) on `r prettyNum(nrow(properties), big.mark = ",")` properties with `r prettyNum(nrow(owners), big.mark = ",")` owners.
+    
+## Overview of Results
+
+* Evidence of strong initial effect for deterrence-oriented treatments
+
+    + Roughly `r jul_del_lien_cont_ep`% higher participation (any payment) rates for owners in the Lien threat treament after one month.
+    
+    + Also evidence of long-run effect mediation -- by the end of 2015 (six months post-treatment), the advantage had shrunk to roughly `r dec_del_lien_cont_ep`%.
+
+* No evidence whatsoever that letter size affects compliance rates
+
+* Support for hypothesis that more letters lead to more participation
+
+## Experimental Framework
+
+
 
 ## Slide with R Code and Output
 
