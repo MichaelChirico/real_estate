@@ -185,6 +185,16 @@ dec_del_lien_cont_ep <-
      
  * Blocked on total debt (roughly equal representation of each total debt quantile in all treatments)
 
+## Sample Description: Background
+```{r second, echo = FALSE, results = "asis"}
+<<descriptives_1>>
+```
+
+## Sample Description: Outcomes
+```{r third, echo = FALSE, results = "asis"}
+<<descriptives_2>>
+```
+
 ## Slide with R Code and Output
 
 ```{r}

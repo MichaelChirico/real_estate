@@ -494,6 +494,7 @@ print.xtable(xtable(matrix(cbind(
 rm(big_returns,small_returns,returns)
 
 #Descriptive Stats ####
+## @knitr descriptives_1
 #We count an address as in Philadelphia when:
 #  Mailing city contains "PH" but NOT
 # "X","M", or "R" -- this eliminates
@@ -519,20 +520,31 @@ print.xtable(xtable(
              `% Overlap with Holdout`=
                to.pct(mean(flag_holdout_overlap),dig=1),
              `% Overlap with Round 1`=
-               to.pct(mean(flag_round_one_overlap),dig=1),
-             `% Ever Paid (September)`=
-               to.pct(mean(ever_paid_sep),dig=1),
-             `% Paid in Full (Sep)`=
-               to.pct(mean(paid_full_sep),dig=1),
-             `Amount Due (September)`=
-               dol.form(mean(current_balance_sep)),
-             `% in Payment Agreement`=
-               to.pct(mean(pmt_agr1),dig=1))]),
-  caption=c("Descriptive Statistics (Owners)"),align=c("|c|c|"),
-  label="table:descriptives"),caption.placement="top",
-  include.colnames=F)
+               to.pct(mean(flag_round_one_overlap),dig=1))]),
+  caption=c("Descriptive Statistics (Owners, Non-Holdout)"),align=c("|r|r|"),
+  label="table:descriptivesI"),caption.placement="top",
+  include.colnames=F,comment=F)
+
+## @knitr descriptives_2
+vrl <- list(jul = (ov <- c("ever_paid", "paid_full", "current_balance")) %+% "_jul",
+            sep = c(ov, "pmt_agr1") %+% "_sep", dec = c(ov, "pmt_agr1") %+% "_dec")
+vr <- setNames(unlist(vrl), unlist(vrl))
+full_row.n <- c("% Ever Paid", "% Paid in Full",
+                "Amount Due", "% in Payment Agreement")
+sum_fn <- list(v = function(y) as.character(to.pct(mean(y), dig = 0)),
+               a = function(y) as.character(to.pct(mean(y), dig = 0)),
+               u = function(y) dol.form(mean(y)),
+               m = function(y) as.character(to.pct(mean(y), dig = 1)))
+print.xtable(xtable(setnames(melt(
+  owners[(!holdout), lapply(vr, function(x) sum_fn[[substr(x, 2, 2)]](get(x)))],
+  measure = vrl)[ , variable := full_row.n[variable]],
+  c("", "One Month", "Three Months", "Six Months")),
+  caption = c("Descriptive Statistics -- Outcomes (Owners, Non-Holdout)"),
+  align = c("|r|r|r|r|r|"), label = "table:descriptivesII"),
+  caption.placement = "top", include.rownames = FALSE, comment = FALSE)
 
 #Balance on Observables ####
+## @knitr balance
 ##Graphic Tests
 ###Log Balance by Letter
 pdf2(wds["imgb"]%+%"dist_log_due_by_trt_7_box.pdf")
