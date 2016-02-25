@@ -110,9 +110,80 @@ dec_del_lien_cont_ep <-
 
 * Support for hypothesis that more letters lead to more participation
 
-## Experimental Framework
+## Experiment Design: Overview
+
+* Single-sheet mailers, each a variation of a DoR-supplied template:
+
+\begin{center}
+\includegraphics{blank_template.png}
+\end{center}
 
 
+## Experiment Design: Main Treatments
+
+ * Deterrence I : Threat of Sheriff's Sale
+ 
+     + Failure to pay your Real Estate Taxes may result in the sale of your property by the City in order to collect back taxes. In the past year, we have sold «count» properties in «azavea_sher» at Sheriff's Sale.
+     
+         + Followed by 3 properties in «azavea_sher» and the date of sale
+
+ * Deterrence II : Threat of Lien
+ 
+     + Failure to pay your Real Estate Taxes will result in a tax lien on your property in an amount equal to your back taxes plus all penalties and interest. When your property is sold, those delinquent tax payments will be deducted from the sale price. By paying your taxes now, you can avoid these penalties and interest.
+     
+         + Followed by 3 properties in «azavea_sher» under lien and the date of sale
+
+## Experiment Design: Main Treatments
+
+ * Citizenship I : Peer Conformity
+ 
+     + You have not paid your Real Estate Taxes. Almost all of your neighbors pay their fair share—9 out of 10 Philadelphians do so. By failing to pay, you are abusing the good will of your Philadelphia neighbors. 
+
+ * Citizenship II : Duty
+ 
+     + For democracy to work, all citizens need to pay their fair share of taxes for community services. You have not yet paid your taxes. By failing to do so, you are not meeting your duty as a citizen of Philadelphia.
+     
+## Experiment Design: Main Treatments
+
+ * Civic Duty I : Generic Amenities
+ 
+     + Your taxes pay for important services that make a city great. Your tax dollars are essential for ensuring all Philadelphia children receive a quality education and all Philadelphians feel safe in their neighborhoods. Please pay your taxes as soon as you can to help us pay for these important services. 
+
+ * Civic Duty II : Local Amenities
+ 
+     + We want to remind you that your taxes pay for essential public services in «azavea_amen», such as «example_amenity_1», «example_amenity_2», your local police officer, snow removal, street repairs, and trash collection. Please pay your taxes to help the city provide these services in your neighborhood.
+
+## Experiment Design: Main Treatments
+
+ * Control
+ 
+     + Receive letter simply stating total outstanding debt
+
+ * Holdout
+ 
+     + Chose 3,000 properties at random to be excluded from _any_ mailings
+
+## Experiment Design: Timing
+
+ * Early summer 2016
+ 
+ * Staggered delivery
+ 
+    + Normal envelopes delivered _circa_ June 12; large envelopes _circa_ June 23rd (logistic issues)
+    
+ * One-, three-, and six-month follow-ups (July 23, September 24, and December 31)
+ 
+## Experiment Design: Blocking
+
+ * High likelihood of within-owner unobservable correlation
+ 
+ * Strong relationship between total debt owed and propensity to pay
+ 
+ * Grouped all properties listed under the same full name as a single owner (owner-level debt is sum of property debt)
+ 
+     + Also obviate mixed messaging (all owners receive _at most_ one letter template, potentially multiple times)
+     
+ * Blocked on total debt (roughly equal representation of each total debt quantile in all treatments)
 
 ## Slide with R Code and Output
 

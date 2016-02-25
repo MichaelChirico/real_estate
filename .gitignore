@@ -1,5 +1,6 @@
-#no sense tracking .pdfs
+#no sense tracking these types:
 *.pdf
+*.png
 
 #no need for html until further notice
 *.html
