@@ -195,15 +195,44 @@ dec_del_lien_cont_ep <-
 <<descriptives_2>>
 ```
 
-## Slide with R Code and Output
-
-```{r}
-summary(cars)
+## Sanity Check: Balance on Observables
+```{r fourth, echo = FALSE}
+par(mar=c(2.6, 5.1, 4.1, 2.1))
+boxplot(total_due ~ treat7, data = owners, cex.main = 1.5,
+        main = "Box Plots of Initial Debt\nOwner Level, By Treatment",
+        log = "x", xaxt = "n", col = get.col(trt.nms),
+        notch = TRUE, #notch CIs: ~= 1.58 * IQR / sqrt(n); see ?boxplot.stats
+        boxwex = .5, horizontal = TRUE, las = 1L, xlab = "")
+axis(side = 1L, at = p10 <- 10L^(1L:6L), cex.axis = .8,
+     labels = "$" %+% prettyNum(p10, big.mark = ",", scientific = FALSE))
+abline(v = md <- owners[treat7 == "Control", median(total_due)], lty = 2L)
+text(md, .5, pos = 4L, cex = .8, 
+     labels = "Control Median = $" %+% round(md))
 ```
 
-## Slide with Plot
-
-```{r, echo=FALSE}
-plot(cars)
+## Sanity Check: Balance on Observables
+```{r fifth, echo = FALSE}
+#since data.table j can't recognize output as invisible,
+#  'barplot' call plops out some noise; wrap in invisible
+#  to suppress this.
+invisible(
+properties[(!holdout),
+           #count properties (.N) and owners (uniqueN(owner1))
+           .(.N, ownN = uniqueN(owner1)), keyby = treat7
+           ][,{
+             layout(mat = matrix(1:2), heights = c(.8, .2))
+             par(mar = c(1, 4.1, 4.1, 2.1))
+             x <- barplot(c(rbind(N, ownN)), cex.main = 1.5,
+                          names.arg = rep(treat7, each = 2L), las = 2L,
+                          main = "Numbers of Properties and Owners\nBy Treatment",
+                          col = get.col(rep(trt.nms, each = 2L)),
+                          density = rep(c(-1L, 20L), .N), cex.names = .75,
+                          ylim = c(0, 1.3 * max(N)))
+             par(mar = rep(0, 4))
+             plot(0, 0, type = "n", ann = FALSE,
+                  axes = FALSE, xlim = range(x))
+             legend(max(x)/2, 0, bty = "n", xjust = .3,
+                    legend = c("# Properties", "# Owners"),
+                    density = c(-1, 20), horiz = TRUE, text.width = 5)}]
+)
 ```
-

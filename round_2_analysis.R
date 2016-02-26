@@ -530,7 +530,7 @@ vrl <- list(jul = (ov <- c("ever_paid", "paid_full", "current_balance")) %+% "_j
             sep = c(ov, "pmt_agr1") %+% "_sep", dec = c(ov, "pmt_agr1") %+% "_dec")
 vr <- setNames(unlist(vrl), unlist(vrl))
 full_row.n <- c("% Ever Paid", "% Paid in Full",
-                "Amount Due", "% in Payment Agreement")
+                "Amount Due", "% in Pmt. Agreement")
 sum_fn <- list(v = function(y) as.character(to.pct(mean(y), dig = 0)),
                a = function(y) as.character(to.pct(mean(y), dig = 0)),
                u = function(y) dol.form(mean(y)),
@@ -538,7 +538,7 @@ sum_fn <- list(v = function(y) as.character(to.pct(mean(y), dig = 0)),
 print.xtable(xtable(setnames(melt(
   owners[(!holdout), lapply(vr, function(x) sum_fn[[substr(x, 2, 2)]](get(x)))],
   measure = vrl)[ , variable := full_row.n[variable]],
-  c("", "One Month", "Three Months", "Six Months")),
+  c("Variable", "One Month", "Three Months", "Six Months")),
   caption = c("Descriptive Statistics -- Outcomes (Owners, Non-Holdout)"),
   align = c("|r|r|r|r|r|"), label = "table:descriptivesII"),
   caption.placement = "top", include.rownames = FALSE, comment = FALSE)
@@ -550,13 +550,12 @@ print.xtable(xtable(setnames(melt(
 pdf2(wds["imgb"]%+%"dist_log_due_by_trt_7_box.pdf")
 par(mar=c(2.6,5.1,4.1,2.1))
 boxplot(total_due~treat7,data=owners,
-        main="Box Plots of Log Debt\nOwner Level, By Treatment",
+        main="Box Plots of Initial Debt\nOwner Level, By Treatment",
         log="x",xaxt="n",cex.axis=.8,
         col=get.col(trt.nms),notch=T,
         boxwex=.5,horizontal=T,las=1,xlab="")
 axis(side=1,at=10^(1:6),cex.axis=.8,
-     labels="$"%+%formatC(
-       10^(1:6),big.mark=","))
+     labels="$"%+%prettyNum(10^(1:6),big.mark=",",scientific=FALSE))
 abline(v=owners[treat7=="Control",median(total_due)],lty=2)
 dev.off2()
 
@@ -613,6 +612,7 @@ print.xtable(xtable(dcast(melt(rbind(
   include.rownames=F,sanitize.colnames.function=identity)
 
 #Analysis ####
+## @knitr analysis
 ## Bootstrap simulations ####
 ###Number of repetitions for all bootstrap
 ###  exercises
