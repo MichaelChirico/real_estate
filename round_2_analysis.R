@@ -494,7 +494,7 @@ print.xtable(xtable(matrix(cbind(
 rm(big_returns,small_returns,returns)
 
 #Descriptive Stats ####
-## @knitr descriptives_1
+## @knitr descriptives
 #We count an address as in Philadelphia when:
 #  Mailing city contains "PH" but NOT
 # "X","M", or "R" -- this eliminates
@@ -504,28 +504,19 @@ rm(big_returns,small_returns,returns)
 #  captures most (but perhaps not all)
 #  of the multitudinous typos for Philadelphia.
 print.xtable(xtable(
-  t(owners[(!holdout),
-           .(`Number Observations`=prettyNum(.N,big.mark=","),
-             `Amount Due (June)`=dol.form(mean(total_due)),
-             `Assessed Property Value`=
-               dol.form(mean(assessed_mv,na.rm=T)),
-             `% Residential`=
-               to.pct(mean(residential,na.rm=T),dig=0),
-             `% with Philadelphia Mailing Address`=
-               to.pct(mean(phila_mailing),dig=0),
-             `Distance to Sheriff's Sale (km)`=
-               round(mean(sheriff_distance_mean),dig=1),
-             `% with Unique Owner`=
-               to.pct(mean(unq_own),dig=1),
-             `% Overlap with Holdout`=
-               to.pct(mean(flag_holdout_overlap),dig=1),
-             `% Overlap with Round 1`=
-               to.pct(mean(flag_round_one_overlap),dig=1))]),
-  caption=c("Descriptive Statistics (Owners, Non-Holdout)"),align=c("|r|r|"),
-  label="table:descriptivesI"),caption.placement="top",
-  include.colnames=F,comment=F)
+  t(owners[,.(`Number Observations`=prettyNum(.N,big.mark=","),
+              `Avg. Amount Due (June)`=dol.form(mean(total_due)),
+              `Assessed Property Value`=
+                dol.form(mean(assessed_mv,na.rm=T)),
+              `% Residential`=
+                to.pct(mean(residential,na.rm=T),dig=0),
+              `% with Unique Owner`=
+                to.pct(mean(unq_own),dig=1)), 
+           by = .(Variable = c("Main Sample", "Holdout")[holdout + 1L])]),
+  caption=c("Descriptive Statistics -- Background (Owners, Non-Holdout)"),
+  align=c("|r|r|r|"),label="table:descriptivesI"),caption.placement="top",
+  include.colnames=F,comment=F, hline.after = c(0, 1, 6))
 
-## @knitr descriptives_2
 vrl <- list(jul = (ov <- c("ever_paid", "paid_full", "current_balance")) %+% "_jul",
             sep = c(ov, "pmt_agr1") %+% "_sep", dec = c(ov, "pmt_agr1") %+% "_dec")
 vr <- setNames(unlist(vrl), unlist(vrl))

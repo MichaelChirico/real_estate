@@ -26,11 +26,11 @@ out_taxes[ , due := as.numeric(gsub("\\$", "", Total))]
 taxes_owed <- out_taxes[ , dol.form(sum(due))]
 
 jul_del_lien_cont_ep <-
-  owners[ , to.pct(mean(ever_paid_jul[treat7 == "Lien"]) - 
+  owners[(!holdout), to.pct(mean(ever_paid_jul[treat7 == "Lien"]) - 
                      mean(ever_paid_jul[treat7 == "Control"]), dig = 0)]
 
 dec_del_lien_cont_ep <-
-  owners[ , to.pct(mean(ever_paid_dec[treat7 == "Lien"]) -
+  owners[(!holdout), to.pct(mean(ever_paid_dec[treat7 == "Lien"]) -
                      mean(ever_paid_dec[treat7 == "Control"]), dig = 0)]
 ```
 
@@ -92,7 +92,7 @@ dec_del_lien_cont_ep <-
 
     + Message targeting: 3 pairs of treatments with wording varied to target different compliance motives
     
-    + Style cues: Half of treatments were delivered in large-format ($9$'' x $12$'')envelopes, the rest in standard-sized ($4 \frac18$'' x $9 \frac12$'') envelopes.
+    + Style cues: Half of treatments were delivered in large-format ($9''$ x $12''$) envelopes, the rest in standard-sized ($4 \frac18 ''$ x $9 \frac12 ''$) envelopes.
     
     + Frequency: Some owners with multiple properties only received treatments on a subset of their holdings.
     
@@ -106,7 +106,7 @@ dec_del_lien_cont_ep <-
     
     + Also evidence of long-run effect mediation -- by the end of 2015 (six months post-treatment), the advantage had shrunk to roughly `r dec_del_lien_cont_ep`%.
 
-* No evidence whatsoever that letter size affects compliance rates
+* No evidence whatsoever that envelope size affects compliance rates
 
 * Support for hypothesis that more letters lead to more participation
 
@@ -153,46 +153,9 @@ dec_del_lien_cont_ep <-
  
      + We want to remind you that your taxes pay for essential public services in «azavea_amen», such as «example_amenity_1», «example_amenity_2», your local police officer, snow removal, street repairs, and trash collection. Please pay your taxes to help the city provide these services in your neighborhood.
 
-## Experiment Design: Main Treatments
-
- * Control
- 
-     + Receive letter simply stating total outstanding debt
-
- * Holdout
- 
-     + Chose 3,000 properties at random to be excluded from _any_ mailings
-
-## Experiment Design: Timing
-
- * Early summer 2016
- 
- * Staggered delivery
- 
-    + Normal envelopes delivered _circa_ June 12; large envelopes _circa_ June 23rd (logistic issues)
-    
- * One-, three-, and six-month follow-ups (July 23, September 24, and December 31)
- 
-## Experiment Design: Blocking
-
- * High likelihood of within-owner unobservable correlation
- 
- * Strong relationship between total debt owed and propensity to pay
- 
- * Grouped all properties listed under the same full name as a single owner (owner-level debt is sum of property debt)
- 
-     + Also obviate mixed messaging (all owners receive _at most_ one letter template, potentially multiple times)
-     
- * Blocked on total debt (roughly equal representation of each total debt quantile in all treatments)
-
 ## Sample Description: Background
 ```{r second, echo = FALSE, results = "asis"}
-<<descriptives_1>>
-```
-
-## Sample Description: Outcomes
-```{r third, echo = FALSE, results = "asis"}
-<<descriptives_2>>
+<<descriptives>>
 ```
 
 ## Sanity Check: Balance on Observables
@@ -202,37 +165,13 @@ boxplot(total_due ~ treat7, data = owners, cex.main = 1.5,
         main = "Box Plots of Initial Debt\nOwner Level, By Treatment",
         log = "x", xaxt = "n", col = get.col(trt.nms),
         notch = TRUE, #notch CIs: ~= 1.58 * IQR / sqrt(n); see ?boxplot.stats
-        boxwex = .5, horizontal = TRUE, las = 1L, xlab = "")
+        boxwex = .5, horizontal = TRUE, las = 1L, xlab = "", 
+        names = owners[(!holdout), .N, keyby = treat7
+                       ][ , paste0(treat7, "\n(n = ", 
+                                   prettyNum(N, big.mark = ","), ")")])
 axis(side = 1L, at = p10 <- 10L^(1L:6L), cex.axis = .8,
      labels = "$" %+% prettyNum(p10, big.mark = ",", scientific = FALSE))
 abline(v = md <- owners[treat7 == "Control", median(total_due)], lty = 2L)
 text(md, .5, pos = 4L, cex = .8, 
      labels = "Control Median = $" %+% round(md))
-```
-
-## Sanity Check: Balance on Observables
-```{r fifth, echo = FALSE}
-#since data.table j can't recognize output as invisible,
-#  'barplot' call plops out some noise; wrap in invisible
-#  to suppress this.
-invisible(
-properties[(!holdout),
-           #count properties (.N) and owners (uniqueN(owner1))
-           .(.N, ownN = uniqueN(owner1)), keyby = treat7
-           ][,{
-             layout(mat = matrix(1:2), heights = c(.8, .2))
-             par(mar = c(1, 4.1, 4.1, 2.1))
-             x <- barplot(c(rbind(N, ownN)), cex.main = 1.5,
-                          names.arg = rep(treat7, each = 2L), las = 2L,
-                          main = "Numbers of Properties and Owners\nBy Treatment",
-                          col = get.col(rep(trt.nms, each = 2L)),
-                          density = rep(c(-1L, 20L), .N), cex.names = .75,
-                          ylim = c(0, 1.3 * max(N)))
-             par(mar = rep(0, 4))
-             plot(0, 0, type = "n", ann = FALSE,
-                  axes = FALSE, xlim = range(x))
-             legend(max(x)/2, 0, bty = "n", xjust = .3,
-                    legend = c("# Properties", "# Owners"),
-                    density = c(-1, 20), horiz = TRUE, text.width = 5)}]
-)
 ```
