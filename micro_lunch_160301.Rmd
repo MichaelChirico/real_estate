@@ -202,32 +202,134 @@ invisible(
 
 Simply receiving a letter had a sizeable initial impact which tapered and dissipated with time
 
-## Results: Main Treatment Effects
+## Results: Main Treatments -- Participation
 ```{r, echo = FALSE, results = "hide"}
 <<analysis_bs>>
 ```
 ```{r, echo = FALSE}
 invisible(
   with(boot.cis$o7,
-     dt[order(get(tr)),
-        {par(mfrow = c(1,3), oma = c(5.1, 5.1, 4.1, 2.1))
+     dt[order(treat7),
+        {par(mfrow = c(1,3), oma = c(5.6, 5.1, 4.1, 2.1))
           Mo <- c(j = "One Month", s = "Three Months", d = "Six Months")
-          xup <- nx.mlt(1.05*to.pct(max(epj_high,eps_high,epd_high)),5)
+          yup <- nx.mlt(1.05*to.pct(max(epj_high,eps_high,epd_high)),5)
           for (mo in c("j", "s", "d")){
             par(mar=c(0,0,0,0))
             vals<-lapply(mget("ep"%+%mo%+%c("","_low","_high")),to.pct)
-            ind<-which(treat7==rf)
+            ind<-which(treat7=="Control")
             x<-barplot(vals[[1]],names.arg=treat7,xlim=yl,
-                       ylim=c(0, xup),las=2,yaxt="n",
-                       col=get.col(get(tr)),main="",
+                       ylim=c(0, yup),las=2,yaxt="n",
+                       col=get.col(treat7),main="",
                        space=sp, cex.names = 1.3)
             title(Mo[mo], line = -1)
             arrows(x,vals[[2]],x,vals[[3]],code=3,
                    angle=90,length=.07,lwd=2)
             abline(h=c(vals[[2]][ind],vals[[3]][ind]),lty=2)
-            tile.axes(match(mo, names(Mo)),1,3, use.x = FALSE)
+            tile.axes(match(mo, names(Mo)),1,3, 
+                      params = list(list(), list(las = 2, cex.axis = 1.3)),
+                      use.x = FALSE)
             box()}
           title("Percent Ever Paid (by Owner)", outer = TRUE)
           mtext("Percent",side=2,outer=T,line=2.5)}])
   )
 ```
+
+Deterrence-oriented treatments (Lien, Sheriff) effective, with some catch-up; others, not so much.
+
+## Results: Main Treatments -- Intensive Margin
+```{r, echo = FALSE}
+invisible(
+  with(boot.cis$o7,
+     dt[order(treat7),
+        {par(mfrow = c(1,3), oma = c(5.6, 5.1, 4.1, 2.1))
+          Mo <- c(j = "One Month", s = "Three Months", d = "Six Months")
+          yup <- nx.mlt(1.05*max(tpj_high,tps_high,tpd_high),10)
+          for (mo in c("j", "s", "d")){
+            par(mar=c(0,0,0,0))
+            vals<-mget("tp" %+% mo %+% c("","_low","_high"))
+            ind<-which(treat7=="Control")
+            x<-barplot(vals[[1]],names.arg=treat7,xlim=yl,
+                       ylim=c(0, yup),las=2,yaxt="n",
+                       col=get.col(treat7),main="",
+                       space=sp, cex.names = 1.3)
+            title(Mo[mo], line = -1)
+            arrows(x,vals[[2]],x,vals[[3]],code=3,
+                   angle=90,length=.07,lwd=2)
+            abline(h=c(vals[[2]][ind],vals[[3]][ind]),lty=2)
+            tile.axes(match(mo, names(Mo)),1,3, 
+                      params = list(list(), list(las = 2, cex.axis = 1.3)),
+                      use.x = FALSE)
+            box()}
+          title("Average Paid (by Owner)", outer = TRUE)
+          mtext("$",side=2,outer=T,line=2.5)}])
+  )
+```
+
+No significant effect on _amount_ paid.
+
+## Results: Letter-size Experiment
+```{r, echo = FALSE}
+invisible(
+  with(boot.cis$o2,
+     dt[order(treat2),
+        {par(mfrow = c(1,3), oma = c(5.6, 5.1, 4.1, 2.1))
+          Mo <- c(j = "One Month", s = "Three Months", d = "Six Months")
+          xup <- nx.mlt(1.05*to.pct(max(epj_high,eps_high,epd_high)),5)
+          for (mo in c("j", "s", "d")){
+            par(mar=c(0,0,0,0))
+            vals<-lapply(mget("ep"%+%mo%+%c("","_low","_high")),to.pct)
+            ind<-which(treat2=="Small")
+            x<-barplot(vals[[1]],names.arg=treat2,xlim=c(0, 5),
+                       ylim=c(0, xup),las=2,yaxt="n",
+                       col=get.col(treat2),main="", space = .5,
+                       cex.names = 1.3, width = 1.5)
+            title(Mo[mo], line = -1)
+            arrows(x,vals[[2]],x,vals[[3]],code=3,
+                   angle=90,length=.07,lwd=2)
+            abline(h=c(vals[[2]][ind],vals[[3]][ind]),lty=2)
+            tile.axes(match(mo, names(Mo)),1,3, 
+                      params = list(list(), list(las = 2, cex.axis = 1.3)),
+                      use.x = FALSE)
+            box()}
+          title("Percent Ever Paid (by Owner)", outer = TRUE)
+          mtext("Percent",side=2,outer=T,line=2.5)}])
+  )
+```
+
+No discernible difference in uptake conditional on size of envelope received.
+
+## Results: Marginal Letter Receipt
+```{r, echo = FALSE}
+<<analysis_marg>>
+```
+```{r, echo = FALSE}
+invisible(
+  marg[,{
+    par(mfrow = c(1,3), oma = c(5.1, 5.1, 4.1, 2.1))
+    Mo <- c(jul = "One Month", sep = "Three Months", dec = "Six Months")
+    ns <- "n = " %+% 
+      prettyNum(some_letters[,.N,keyby=let_rec]$N,big.mark=",")
+    for (mo in c("jul", "sep", "dec")){
+      par(mar = c(0, 0, 0, 0))
+      ys <- lapply(mget("ever_paid_" %+% mo %+% 
+                          c("", "_low", "_high")), to.pct)
+      x<-barplot(ys[[1]],names.arg=let_rec,
+                 col="deepskyblue"%+%((j <- match(mo, names(Mo)))+1),
+                 yaxt = "n",xlab="",ylim=c(0, 100),ylab="",main="")
+      title(Mo[mo], line = -1)
+      arrows(x,ys[[2]],x,ys[[3]],angle=90,
+             code=3,lwd=1,length=.05)
+      if (j == 2){
+        text(x,20,labels = ns, srt = 270, cex = 1.5, adj = 0)
+      }
+      tile.axes(j,1,3,params = list(list(), 
+                                    list(las = 2, cex.axis = 1.3)),
+                use.x = FALSE)
+      box()}
+    title("Marginal Effects of Receiving Letters", outer = TRUE)
+    mtext("Letters Received by Owner",side=1,outer=T,line=2.5)
+    mtext("Percent Ever Paid",side=2,outer=TRUE,line=2.5)}]
+)
+```
+
+Quantity of mail received has a marginal effect on participation.

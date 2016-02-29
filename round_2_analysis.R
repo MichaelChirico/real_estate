@@ -820,7 +820,44 @@ sapply(type.params,
                abline(v=c(vals[[2]][ind],vals[[3]][ind]),lty=2)
                dev.off2()}])}))})
 
+## @knitr analysis_marg
+some_letters<-
+  properties[(flag_holdout_overlap|
+                treat15=="Holdout"),
+             .(let_rec=cut(.N-sum(treat15=="Holdout"),
+                           c(0:3,5,10,200),right=F,
+                           labels=c(0,1,2,"3-4","5-9","10+")),
+               ever_paid_jul = any(ever_paid_jul),
+               ever_paid_sep = any(ever_paid_sep),
+               ever_paid_dec = any(ever_paid_dec)),
+             by=owner1][ , -1, with = FALSE] 
+BB<-5000
+marg<-
+  dcast(rbindlist(replicate(
+    BB,some_letters[sample(.N,rep=T),
+                    lapply(.SD, mean),
+                    by=let_rec],
+    simplify=FALSE)
+  )[,lapply(.SD, quantile, c(.025, .975)), by = let_rec],
+  let_rec ~ c("low", "high")[rowid(let_rec)],
+  value.var = "ever_paid_" %+% c("jul", "sep", "dec")
+  )[some_letters[,lapply(.SD, mean),keyby=let_rec],on="let_rec"]
+
+## @knitr ignore
+marg[,{pdf2(wds["imga"]%+%"marginal_effect_of_letters_all.pdf")
+  x<-barplot(avg,names.arg=let_rec,col="cyan",xlab="Letters Received",
+             ylim=c(0,max(`97.5%`)+.05),ylab="Probability Ever Paid",
+             main="Marginal Effects of Receiving Letters")
+  arrows(x,`2.5%`,x,`97.5%`,
+         angle=90,code=3,lwd=1,length=.05)
+  text(x,`97.5%`,pos=3,cex=.6,
+       labels="n = "%+%
+         prettyNum(some_letters[,.N,keyby=let_rec]$N,
+                   big.mark=","))
+  dev.off2()}]
+
 ##Regression Tables ####
+## @knitr analysis_reg
 all_samples<-list("main"=owners[(!holdout)],
                   "non_comm"=owners[(residential)],
                   "single_owner"=owners[(unq_own)])
