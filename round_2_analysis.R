@@ -603,7 +603,64 @@ print.xtable(xtable(dcast(melt(rbind(
   include.rownames=F,sanitize.colnames.function=identity)
 
 #Analysis ####
-## @knitr analysis
+## Cumulative Partial Participation
+## @knitr analysis_ch_ep
+### get range of dates for day-by-day averages
+dt.rng<-owners[(!holdout),{
+  rng<-range(earliest_pmt_dec,na.rm=T)
+  seq(from=rng[1],to=rng[2],by="day")}]
+#For pretty printing, get once/week subset
+dt.rng2<-dt.rng[seq(1,length(dt.rng),length.out=7)]
+
+date.dt <- 
+  #not all treatments saw activity on each day,
+  #  so we'll have to "fill-in-the-blanks" with this
+  CJ(treat8 = c("Holdout","Control"), date = dt.rng,
+     unique=TRUE, sorted = FALSE)
+owners[ , hold_cont := treat8%in%c("Holdout","Control")]
+cum_haz<-owners[(hold_cont),
+                #total entrants by day, treatment
+                sum(ever_paid_dec)+0., #convert to numeric
+                keyby=.(treat8,earliest_pmt_dec)
+                #running total of entrants; take care to eliminate NAs
+                ][,.(ep=cumsum(V1[idx<-!is.na(earliest_pmt_dec)]),
+                     date=earliest_pmt_dec[idx]),by=treat8
+                  #merge to get the denominator
+                  ][owners[(hold_cont),.N,treat8],
+                    ep:=ep/i.N,on="treat8"
+                    ][date.dt, on = c("treat8", "date"), roll = TRUE
+                      #express relative to holdout
+                      ][,.(ep=ep[idx<-treat8=="Control"]-ep[!idx]),by=date]
+
+BB <- 5000 #number of bootstrap simulations
+cis <- dcast(rbindlist(lapply(integer(BB), function(...){
+  dt <- owners[(hold_cont)][sample(.N,rep=T)]
+  dt[,sum(ever_paid_dec)+0.,keyby=.(treat8,earliest_pmt_dec)
+     ][,.(ep=cumsum(V1[idx<-!is.na(earliest_pmt_dec)]),
+          date=earliest_pmt_dec[idx]),by=treat8
+       ][dt[,.N,treat8],ep:=ep/i.N,on="treat8"
+         ][date.dt, on = c("treat8", "date"),roll = TRUE
+           ][,.(ep=ep[idx<-treat8=="Control"]-ep[!idx]),
+             by=date]}),idcol="bootID"
+  #extract for 95% CI
+  )[,quantile(ep, c(.025, .975), na.rm=T), by = date],
+  date~c("low","high")[rowid(date)],value.var="V1")
+
+## @knitr ignore
+### plot
+cum_haz[cis,on=c("date")
+        ][,{pdf2(wds["imga"]%+%"cum_haz_ever_paid_dec_cont_hold_own_cis.pdf")
+          matplot(date, do.call("cbind",mget(c("low","ep","high"))),
+                  type="l",lty=c(2,1,2),col=get.col("Control"),
+                  xaxt="n",lwd=3,xlab="Date",
+                  ylab="Probability Ever Paid vs. Holdout")
+          axis(side=1,at=dt.rng2,labels=format(dt.rng2,"%b %d"))
+          abline(h = 0, col = "black", lwd = 2)
+          title("Cumulative Partial Participation (Dec.)"%+%
+                  "\nControl vs. Holdout")
+          dev.off2()}]
+
+## @knitr analysis_bs
 ## Bootstrap simulations ####
 ###Number of repetitions for all bootstrap
 ###  exercises
@@ -615,140 +672,74 @@ BB<-5000
 ###  the key changing parameters in this list;
 ###  also store a bunch of plotting parameters
 ###  since we'll use the result of this list for that
-out_main_q<-
-  parse(text=paste0(".(",
-                    paste(paste0("mean(",c("ever_paid",
-                                           "paid_full",
-                                           "paid_part",
-                                           "total_paid"),"_jul)"),
-                          collapse=","),")"))
-out_main2_q<-quote(.(mean(ever_paid_jul),
-                     mean(ever_paid_sep),
-                     mean(ever_paid_dec),
-                     mean(paid_full_jul),
-                     mean(paid_full_sep),
-                     mean(paid_full_dec),
-                     mean(paid_part_jul),
-                     mean(paid_part_sep),
-                     mean(paid_part_dec),
-                     mean(total_paid_jul),
-                     mean(total_paid_sep),
-                     mean(total_paid_dec)))
-out_main_n<-c("epj","pfj","pPj","tpj")
-out_main2_n<-c("epj","eps","epd","pfj","pfs","pfd",
-               "pPj","pPs","pPd","tpj","tps","tpd")
+setkey(owners, rand_id)
+
+outvar <- parse(text = paste0(
+  ".(", paste(paste0("mean(",
+                     c("ever_paid", "paid_full", "total_paid"),
+                     rep(c("_jul", "_sep", "_dec"), each = 3), ")"),
+              collapse = ","), ")"))
+
+outvar2 <- parse(text = paste0(
+  ".(", paste(paste0("mean(",
+                     c("ever_paid", "paid_full", 
+                       "total_paid", "pmt_agr1"),
+                     rep(c("_jul", "_sep", "_dec"), c(3, 4, 4)), ")"),
+              collapse = ","), ")"))
+
+outn <- c("ep", "pf", "tp") %+% rep(c("j","s","d"), each = 3)
+
+outn2 <- c("ep", "pf", "tp", "pa") %+% rep(c("j","s","d"), c(3, 4, 4))
+
 bootlist<-{
   #By owner, big vs. small
   list(o2=list(dt=owners[(!holdout)],tr="treat2",
-               exprs=out_main2_q,nms=out_main2_n,fn="2_own",
+               rI = owners[(!holdout), unique(rand_id)],
+               ri = quote(.(sample(rI, rep = TRUE))),
+               exprs=outvar,nms=outn,fn="2_own",
                tl="Big/Small",lv=owners[,levels(treat2)],
                nx=.75,sp=3,yl=c(2,10),dn=quote(NULL)),
        #By owner, main 7 treatments
        o7=list(dt=owners[(!holdout)],tr="treat7",
-               exprs=quote(.(mean(ever_paid_jul),mean(ever_paid_sep),
-                             mean(ever_paid_dec),
-                             mean(paid_full_jul),mean(paid_full_sep),
-                             mean(paid_full_dec),
-                             mean(paid_part_jul),mean(paid_part_sep),
-                             mean(paid_part_sep),
-                             mean(total_paid_jul),mean(total_paid_sep),
-                             mean(total_paid_dec),
-                             median(total_paid_jul[total_paid_jul>0]),
-                             median(total_paid_sep[total_paid_sep>0]),
-                             mean(total_paid_jul[total_paid_jul>0]),
-                             mean(total_paid_sep[total_paid_sep>0]),
-                             mean(pmt_agr1_sep),mean(pmt_agrA_sep),
-                             mean(pmt_agr1_dec),mean(pmt_agrA_dec))),
-               nms=c(out_main2_n,"mdj","mds","ppj",
-                     "pps","pa1s","paAs","pa1d","paAd"),
+               rI = owners[(!holdout), unique(rand_id)],
+               ri = quote(.(sample(rI, rep = TRUE))),
+               exprs=outvar2, nms=outn2,
                fn="7_own",tl="Treatment",lv=trt.nms,nx=.75,
                sp=NULL,yl=NULL,dn=quote(NULL)),
        #By owner, main 7 treatments, single-owner properties
        o7so=list(dt=owners[(unq_own&!holdout)],tr="treat7",
-                 exprs=out_main2_q,nms=out_main2_n,fn="7_own_so",
+                 rI = owners[(!holdout), unique(rand_id)],
+                 ri = quote(.(sample(rI, rep = TRUE))),
+                 exprs=outvar,nms=outn,fn="7_own_so",
                  tl="Treatment\nSingle-Owner Properties",
                  lv=trt.nms,nx=.75,sp=NULL,
                  yl=NULL,dn=quote(NULL)),
-       #By owner, main 7 treatments,
-       #  exclude 1% extreme debtors
-       o71=list(dt=owners[(!flag_top01&!holdout)],tr="treat7",
-                exprs=out_main_q,nms=out_main_n,fn="7_own_x01",
-                tl="Treatment\nExcluding Top 1% of Debtors",
-                lv=trt.nms,nx=.75,sp=NULL,
-                yl=NULL,dn=quote(NULL)),
-       #By owner, main 7 treatments,
-       #  exclude 5% extreme debtors
-       o75=list(dt=owners[(!flag_top05&!holdout)],tr="treat7",
-                exprs=out_main_q,nms=out_main_n,fn="7_own_x05",
-                tl="Treatment\nExcluding Top 5% of Debtors",
-                lv=trt.nms,nx=.75,sp=NULL,
-                yl=NULL,dn=quote(NULL)),
        #By owner, main 7 treatments + holdout
        o8=list(dt=owners[(!flag_holdout_overlap)],
-               tr="treat8",exprs=out_main2_q,nms=out_main2_n,
+               ri = quote(sample(.N, .N, rep = TRUE)),
+               tr="treat8",exprs=outvar,nms=outn,
                fn="8_own",tl="Treatment\nIncluding Holdout Sample",
                lv=owners[,levels(treat8)],nx=.75,
-               sp=NULL,yl=NULL,dn=quote(NULL)),
-       #By owner, full 14 treatments
-       o14=list(dt=owners[(!holdout)],tr="treat14",
-                exprs=out_main_q,nms=out_main_n,fn="14_own",
-                tl="Treatment / Big/Small",
-                lv=owners[,levels(treat14)],nx=.5,
-                sp=NULL,yl=NULL,dn=quote(rep(c(-1,30),.N))))}
+               sp=NULL,yl=NULL,dn=quote(NULL)))}
 
 boot.cis<-{
   lapply(bootlist,function(z){
-    print(names(z))
-    with(z,list("dt"=setnames(setkeyv(
+    print(z$tl)
+    with(z,list("dt"=setnames(
       #First, point estimates from raw data
-      dt,tr)[,eval(exprs),by=tr
-              ][data.table(t(sapply(
-                dt[,levels(get(tr))],
-                function(w){
-                  apply(replicate(
-                    #to guarantee equal representation of each
-                    #  treatment, block at the treatment level--
-                    #  resample N_t observations for each treatment t
-                    BB,unlist(dt[.(w)][
-                      #calculate point estimate in re-sample
-                      sample(.N,.N,T),eval(exprs)])),
-                    #CIs are given by the 2.5 &
-                    #  97.5 %ile of each measure
-                    1,quantile,c(.025,.975))},
-                USE.NAMES=T)),keep.rownames=tr),on=tr
-                ][,(tr):=factor(get(tr),lv)],
-      c(tr,nms,rep(nms,each=2)%+%
-          c(".ci.lo",".ci.hi"))),
+      dt[ , eval(exprs), keyby = tr
+          ][dcast(rbindlist(lapply(integer(BB), function(...)
+            #calculate point estimate in re-sample
+            dt[eval(ri), eval(exprs), keyby = tr])
+          )[ , lapply(.SD, quantile, c(.025, .975)), by = tr],
+          as.formula(paste0(tr, "~",  'c("low", "high")[rowid(', tr, ")]")),
+          value.var = "V" %+% 1:length(nms)), on = tr],
+      -1L, c(nms, rep(nms, each = 2)) %+% 
+        c(rep("", length(nms)), rep(c("_high","_low"), length(nms)))),
       "fn"=fn,"tr"=tr,"tl"=tl,"rf"=lv[1L],
       "nx"=nx,"sp"=sp,"yl"=yl,"dn"=dn))})}
 
-###Now add confidence intervals for more complicated
-###  scenario--results at the property level,
-###  clustering by owner by resampling owners
-setkey(properties,treat7)
-own_list<-sapply(properties[,levels(treat7)],
-                 function(x)properties[.(x),unique(owner1)],
-                 USE.NAMES=T)
-setkey(properties,owner1)
-boot.cis$p7<-{
-  list("dt"=setnames(
-    data.table(t(sapply(
-      trt.nms,function(x)apply(
-        replicate(BB,unlist(
-          properties[.(sample(own_list[[x]],rep=T)),
-                  eval(out_main_q)])),1,
-        quantile,c(.025,.975)),
-      USE.NAMES=T)),keep.rownames=T
-      )[properties[!is.na(treat7),
-                   eval(out_main_q),keyby=treat7],
-        on=c(rn="treat7")],
-    c("treat7",rep(out_main_n,each=2)%+%
-        c(".ci.lo",".ci.hi"),out_main_n)),
-    fn="7_prop",tr="treat7",
-    tl="Treatment\nProperty Level, SEs "%+%
-      "Clustered by Owner",rf="Control",
-    nx=.75,sp=NULL,yl=NULL,dn=quote(NULL))}
-
+## @knitr ignore
 ##Bar Plots ####
 type.params<-{list(list(mfn="bar_plot_ever_paid_jul_",xn="epj",trans=to.pct,
                         mtl="Percent Ever Paid (July)",xlb="Percent",xup=5,

@@ -14,7 +14,7 @@ knitr::read_chunk("round_2_analysis.R")
 
 
 ## Motivation
-```{r first, echo=FALSE, results = "hide"}
+```{r, echo=FALSE, results = "hide"}
 <<setup>>
 library(data.table)
 library(funchir)
@@ -154,12 +154,12 @@ dec_del_lien_cont_ep <-
      + We want to remind you that your taxes pay for essential public services in «azavea_amen», such as «example_amenity_1», «example_amenity_2», your local police officer, snow removal, street repairs, and trash collection. Please pay your taxes to help the city provide these services in your neighborhood.
 
 ## Sample Description: Background
-```{r second, echo = FALSE, results = "asis"}
+```{r, echo = FALSE, results = "asis"}
 <<descriptives>>
 ```
 
 ## Sanity Check: Balance on Observables
-```{r fourth, echo = FALSE}
+```{r, echo = FALSE}
 par(mar=c(2.6, 5.1, 4.1, 2.1))
 boxplot(total_due ~ treat7, data = owners, cex.main = 1.5,
         main = "Box Plots of Initial Debt\nOwner Level, By Treatment",
@@ -174,4 +174,60 @@ axis(side = 1L, at = p10 <- 10L^(1L:6L), cex.axis = .8,
 abline(v = md <- owners[treat7 == "Control", median(total_due)], lty = 2L)
 text(md, .5, pos = 4L, cex = .8, 
      labels = "Control Median = $" %+% round(md))
+```
+
+## Results: Acceleration
+```{r, echo = FALSE}
+<<analysis_ch_ep>>
+```
+```{r, echo = FALSE}
+invisible(
+  cum_haz[cis,on=c("date")
+          ][,{
+            matplot(date, do.call("cbind",mget(c("low","ep","high"))),
+                    type="l",lty=c(2,1,2),col=get.col("Control"),
+                    xaxt="n",lwd=3,xlab="Date",
+                    ylab="Probability Ever Paid vs. Holdout")
+            axis(side=1,at=dt.rng2,labels=format(dt.rng2,"%b %d"))
+            abline(h = 0, col = "black", lwd = 2)
+            abline(v = ds <- unclass(D("2015-06-12", "2015-06-22")),
+                   col = "black", lwd = 2, lty = 2)
+            text(ds, .07, pos = 4, labels = c("1", "2"), col = "red")
+            text(unclass(D("2015-10-21")), .07, col = "red", adj = c(0,0),
+                 labels = "1: Small Envelopes\n2: Big Envelopes", pos = 4)
+            title("Cumulative Partial Participation (Dec.)"%+%
+                    "\nControl vs. Holdout")}]
+)
+```
+
+Simply receiving a letter had a sizeable initial impact which tapered and dissipated with time
+
+## Results: Main Treatment Effects
+```{r, echo = FALSE, results = "hide"}
+<<analysis_bs>>
+```
+```{r, echo = FALSE}
+invisible(
+  with(boot.cis$o7,
+     dt[order(get(tr)),
+        {par(mfrow = c(1,3), oma = c(5.1, 5.1, 4.1, 2.1))
+          Mo <- c(j = "One Month", s = "Three Months", d = "Six Months")
+          xup <- nx.mlt(1.05*to.pct(max(epj_high,eps_high,epd_high)),5)
+          for (mo in c("j", "s", "d")){
+            par(mar=c(0,0,0,0))
+            vals<-lapply(mget("ep"%+%mo%+%c("","_low","_high")),to.pct)
+            ind<-which(treat7==rf)
+            x<-barplot(vals[[1]],names.arg=treat7,xlim=yl,
+                       ylim=c(0, xup),las=2,yaxt="n",
+                       col=get.col(get(tr)),main="",
+                       space=sp, cex.names = 1.3)
+            title(Mo[mo], line = -1)
+            arrows(x,vals[[2]],x,vals[[3]],code=3,
+                   angle=90,length=.07,lwd=2)
+            abline(h=c(vals[[2]][ind],vals[[3]][ind]),lty=2)
+            tile.axes(match(mo, names(Mo)),1,3, use.x = FALSE)
+            box()}
+          title("Percent Ever Paid (by Owner)", outer = TRUE)
+          mtext("Percent",side=2,outer=T,line=2.5)}])
+  )
 ```
