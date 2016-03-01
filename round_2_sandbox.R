@@ -910,3 +910,119 @@ dev.off()
 
 ownsmp<-properties[treat8=="Holdout",sample(unique(owner1),10)]
 ownsmp2<-properties[treat8=="Holdout",sample(unique(owner1),5)]
+
+
+
+##Heterogeneity Analysis ####
+###Percentage of Democrat Voters
+pdf2(wds["imga"]%+%"bar_plot_hetero_ever_paid_7_pct_democrat.pdf")
+layout(mat=matrix(1:2,nrow=2),
+       heights=c(.9,.1))
+
+# **note: quantile defined as non-holdout Q**
+properties[(!holdout), pct_democrat_q := create_quantiles(pct_democrat, 4)]
+properties[(!holdout&!is.na(ct_median_hh_income)), 
+            income_q := create_quantiles(ct_median_hh_income, 4)]
+properties[(!holdout&!is.na(pct_coll_grad)), 
+           edu_q := create_quantiles(pct_coll_grad, 4)]
+
+BB <- 5000
+mos <- c("jul", "sep", "dec")
+boot.cis <- dcast(rbindlist(lapply(
+  integer(BB), function(...)
+    properties[(!holdout)][sample(.N, .N, TRUE), lapply(.SD, mean),
+                           keyby = .(treat7, pct_democrat_q),
+                           .SDcols = "ever_paid_" %+% mos
+                           ][ , c(list(treat7 = treat7[-1]),
+                                  lapply(mget("ever_paid_" %+% mos),
+                                         function(x) x[-1] - x[1])), 
+                              by = pct_democrat_q])
+  )[ , lapply(.SD, quantile, c(.025, .975)), 
+     by = .(pct_democrat_q, treat7)],
+  pct_democrat_q + treat7 ~ c("low", "high")[rowid(pct_democrat_q, treat7)],
+  value.var = "ever_paid_" %+% mos
+  )[properties[(!holdout), lapply(.SD, mean),
+               keyby = .(treat7, pct_democrat_q),
+               .SDcols = "ever_paid_" %+% mos
+               ][ , c(list(treat7 = treat7[-1]),
+                      lapply(mget("ever_paid_" %+% mos),
+                             function(x) x[-1] - x[1])), 
+                  by = pct_democrat_q], 
+    on = c("pct_democrat_q", "treat7")]
+
+boot.cis[ , {
+  ylm <- nx.mlt(to.pct(range(
+    ever_paid_dec_high, ever_paid_dec_low)), 5)
+  x <- barplot(matrix(to.pct(ever_paid_dec), nrow = 6),
+          beside = TRUE, col = get.col(treat7),
+          ylim = ylm + .05 * (-1)^(1:2), las = 2,
+          main = "Ever Paid By Quartile of % Democrat (Dec.)")
+  arrows(x,to.pct(ever_paid_dec_low),
+         x,to.pct(ever_paid_dec_high),angle=90,
+         code=3,lwd=1,length=.05)}]
+
+boot.cis <- dcast(rbindlist(lapply(
+  integer(BB), function(...)
+    properties[(!holdout&!is.na(ct_median_hh_income))
+               ][sample(.N, .N, TRUE), lapply(.SD, mean),
+                 keyby = .(treat7, income_q),
+                 .SDcols = "ever_paid_" %+% mos
+                 ][ , c(list(treat7 = treat7[-1]),
+                        lapply(mget("ever_paid_" %+% mos),
+                               function(x) x[-1] - x[1])), 
+                    by = income_q])
+)[ , lapply(.SD, quantile, c(.025, .975)), 
+   by = .(income_q, treat7)],
+income_q + treat7 ~ c("low", "high")[rowid(income_q, treat7)],
+value.var = "ever_paid_" %+% mos
+)[properties[(!holdout), lapply(.SD, mean),
+             keyby = .(treat7, income_q),
+             .SDcols = "ever_paid_" %+% mos
+             ][ , c(list(treat7 = treat7[-1]),
+                    lapply(mget("ever_paid_" %+% mos),
+                           function(x) x[-1] - x[1])), 
+                by = income_q], 
+  on = c("income_q", "treat7")]
+
+boot.cis[(!is.na(income_q)) , {
+  ys <- lapply(mget("ever_paid_" %+% "dec" %+% c("", "_low", "_high")), to.pct)
+  ylm <- nx.mlt(range(ys), 5)
+  x <- barplot(matrix(ys[[1]], nrow = 6),
+               beside = TRUE, col = get.col(treat7),
+               ylim = ylm + .05 * (-1)^(1:2), las = 2,
+               main = "Ever Paid By Quartile of CT-level Income (Dec.)")
+  arrows(x,ys[[2]],x,ys[[3]],angle=90,
+         code=3,lwd=1,length=.05)}]
+
+boot.cis <- dcast(rbindlist(lapply(
+  integer(BB), function(...)
+    properties[(!holdout&!is.na(pct_coll_grad))
+               ][sample(.N, .N, TRUE), lapply(.SD, mean),
+                 keyby = .(treat7, edu_q),
+                 .SDcols = "ever_paid_" %+% mos
+                 ][ , c(list(treat7 = treat7[-1]),
+                        lapply(mget("ever_paid_" %+% mos),
+                               function(x) x[-1] - x[1])), 
+                    by = edu_q])
+)[ , lapply(.SD, quantile, c(.025, .975)), 
+   by = .(edu_q, treat7)],
+edu_q + treat7 ~ c("low", "high")[rowid(edu_q, treat7)],
+value.var = "ever_paid_" %+% mos
+)[properties[(!holdout), lapply(.SD, mean),
+             keyby = .(treat7, edu_q),
+             .SDcols = "ever_paid_" %+% mos
+             ][ , c(list(treat7 = treat7[-1]),
+                    lapply(mget("ever_paid_" %+% mos),
+                           function(x) x[-1] - x[1])), 
+                by = edu_q], 
+  on = c("edu_q", "treat7")]
+
+boot.cis[(!is.na(edu_q)) , {
+  ys <- lapply(mget("ever_paid_" %+% "dec" %+% c("", "_low", "_high")), to.pct)
+  ylm <- nx.mlt(range(ys), 5)
+  x <- barplot(matrix(ys[[1]], nrow = 6),
+               beside = TRUE, col = get.col(treat7),
+               ylim = ylm + .05 * (-1)^(1:2), las = 2,
+               main = "Ever Paid By Quartile of % College Grad (Dec.)")
+  arrows(x,ys[[2]],x,ys[[3]],angle=90,
+         code=3,lwd=1,length=.05)}]

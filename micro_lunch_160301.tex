@@ -2,6 +2,7 @@
 \setbeamertemplate{caption}[numbered]
 \setbeamertemplate{caption label separator}{: }
 \setbeamercolor{caption name}{fg=normal text.fg}
+\beamertemplatenavigationsymbolsempty
 \usepackage{lmodern}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
@@ -16,7 +17,6 @@
     \usepackage{fontspec}
   \fi
   \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
-  \newcommand{\euro}{€}
 \fi
 % use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -40,8 +40,6 @@
 \widowpenalties 1 10000
 \raggedbottom
 
-% Comment these out if you don't want a slide with just the
-% part/section/subsection/subsubsection title:
 \AtBeginPart{
   \let\insertpartnumber\relax
   \let\partname\relax
@@ -424,6 +422,33 @@ received.
 \includegraphics{micro_lunch_160301_files/figure-beamer/unnamed-chunk-11-1.pdf}
 
 Quantity of mail received has a marginal effect on participation.
+
+\end{frame}
+
+\begin{frame}[fragile]{Results: Geographic Heterogeneity}
+
+\begin{verbatim}
+## [1] 5000
+\end{verbatim}
+
+\includegraphics{micro_lunch_160301_files/figure-beamer/unnamed-chunk-12-1.pdf}
+
+Strong \emph{negative} effects in the Northeast early on.
+
+\end{frame}
+
+\begin{frame}{Results: Geographic Heterogeneity}
+
+\includegraphics{micro_lunch_160301_files/figure-beamer/unnamed-chunk-13-1.pdf}
+
+Mediation of negative effects in the Northeast, but strong effects crop
+up in Center City.
+
+\end{frame}
+
+\begin{frame}{Results: Geographic Heterogeneity}
+
+\includegraphics{micro_lunch_160301_files/figure-beamer/unnamed-chunk-14-1.pdf}
 
 \end{frame}
 

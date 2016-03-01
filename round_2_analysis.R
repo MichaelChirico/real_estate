@@ -48,6 +48,12 @@ wds<-c(data=(dwd<-"/media/data_drive/")%+%"real_estate/",
        cens=dwd%+%"census/")
 write.packages(mn%+%"analysis_code/logs/round_2_analysis_session.txt")
 
+#"metavariables"
+trt.nms <- c("Control", "Amenities", "Moral", "Duty", "Lien", "Sheriff", "Peer")
+trt.nms8 <- c("Holdout", trt.nms)
+
+mos <- c("jul", "sep", "dec")
+
 #Convenient Functions 
 get.col<-function(st){
   cols<-c(Big="blue",Small="red",Control="blue",Amenities="yellow",
@@ -293,7 +299,7 @@ inds<-c("paid_full_jul","ever_paid_jul",
 properties[,(inds):=lapply(.SD,function(x)x=="Y"),.SDcols=inds]
 ###Paid Full actually stored opposite because 
 ###  question in data is: "Does property have a balance?"
-pf <- "paid_full_"%+%c("jul","sep","dec")
+pf <- "paid_full_" %+% mos
 properties[,(pf):=lapply(.SD,`!`),.SDcols=pf]
 
 properties[,paid_part_jul:=ever_paid_jul&!paid_full_jul]
@@ -347,7 +353,7 @@ properties[,treat3:=factor(treat3,c("Holdout","Small","Big"))]
 properties[,treat2:=factor(treat2,c("Small","Big"))]
 
 rm(list=ls()%\%c("owners","properties","trt.nms",
-                 "wds","get.col"))
+                 "wds","get.col","mos"))
 
 ###Get owner-level version of data, keeping only key analysis variables
 owners<-{
@@ -409,6 +415,7 @@ owners<-{
                  flag_holdout_overlap[1L],
                flag_round_one_overlap=
                  any(flag_round_one_overlap),
+               #only residential if _no_ commercial
                residential=all(residential),
                phila_mailing=
                  all(grepl("PH",mail_city)&
@@ -840,7 +847,7 @@ marg<-
     simplify=FALSE)
   )[,lapply(.SD, quantile, c(.025, .975)), by = let_rec],
   let_rec ~ c("low", "high")[rowid(let_rec)],
-  value.var = "ever_paid_" %+% c("jul", "sep", "dec")
+  value.var = "ever_paid_" %+% mos
   )[some_letters[,lapply(.SD, mean),keyby=let_rec],on="let_rec"]
 
 ## @knitr ignore
@@ -990,35 +997,45 @@ print.xtable(xtable(setnames(dcast(
   
 
 ##Geospatial Analysis ####
+## @knitr analysis_geo
 ###Ever paid by quadrant, July, September & December
 phila_azav_quad<-
   readShapePoly(
     wds["gis"]%+%"Azavea_Quadrant_cartogram_r2.shp")
 #Done by copying for now; check GH FR #1310 for updates
+setkey(properties, rand_id)
 phila_azav_quad@data<-setDT(phila_azav_quad@data)
 phila_azav_quad@data[,orig:=1:.N]
 phila_azav_quad@data<-
   phila_azav_quad@data[
-    dcast(properties[(!holdout),
-                     .(epj=mean(ever_paid_jul),
-                       eps=mean(ever_paid_sep),
-                       epd=mean(ever_paid_dec),
-                       pfj=mean(paid_full_jul),
-                       pfs=mean(paid_full_sep),
-                       pfd=mean(paid_full_dec)),
-                     keyby=.(treat7,azavea_quad)
-                     ][,.(treat7,
-                          epj.over.control=
-                            epj-epj[idx<-treat7=="Control"],
-                          eps.over.control=eps-eps[idx],
-                          epd.over.control=epd-epd[idx],
-                          pfj.over.control=pfj-pfj[idx],
-                          pfs.over.control=pfs-pfs[idx],
-                          pfd.over.control=pfd-pfd[idx]),
-                       by=azavea_quad][!treat7=="Control"],
-          azavea_quad~treat7,
-          value.var=c("epj","eps","epd","pfj","pfs","pfd")%+%".over.control"),
-    on=c(quadrant="azavea_quad")][order(orig)]
+    dcast(
+      x <- 
+        properties[(!holdout), lapply(.SD, mean), 
+                   keyby = .(treat7, azavea_quad),
+                   .SDcols = "ever_paid_" %+% mos
+                   ][ , c(list(treat7 = treat7[-1]),
+                          lapply(mget("ever_paid_" %+% mos),
+                                 function(x) x[-1] - x[1])),
+                      by = azavea_quad
+                      ][dcast(rbindlist(lapply(
+                        integer(BB), function(...)
+                          properties[.(sample(bootlist$o2$rI, rep = TRUE)),
+                                     lapply(.SD, mean), 
+                                       keyby = .(treat7, azavea_quad),
+                                       .SDcols = "ever_paid_" %+% mos
+                                       ][ , c(list(treat7 = treat7[-1]),
+                                              lapply(mget("ever_paid_" %+% mos),
+                                                     function(x) x[-1] - x[1])),
+                                          by = azavea_quad])
+                      )[ , lapply(.SD, quantile, c(.025, .975)),
+                         by = .(azavea_quad, treat7)],
+                      azavea_quad + treat7 ~ 
+                        factor(rowid(azavea_quad, treat7), 
+                               labels = c("low", "high")),
+                      value.var = "ever_paid_" %+% mos),
+                      on = c("azavea_quad", "treat7")],
+      azavea_quad ~ treat7, value.var = names(x) %\% c("azavea_quad", "treat7")),
+    on = c(quadrant = "azavea_quad")][order(orig)]
 
 scale.value<-function(x,nn=1000,
                       cols=c("red","white","blue"),
@@ -1029,6 +1046,8 @@ scale.value<-function(x,nn=1000,
     if (length(z<-which.min(abs(xseq-y)))) z else NA
   ramp[sapply(x,min.or.na)]
 }
+
+## @knitr ignore
 
 ncols<-31
 pdf2(wds["imga"]%+%"cartogram_quadrant_ever_paid_jul.pdf")
@@ -1400,68 +1419,6 @@ owners[(!holdout),.(0,mean(paid_full_jul),mean(paid_full_sep)),
             axis(side=1,at=seq(0,xmx,by=.1),pos=.8)
             axis(side=2,at=.5*(yl+yu),tick=F,las=1,
                  labels=treat7,pos=0)}]
-dev.off2()
-
-##Heterogeneity Analysis ####
-###Percentage of Democrat Voters
-pdf2(wds["imga"]%+%"bar_plot_hetero_ever_paid_7_pct_democrat.pdf")
-layout(mat=matrix(1:2,nrow=2),
-       heights=c(.9,.1))
-dcast(properties[(!holdout),to.pct(mean(ever_paid_sep)),
-                 keyby=.(treat7,demq=create_quantiles(pct_democrat,4))],
-      treat7~demq,value.var="V1"
-      )[,barplot(as.matrix(.SD[,paste0(1:4),with=F]),
-                 beside=T,col=get.col(treat7),
-                 names.arg="Q"%+%1:4,las=1,
-                 main="% Ever Paid by Quartile of % Registered Democrat")]
-par(mar=c(0,4.1,0,2.1))
-plot(NA,type="n",ann=FALSE,xlim=par("usr")[1:2],ylim=c(1,2),
-     xaxt="n",yaxt="n",bty="n")
-legend("bottom",legend=trt.nms,col=get.col(trt.nms),ncol=4,
-       cex=.8,pch=15,bty="n",pt.cex=2,
-       text.width=diff(par("usr")[1:2])/6)
-dev.off2()
-
-###Median Household Income
-pdf2(wds["imga"]%+%"bar_plot_hetero_ever_paid_7_med_income.pdf")
-layout(mat=matrix(1:2,nrow=2),
-       heights=c(.9,.1))
-dcast(properties[(!holdout&!is.na(ct_median_hh_income)),
-                 to.pct(mean(ever_paid_sep)),
-                 keyby=.(treat7,incq=create_quantiles(
-                   ct_median_hh_income,4))],
-      treat7~incq,value.var="V1"
-      )[,barplot(as.matrix(.SD[,paste0(1:4),with=F]),
-           beside=T,col=get.col(treat7),
-           names.arg="Q"%+%1:4,las=1,
-           main="% Ever Paid by Quartile of Median HH Income")]
-par(mar=c(0,4.1,0,2.1))
-plot(NA,type="n",ann=FALSE,xlim=par("usr")[1:2],ylim=c(1,2),
-     xaxt="n",yaxt="n",bty="n")
-legend("bottom",legend=trt.nms,col=get.col(trt.nms),ncol=4,
-       cex=.8,pch=15,bty="n",pt.cex=2,
-       text.width=diff(par("usr")[1:2])/6)
-dev.off2()
-
-###Percentage of College Graduates
-pdf2(wds["imga"]%+%"bar_plot_hetero_ever_paid_7_pct_college.pdf")
-layout(mat=matrix(1:2,nrow=2),
-       heights=c(.9,.1))
-dcast(properties[(!holdout&!is.na(pct_coll_grad)),
-                 to.pct(mean(ever_paid_sep)),
-                 keyby=.(treat7,eduq=create_quantiles(
-                   pct_coll_grad,4))],
-      treat7~eduq,value.var="V1"
-      )[,barplot(as.matrix(.SD[,paste0(1:4),with=F]),
-           beside=T,col=get.col(treat7),
-           names.arg="Q"%+%1:4,las=1,
-           main="% Ever Paid by Quartile of % College Graduates")]
-par(mar=c(0,4.1,0,2.1))
-plot(NA,type="n",ann=FALSE,xlim=par("usr")[1:2],ylim=c(1,2),
-     xaxt="n",yaxt="n",bty="n")
-legend("bottom",legend=trt.nms,col=get.col(trt.nms),ncol=4,
-       cex=.8,pch=15,bty="n",pt.cex=2,
-       text.width=diff(par("usr")[1:2])/6)
 dev.off2()
 
 #Robustness Checks ####

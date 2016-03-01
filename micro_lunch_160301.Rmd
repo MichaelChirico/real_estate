@@ -14,7 +14,7 @@ knitr::read_chunk("round_2_analysis.R")
 
 
 ## Motivation
-```{r, echo=FALSE, results = "hide"}
+```{r SETUP, echo=FALSE, results = "hide"}
 <<setup>>
 library(data.table)
 library(funchir)
@@ -333,3 +333,107 @@ invisible(
 ```
 
 Quantity of mail received has a marginal effect on participation.
+
+## Results: Geographic Heterogeneity
+```{r GEO_BOOTSTRAP, echo = FALSE}
+<<analysis_geo>>
+```
+```{r, echo = FALSE}
+layout(mat=matrix(c(1:7, 7, 7), byrow = TRUE, nrow = 3),
+       heights=c(.475, .475, .05))
+par(mar=c(0, 0, 1.1, 0),
+    oma=c(5.1, 4.1, 4.1, 1.1))
+vn <- "ever_paid_jul_"; ncols <- 31
+for (trt in trt.nms[-1]){
+  plot(phila_azav_quad, col = phila_azav_quad@
+         data[ , scale.value(get(vn %+% trt),
+                             nn = ncols, rng = c(-.15,.15),
+                           cols=c(get.col("Control"),
+                                  "white", get.col(trt)))],
+       main = trt, cex.main = .9)
+  text(coordinates(phila_azav_quad), font = 2, cex = 1.3,
+       labels = phila_azav_quad@
+         data[ , to.pct(get(vn %+% trt), dig = 1) %+%
+                 c("*", "")[((get(vn %+% "low_" %+% trt) < 0 &
+                                get(vn %+% "high_" %+% trt) > 0) + 1L)]])
+}
+par(mar = c(0, 0, 0.1, 0))
+plot(NA, type = "n", ann = FALSE, xlim = c(1, 2), 
+     ylim = c(1, 2), xaxt = "n", yaxt = "n", bty = "n")
+xs<-seq(1, 2, length.out = ncols + 1)
+rect(xs[-(ncols + 1)], 1,
+     xs[-1], 2, col = colorRampPalette(c("blue", "white", "black")
+     )(ncols))
+mtext(c("-15%", "even", "15%"), at = c(1, 1.5, 2),
+      side = 3, adj = c(0, .5, 1))
+title("Cartogram: Ever Paid (at One Month) by City Sector\n" %+%
+        "Percentage above Control", outer = TRUE, cex.main = 1.8)
+```
+
+Strong _negative_ effects in the Northeast early on.
+
+## Results: Geographic Heterogeneity
+```{r, echo = FALSE}
+layout(mat=matrix(c(1:7, 7, 7), byrow = TRUE, nrow = 3),
+       heights=c(.475, .475, .05))
+par(mar=c(0, 0, 1.1, 0),
+    oma=c(5.1, 4.1, 4.1, 1.1))
+vn <- "ever_paid_dec_"; ncols <- 31
+for (trt in trt.nms[-1]){
+  plot(phila_azav_quad, col = phila_azav_quad@
+         data[ , scale.value(get(vn %+% trt),
+                             nn = ncols, rng = c(-.15,.15),
+                           cols=c(get.col("Control"),
+                                  "white", get.col(trt)))],
+       main = trt, cex.main = .9)
+  text(coordinates(phila_azav_quad), font = 2, cex = 1.3,
+       labels = phila_azav_quad@
+         data[ , to.pct(get(vn %+% trt), dig = 1) %+%
+                 c("*", "")[((get(vn %+% "low_" %+% trt) < 0 &
+                                get(vn %+% "high_" %+% trt) > 0) + 1L)]])
+}
+par(mar = c(0, 0, 0.1, 0))
+plot(NA, type = "n", ann = FALSE, xlim = c(1, 2), 
+     ylim = c(1, 2), xaxt = "n", yaxt = "n", bty = "n")
+xs<-seq(1, 2, length.out = ncols + 1)
+rect(xs[-(ncols + 1)], 1,
+     xs[-1], 2, col = colorRampPalette(c("blue", "white", "black")
+     )(ncols))
+mtext(c("-15%", "even", "15%"), at = c(1, 1.5, 2),
+      side = 3, adj = c(0, .5, 1))
+title("Cartogram: Ever Paid (at Six Months) by City Sector\n" %+%
+        "Percentage above Control", outer = TRUE, cex.main = 1.8)
+```
+
+Mediation of negative effects in the Northeast, but strong effects crop up in Center City.
+
+## Results: Geographic Heterogeneity
+```{r, echo = FALSE}
+par(mfrow=c(2, 3), mar = c(0, 0, 1, 0),
+    oma=c(5.1, 4.1, 4.1, 1.1))
+rng <- 1.03 * phila_azav_quad@
+  data[ , range(.SD[ , grep("ever_paid", names(phila_azav_quad@data)),
+                     with = FALSE])]
+ys <- unlist(transpose(lapply("ever_paid_" %+% mos, paste0, "_"%+%trt.nms[-1])))
+yls <- unlist(transpose(lapply("ever_paid_" %+% mos %+% "_low",
+                               paste0, "_"%+%trt.nms[-1])))
+yus <- unlist(transpose(lapply("ever_paid_" %+% mos %+% "_high",
+                               paste0, "_"%+%trt.nms[-1])))
+for (ii in (qs <- phila_azav_quad@data[ , unique(quadrant)])){
+  phila_azav_quad@data[quadrant==ii,{
+    bpx <- barplot(matrix(unlist(mget(ys)), nrow = 3), beside = TRUE,
+                 col = get.col(gsub(".*_", "", ys)),
+                 density = 20 * 3 ^ (0:2), ylim = rng, yaxt = "n")
+    tile.axes(match(ii, qs), 2, 3, use.x = FALSE,
+          params = list(list(), y = list(las = 2)))
+    text(bpx, 0, labels = rep(c("J","S","D"), 6))
+    title(ii)
+    arrows(bpx, unlist(mget(yls)), 
+           bpx, unlist(mget(yus)), angle = 90,
+           code = 3,lwd = .5, length = .01, lty = 1)}]
+  box()
+}
+title("Proportion Ever Paid Over Time" %+%
+        "\nBy Azavea Quadrant, vs. Control",
+      outer = TRUE)
+```
