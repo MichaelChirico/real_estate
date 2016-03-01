@@ -34,13 +34,13 @@ dec_del_lien_cont_ep <-
                      mean(ever_paid_dec[treat7 == "Control"]), dig = 0)]
 ```
 
-* Tax non-compliance is ubiquitous in both developed and undeveloped economies
+* Tax non-compliance ubiquitous in both developed and undeveloped economies
 
     + OECD estimates: 14.2% in developed economies, 37% in undeveloped
 
-* The City of Philadelphia is currently owed `r taxes_owed` in outstanding Real Estate Taxes.
+* City of Philadelphia currently owed `r taxes_owed` in outstanding Real Estate Taxes.
 
-    + About 15% of all properties in the city were out of compliance in March 2015.
+    + About 15% of all properties in the city out of compliance in March 2015.
    
     + Roughly 5% of the City's annual operating budget.
 
@@ -66,7 +66,7 @@ dec_del_lien_cont_ep <-
 
 ## Motivation
 
-* Costs of containing culture of non-payment can quickly spiral
+* Costs of containing culture of non-payment can quickly escalate
 
     + Fewer people pay $\Rightarrow$ harder to exact widespread compliance from a fixed budget $\Rightarrow$ spread of noncompliance as perceived likelihood of apprehension decreases
     
@@ -76,25 +76,31 @@ dec_del_lien_cont_ep <-
     
     + Alternative of reduced expenditures may also create rogues through diminished tax morale
     
-* Low-cost interventions offer a potential lighthouse in this hurricane spiral
+    + Rock and a hard place
+    
+## Motivation
 
-    + Targeted messaging in mailers
+ * Low-cost interventions offer a potential lighthouse in this hurricane spiral
+ 
+     + Targeted messaging in mailers
     
-    + Notification frequency
+     + Notification frequency
     
-    + Shape, color, style manipulation
+     + Shape, color, style manipulation
     
-    + Public shaming
+     + Public shaming
+    
+ * Given the litany of possible approaches that may work, we endeavor to tease out which work and why.
     
 ## Overview of Treatments
 
 * Simultaneous (randomized) evaluation and head-to-head comparison of a variety of letter-based recovery nudges
 
-    + Message targeting: 3 pairs of treatments with wording varied to target different compliance motives
+    + **Message targeting**: 3 pairs of treatments with wording varied to target different compliance motives
     
-    + Style cues: Half of treatments were delivered in large-format ($9''$ x $12''$) envelopes, the rest in standard-sized ($4 \frac18 ''$ x $9 \frac12 ''$) envelopes.
+    + **Style cues**: Half of treatments were delivered in large-format ($9''$ x $12''$) envelopes, the rest in standard-sized ($4 \frac18 ''$ x $9 \frac12 ''$) envelopes.
     
-    + Frequency: Some owners with multiple properties only received treatments on a subset of their holdings.
+    + **Frequency**: Some owners with multiple properties only received treatments on a subset of their holdings.
     
 * All told, 15 treatment groups (including Holdout & Control groups) on `r prettyNum(nrow(properties), big.mark = ",")` properties with `r prettyNum(nrow(owners), big.mark = ",")` owners.
     
@@ -123,15 +129,15 @@ dec_del_lien_cont_ep <-
 
  * Deterrence I : Threat of Sheriff's Sale
  
-     + Failure to pay your Real Estate Taxes may result in the sale of your property by the City in order to collect back taxes. In the past year, we have sold «count» properties in «azavea_sher» at Sheriff's Sale.
+     + Failure to pay your Real Estate Taxes may result in the sale of your property by the City in order to collect back taxes. In the past year, we have sold `«count»` properties in `«azavea»` at Sheriff's Sale.
      
-         + Followed by 3 properties in «azavea_sher» and the date of sale
+         + Followed by 3 properties in `«azavea»` and the date of sale
 
  * Deterrence II : Threat of Lien
  
      + Failure to pay your Real Estate Taxes will result in a tax lien on your property in an amount equal to your back taxes plus all penalties and interest. When your property is sold, those delinquent tax payments will be deducted from the sale price. By paying your taxes now, you can avoid these penalties and interest.
      
-         + Followed by 3 properties in «azavea_sher» under lien and the date of sale
+         + Followed by 3 properties in `«azavea»` under lien and the date of sale
 
 ## Experiment Design: Main Treatments
 
@@ -151,15 +157,15 @@ dec_del_lien_cont_ep <-
 
  * Civic Duty II : Local Amenities
  
-     + We want to remind you that your taxes pay for essential public services in «azavea_amen», such as «example_amenity_1», «example_amenity_2», your local police officer, snow removal, street repairs, and trash collection. Please pay your taxes to help the city provide these services in your neighborhood.
+     + We want to remind you that your taxes pay for essential public services in `«azavea»`, such as `«example_amenity_1»`, `«example_amenity_2»`, your local police officer, snow removal, street repairs, and trash collection. Please pay your taxes to help the city provide these services in your neighborhood.
 
 ## Sample Description: Background
-```{r, echo = FALSE, results = "asis"}
+```{r DESCRIPTIVES, echo = FALSE, results = "asis"}
 <<descriptives>>
 ```
 
 ## Sanity Check: Balance on Observables
-```{r, echo = FALSE}
+```{r BALANCE, echo = FALSE}
 par(mar=c(2.6, 5.1, 4.1, 2.1))
 boxplot(total_due ~ treat7, data = owners, cex.main = 1.5,
         main = "Box Plots of Initial Debt\nOwner Level, By Treatment",
@@ -177,7 +183,7 @@ text(md, .5, pos = 4L, cex = .8,
 ```
 
 ## Results: Acceleration
-```{r, echo = FALSE}
+```{r C_H_BOOTSTRAP, echo = FALSE}
 <<analysis_ch_ep>>
 ```
 ```{r, echo = FALSE}
@@ -186,7 +192,7 @@ invisible(
           ][,{
             matplot(date, do.call("cbind",mget(c("low","ep","high"))),
                     type="l",lty=c(2,1,2),col=get.col("Control"),
-                    xaxt="n",lwd=3,xlab="Date",
+                    xaxt="n",lwd=3, las = 2,
                     ylab="Probability Ever Paid vs. Holdout")
             axis(side=1,at=dt.rng2,labels=format(dt.rng2,"%b %d"))
             abline(h = 0, col = "black", lwd = 2)
@@ -195,7 +201,7 @@ invisible(
             text(ds, .07, pos = 4, labels = c("1", "2"), col = "red")
             text(unclass(D("2015-10-21")), .07, col = "red", adj = c(0,0),
                  labels = "1: Small Envelopes\n2: Big Envelopes", pos = 4)
-            title("Cumulative Partial Participation (Dec.)"%+%
+            title("Cumulative Partial Participation"%+%
                     "\nControl vs. Holdout")}]
 )
 ```
@@ -203,10 +209,10 @@ invisible(
 Simply receiving a letter had a sizeable initial impact which tapered and dissipated with time
 
 ## Results: Main Treatments -- Participation
-```{r, echo = FALSE, results = "hide"}
+```{r MAIN_EFFECT_BOOTSTRAP, echo = FALSE, results = "hide"}
 <<analysis_bs>>
 ```
-```{r, echo = FALSE}
+```{r EVER_PAID_7, echo = FALSE}
 invisible(
   with(boot.cis$o7,
      dt[order(treat7),
@@ -229,7 +235,7 @@ invisible(
                       params = list(list(), list(las = 2, cex.axis = 1.3)),
                       use.x = FALSE)
             box()}
-          title("Percent Ever Paid (by Owner)", outer = TRUE)
+          title("Percent Ever Paid (by Owner)", outer = TRUE, cex = 1.3)
           mtext("Percent",side=2,outer=T,line=2.5)}])
   )
 ```
@@ -237,7 +243,7 @@ invisible(
 Deterrence-oriented treatments (Lien, Sheriff) effective, with some catch-up; others, not so much.
 
 ## Results: Main Treatments -- Intensive Margin
-```{r, echo = FALSE}
+```{r TOTAL_PAID_7, echo = FALSE}
 invisible(
   with(boot.cis$o7,
      dt[order(treat7),
@@ -268,7 +274,7 @@ invisible(
 No significant effect on _amount_ paid.
 
 ## Results: Letter-size Experiment
-```{r, echo = FALSE}
+```{r EVER_PAID_2, echo = FALSE}
 invisible(
   with(boot.cis$o2,
      dt[order(treat2),
@@ -299,13 +305,13 @@ invisible(
 No discernible difference in uptake conditional on size of envelope received.
 
 ## Results: Marginal Letter Receipt
-```{r, echo = FALSE}
+```{r MARGINAL_LETTER_BOOTSTRAP, echo = FALSE}
 <<analysis_marg>>
 ```
-```{r, echo = FALSE}
+```{r MARGINAL_LETTER, echo = FALSE}
 invisible(
   marg[,{
-    par(mfrow = c(1,3), oma = c(5.1, 5.1, 4.1, 2.1))
+    par(mfrow = c(1,3), oma = c(5.1, 4.1, 4.1, 2.1))
     Mo <- c(jul = "One Month", sep = "Three Months", dec = "Six Months")
     ns <- "n = " %+% 
       prettyNum(some_letters[,.N,keyby=let_rec]$N,big.mark=",")
@@ -338,7 +344,7 @@ Quantity of mail received has a marginal effect on participation.
 ```{r GEO_BOOTSTRAP, echo = FALSE}
 <<analysis_geo>>
 ```
-```{r, echo = FALSE}
+```{r GEO_JULY, echo = FALSE}
 layout(mat=matrix(c(1:7, 7, 7), byrow = TRUE, nrow = 3),
        heights=c(.475, .475, .05))
 par(mar=c(0, 0, 1.1, 0),
@@ -350,7 +356,7 @@ for (trt in trt.nms[-1]){
                              nn = ncols, rng = c(-.15,.15),
                            cols=c(get.col("Control"),
                                   "white", get.col(trt)))],
-       main = trt, cex.main = .9)
+       main = trt)
   text(coordinates(phila_azav_quad), font = 2, cex = 1.3,
        labels = phila_azav_quad@
          data[ , to.pct(get(vn %+% trt), dig = 1) %+%
@@ -373,7 +379,7 @@ title("Cartogram: Ever Paid (at One Month) by City Sector\n" %+%
 Strong _negative_ effects in the Northeast early on.
 
 ## Results: Geographic Heterogeneity
-```{r, echo = FALSE}
+```{r GEO_DECEMBER, echo = FALSE}
 layout(mat=matrix(c(1:7, 7, 7), byrow = TRUE, nrow = 3),
        heights=c(.475, .475, .05))
 par(mar=c(0, 0, 1.1, 0),
@@ -385,7 +391,7 @@ for (trt in trt.nms[-1]){
                              nn = ncols, rng = c(-.15,.15),
                            cols=c(get.col("Control"),
                                   "white", get.col(trt)))],
-       main = trt, cex.main = .9)
+       main = trt)
   text(coordinates(phila_azav_quad), font = 2, cex = 1.3,
        labels = phila_azav_quad@
          data[ , to.pct(get(vn %+% trt), dig = 1) %+%
@@ -405,35 +411,53 @@ title("Cartogram: Ever Paid (at Six Months) by City Sector\n" %+%
         "Percentage above Control", outer = TRUE, cex.main = 1.8)
 ```
 
-Mediation of negative effects in the Northeast, but strong effects crop up in Center City.
+Mediation of negative effects in the Northeast, but effects crop up in Center City.
 
-## Results: Geographic Heterogeneity
-```{r, echo = FALSE}
-par(mfrow=c(2, 3), mar = c(0, 0, 1, 0),
-    oma=c(5.1, 4.1, 4.1, 1.1))
-rng <- 1.03 * phila_azav_quad@
-  data[ , range(.SD[ , grep("ever_paid", names(phila_azav_quad@data)),
-                     with = FALSE])]
-ys <- unlist(transpose(lapply("ever_paid_" %+% mos, paste0, "_"%+%trt.nms[-1])))
-yls <- unlist(transpose(lapply("ever_paid_" %+% mos %+% "_low",
-                               paste0, "_"%+%trt.nms[-1])))
-yus <- unlist(transpose(lapply("ever_paid_" %+% mos %+% "_high",
-                               paste0, "_"%+%trt.nms[-1])))
-for (ii in (qs <- phila_azav_quad@data[ , unique(quadrant)])){
-  phila_azav_quad@data[quadrant==ii,{
-    bpx <- barplot(matrix(unlist(mget(ys)), nrow = 3), beside = TRUE,
-                 col = get.col(gsub(".*_", "", ys)),
-                 density = 20 * 3 ^ (0:2), ylim = rng, yaxt = "n")
-    tile.axes(match(ii, qs), 2, 3, use.x = FALSE,
-          params = list(list(), y = list(las = 2)))
-    text(bpx, 0, labels = rep(c("J","S","D"), 6))
-    title(ii)
-    arrows(bpx, unlist(mget(yls)), 
-           bpx, unlist(mget(yus)), angle = 90,
-           code = 3,lwd = .5, length = .01, lty = 1)}]
-  box()
-}
-title("Proportion Ever Paid Over Time" %+%
-        "\nBy Azavea Quadrant, vs. Control",
-      outer = TRUE)
+
+## Results: Payment Agreements
+```{r PAYMENT_AGREEMENT_7, echo = FALSE}
+invisible(
+  with(boot.cis$o7,
+     dt[order(treat7),
+        {par(mfrow = c(1,2), oma = c(5.8, 5.1, 4.1, 2.1))
+          Mo <- c(s = "Three Months", d = "Six Months")
+          yup <- nx.mlt(1.05*to.pct(max(pas_high,pad_high)),5)
+          for (mo in c("s", "d")){
+            par(mar=c(0,0,0,0))
+            vals<-lapply(mget("pa"%+%mo%+%c("","_low","_high")),to.pct)
+            ind<-which(treat7=="Control")
+            x<-barplot(vals[[1]],names.arg=treat7,xlim=yl,
+                       ylim=c(0, yup),las=2,yaxt="n",
+                       col=get.col(treat7),main="",
+                       space=sp, cex.names = 1.3)
+            title(Mo[mo], line = -1)
+            arrows(x,vals[[2]],x,vals[[3]],code=3,
+                   angle=90,length=.07,lwd=2)
+            abline(h=c(vals[[2]][ind],vals[[3]][ind]),lty=2)
+            tile.axes(match(mo, names(Mo)),1,3, 
+                      params = list(list(), list(las = 2, cex.axis = 1.3)),
+                      use.x = FALSE)
+            box()}
+          title("Percent in Any Payment Agreement (by Owner)", outer = TRUE, cex = 1.3)
+          mtext("Percent",side=2,outer=T,line=2.5)}])
+  )
 ```
+
+Differentiation of Sheriff vs. Lien threat -- entrance into payment agreements with DoR.
+
+## Conclusion
+
+ * Well-designed letters can have a noteworthy impact on the behavior of tax noncompliers at very low cost
+ 
+     + Total resources devoted to the project estimated at around $30,000 (including $15,000 spent learning that large-format envelopes have little effect)
+     
+     + Point estimate (not significant) of total returns to the experiment as a whole are around $500,000
+     
+ * The simple act of notification has a measurable impact on behavior, but, crucially, this effect appears to be ephemeral
+ 
+     + Could still be a useful policy tool -- stems flow to (costly) subcontracted collections agencies
+     
+ * Letters designed as _tangible_ threats can deliver a more sustained return
+ 
+     + Localization, specificity breed credibility
+     

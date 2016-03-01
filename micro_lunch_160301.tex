@@ -77,11 +77,80 @@ Sieg}
 \begin{document}
 \frame{\titlepage}
 
-\begin{frame}{Motivation}
+\begin{frame}[fragile]{Motivation}
+
+\begin{verbatim}
+## 
+## Attaching package: 'funchir'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:stats':
+## 
+##     D
+\end{verbatim}
+
+\begin{verbatim}
+## Version:  1.35
+## Date:     2015-04-25
+## Author:   Philip Leifeld (University of Konstanz)
+## 
+## Please cite the JSS article in your publications -- see citation("texreg").
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: rJava
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: xlsxjars
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: foreach
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: iterators
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: parallel
+\end{verbatim}
+
+\begin{verbatim}
+## Checking rgeos availability: TRUE
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'maptools'
+\end{verbatim}
+
+\begin{verbatim}
+## The following object is masked from 'package:xtable':
+## 
+##     label
+\end{verbatim}
+
+\begin{verbatim}
+## Loading required package: zoo
+\end{verbatim}
+
+\begin{verbatim}
+## 
+## Attaching package: 'zoo'
+\end{verbatim}
+
+\begin{verbatim}
+## The following objects are masked from 'package:base':
+## 
+##     as.Date, as.Date.numeric
+\end{verbatim}
 
 \begin{itemize}
 \item
-  Tax non-compliance is ubiquitous in both developed and undeveloped
+  Tax non-compliance ubiquitous in both developed and undeveloped
   economies
 
   \begin{itemize}
@@ -90,13 +159,13 @@ Sieg}
     OECD estimates: 14.2\% in developed economies, 37\% in undeveloped
   \end{itemize}
 \item
-  The City of Philadelphia is currently owed \$413,814,249 in
-  outstanding Real Estate Taxes.
+  City of Philadelphia currently owed \$413,814,249 in outstanding Real
+  Estate Taxes.
 
   \begin{itemize}
   \item
-    About 15\% of all properties in the city were out of compliance in
-    March 2015.
+    About 15\% of all properties in the city out of compliance in March
+    2015.
   \item
     Roughly 5\% of the City's annual operating budget.
   \end{itemize}
@@ -142,7 +211,7 @@ Sieg}
 
 \begin{itemize}
 \item
-  Costs of containing culture of non-payment can quickly spiral
+  Costs of containing culture of non-payment can quickly escalate
 
   \begin{itemize}
   \item
@@ -158,7 +227,16 @@ Sieg}
   \item
     Alternative of reduced expenditures may also create rogues through
     diminished tax morale
+  \item
+    Rock and a hard place
   \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Motivation}
+
+\begin{itemize}
 \item
   Low-cost interventions offer a potential lighthouse in this hurricane
   spiral
@@ -173,6 +251,9 @@ Sieg}
   \item
     Public shaming
   \end{itemize}
+\item
+  Given the litany of possible approaches that may work, we endeavor to
+  tease out which work and why.
 \end{itemize}
 
 \end{frame}
@@ -186,15 +267,15 @@ Sieg}
 
   \begin{itemize}
   \item
-    Message targeting: 3 pairs of treatments with wording varied to
-    target different compliance motives
+    \textbf{Message targeting}: 3 pairs of treatments with wording
+    varied to target different compliance motives
   \item
-    Style cues: Half of treatments were delivered in large-format
-    (\(9''\) x \(12''\)) envelopes, the rest in standard-sized
-    (\(4 \frac18 ''\) x \(9 \frac12 ''\)) envelopes.
+    \textbf{Style cues}: Half of treatments were delivered in
+    large-format (\(9''\) x \(12''\)) envelopes, the rest in
+    standard-sized (\(4 \frac18 ''\) x \(9 \frac12 ''\)) envelopes.
   \item
-    Frequency: Some owners with multiple properties only received
-    treatments on a subset of their holdings.
+    \textbf{Frequency}: Some owners with multiple properties only
+    received treatments on a subset of their holdings.
   \end{itemize}
 \item
   All told, 15 treatment groups (including Holdout \& Control groups) on
@@ -240,7 +321,7 @@ Sieg}
 
 \end{frame}
 
-\begin{frame}{Experiment Design: Main Treatments}
+\begin{frame}[fragile]{Experiment Design: Main Treatments}
 
 \begin{itemize}
 \item
@@ -250,13 +331,13 @@ Sieg}
   \item
     Failure to pay your Real Estate Taxes may result in the sale of your
     property by the City in order to collect back taxes. In the past
-    year, we have sold «count» properties in «azavea\_sher» at Sheriff's
-    Sale.
+    year, we have sold \texttt{«count»} properties in \texttt{«azavea»}
+    at Sheriff's Sale.
 
     \begin{itemize}
     \tightlist
     \item
-      Followed by 3 properties in «azavea\_sher» and the date of sale
+      Followed by 3 properties in \texttt{«azavea»} and the date of sale
     \end{itemize}
   \end{itemize}
 \item
@@ -273,8 +354,8 @@ Sieg}
     \begin{itemize}
     \tightlist
     \item
-      Followed by 3 properties in «azavea\_sher» under lien and the date
-      of sale
+      Followed by 3 properties in \texttt{«azavea»} under lien and the
+      date of sale
     \end{itemize}
   \end{itemize}
 \end{itemize}
@@ -310,7 +391,7 @@ Sieg}
 
 \end{frame}
 
-\begin{frame}{Experiment Design: Main Treatments}
+\begin{frame}[fragile]{Experiment Design: Main Treatments}
 
 \begin{itemize}
 \item
@@ -332,10 +413,11 @@ Sieg}
   \tightlist
   \item
     We want to remind you that your taxes pay for essential public
-    services in «azavea\_amen», such as «example\_amenity\_1»,
-    «example\_amenity\_2», your local police officer, snow removal,
-    street repairs, and trash collection. Please pay your taxes to help
-    the city provide these services in your neighborhood.
+    services in \texttt{«azavea»}, such as
+    \texttt{«example\_amenity\_1»}, \texttt{«example\_amenity\_2»}, your
+    local police officer, snow removal, street repairs, and trash
+    collection. Please pay your taxes to help the city provide these
+    services in your neighborhood.
   \end{itemize}
 \end{itemize}
 
@@ -345,7 +427,7 @@ Sieg}
 
 \begin{table}[ht]
 \centering
-\caption{Descriptive Statistics -- Background (Owners, Non-Holdout)} 
+\caption{Descriptive Statistics -- Background (Owners)} 
 \label{table:descriptivesI}
 \begin{tabular}{|r|r|r|}
    \hline
@@ -378,13 +460,13 @@ Variable & One Month & Three Months & Six Months \\
 
 \begin{frame}{Sanity Check: Balance on Observables}
 
-\includegraphics{micro_lunch_160301_files/figure-beamer/unnamed-chunk-3-1.pdf}
+\includegraphics{micro_lunch_160301_files/figure-beamer/BALANCE-1.pdf}
 
 \end{frame}
 
 \begin{frame}{Results: Acceleration}
 
-\includegraphics{micro_lunch_160301_files/figure-beamer/unnamed-chunk-5-1.pdf}
+\includegraphics{micro_lunch_160301_files/figure-beamer/unnamed-chunk-1-1.pdf}
 
 Simply receiving a letter had a sizeable initial impact which tapered
 and dissipated with time
@@ -393,7 +475,7 @@ and dissipated with time
 
 \begin{frame}{Results: Main Treatments -- Participation}
 
-\includegraphics{micro_lunch_160301_files/figure-beamer/unnamed-chunk-7-1.pdf}
+\includegraphics{micro_lunch_160301_files/figure-beamer/EVER_PAID_7-1.pdf}
 
 Deterrence-oriented treatments (Lien, Sheriff) effective, with some
 catch-up; others, not so much.
@@ -402,7 +484,7 @@ catch-up; others, not so much.
 
 \begin{frame}{Results: Main Treatments -- Intensive Margin}
 
-\includegraphics{micro_lunch_160301_files/figure-beamer/unnamed-chunk-8-1.pdf}
+\includegraphics{micro_lunch_160301_files/figure-beamer/TOTAL_PAID_7-1.pdf}
 
 No significant effect on \emph{amount} paid.
 
@@ -410,7 +492,7 @@ No significant effect on \emph{amount} paid.
 
 \begin{frame}{Results: Letter-size Experiment}
 
-\includegraphics{micro_lunch_160301_files/figure-beamer/unnamed-chunk-9-1.pdf}
+\includegraphics{micro_lunch_160301_files/figure-beamer/EVER_PAID_2-1.pdf}
 
 No discernible difference in uptake conditional on size of envelope
 received.
@@ -419,19 +501,15 @@ received.
 
 \begin{frame}{Results: Marginal Letter Receipt}
 
-\includegraphics{micro_lunch_160301_files/figure-beamer/unnamed-chunk-11-1.pdf}
+\includegraphics{micro_lunch_160301_files/figure-beamer/MARGINAL_LETTER-1.pdf}
 
 Quantity of mail received has a marginal effect on participation.
 
 \end{frame}
 
-\begin{frame}[fragile]{Results: Geographic Heterogeneity}
+\begin{frame}{Results: Geographic Heterogeneity}
 
-\begin{verbatim}
-## [1] 5000
-\end{verbatim}
-
-\includegraphics{micro_lunch_160301_files/figure-beamer/unnamed-chunk-12-1.pdf}
+\includegraphics{micro_lunch_160301_files/figure-beamer/GEO_JULY-1.pdf}
 
 Strong \emph{negative} effects in the Northeast early on.
 
@@ -439,16 +517,58 @@ Strong \emph{negative} effects in the Northeast early on.
 
 \begin{frame}{Results: Geographic Heterogeneity}
 
-\includegraphics{micro_lunch_160301_files/figure-beamer/unnamed-chunk-13-1.pdf}
+\includegraphics{micro_lunch_160301_files/figure-beamer/GEO_DECEMBER-1.pdf}
 
-Mediation of negative effects in the Northeast, but strong effects crop
-up in Center City.
+Mediation of negative effects in the Northeast, but effects crop up in
+Center City.
 
 \end{frame}
 
-\begin{frame}{Results: Geographic Heterogeneity}
+\begin{frame}{Results: Payment Agreements}
 
-\includegraphics{micro_lunch_160301_files/figure-beamer/unnamed-chunk-14-1.pdf}
+\includegraphics{micro_lunch_160301_files/figure-beamer/PAYMENT_AGREEMENT_7-1.pdf}
+
+Differentiation of Sheriff vs.~Lien threat -- entrance into payment
+agreements with DoR.
+
+\end{frame}
+
+\begin{frame}{Conclusion}
+
+\begin{itemize}
+\item
+  Well-designed letters can have a noteworthy impact on the behavior of
+  tax noncompliers at very low cost
+
+  \begin{itemize}
+  \item
+    Total resources devoted to the project estimated at around \$30,000
+    (including \$15,000 spent learning that large-format envelopes have
+    little effect)
+  \item
+    Point estimate (not significant) of total returns to the experiment
+    as a whole are around \$500,000
+  \end{itemize}
+\item
+  The simple act of notification has a measurable impact on behavior,
+  but, crucially, this effect appears to be ephemeral
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Could still be a useful policy tool -- stems flow to (costly)
+    subcontracted collections agencies
+  \end{itemize}
+\item
+  Letters designed as \emph{tangible} threats can deliver a more
+  sustained return
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Localization, specificity breed credibility
+  \end{itemize}
+\end{itemize}
 
 \end{frame}
 

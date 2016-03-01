@@ -49,7 +49,7 @@ wds<-c(data=(dwd<-"/media/data_drive/")%+%"real_estate/",
 write.packages(mn%+%"analysis_code/logs/round_2_analysis_session.txt")
 
 #"metavariables"
-trt.nms <- c("Control", "Amenities", "Moral", "Duty", "Lien", "Sheriff", "Peer")
+trt.nms <- c("Control", "Amenities", "Moral", "Duty", "Peer", "Lien", "Sheriff")
 trt.nms8 <- c("Holdout", trt.nms)
 
 mos <- c("jul", "sep", "dec")
@@ -339,21 +339,19 @@ properties[(!holdout),treat7:=gsub("\\s.*","",treat14)]
 properties[(!holdout),treat8:=treat7]
 properties[(holdout),treat8:=treat15]
 ####Reorder main treatments for plotting purposes
-trt.nms<-c("Control","Amenities","Moral",
-           "Duty","Lien","Sheriff","Peer")
 properties[,treat14:=factor(treat14,
-                            paste(rep(trt.nms,each=2),
+                            paste(rep(trt.nms, each=2),
                                   c("Small","Big")))]
 properties[,treat15:=factor(treat15,
                             c("Holdout",levels(treat14)))]
-properties[,treat8:=factor(treat8,c("Holdout",trt.nms))]
-properties[,treat7:=factor(treat7,trt.nms)]
+properties[,treat8:=factor(treat8, trt.nms8)]
+properties[,treat7:=factor(treat7, trt.nms)]
 
-properties[,treat3:=factor(treat3,c("Holdout","Small","Big"))]
-properties[,treat2:=factor(treat2,c("Small","Big"))]
+properties[,treat3:=factor(treat3, c("Holdout","Small","Big"))]
+properties[,treat2:=factor(treat2, c("Small","Big"))]
 
 rm(list=ls()%\%c("owners","properties","trt.nms",
-                 "wds","get.col","mos"))
+                 "trt.nms8","wds","get.col","mos"))
 
 ###Get owner-level version of data, keeping only key analysis variables
 owners<-{
@@ -520,7 +518,7 @@ print.xtable(xtable(
               `% with Unique Owner`=
                 to.pct(mean(unq_own),dig=1)), 
            by = .(Variable = c("Main Sample", "Holdout")[holdout + 1L])]),
-  caption=c("Descriptive Statistics -- Background (Owners, Non-Holdout)"),
+  caption=c("Descriptive Statistics -- Background (Owners)"),
   align=c("|r|r|r|"),label="table:descriptivesI"),caption.placement="top",
   include.colnames=F,comment=F, hline.after = c(0, 1, 6))
 
