@@ -14,7 +14,7 @@ knitr::read_chunk("round_2_analysis.R")
 
 
 ## Motivation
-```{r SETUP, echo=FALSE, results = "hide"}
+```{r IMPORT, echo=FALSE, results = "hide"}
 <<setup>>
 library(data.table)
 library(funchir)
