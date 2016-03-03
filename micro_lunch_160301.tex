@@ -358,17 +358,16 @@ Sieg}
 
 \begin{table}[ht]
 \centering
-\caption{Descriptive Statistics -- Background (Owners)} 
+\caption{Descriptive Statistics -- Background (Owners of One Property)} 
 \label{table:descriptivesI}
 \begin{tabular}{|r|r|r|}
    \hline
 Variable & Main Sample & Holdout \\ 
    \hline
-Number Observations & 19,361 & 2,107 \\ 
-  Avg. Amount Due (June) & \$1,872 & \$1,241 \\ 
-  Assessed Property Value & \$192,832 & \$142,973 \\ 
-  \% Residential & 77 & 82 \\ 
-  \% with Unique Owner & 87.6 & 99.1 \\ 
+Number Observations & 16,951 & 2,088 \\ 
+  Avg. Amount Due (June) & \$1,467 & \$1,233 \\ 
+  Assessed Property Value & \$157,094 & \$142,630 \\ 
+  \% Residential & 81 & 82 \\ 
    \hline
 \end{tabular}
 \end{table}\begin{table}[ht]
@@ -389,6 +388,32 @@ Variable & One Month & Three Months & Six Months \\
 
 \end{frame}
 
+\begin{frame}{Sample Description: Payment Agreements}
+
+\begin{table}[ht]
+\centering
+\caption{Transitions among Payment Agreement/Paid-in-Full States} 
+\label{table:pa_trans}
+\begin{tabular}{rrrrr}
+  \hline
+ & (!PF,!PA) & (PF,!PA) & (!PF,PA) & (PF,PA) \\ 
+  \hline
+(!PF,!PA) & 63.10 & 36.77 & 0.13 & 0.00 \\ 
+  (PF,!PA) & 0.18 & 99.82 & 0.00 & 0.00 \\ 
+  (!PF,PA) & 15.38 & 8.22 & 54.91 & 21.49 \\ 
+  (PF,PA) & 0.00 & 0.00 & 0.00 & 100.00 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+Why did the incidence of payment agreements decrease from September to
+December?
+
+PF: Paid in Full; PA: Payment Agreement. Rows: status in September,
+cols: status in December.
+
+\end{frame}
+
 \begin{frame}{Sanity Check: Balance on Observables}
 
 \includegraphics{micro_lunch_160301_files/figure-beamer/BALANCE-1.pdf}
@@ -397,7 +422,7 @@ Variable & One Month & Three Months & Six Months \\
 
 \begin{frame}{Results: Acceleration}
 
-\includegraphics{micro_lunch_160301_files/figure-beamer/unnamed-chunk-1-1.pdf}
+\includegraphics{micro_lunch_160301_files/figure-beamer/unnamed-chunk-2-1.pdf}
 
 Simply receiving a letter had a sizeable initial impact which tapered
 and dissipated with time
@@ -418,6 +443,29 @@ catch-up; others, not so much.
 \includegraphics{micro_lunch_160301_files/figure-beamer/TOTAL_PAID_7-1.pdf}
 
 No significant effect on \emph{amount} paid.
+
+\end{frame}
+
+\begin{frame}{Results: Heterogeneity by Owner Occupancy}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lrr}
+  \hline
+Treatment & Non-Owner-Occ. & Owner-Occ. \\ 
+  \hline
+Control & 70 & 72 \\ 
+  Amenities & 74 & 73 \\ 
+  Moral & 73 & 75 \\ 
+  Duty & 75 & 75 \\ 
+  Peer & 73 & 76 \\ 
+  Lien & 75 & 78 \\ 
+  Sheriff & 76 & 76 \\ 
+   \hline
+\end{tabular}
+\caption{Treatment Effect by Owner-Occupancy (Property-Level)} 
+\label{table:delta_by_owner_occ}
+\end{table}
 
 \end{frame}
 

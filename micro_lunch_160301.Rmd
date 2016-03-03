@@ -164,6 +164,23 @@ dec_del_lien_cont_ep <-
 <<descriptives>>
 ```
 
+## Sample Description: Payment Agreements
+```{r, echo = FALSE, results= "asis"}
+lbs <- c("(!PF,!PA)","(PF,!PA)","(!PF,PA)","(PF,PA)")
+owners[ , pa_status_sep := factor(paid_full_sep + 2L*pmt_agr1_sep, 0:3, lbs)]
+owners[ , pa_status_dec := factor(paid_full_dec + 2L*pmt_agr1_dec, 0:3, lbs)]
+
+print.xtable(xtable(owners[ , table2(pa_status_sep, pa_status_dec, 
+                                     prop = TRUE, margin = 1, pct = TRUE)],
+                    caption = "Transitions among Payment "%+%
+                      "Agreement/Paid-in-Full States", label = "table:pa_trans"),
+       comment = FALSE, caption.placement = "top")
+```
+
+Why did the incidence of payment agreements decrease from September to December?
+
+PF: Paid in Full; PA: Payment Agreement. Rows: status in September, cols: status in December.
+
 ## Sanity Check: Balance on Observables
 ```{r BALANCE, echo = FALSE}
 par(mar=c(2.6, 5.1, 4.1, 2.1))
@@ -272,6 +289,19 @@ invisible(
 ```
 
 No significant effect on _amount_ paid.
+
+## Results: Heterogeneity by Owner Occupancy
+```{r, echo = FALSE, results = "asis"}
+print.xtable(xtable(dcast(
+  properties[(!holdout), to.pct(mean(ever_paid_dec), 0), 
+             keyby = .(c("Non-Owner-Occ.", "Owner-Occ."
+             )[(mail_address == property_address) + 1], 
+             Treatment = treat7)],
+  Treatment ~ c, value.var = "V1"), label = "table:delta_by_owner_occ",
+  digits = 0, caption = "Treatment Effect by Owner-Occupancy (Property-Level)"), 
+  include.rownames = FALSE, comment = FALSE)
+```
+
 
 ## Results: Letter-size Experiment
 ```{r EVER_PAID_2, echo = FALSE}

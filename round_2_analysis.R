@@ -509,18 +509,17 @@ rm(big_returns,small_returns,returns)
 #  captures most (but perhaps not all)
 #  of the multitudinous typos for Philadelphia.
 print.xtable(xtable(
-  t(owners[,.(`Number Observations`=prettyNum(.N,big.mark=","),
-              `Avg. Amount Due (June)`=dol.form(mean(total_due)),
-              `Assessed Property Value`=
-                dol.form(mean(assessed_mv,na.rm=T)),
-              `% Residential`=
-                to.pct(mean(residential,na.rm=T),dig=0),
-              `% with Unique Owner`=
-                to.pct(mean(unq_own),dig=1)), 
+  t(owners[N == 1,
+           .(`Number Observations`=prettyNum(.N,big.mark=","),
+             `Avg. Amount Due (June)`=dol.form(mean(total_due)),
+             `Assessed Property Value`=
+               dol.form(mean(assessed_mv,na.rm=T)),
+             `% Residential`=
+               to.pct(mean(residential,na.rm=T),dig=0)), 
            by = .(Variable = c("Main Sample", "Holdout")[holdout + 1L])]),
-  caption=c("Descriptive Statistics -- Background (Owners)"),
+  caption=c("Descriptive Statistics -- Background (Owners of One Property)"),
   align=c("|r|r|r|"),label="table:descriptivesI"),caption.placement="top",
-  include.colnames=F,comment=F, hline.after = c(0, 1, 6))
+  include.colnames=F,comment=F, hline.after = c(0, 1, 5))
 
 vrl <- list(jul = (ov <- c("ever_paid", "paid_full", "current_balance")) %+% "_jul",
             sep = c(ov, "pmt_agr1") %+% "_sep", dec = c(ov, "pmt_agr1") %+% "_dec")
@@ -622,7 +621,8 @@ date.dt <-
   #  so we'll have to "fill-in-the-blanks" with this
   CJ(treat8 = c("Holdout","Control"), date = dt.rng,
      unique=TRUE, sorted = FALSE)
-owners[ , hold_cont := treat8%in%c("Holdout","Control")]
+owners[(!flag_holdout_overlap), 
+        hold_cont := treat8%in%c("Holdout","Control")]
 cum_haz<-owners[(hold_cont),
                 #total entrants by day, treatment
                 sum(ever_paid_dec)+0., #convert to numeric
