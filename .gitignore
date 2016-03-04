@@ -1,13 +1,23 @@
 #no sense tracking these types:
 *.pdf
 *.png
+*.lyx
+*.odt
+*.ps
+*.docx
+
+#never ended up using this
+round_one/Analysis and Plot.do
 
 #no need for html until further notice
 *.html
 
+#data files
+round_one/analysis_dictionary.csv
+
 #presentation-associated folders
-micro_lunch_160301_cache/
-micro_lunch_160301-figure/
-micro_lunch_160301_files/
+round_two/micro_lunch_160301_cache/
+round_two/micro_lunch_160301-figure/
+round_two/micro_lunch_160301_files/
 
 .Rhistory
