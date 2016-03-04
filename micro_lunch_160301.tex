@@ -365,8 +365,8 @@ Sieg}
 Variable & Main Sample & Holdout \\ 
    \hline
 Number Observations & 16,951 & 2,088 \\ 
-  Avg. Amount Due (June) & \$1,467 & \$1,233 \\ 
-  Assessed Property Value & \$157,094 & \$142,630 \\ 
+  Med. Amount Due (June) & \$823 & \$813 \\ 
+  Med. Assessed Property Value & \$89,400 & \$89,650 \\ 
   \% Residential & 81 & 82 \\ 
    \hline
 \end{tabular}
@@ -446,7 +446,7 @@ No significant effect on \emph{amount} paid.
 
 \end{frame}
 
-\begin{frame}{Results: Heterogeneity by Owner Occupancy}
+\begin{frame}{Results: Heterogeneity by Owner Occupancy (I)}
 
 \begin{table}[ht]
 \centering
@@ -454,17 +454,40 @@ No significant effect on \emph{amount} paid.
   \hline
 Treatment & Non-Owner-Occ. & Owner-Occ. \\ 
   \hline
-Control & 70 & 72 \\ 
-  Amenities & 74 & 73 \\ 
-  Moral & 73 & 75 \\ 
-  Duty & 75 & 75 \\ 
+Control & 72 & 76 \\ 
+  Amenities & 73 & 73 \\ 
+  Moral & 74 & 74 \\ 
+  Duty & 75 & 76 \\ 
   Peer & 73 & 76 \\ 
-  Lien & 75 & 78 \\ 
-  Sheriff & 76 & 76 \\ 
+  Lien & 76 & 78 \\ 
+  Sheriff & 78 & 77 \\ 
    \hline
 \end{tabular}
-\caption{Treatment Effect by Owner-Occupancy (Property-Level)} 
-\label{table:delta_by_owner_occ}
+\caption{Owner Occupancy Effect (Property-Level, Unique Owners)} 
+\label{table:delta_by_owner_occ_unq}
+\end{table}
+
+\end{frame}
+
+\begin{frame}{Results: Heterogeneity by Owner Occupancy (II)}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{lrr}
+  \hline
+Treatment & Non-Owner-Occ. & Owner-Occ. \\ 
+  \hline
+Control & 80 & 88 \\ 
+  Amenities & 77 & 80 \\ 
+  Moral & 82 & 86 \\ 
+  Duty & 80 & 86 \\ 
+  Peer & 80 & 79 \\ 
+  Lien & 82 & 90 \\ 
+  Sheriff & 78 & 87 \\ 
+   \hline
+\end{tabular}
+\caption{Owner Occupancy Effect (Property-Level, Multiple Owners)} 
+\label{table:delta_by_owner_occ_mlt}
 \end{table}
 
 \end{frame}

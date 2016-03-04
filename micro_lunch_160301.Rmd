@@ -290,18 +290,31 @@ invisible(
 
 No significant effect on _amount_ paid.
 
-## Results: Heterogeneity by Owner Occupancy
+## Results: Heterogeneity by Owner Occupancy (I)
 ```{r, echo = FALSE, results = "asis"}
 print.xtable(xtable(dcast(
-  properties[(!holdout), to.pct(mean(ever_paid_dec), 0), 
+  properties[(!holdout&!flag_multiple_property), to.pct(mean(ever_paid_dec), 0), 
              keyby = .(c("Non-Owner-Occ.", "Owner-Occ."
              )[(mail_address == property_address) + 1], 
              Treatment = treat7)],
-  Treatment ~ c, value.var = "V1"), label = "table:delta_by_owner_occ",
-  digits = 0, caption = "Treatment Effect by Owner-Occupancy (Property-Level)"), 
+  Treatment ~ c, value.var = "V1"), label = "table:delta_by_owner_occ_unq",
+  digits = 0, caption = "Owner Occupancy Effect (Property-Level, Unique Owners)"), 
   include.rownames = FALSE, comment = FALSE)
 ```
 
+## Results: Heterogeneity by Owner Occupancy (II)
+```{r, echo = FALSE, results = "asis"}
+print.xtable(xtable(dcast(
+  properties[(!holdout&flag_multiple_property)][order(treat14),
+           .(oo = c("Non-Owner-Occ.", "Owner-Occ."
+             )[any(mail_address == property_address) + 1],
+             any(ever_paid_dec),
+             Treatment = treat7[1L]), by = owner1
+           ][ , to.pct(mean(V2), 0), keyby = .(oo, Treatment)],
+  Treatment ~ oo, value.var = "V1"), label = "table:delta_by_owner_occ_mlt",
+  digits = 0, caption = "Owner Occupancy Effect (Property-Level, Multiple Owners)"), 
+  include.rownames = FALSE, comment = FALSE)
+```
 
 ## Results: Letter-size Experiment
 ```{r EVER_PAID_2, echo = FALSE}

@@ -511,9 +511,9 @@ rm(big_returns,small_returns,returns)
 print.xtable(xtable(
   t(owners[N == 1,
            .(`Number Observations`=prettyNum(.N,big.mark=","),
-             `Avg. Amount Due (June)`=dol.form(mean(total_due)),
-             `Assessed Property Value`=
-               dol.form(mean(assessed_mv,na.rm=T)),
+             `Med. Amount Due (June)`=dol.form(median(total_due)),
+             `Med. Assessed Property Value`=
+               dol.form(median(assessed_mv,na.rm=T)),
              `% Residential`=
                to.pct(mean(residential,na.rm=T),dig=0)), 
            by = .(Variable = c("Main Sample", "Holdout")[holdout + 1L])]),
@@ -621,8 +621,7 @@ date.dt <-
   #  so we'll have to "fill-in-the-blanks" with this
   CJ(treat8 = c("Holdout","Control"), date = dt.rng,
      unique=TRUE, sorted = FALSE)
-owners[(!flag_holdout_overlap), 
-        hold_cont := treat8%in%c("Holdout","Control")]
+owners[(!flag_holdout_overlap), hold_cont := treat8%in%c("Holdout","Control")]
 cum_haz<-owners[(hold_cont),
                 #total entrants by day, treatment
                 sum(ever_paid_dec)+0., #convert to numeric
