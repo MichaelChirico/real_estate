@@ -1,7 +1,7 @@
 ---
 title: "Notification Strategies for Tax Recovery"
 author: "Michael Chirico^[The research presented here was supported in part by the Institute of Education Sciences, U.S. Department of Education, through Grant \\#R305B090015 to the University of Pennsylvania. The opinions expressed are those of the presenter and do not represent the views of the Institute or the U.S. Department of Education.], Robert Inman, Charles Loeffler, John MacDonald, Holger Sieg"
-date: "March 1, 2016"
+date: "March 1, 2016\n\nThis Version: `r format(Sys.time(), '%B %d, %Y at %R')`"
 output: 
   beamer_presentation: 
     keep_tex: yes
