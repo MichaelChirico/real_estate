@@ -1,0 +1,1198 @@
+TABLE OF CONTENTS
+*I)    Zoning Code Descriptions
+*II)   Sale Type Descriptions
+*III)  City Council Districts & Representatives
+*IV)   Lien status encoding
+*V)    GMA Descriptions
+*VI)   Exterior Condition codes
+*VII)  Abatement Exempt codes
+*VIII) Assorted adjustments to raw .csv files
+*******************************************************************************************************************************************************
+*******************************************************************************************************************************************************
+I) Zoning Code Descriptions
+
+a)  CA-1:    Auto-Oriented Commercial
+b)  CA-2:    Auto-Oriented Commercial
+c)  CMX-1:   Commercial Mixed-Use (Small Scale)
+d)  CMX-2:   Commercial Mixed-Use (Small Scale)
+e)  CMX-2.5: Commercial Mixed Use (Commercial Corridor)
+f)  CMX-3:   Commercial Mixed-Use (Commercial/Residential Mixed-Use)
+g)  CMX-4:   Center City Commercial Mixed-Use
+h)  CMX-5:   Core Center City Commercial
+i)  I-1: Industrial (Light)
+j)  I-2: Industrial (Medium)
+k)  I-3: Industrial (Heavy)
+l)  ICMX: Industrial/Commercial Mixed Use
+m)  IP: Port Industrial
+n)  IRMX: Industrial/Residential Mixed Use
+o)  RM1: Residential Multi-Family (Attached)
+p)  RM2: Residential Multi-Family (Medium Density)
+q)  RM3: Residential Multi-Family (High Density)
+r)  RM4: Residential Multi-Family (Very High Density)
+s)  RMX1: Residential Mixed Use
+t)  RMX2: Residential Mixed Use
+u)  RMX3: Residential Mixed Use (Center City)
+v)  RSA1: Residential Single Family Attached
+w)  RSA2: Residential Single Family Attached
+x)  RSA3: Residential Single Family Attached
+y)  RSA4: Residential Single Family Attached
+z)  RSA5: Residential Single Family Attached
+aa) RSD1: Residential Single Family Detached
+bb) RSD2: Residential Single Family Detached
+cc) RSD3: Residential Single Family Detached
+dd) RTA1: Residential Two-Family Attached
+ee) SP-AIR: Special Purpose--Airports
+ff) SP-ENT: Special Purpose--Entertainment
+gg) SP-INS: Special Purpose--Institutional
+hh) SP-PO-A: Special Purpose--Active Parks & Open Space
+ii) SP-PO-P: Special Purpose--Passive Parks & Open Space
+jj) SP-STA: Special Purpose--Stadium
+
+a) CA-1: Auto-Oriented Commercial***********************************
+Uses permitted as of right
+Personal Care Home; Recreation; Group Day Care; Day Care Center; Libraries and Cultural Exhibits; Safety Services; Utilities and Services, Basic; Building or Tower-Mounted Antenna; Office; Building Supplies and Equipment; Consumer Goods (except Drug Paraphernalia and Guns); Food, Beverages, and Groceries; Pets and Pet Supplies; Sundries, Pharmaceuticals, and Convenient Sales; Wearing Apparel and Accessories; Animal Services; Business Support; Prepared Food Shop; Sit Down Restaurant; Financial Services (except Personal Credit Establishments); Funeral and Mortuary Services; Maintenance and Repair of Consumer Goods; Personal Services (except Body Art Services); Radio, Television, and Recording Services; Research and Development; Community Garden; Market or Community-Supported Farm
+
+Uses requiring special exception approval
+
+Transit Station; Wireless Freestanding Tower; Assembly and Entertainment (except Amusement Arcade, Casino, Night Clubs and Private Clubs, and Pool or Billiards Room); Take-Out Restaurant; Surface Parking; Structured Parking; Personal Vehicle Repair and Maintenance; Gasoline Station; Vehicle Equipment and Supplies Sales and Rental
+
+Dimensional Standards
+Min. Street Frontage	50 ft.
+Min. Lot Area		5000 sqft.
+Max. Occupied Area	60%
+Min. Front Yard Depth	NA
+Min. Side Yard Width	5 ft. if used
+Min. Rear Yard Depth	5 ft. if used
+Max. Height		38 ft.
+********************************************************************
+
+b) CA-2: Auto-Oriented Commercial***********************************
+Uses permitted as of right
+
+Recreation; Group Day Care; Day Care Center; Educational Facilities; Fraternal Organization; Hospital; Libraries and Cultural Exhibits; Religious Assembly; Safety Services; Transit Station; Utilities and Services, Basic; Wireless Service Facility; Office; Building Supplies and Equipment; Consumer Goods (except Drug Paraphernalia and Guns); Food, Beverages, and Groceries; Pets and Pet Supplies; Sundries, Pharmaceuticals, and Convenient Sales; Wearing Apparel and Accessories; Animal Services; Assembly and Entertainment (except Amusement Arcade, Casino, Night Clubs and Private Clubs, and Pool or Billiards Room); Building Services; Business Support; Eating and Drinking Establishments; Financial Services (except Personal Credit Establishments); Funeral and Mortuary Services; Maintenance and Repair of Consumer Goods; Surface Parking; Structured Parking; Personal Services (except Body Art Services); Radio, Television, and Recording Services; Visitor Accommodations; Commercial Vehicle Sales and Rental; Personal Vehicle Repair and Maintenance; Personal Vehicle Sales and Rental; Gasoline Station; Vehicle Equipment Sales and Rental; Moving and Storage Facilities; Wholesale Sales and Distribution; Artist Studios and Artisan Industrial; Research and Development; Community Garden; Market or Community-Supported Farm
+
+Uses requiring special exception approval
+None
+
+Dimensional Standards
+Min. District Area	80,000 sqft.
+Min. Street Frontage	100 ft.
+Min. Lot Area		15,000 sq. ft.
+Max. Occupied Area	100%
+Min. Front Yard Depth	N/A
+Min. Side Yard Depth	N/A
+Min. Side Yard Width	N/A
+Min. Rear Yard Depth	N/A
+Max. Height		38 ft.
+********************************************************************
+
+c) CMX-1: Commercial Mixed-Use (Small Scale)************************
+Uses permitted as of right
+Household Living**; Passive Recreation; Family Day Care; Group Day Care; Libraries and Cultural Exhibits; Religious Assembly; Safety Services; Transit Station; Utilities and Services, Basic; Building or Tower-Mounted Antenna; Business, Professional Office; Medical, Dental, Health Sole Practitioner; Government Office; Building Supplies and Equipment; Consumer Goods (except Drug Paraphernalia and Guns); Food, Beverages, and Groceries; Pets and Pet Supplies; Sundries, Pharmaceuticals, and Convenient Sales; Wearing Apparel and Accessories; Animal Services; Business Support; Financial Services (except Personal Credit Establishments); Maintenance and Repair of Consumer Goods; On-Premise Dry Cleaning; Personal Services (except Body Art and Fortune Telling Services); Community Garden; Market or Community-Supported Farm
+
+Uses requiring special exception approval
+Active Recreation; Day Care Center; Wireless Freestanding Tower; Medical, Dental, Health Group Practitioner; Prepared Food Shop; Funeral and Mortuary Services
+
+Dimensional Standards
+Max. Occupied Area	Contextual*
+Min. Front Yard		Contextual*
+Min. Side Yard Width	Contextual*
+Min. Rear Yard Depth	Contextual*
+Max. Height		Contextual*
+Min. Cornice Height	Contextual*
+Max. FAR		Contextual*
+********************************************************************
+
+d) CMX-2: Commercial Mixed-Use (Small Scale)************************
+Uses permitted as of right
+Household Living**; Personal Care Home; Passive Recreation; Day Care; Educational Facilities; Fraternal Organization; Hospital; Libraries and Cultural Exhibits; Religious Assembly; Safety Services; Transit Station; Utilities and Services, Basic; Building or Tower-Mounted Antenna; Business, Professional Office; Medical, Dental, Health Sole Practitioner; Government Office; Building Supplies and Equipment; Consumer Goods (except Drug Paraphernalia and Guns); Food, Beverages, and Groceries; Pets and Pet Supplies; Sundries, Pharmaceuticals, and Convenient Sales; Wearing Apparel and Accessories; Animal Services; Business Support; Prepared Food Shop; Sit Down Restaurant; Financial Services (except Personal Credit Establishments); Funeral and Mortuary Services; Maintenance and Repair of Consumer Goods; Structured Parking; Personal Services (except Body Art and Fortune Telling Services); Radio, Television, and Recording Services; Visitor Accommodations; Personal Vehicle Repair and Maintenance; Personal Vehicle Repair Sales and Rental; Gasoline Station; Vehicle Equipment and Supplies Sales and Rental; Moving and Storage Facilities; Artist Studios and Artisan Industrial; Research and Development; Community Garden; Market or Community-Supported Farm
+
+Uses requiring special exception approval
+Group Living; Active Recreation; Freestanding Tower; Medical, Dental, Health Group Practitioner; Assembly and Entertainment; Night Clubs and Private Clubs; Take-Out Restaurant; Surface Parking
+
+Dimensional Standards
+Max. Occupied Area	Intermediate: 75%
+                        Corner: 80%
+Min. Front Yard Depth	N/A
+Min. Side Yard Width	5 ft. if used
+Min. Rear Yard Depth	The greater of 9 ft. or 10% of Lot Depth
+Max. Height	38 ft.
+********************************************************************
+
+e) CMX-2.5: Commercial Mixed Use (Commercial Corridor)**************
+Uses permitted as of right
+Household Living**; Group Living; Personal Care Home; Passive Recreation; Day Care; Hospital; Libraries and Cultural Exhibits; Safety Services; Transit Station; Building or Tower-Mounted Antenna; Business, Professional Office; Medical, Dental, Health Sole Practitioner; Government Office; Building Supplies and Equipment; Consumer Goods (except Drug Paraphernalia and Guns); Food, Beverage, and Groceries; Pets and Pet Supplies; Sundries, Pharmaceuticals, and Convenient Sales; Wearing Apparel and Accessories; Animal Services; Business Support; Prepared Food Shop; Sit Down Restaurant; Financial Services (except Personal Credit Establishments); Maintenance and Repair of Consumer Goods; Structured Parking; Personal Services (except Body Art and Fortune Telling Services); Radio, Television, and Recording Services; Visitor Accommodations; Artist Studios and Artisan Industrial; Research and Development; Community Garden; Market or Community-Supported Farm
+
+Uses requiring special exception approval
+Single-Room Residence; Active Recreation; Fraternal Organization; Religious Assembly; Wireless Freestanding Tower; Medical, Dental, Health Group Practitioner; Assembly and Entertainment (except Amusement Arcade, Casino, Night Clubs and Private Clubs, and Pool or Billiards Room); On-Premise Dry Cleaning; Surface Parking
+
+Dimensional Standards
+Max. Occupied Area	 Intermediate: 75%
+			Corner: 80%
+Min. Front Yard Depth	Built to front lot line
+Min. Side Yard Width	5 ft. if used
+Min. Rear Yard Depth	The greater of 9 ft. or 10% of Lot Depth
+Max. Height		55 ft.
+Min. Cornice Height	25 ft.
+********************************************************************
+
+f) CMX-3: Commercial Mixed-Use (Commercial/Residential Mixed-Use)***
+Uses permitted as of right
+Household Living; Group Living; Recreation; Day Care; Educational Facilities; Fraternal Organization; Hospital;Libraries and Cultural Exhibits; Religious Assembly; Safety Services; Transit Station; Utilities and Services, Basic; Wireless Service Facility; Office; Building Supplies and Equipment; Consumer Goods (except Drug Paraphernalia and Guns); Food, Beverage, and Groceries; Pets and Pet Supplies; Sundries, Pharmaceuticals, and Convenient Sales; Wearing Apparel and Accessories; Animal Services; Assembly and Entertainment (except Amusement Arcade, Casino, and Pool or Billiards Room); Building Services; Business Support; Eating and Drinking Establishment; Financial Services (except Personal Credit Establishments); Funeral and Mortuary Services; Maintenance and Repair of Consumer Goods; Structured Parking; Personal Services (except Body Art Services); Radio, Television, and Recording Services; Visitor Accommodations; Personal Vehicle Repair Sales and Rental; Personal Vehicle Repair and Maintenance; Gasoline Station; Vehicle Equipment and Supplies Sales and Rental; Moving and Storage Facilities; Artist Studios and Artisan Industrial; Research and Development; Community Garden; Market or Community-Supported Farm
+
+Uses requiring special exception approval
+Surface Parking
+
+Dimensional Standards
+Max. Occupied Area	 Intermediate: 75%
+			Corner: 80%
+Min. Front Yard Depth	N/A
+Min. Side Yard Width	8 ft. if used for building /w dwelling units
+Min. Rear Yard Depth	N/A
+Max. FAR		500%; up to an additional 300% with bonuses
+********************************************************************
+
+g) CMX-4: Center City Commercial Mixed-Use***************************
+Uses permitted as of right
+Household Living; Group Living; Recreation; Day Care; Educational Facilities; Fraternal Organization; Hospital;Libraries and Cultural Exhibits; Religious Assembly; Safety Services; Transit Station; Utilities and Services, Basic; Wireless Service Facility; Office; Building Supplies and Equipment; Consumer Goods (except Drug Paraphernalia and Guns); Food, Beverages, and Groceries; Pets and Pet Supplies; Sundries, Pharmaceuticals, and Convenient Sales; Wearing Apparel and Accessories; Animal Services; Assembly and Entertainment (except Amusement Arcade, Casino, and Pool or Billiards Room); Building Services; Business Support; Prepared Food Shop; Take-Out Restaurant; Sit Down Restaurant; Financial Services (except Personal Credit Establishments); Funeral and Mortuary Services; Maintenance and Repair of Consumer Goods; Non-Accessory Underground Parking; Personal Services (except Body Art Services); Radio, Television, and Recording Services; Visitor Accommodations; Personal Vehicle Repair and Maintenance; Personal Vehicle Repair Sales and Rental; Gasoline Station; Vehicle Equipment and Supplies Sales and Rental; Moving and Storage Facilities; Artist Studios and Artisan Industrial; Research and Development; Community Garden
+
+Uses requiring special exception approval
+Non-Accessory Above-ground Structured Parking
+
+Dimensional Standards
+Max.Max. Occupied Area	Buildings <= 5 stories with 1 or more dwelling units: 90%; Others: 100%
+Min. Front Yard Depth	N/A
+Min. Side Yard Width	If used buildings <= 4 stories with 3 or fewer dwelling units; 5 ft.; Others: 8 ft.
+Max. FAR		500%; up to 700% with bonuses
+********************************************************************
+
+h) CMX-5: Core Center City Commercial*******************************
+Uses permitted as of right
+Household Living; Group Living; Recreation; Day Care; Educational Facilities; Fraternal Organization; Hospital;Libraries and Cultural Exhibits; Religious Assembly; Safety Services; Transit Station; Utilities and Services, Basic; Wireless Service Facility; Office; Building Supplies and Equipment; Consumer Goods (except Drug Paraphernalia and Guns); Food, Beverages, and Groceries; Pets and Pet Supplies; Sundries, Pharmaceuticals, and Convenient Sales; Wearing Apparel and Accessories; Animal Services; Assembly and Entertainment (except Amusement Arcade, Casino, and Pool or Billiards Room); Building Services; Business Support; Prepared Food Shop; Take-Out Restaurant; Sit Down Restaurant; Financial Services (except Personal Credit Establishments); Funeral and Mortuary Services; Maintenance and Repair of Consumer Goods; Non-Accessory Underground Parking; Personal Services (except Body Art Services); Radio, Television, and Recording Services; Visitor Accommodations; Personal Vehicle Repair and Maintenance; Personal Vehicle Repair Sales and Rental; Gasoline Station; Vehicle Equipment and Supplies Sales and Rental; Moving and Storage Facilities; Artist Studios and Artisan Industrial; Research and Development; Community Garden
+
+Uses requiring special exception approval
+Non-Accessory Above-ground Structured Parking
+
+Dimensional Standards
+Min. District Area	 N/A
+Max. Occupied Area	Buildings <= 5 stories with 1 or more dwelling units; 90%; Others: 100%
+Min. Side Yard Width	Buildings <= 4 stories with 3 or fewer dwelling units: 5 ft.; Others: 8 ft.
+Max. FAR		1200%; 1600% for certain lots within Center City / University City FAR Map; up to an additional 800% with bonuses
+********************************************************************
+
+i) I-1: Industrial (Light)******************************************
+Uses permitted as of right
+Caretaker Quarters; Passive Recreation; Educational Facilities; Religious Assembly; Safety Services; Transit Station; Utilities and Services, Basic; Wireless Service Facility; Office; Building Supplies and Equipment; Animal Services; Assembly and Entertainment (except Amusement Arcade, Casino, and Pool or Billiards Room); Building Services; Business Support; Financial Services (except Personal Credit Establishments); Maintenance and Repair of Consumer Goods; Non-Accessory Parking; Radio, Television, and Recording Services; Commercial Vehicle Repair and Maintenance; Commercial Vehicle Sales and Rental; Personal Vehicle Repair and Maintenance; Gasoline Station; Vehicle Paint Finishing Shop; Moving and Storage Facilities; Warehouse; Wholesale Sales and Distribution; Artists Studios and Artisan Industrial; Limited Industrial; Research and Development; Trucking and Transportation Terminals; Community Garden; Market or Community-Supported Farm; Animal Husbandry; Horticulture Nurseries and Greenhouses
+
+Uses requiring special exception approval
+Re-Entry Facility; Stables
+
+Dimensional Standards
+Max. Occupied Area	75%
+Min. Front Yard Depth	50 ft. if abutting a Residential or SP-PO district; Other: 20 ft.
+Min. Side Yard Width	Two yards, each 50 ft. if abutting a Residential or SP-PO district; Other: 12 ft.
+Min. Rear Yard Depth	50 ft. if butting a Residential or SP-PO district; Other: 12 ft.
+Max. Height		50 ft. if abutting a Residential or SP-PO district; Other: no limit
+Max. FAR		225%
+********************************************************************
+
+j) I-2: Industrial (Medium)*****************************************
+Uses permitted as of right
+Caretaker Quarters; Passive Recreation; Educational Facilities; Safety Services; Transit Station; Utilities and Services, Basic and Major; Wireless Service Facility; Business and Professional; Medical, Dental, Health Group Practitioner; Government; Building Supplies and Equipment; Animal Services; Building Services; Business Support; Financial Services (except Personal Credit Establishments); Maintenance and Repair of Consumer Goods; Non-Accessory Parking; Radio, Television, and Recording Services; Commercial Vehicle Repair and Maintenance; Commercial Vehicle Repair and Maintenance; Commercial Vehicle Sales and Rental; Personal Vehicle Repair and Maintenance; Personal Vehicle Sales and Rental; Gasoline Station; Vehicle Paint Finishing Shop; Equipment and Materials Storage Yards and Buildings; Moving and Storage Facilities; Warehouse; Wholesale Sales and Distribution; Artists Studios and Artisan Industrial; Limited Industrial; General Industrial; Research and Development; Trucking and Transportation Terminals; Community Garden; Market or Community-Supported Farm; Animal Husbandry; Horticulture Nurseries and Greenhouses
+
+Uses requiring special exception approval
+Detention and Correctional Facilities; Re-Entry Facility; Drug Paraphernalia Sales; Gun Shop; Adult-Oriented Merchandise; Adult-Oriented Service; Stables; Amusement Arcade; Pool or Billiards Room; Personal Credit Establishment; Body Art Service; Junk and Salvage Yards and Buildings
+
+Dimensional Standards
+Max. Occupied Area	75%
+Min. Front Yard Depth	50 ft. if abutting a Residential or SP-PO district; Other: 20 ft.
+Min. Side Yard Width	Two yards, each 50 ft. if abutting a Residential or SP-PO district; Other: 12 ft.
+Min. Rear Yard Depth	50 ft. if butting a Residential or SP-PO district; Other: 12 ft.
+Max. Height		50 ft. if abutting a Residential or SP-PO district; Other: no limit
+Max. FAR		225%
+********************************************************************
+
+k) I-3: Industrial (Heavy)******************************************
+Uses permitted as of right
+Caretaker Quarters; Passive Recreation; Detention and Correctional Facilities; Re-Entry Facility; Safety Services; Transit Station; Utilities and Services, Basic and Major; Wireless Service Facility; Medical, Dental, Health Group Practitioner; Adult-Oriented Merchandise; Building Supplies and Equipment; Drug Paraphernalia Sales; Gun Shop; Adult-Oriented Service; Animal Services; Amusement Arcade; Pool and Billiards Room; Building Services; Business Support; Financial Services; Personal Credit Establishment; Maintenance and Repair of Consumer Goods; Non-Accessory Parking; Body Art Service; Radio, Television, and Recording Services; Commercial Vehicle Repair and Maintenance; Commercial Vehicle Repair and Maintenance; Commercial Vehicle Sales and Rental; Personal Vehicle Repair and Maintenance; Personal Vehicle Sales and Rental; Gasoline Station; Vehicle Paint Finishing Shop; Equipment and Materials Storage Yards and Buildings; Moving and Storage Facilities; Warehouse; Wholesale Sales and Distribution; Artists Studios and Artisan Industrial; Limited Industrial; General Industrial; Intensive Industrial; Junk and Salvage Yards and Buildings; Marine-Related Industrial; Mining/Quarrying; Research and Development; Trucking and Transportation Terminals; Community Garden; Animal Husbandry; Horticulture Nurseries and Greenhouses
+
+Uses requiring special exception approval
+None
+
+Dimensional Standards
+Max. Occupied Area	100%
+Min. Front Yard Depth	0
+Min. Side Yard Width	If used; Buildings <= 4 stories = 6 ft.; Others = 8 ft.
+Min. Rear Yard Depth	8 ft.
+Max. Height		60 ft. if abutting a Residential or SP-PO district; Other: no limit
+Max. FAR		500%
+********************************************************************
+
+l) ICMX: Industrial/Commercial Mixed Use****************************
+Uses permitted as of right
+Caretaker Quarters; Recreation; Day Care; Educational Facilities; Fraternal Organization; Religious Assembly; Safety Services; Transit Station; Utilities and Services, Basic; Wireless Service Facility; Office; Building Supplies and Equipment; Consumer Goods (except Drug Paraphernalia and Guns); Food, Beverages, and Groceries; Pets and Pet Supplies; Sundries, Pharmaceuticals, and Convenience Sales; Wearing Apparel and Accessories; Animal Services; Assembly and Entertainment (except Amusement Arcade, Casino, and Pool or Billiards Room); Building Services; Business Support; Eating and Drinking Establishments; Financial Services (except Personal Credit Establishments); Funeral and Mortuary Services; Maintenance and Repair of Consumer Goods; Personal Services (except Body Art Services); Radio, Television, and Recording Services; Commercial Vehicle Repair and Maintenance; Commercial Vehicle Sales and Rental; Personal Vehicle Repair and Maintenance; Personal Vehicle Sales and Rental; Gasoline Station; Vehicle Equipment and Supplies Sales and Rental; Vehicle Paint Finishing Shop; Equipment and Materials Storage Yards and Buildings; Moving and Storage Facilities; Warehouse; Wholesale Sales and Distribution; Artists Studios and Artisan Industrial; Limited Industrial; Research and Development; Community Garden; Market or Community-Supported Farm; Animal Husbandry; Horticulture Nurseries and Greenhouses
+
+Uses requiring special exception approval
+Detention and Correctional Facilities; Re-Entry Facility; Adult-Oriented Merchandise; Drug Paraphernalia Sales; Gun Shop; Adult-Oriented Service; Amusement Arcade; Pool or Billiards Room; Personal Credit Establishment; Non-Accessory Parking; Body Art Service
+
+Dimensional Standards
+Max. Occupied Area	100%
+Min. Front Yard Depth	0 ft.
+Min. Side Yard Width	8 ft. if used
+Min. Rear Yard Depth	8 ft. if used
+Max. Height		60 ft.
+Max. FAR		500%
+********************************************************************
+
+m) IP: Port Industrial**********************************************
+Uses permitted as of right
+Caretaker Quarters; Passive Recreation; Safety Services; Transit Station; Utilities and Services, Basic and Major; Wireless Service Facility; Building Supplies and Equipment; Financial Services (except Personal Credit Establishments); Maintenance and Repair of Consumer Goods; Non-Accessory Parking; Commercial Vehicle Repair and Maintenance; Commercial Vehicle Sales and Rental; Equipment and Materials Storage Yards and Buildings; Moving and Storage Facilities; Warehouse; Wholesale Sales and Distribution; Marine-Related Industrial; Trucking and Transportation Terminals
+
+Uses requiring special exception approval
+Re-Entry Facility
+
+Dimensional Standards
+Max. Occupied Area	100%
+Min. Front Yard Depth	N/A
+Min. Side Yard Width	N/A
+Min. Rear Yard Depth	N/A
+Max. Height		60 ft. if abutting a Residential or SP-PO district; Other: no limit
+Max. FAR		N/A
+********************************************************************
+
+n) IRMX: Industrial/Residential Mixed Use***************************
+Uses permitted as of right
+Multi-Family; Caretaker Quarters; Group Living; Recreation; Day Care; Educational Facilities; Fraternal Organization; Libraries and Cultural Exhibits; Religious Assembly; Safety Services; Transit Station; Utilities and Services, Basic; Wireless Service Facility; Office; Building Supplies and Equipment; Consumer Goods (except Drug Paraphernalia and Guns); Food, Beverages, and Groceries; Sundries, Pharmaceuticals, and Convenience Sales; Wearing Apparel and Accessories; Animal Services; Building Services; Business Support; Eating and Drinking Establishments; Financial Services (except Personal Credit Establishments); Funeral and Mortuary Services; Maintenance and Repair of Consumer Goods; Personal Services (except Body Art Services); Radio, Television, and Recording Services; Visitor Accommodations; Commercial Vehicle Sales and Rental; Warehouse; Distributor of Malt or Brewed Beverages; Artists Studios and Artisan Industrial; Research and Development; Community Garden; Market or Community-Supported Farm; Horticulture Nurseries and Greenhouses
+
+Uses requiring special exception approval
+Transit Station; Wireless Freestanding Tower; Assembly and Entertainment (except Amusement Arcade, Casino, Night Clubs and Private Clubs, and Pool or Billiards Room); Take-Out Restaurant; Surface Parking; Structured Parking; Personal Vehicle Repair and Maintenance; Gasoline Station; Vehicle Equipment and Supplies Sales and Rental
+
+Dimensional Standards
+Max. Occupied Area	100%
+Min. Front Yard Depth	0 ft.
+Min. Side Yard Width	8 ft. if used
+Min. Rear Yard Depth	8 ft. if used
+Max. Height		60 ft.
+Max. FAR		500%
+********************************************************************
+
+o) RM1: Residential Multi-Family (Attached)*************************
+Uses permitted as of right
+Single-Family; Passive Recreation; Family Day Care; Religious Assembly; Safety Services; Transit Station; Community Garden; Market or Community-Supported Farm
+
+Uses requiring special exception approval
+Group Living; Personal Care Home; Active Recreation; Group Day Care; Educational Facilities; Fraternal Organization; Hospital; Libraries and Cultural Exhibits; Utilities and Services, basic; Wireless Service Facility
+
+Dimensional Standards
+Min. Lot Width	 	16 ft.
+Min. Lot Area	 	1,440 sq. ft.
+Min. Open Area	 	Intermediate: 30%
+		 	Corner Lot 20%
+Min. Front Setback	Based on setback of abutting lots
+Min. Side Yard Width	Single or Two-Fam: Detatched or Semi-Detatched: 5 ft. per yard
+ 			Multi-Fam, Detatched: 5 ft. per yard or 8 ft. Corner Lot
+ 			Multi-Fam Semi-Detatched: 12 ft.
+Min. Rear Yard Depth	The greater of 9 ft. or 20% of Lot Depth
+Max. Height		38 ft.
+********************************************************************
+
+p) RM2: Residential Multi-Family (Medium Density)*******************
+Uses permitted as of right
+Single-Family; Two-Family; Multi-Family; Passive Recreation; Family Day Care; Religious Assembly; Safety Services; Transit Station; Community Garden; Market or Community-Supported Farm
+
+Uses requiring special exception approval
+Group Living; Personal Care Home; Single-Room Residence; Active Recreation; Group Day Care; Educational Facilities; Fraternal Organization; Hospital; Libraries and Cultural Exhibits; Utilities and Services, basic; Wireless Service Facility
+
+Dimensional Standards
+Min. Lot Width	 	50 ft
+Min. Lot Area		15,000 sqft.
+Min. Open Area	 	N/A
+Min. Front Setback	Scaled to building height, measured from street centerline
+Min. Side Yard Width	Scaled to building height
+Min. Rear Yard Depth	Scaled to building height
+Max. FAR		70% of Lot area
+********************************************************************
+
+q) RM3: Residential Multi-Family (High Density)*********************
+Uses permitted as of right
+Single-Family; Two-Family; Multi-Family; Passive Recreation; Family Day Care; Religious Assembly; Safety Services; Transit Station; Community Garden; Market or Community-Supported Farm
+
+Uses requiring special exception approval
+Group Living; Personal Care Home; Single-Room Residence; Active Recreation; Group Day Care; Educational Facilities; Fraternal Organization; Hospital; Libraries and Cultural Exhibits; Utilities and Services, basic; Wireless Service Facility
+
+Dimensional Standards
+Min. Lot Width	 	50 ft
+Min. Lot Area		10,000 sqft.
+Min. Open Area	 	50%
+Min. Front Setback	20 ft.
+Min. Side Yard Width	6 ft. to 16 ft., based on number of families
+Min. Rear Yard Depth	20 ft.
+Max. FAR		150% of Lot area
+********************************************************************
+
+r) RM4: Residential Multi-Family (Very High Density)****************
+Uses permitted as of right
+Single-Family; Two-Family; Multi-Family; Passive Recreation; Family Day Care; Religious Assembly; Safety Services; Transit Station; Community Garden; Market or Community-Supported Farm
+
+Uses requiring special exception approval
+Group Living; Personal Care Home; Single-Room Residence;Active Recreation; Group Day Care; Educational Facilities; Fraternal Organization; Hospital; Libraries and Cultural Exhibits; Utilities and Services, basic; Wireless Service Facility; Fresh Food Market; Visitor Accommodations
+
+Dimensional Standards
+Min. Lot Width	 	50 ft
+Min. Lot Area		5,000 sq. ft.
+Min. Open Area	 	Intermediate 30%;
+			Corner Lot 20%
+Min. Front Setback	20 ft.
+Min. Side Yard Width	5 ft. per yard
+Min. Rear Yard Depth	5 ft. if used
+Max. FAR		350% of Lot Area
+********************************************************************
+
+s) RMX1: Residential Mixed Use**************************************
+Uses permitted as of right
+Group Living; Single Family; Two Family; Multi-Family; Passive Recreation; Family Day Care; Group Day Care; Day Care Center; Religious Assembly; Safety Services; Transit Station; Business, Professional Office; Medical, Dental, Health Sole Practitioner; Consumer Goods (except Drug Paraphernalia and Guns); Food, Beverage, Groceries; Sundries, Pharmaceuticals, Convenience Sales; Wearing Apparel and Accessories; Business Support; Eating and Drinking Establishment; Personal Services; Community Garden; Market or Community Supported Farm
+
+Uses requiring special exception approval
+Group Living; Personal Care Home; Single-Room Residence; Active Recreation; Educational Facilities; Fraternal Organization; Hospital; Libraries and Cultural Exhibits; Utilities and Services, basic; Wireless Service Facility; Medical, Dental, Health Group Practitioner
+
+Dimensional Standards
+Min. Lot Width	 	N/A
+Min. Lot Area		50 ft.
+Min. District Area	2 acres
+Min. Open Area		50% (or 25% for areas with historically significant structures) of master plan area unoccupied by structures or parking
+Max. FAR		150% of District Area, excluding streets
+********************************************************************
+
+t) RMX2: Residential Mixed Use**************************************
+Uses permitted as of right
+Group Living; Single Family; Two Family; Multi-Family; Passive Recreation; Family Day Care; Group Day Care; Day Care Center; Religious Assembly; Safety Services; Transit Station; Business, Professional Office; Medical, Dental, Health Sole Practitioner; Consumer Goods (except Drug Paraphernalia and Guns); Food, Beverage, Groceries; Sundries, Pharmaceuticals, Convenience Sales; Wearing Apparel and Accessories; Business Support; Eating and Drinking Establishment; Personal Services; Visitor Accommodations; Community Garden; Market or Community Supported Farm
+
+Uses requiring special exception approval
+Group Living; Personal Care Home; Single-Room Residence; Active Recreation; Educational Facilities; Fraternal Organization; Hospital; Libraries and Cultural Exhibits; Utilities and Services, basic; Wireless Service Facility; Medical, Dental, Health Group Practitioner
+
+Dimensional Standards
+Min. Lot Width	 	N/A
+Min. Street Frontage	N/A
+Min. District Area	1 acres
+Min. Open Area		25% of District Area, excluding open air parking
+Max. FAR		250% of District Area, excluding streets
+********************************************************************
+
+u) RMX3: Residential Mixed Use (Center City)************************
+Uses permitted as of right
+Single-Family; Two-Family; Multi-Family; Passive Recreation; Family Day Care; Group Day Care; Day Care Center; Religious Assembly; Safety Services; Transit Station; Business, Professional Office; Medical, Dental, Health Sole or Group Practitioner; Consumer Goods (except Drug Paraphernalia and Guns); Food, Beverage, Groceries; Sundries, Pharmaceuticals, Convenience Sales; Wearing Apparel and Accessories; Business Support; Eating and Drinking Establishment; Personal Services; Visitor Accommodations; Community Garden; Market or Community Supported Farm
+
+Uses requiring special exception approval
+Group Living; Personal Care Home; Single-Room Residence; Active Recreation; Educational Facilities; Fraternal Organization; Hospital; Libraries and Cultural Exhibits; Utilities and Services, basic; Wireless Service Facility
+
+Dimensional Standards
+Min. Lot Width	 	N/A
+Min. Street Frontage	N/A
+Min. District Area	N/A
+Min. Open Area		Buildings <= 5 stories with 1 or more dwelling units: 10%; Others: 0
+Min. Side Yard Width	Buildings <= 4 stories with 3 or fewer dwelling units: 5 ft.; Others: 8 ft.
+Max. FAR		500%; up to additional 100% with bonuses
+********************************************************************
+
+v) RSA1: Residential Single Family Attached*************************
+Uses permitted as of right
+Single-Family; Passive Recreation; Family Day Care; Religious Assembly; Safety Services; Transit Station; Community Garden; Market or Community-Supported Farm
+
+Uses requiring special exception approval
+Group Living (except Single-Room Residence); Personal Care Home; Active Recreation; Group Day Care; Educational Facilities; Fraternal Organization; Hospital; Libraries and Cultural Exhibits; Utilities and Services, basic; Wireless Service Facility
+
+Dimensional Standards
+Min. Lot Width	 	50 ft.
+Min. Lot Area		5,000 sqft.
+Min. Open Area		70%
+Min. Front Setback	25 ft.
+Min. Side Yard Width	Detatched, Intermediate Lot: 10ft. per yard, 25 ft. total; Detatched, Corner Lot: 7 ft.
+ 			Semi-Detatched: 25 ft.
+Min. Rear Yard Depth	25 ft.
+Max. Height		38 ft.
+********************************************************************
+
+w) RSA2: Residential Single Family Attached*************************
+Uses permitted as of right
+Single-Family; Passive Recreation; Family Day Care; Religious Assembly; Safety Services; Transit Station; Community Garden; Market or Community-Supported Farm
+
+Uses requiring special exception approval
+Group Living; Personal Care Home; Active Recreation; Group Day Care; Educational Facilities; Fraternal Organization; Hospital; Libraries and Cultural Exhibits; Utilities and Services, basic; Wireless Service Facility
+
+Dimensional Standards
+Min. Lot Width	 	35 ft.
+Min. Lot Area		3,150 sqft.
+Min. Open Area		60%
+Min. Front Setback	15 ft.
+Min. Side Yard Width	Detached, Intermediate Lot: 8 ft. per yard; Detached, Corner Lot: 6 ft.
+ 			Semi-Detached: 16 ft.
+Min. Rear Yard Depth	20 ft.
+Max. Height		38 ft.
+********************************************************************
+
+x) RSA3: Residential Single Family Attached*************************
+Uses permitted as of right
+Single-Family; Passive Recreation; Family Day Care; Religious Assembly; Safety Services; Transit Station; Community Garden; Market or Community-Supported Farm
+
+Uses requiring special exception approval
+Group Living (except Single-Room Residence); Personal Care Home; Active Recreation; Group Day Care; Educational Facilities; Fraternal Organization; Hospital; Libraries and Cultural Exhibits; Utilities and Services, basic; Wireless Service Facility
+
+Dimensional Standards
+Min. Lot Width	 	25 ft.
+Min. Lot Area		2,250 sqft.
+Min. Open Area		50%
+Min. Front Setback	8 ft.
+Min. Side Yard Width	Detached: 8 ft. per yard; 8 ft. Corner Lot
+ 			Semi-Detached: 8 ft.
+Min. Rear Yard Depth	15 ft. Single Family; 20 ft. Other
+Max. Height		38 ft.
+********************************************************************
+
+y) RSA4: Residential Single Family Attached*************************
+Uses permitted as of right
+Single-Family; Passive Recreation; Family Day Care; Religious Assembly; Safety Services; Transit Station; Community Garden; Market or Community-Supported Farm
+
+Uses requiring special exception approval
+Group Living; Personal Care Home; Active Recreation; Group Day Care; Educational Facilities; Fraternal Organization; Hospital; Libraries and Cultural Exhibits; Utilities and Services, basic; Wireless Service Facility
+
+Dimensional Standards
+Min. Lot Width	 	Attached: 18 ft.; Semi-Detached: 30 ft.
+Min. Lot Area		1,620 sqft; 2,700 sqft. Semi-Detached
+Min. Open Area		50%
+Min. Front Setback	Based on setback of abutting lots
+Min. Side Yard Width	Detached, Intermediate Lot; 8 ft. per yard; Detached, Corner Lot: 6 ft.
+ 			Semi-Detached: 8 ft.
+Min. Rear Yard Depth	20 ft. Single-Family; 25 ft. Other
+Max. Height	38 ft.
+********************************************************************
+
+z) RSA5: Residential Single Family Attached*************************
+Uses permitted as of right
+Single-Family; Passive Recreation; Family Day Care; Religious Assembly; Safety Services; Transit Station; Community Garden; Market or Community-Supported Farm
+
+Uses requiring special exception approval
+Group Living; Personal Care Home; Active Recreation; Group Day Care; Educational Facilities; Fraternal Organization; Hospital; Libraries and Cultural Exhibits; Utilities and Services, basic; Wireless Service Facility
+
+Dimensional Standards
+Min. Lot Width	 	16 ft.
+Min. Lot Area		1,440 sq. ft.
+Min. Open Area		Intermediate: 30%
+			Corner Lot 20%
+Min. Front Setback	Based on setback of abutting lots
+Min. Side Yard Width	5 ft. per yard
+Min. Rear Yard Depth	The greater of 9 ft. or 20% of Lot Depth
+Max. Height		38 ft.
+********************************************************************
+
+aa)RSD1: Residential Single Family Detached*************************
+Uses permitted as of right
+Single-Family; Passive Recreation; Community Garden
+
+Uses requiring special exception approval
+Market or Community-Supported Farm
+
+Dimensional Standards
+Min. Lot Width	 	75 ft.
+Min. Lot Area		10,000 sqft.
+Min. Open Area		65%
+Min. Front Setback	35 ft.
+Min. Side Yard Width	15 ft. per yard
+Min. Rear Yard Depth	30 ft.
+Max. Height		38 ft.
+********************************************************************
+
+bb)RSD2: Residential Single Family Detached*************************
+Uses permitted as of right
+Single-Family; Passive Recreation; Community Garden
+
+Uses requiring special exception approval
+Market or Community-Supported Farm
+
+Dimensional Standards
+Min. Lot Width	 	65 ft.
+Min. Lot Area		7,800 sqft.
+Min. Open Area		65%
+Min. Front Setback	35 ft.
+Min. Side Yard Width	10 ft. per yard
+Min. Rear Yard Depth	30 ft.
+Max. Height		38 ft.
+********************************************************************
+
+cc)RSD3: Residential Single Family Detached*************************
+Uses permitted as of right
+Single-Family; Passive Recreation; Family Day Care; Community Garden
+
+Uses requiring special exception approval
+Market or Community-Supported Farm
+
+Dimensional Standards
+Min. Lot Width	 	50 ft.
+Min. Lot Area		5,000 sqft.
+Min. Open Area		70%
+Min. Front Setback	25 ft.
+Min. Side Yard Width	Intermediate: 10 ft. per yard, 25 ft. total; Corner Lot: 7 ft.
+Min. Rear Yard Depth	25 ft.
+Max. Height		38 ft.
+********************************************************************
+
+dd)RTA1: Residential Two-Family Attached****************************
+Uses permitted as of right
+Single-Family; Two Family; Passive Recreation; Family Day Care; Religious Assembly; Safety Services; Transit Station; Community Garden; Market or Community Supported Farm
+
+Uses requiring special exception approval
+Group Living; Personal Care Home; Active Recreation; Group Day Care; Educational Facilities; Fraternal Organization; Hospital; Libraries and Cultural Exhibits; Utilities and Services, basic; Wireless Service Facility
+
+Dimensional Standards
+Min. Lot Width	 	25 ft.
+Min. Lot Area		2,250 sqft.
+Min. Open Area		50%
+Min. Front Setback	8 ft.
+Min. Side Yard Width	8 ft. per yard
+Min. Rear Yard Depth	15 ft. Single Family; 20 ft. Other
+Max. Height		38 ft.
+********************************************************************
+
+ee)SP-AIR: Special Purpose--Airports********************************
+(1)   Purpose.
+The SP-AIR, Airport (Special Purpose) district regulations are intended to recognize the unique character of airports and the impact they have on the surrounding community. To best serve the public health and welfare, the SP-AIR district supports the development of airport uses and a customary and complementary mix of uses, while minimizing adverse impacts on surrounding areas.
+(2)   Use Regulations.
+	(a)   Uses are allowed in SP-AIR districts in accordance with Table 14-602-4.
+	(b)   Multiple principal uses and principal structures are allowed on a single lot in the SP-AIR district.
+(3)   Area Regulations.
+	(a)   District Area and Boundaries.
+	Boundaries shall be so designated to afford a reasonable line of division between the district and adjacent uses consistent to carry out the purposes of this Zoning Code.
+	(b)   Gross Floor Area.
+	The gross floor area of all buildings shall not exceed 500% of the total area of the lot.
+	(c)   Occupied Area.
+	Not more than 70% of the lot area may be occupied by buildings.
+	(d)   Setbacks.
+		(.1)   Front.
+		No front setback is required.
+		(.2)   Side Setbacks.
+		No side setbacks are required. When side yards are provided, they must have the following minimum widths:
+			(.a)   Buildings up to four stories in height: six ft.
+			(.b)   Buildings over four stories in height: eight ft.
+		(.3)   Rear.
+		No rear setback is required.
+(4)   Height Regulations. 151
+There are no height restrictions in the SP-AIR district, except as height may be limited by the other provisions of this Zoning Code, including § 14-511 (Airport Hazard Control Overlay District).
+(5)   Parking and Loading.
+	(a)   There shall be no minimum parking requirements, provided that, where parking is provided, it shall conform to the other requirements of Chapter 14-800, as if those provisions applied directly.
+	(b)   Off-street loading spaces must be provided in accordance with the regulations of § 14-806 (Off-Street Loading).
+(6)   Signs. 152
+	(a)   Accessory and non-accessory signs must be in compliance with applicable regulations issued by the Director of Commerce, which regulations shall ensure that all signs are compatible with the safety of airport users and 	are compatible in terms of size, density, location, and aesthetics with the surrounding area.
+	(b)   Non-accessory signs must be in compliance with § 14-905 (Non-Accessory Signs).
+	(c)   Freestanding, wall, and marquee signs shall be permitted. Signs shall not extend above the roof or wall coping.
+	(d)   Static illumination shall be permitted.
+	(e)   Animated illumination shall be prohibited, unless approved by the Director of Aviation for navigational purposes.
+	(f)   Mechanical movement signs require special exception approval in accordance with § 14-303(7) (Special Exception Approval).
+(7)   Fences.
+	(a)   Fences shall be permitted in the SP-AIR district, provided they shall not exceed 30 ft. in height.
+	(b)   Fences within 10 ft. of the property line shall be no more than 50% opaque.
+********************************************************************
+
+ff)SP-ENT: Special Purpose--Entertainment***************************
+(1)   Purpose.
+The SP-ENT, Entertainment (Special Purpose) district is intended to encourage the orderly development of major entertainment facilities and certain other uses in accordance with an approved master plan. The master plan must be approved, and may be amended as necessary, and is subject to restrictions on the type of use and certain other development controls.
+(2)   Use Regulations.
+	(a)   Uses are allowed in SP-ENT districts in accordance with Table 14-602-4. Regulated uses (See § 14-603(13) (Regulated Uses)) are not allowed unless otherwise expressly stated.
+	(b)   These regulations are not intended to limit the authority of the Pennsylvania Gaming Control Board under the Pennsylvania Gaming Control Board Act to identify the property on which it will permit a Category 2 licensed 	gaming facility within the City.
+	(c)   These regulations should not be construed to prohibit any use that is exclusively regulated and permitted by the Commonwealth under the Pennsylvania Gaming Control Board Act.
+	(d)   Multiple principal uses and principal structures are allowed on a single lot in the SP-ENT district.
+(3)   Area Regulations.
+	(a)   District Area and Boundaries.
+	Boundaries should be so designated to afford a reasonable line of division between the district and adjacent uses consistent to carry out the purposes and scope of this Zoning Code. The master plan should also provide for 		reasonable, compatible spatial relationships between buildings that are situated on the periphery of the district and abutting non-SP-ENT district areas.
+	(b)   Gross Floor Area.
+	The total gross floor area of all buildings may not exceed 400% of the SP-ENT district. Underground parking will not be included in this calculation.
+	(c)   Open Area.
+	For sites that consist of four acres or more, at least 30% of the site must be open area. For sites of less than four acres, at least 10% must be open area. At least 50% of this required open area must be constructed of a 		permeable surface. The total open area calculation may not include open-air parking lots.
+	(d)   Open Area Above Ground Level.
+	Up to 30% of the required open area may be located above the ground level, provided that the open area above ground level is accessible by building occupants.
+	(e)   Yards.
+	Front, side, and rear yards will be required in this district as follows and as may be required as part of the approval of an SP-ENT master plan:
+		(.1)   Parking Location.
+		Surface parking areas, and any access to parking, aisles, loading, or other servicing will not be permitted within 25 ft. of any residential district.
+		(.2)   Waterfront Setback.
+			(.a)   When located along the Schuylkill or Delaware Rivers, all lots must provide or allow for an unencumbered waterfront setback from the top of the bank of any river to allow for unrestricted public access 				to the river’s edge. Any land located within this setback that is dedicated to the City of Philadelphia, the Commonwealth of Pennsylvania, or any public entity will be included in the determination of 				conformance with the area regulations of the SP-ENT district. This waterfront setback must include open space that is accessible to the public, either privately or publicly owned, at a width of at least 30 ft. 				and must include a publicly or privately owned right-of-way dedicated for pedestrian and bicycle traffic at a width of at least 20 ft.
+			(.b)   The Commission may reduce this waterfront setback requirement for all or part of a site if site-specific conditions warrant such reduction, but in no case will the waterfront setback at any spot be less 				than 30 ft. total, including the pedestrian and bicycle right-of-way. Foundations or structures supporting exterior open spaces shall be permitted within the 50-foot waterfront setback, provided that any 				encroachment will not reduce the 20-foot minimum width of the pedestrian and bicycle right-of-way. 146.1
+(4)   Height Regulations. 147
+The height of any building shall not exceed 300 ft. or 30 stories.
+(5)   Off-Street Parking.
+Plans for all off-street parking areas must comply with the provisions of this section and with any prerequisite approvals of this Zoning Code. Within any SP-ENT district, off-street parking spaces must be provided for the following uses as listed below:
+	(a)   Licensed Gaming Facilities.
+		(.1)   Four parking spaces for every five slot machine or gaming positions provided for patrons and guests.
+		(.2)   Some or all of the parking required by this subsection may be provided on immediately adjacent lots, regardless of the lot’s underlying zoning.
+		(.3)   During any period of time when any parking spaces required by this section are rendered unavailable because of ongoing construction of a parking garage to meet the requirements of § 14-405(6)(a)(.1) below, 			replacement parking spaces may be provided within one mile of the boundary of the SP-ENT district in which the gaming facility is located, regardless of the lot’s underlying zoning, but only on a lot or lots 		immediately adjacent to and accessible from Delaware Avenue.
+	(b)   Hotels.
+	One parking space for every two units.
+(6)   Parking Design.
+	(a)   Layout and Access Conditions.
+	Parking provided in this district must be adequately served by high-capacity roads or driveways approved by the Streets Department as being adequate to safely serve the ingress and egress of patrons and guests using the 		facility, further provided:
+		(.1)   Except for interim facilities with 1,700 or fewer gaming positions and facilities with structured parking in which the deck of the highest parking floor is at a height not exceeding 90 feet above grade (parapet 			walls, stair and elevator towers and light fixtures may be above 90 feet), up to 10% of all parking spaces in an SP-ENT district may be provided in parking lots. This includes required handicapped spaces, bus parking, 			limousine parking, cabstands, loading spaces and delivery spaces; and 147.1
+		(.2)   All entrances to parking areas or facilities must be provided with adequate vehicle reservoir spaces approved by the Streets Department.
+	(b)   Surface Parking Areas.
+	Where parking spaces are in an open-air area, the area must:
+		(.1)   Be situated on ground that does not contain any grades in excess of 10%, namely, changes of grade of one foot for each 10 ft.;
+		(.2)   Be paved with a hard top surface of cement concrete, bituminous concrete, or pervious pavers, including all accessways or driveways from the street;
+		(.3)   In cases where more than three motor vehicles are to be parked, comply with the applicable provisions of § 9-601 of The Philadelphia Code that regulates garages, parking lots, sales lots, and showrooms;
+		(.4)   Be provided with adequate lighting facilities for use at night. Lights must be focused so as to prevent glare on surrounding lots; and
+		(.5)   For the protection of surrounding buildings and pedestrians, contain permanent, substantial barriers constructed of metal or masonry around the area. If constructed of masonry, the wall must be at least two ft. 			above the ground, and if constructed of metal or masonry posts, the posts must be at least four in. but no more than six in. in diameter, placed no more than five ft. apart, nor less than 30 in. above the ground, and 			connected by metal pipes, rods, fencing, or chains.
+	(c)   Walkways.
+	Where an off-street parking lot containing more than 25 spaces or a portion of an off-street parking lot that contains over 25 spaces is located between a building and a public street, a pedestrian walkway at least five ft. in 		width must be provided in accordance with the following requirements:
+		(.1)   The walkway must be located within or along the edge of the parking lot;
+		(.2)   The walkway must connect the street and the building;
+		(.3)   One such walkway must be provided for each 300 ft. of street frontage; and
+		(.4)   Where a walkway crosses a driveway or aisle, the driveway or aisle must be clearly marked and signed so as to indicate the location of the walkway and to require vehicles to stop for individuals using the 			walkway.
+	(d)   Screening Abutting Residential Districts.
+	Where an off-street parking lot, parking garage, driveway, or aisle is located between a building and a residential district, or is located so that there is not a building or portion of a building between the parking lot, 		parking garage, driveway, or aisle and a residential district, a planted buffer at least six ft. wide and six ft. high must be installed and maintained between the parking lot, parking garage, driveway, or aisle and the 		residential district in accordance with the following requirements:
+		(.1)   The planted buffer must be installed along the entire edge of the abutting residential lot line;
+		(.2)   Where an off-street parking lot, parking garage, driveway, or aisle is located between a building and a residential district along two or more lot lines, a planted buffer must be installed along the entire edge 			of both abutting residential lot lines;
+		(.3)   The planted buffer may be located within the required side and rear yards; and
+		(.4)   The required screening must be maintained in a manner to ensure its survival. In the event that any plants die, they must be replaced at the required ratio.
+	(e)   Screening Along Street Frontage.
+	Along all public streets, whether or not a setback is required, a landscaped area must be installed along the outer edge of the parking lot in accordance with the following requirements:
+		(.1)   A landscaped area at least four ft. wide and two ft. high must be installed along the entire street frontage of all streets, except where walkways and driveways connect to the public street; and
+		(.2)   The landscaped area may be located within any required setback.
+	(f)   Landscape Within Parking Lots.
+	Within all off-street parking lots additional area must be provided for the installation and maintenance of landscaped areas. The total landscaped area must be at least 10% of the area of the parking lot, including all spaces, 		aisles, and driveways, but excluding all walkways and screening required by this Zoning Code.
+	(g)   Plants.
+	All required landscaped areas must meet the following requirements:
+		(.1)   Plants must be installed at a size and number to ensure adequate screening from the time the material is installed;
+		(.2)   The type of plant must be selected from a list of types, sizes, species, and numbers of plants that are appropriate to the environment in which they are to be installed and appropriate for the location of the 		parking facility as such list is maintained by the Commission; and
+		(.3)   The required landscape area may be located anywhere within or along the parking lot, provided it must be maintained in a manner to insure its survival. In the event that any plants die, they must be replaced at 			the required ratio.
+	(h)   Lighting.
+	All parking lots must include lighting in accordance with the following requirements:
+		(.1)   The lighting must illuminate the entire parking lot and walkways with an overall minimum average level of illumination of at least two horizontal foot-candles;
+		(.2)   The illumination must be maintained throughout the hours of darkness; and
+		(.3)   The illumination must be directed to the surface of the parking lot in a manner that will prevent glare upon the surrounding areas.
+	(i)   Maintenance.
+	The master plan must include a plan that addresses the long-term maintenance of all facilities and improvements required by the SP-ENT district regulations.
+(7)   Off-Street Loading.
+	(a)   Off-street loading must be provided in accordance with the loading requirements of Table 14-806-1 in § 14-806 (Off-Street Loading) for "Residential Districts except RMX-3 for Office, Hospital, Civic and Institutional, or 		Visitor Accommodation." 147.2
+	(b)   The off-street loading areas must be used for all waste collection. Storage of waste must be fully contained within an enclosed structure, except at times of collection.
+(8)   Accessory Signs. 148
+	(a)   Accessory signs in the SP-ENT district shall comply with this § 14-405(8) and applicable provisions of Chapter 14-900 (Signs).
+	(b)   Accessory signs are permitted in accordance with the following limitations and conditions:
+		(.1)   Each building in the SP-ENT district is permitted to have accessory signs, in accordance with Table 14-405-1 [OMITTED], identifying the name, use, or purpose of said building.
+		(.2)   In addition to the accessory signs permitted by § 14-405(8)(b)(.1) above, the accessory signs in Table 14-405-2 [OMITTED] are permitted, provided the Art Commission has approved them.
+(9)   Design Standards.
+The significant physical scale and extraordinary activity level of the uses permitted in this district create major impacts on the areas in which they are located. To ensure that these facilities are constructed in the most appropriate manner, design, scale, and density, the following requirements are imposed.
+	(a)   Review Procedure.
+		(.1)   No permitted use may be constructed or opened for occupancy unless the Commission certifies, based on a review of the architectural plans, that the proposed design is in compliance with the SP-ENT district 			regulations.
+		(.2)   The Commission shall act to accept or reject the submission within 30 days or the submission will be considered approved. No construction drawings will be reviewed for purposes of building permits until the 			master plan has received final approval.
+	(b)   Building Design.
+		(.1)   All buildings in an SP-ENT district must be designed by a registered architect.
+	(.2)   Recognizing the intended use of the facility, economic feasibility, and potential conflicts with codes of relevant jurisdiction, the applicant for any building or zoning permit in an SP-ENT district must use reasonable 		efforts to employ the technologies and strategies that promote energy efficiency and environmental sustainability, as recommended by City-recognized organizations (e.g., the United States Green Building Council) that promote 		sustainable building and development practices. Applicants shall document actions taken to comply with this requirement and shall submit such documentation to the Commission at the time of any building or zoning permit 		application.
+	(c)   Siting and Access.
+		(.1)   If a permitted use faces a public street, a significant pedestrian entrance must be on and front that street.
+		(.2)   A permitted use developed on a waterfront site must provide dedicated public access to the waterfront, open to and connected from a public street. Public access will be provided along the site’s waterfront 			length at a width of at least 12 ft.
+		(.3)   A permitted use must provide for adequate public transit access to the site.
+	(d)   Lighting.
+	A lighting plan prepared by a qualified lighting engineer or designer must be submitted. No use will be approved unless it provides appropriate lighting levels throughout the site to support pedestrian safety.
+(10)   Public Art.
+Each application for a zoning permit must include public art meeting the requirements of this section, which is intended to allow for the broadest definition of public art and encourage imaginative interpretation of media.
+	(a)   On-Site Public Art.
+	Public art may include, but need not be limited to the following, separately or in combination:
+		(.1)   Sculpture;
+		(.2)   Murals or paintings;
+		(.3)   Earthworks, waterworks, fiber works, functional elements, furnishings, neon, glass mosaics, photography, prints, or calligraphy, in any combination of forms of media including sound, film, holographic, and video 			systems; hybrids of any media and new genres; and
+		(.4)   Lighting in any combination or form.
+	(b)   Location.
+	Public art must be located within the building, upon the building, or within public spaces on the site. Public art may be provided within the public sidewalk, if authorization, by ordinance, is obtained.
+	(c)   Approval Criteria.
+	The proposed public art must be approved by the Art Commission and must include a long-term maintenance plan for the public art. The Art Commission may, upon request, assist in the selection of an artist or artists for the 		project or the selection of an arts coordinator for the project.
+	(d)   Elements Not Qualified as Public Art.
+		(.1)   Decorative, ornamental, or functional elements of the building or public space that are not designed by an artist and created specifically for the site and landscaped area or other furnishings or elements 			required by this Zoning Code, may not be counted toward meeting public art requirements, unless the Art Commission determines such elements comply with the intent of the public art requirement.
+		(.2)   Items, functions, and events that are basically commercial in nature, such as commercial art galleries or exhibits of items for sale, will not satisfy requirements of this section of the code.
+	(e)   Cost.
+	Public art as required in this section must be provided at an individual or combined minimum cost in accordance with the following:
+		(.1)   For development on a lot, with construction costs of $20 million or less, an amount equal to 1% of the construction costs;
+		(.2)   For development on a lot, with construction costs of up to $40 million, 1% of the first $20 million of construction costs and 0.5% of the construction costs in excess of $20 million but less than $40 million; and
+		(.3)   For construction costs greater than $40 million, 1% for the first $20 million of construction costs, 0.5% of the amount of construction costs in excess of $20 million but less than $40 million and 0.25% of any 			construction costs in excess of $40 million.
+	(f)   Exceptions.
+	Public Art will not be required under this section for interior alterations in existing structures if the alterations apply directly to retail establishments or eating and drinking establishments not accessory to a licensed 	gaming facility.
+********************************************************************
+
+gg)SP-INS: Special Purpose--Institutional***************************
+(1)   Purpose.
+The SP-INS, Institutional (Special Purpose) district is intended to encourage the development of institutional uses, commercially-related facilities to service the institutional complex and area, and certain other nonresidential uses in accordance with an approved master plan, subject to certain limitations on the type of use and certain requirements for total area, gross floor area, percentage of land coverage, setbacks, off-street parking, off-street loading spaces, and signs.
+(2)   Use Regulations.
+Uses are allowed in SP-INS districts in accordance with Table 14-602-4. Multiple principal uses and principal structures are allowed on a single lot in the SP-INS district.
+(3)   Area Regulations.
+	(a)   District Area and Boundaries.
+	An SP-INS district must contain at least five acres of contiguous land area.
+	(b)   Gross Floor Area.
+	The gross floor area of all buildings may not exceed 400% of the total area of the SP-INS district, exclusive of streets.
+	(c)   Occupied Area.
+	Not more than 70% of the SP-INS district area, exclusive of streets, may be occupied by buildings.
+	(d)   Yards.
+		(.1)   No front, side, or rear yards are required in this district, except as provided in § 14-404(3)(d)(.2), below.
+		(.2)   If an SP-INS-zoned lot is adjacent to a lot in a Residential district, the minimum required front setback for a building or portion of a building located on the SP-INS lot shall be the minimum front setback 			required in the most restrictive adjacent Residential district, except in the area bounded by Belmont Avenue, Monument Avenue, Ford Road and Edgley Avenue (extended). 142.1
+(4)   Height and Massing Regulations.
+	(a)   There are no height or massing regulations in this district, except as provided in § 14-404(4)(b) below.
+	(b)   If an SP-INS-zoned lot is adjacent to a lot in a Residential district, the maximum permitted building height for a portion of a building in the SP-INS district located within 50 ft. of that residential lot line shall be 		20 ft. greater than the maximum permitted building height in the most restrictive Residential district adjacent to that portion of the lot. 143
+(5)   Off-Street Parking.
+	(a)   At least one off-street parking space must be provided for each 4,000 sq. ft. of cumulative gross floor area of buildings in the district.
+	(b)   In SP-INS districts with a total contiguous land area of less than 40 acres, required off-street parking areas must be located within 1,000 ft. of the building or buildings that they are proposed to serve. In SP-INS 		districts with a total contiguous land area of 40 acres or more, required off-street parking areas must be located within 2,000 ft. of the building or buildings that they are proposed to serve.
+(6)   Off-Street Loading.
+Off-street loading must be provided, in accordance with the commercial district loading requirements of § 14-806 (Off-Street Loading), for the cumulative gross floor area of the buildings within the SP-INS district area established after March 1, 1978.
+(7)   Accessory Signs. 144
+	(a)   Accessory signs in the SP-INS district shall comply with this § 14-404(7) and applicable provisions of Chapter 14-900 (Signs).
+	(b)   Signs accessory to office, retail sales, or commercial services uses in the SP-INS district shall comply with the CMX-2 sign controls set forth in § 14-904(2) (Controls Applicable to Specific Zoning Districts 145 ).
+	(c)   Signs accessory to uses other than office, retail sales, and commercial services shall be permitted in accordance with the following limitations and conditions:
+		(.1)   Only wall, marquee, and freestanding signs are permitted. Signs shall not extend over a public right-of-way.
+		(.2)   Sign area of any sign shall not exceed 64 sq. ft.
+		(.3)   Non-commercial directional signs for pedestrians or automobiles shall be exempt from subsections (.1) and (.2), above, provided each individual sign does not exceed a maximum sign area of 25 sq. ft. and does not 			exceed a maximum height of six ft. Logos are permitted on directional signs, provided they do not exceed 10% of the total sign area. Static illumination shall be permitted. Animated illumination and digital displays 		shall be prohibited.
+(8)   Fences and Retaining Walls.
+Fences are permitted in this district in accordance with the following limitations and conditions:
+	(a)   If an SP-INS zoned lot is not adjacent to a lot in a Residential district, fences may not exceed six ft. in height, except that fences surrounding athletic fields may be up to 15 ft. in height.
+	(b)   If an SP-INS-zoned lot is adjacent to a lot in a Residential district, fences may not exceed a height equal to 125% of the maximum fence height permitted by the most restrictive adjacent Residential district.
+	(c)   Any portion of a retaining wall that exists above the higher level grade shall comply with the requirements for fences. Where a fence is located on top of a retaining wall, the combined height of the retaining wall that 		exists above the higher level grade and fence shall not exceed the maximum height permitted for a fence. This paragraph shall not apply to any retaining wall required to meet alternative standards by any provision of The 		Philadelphia Code, any provision of state or federal law, or any regulations adopted to implement the code or those laws.
+(9)   Property Lines.
+Applications within the SP-INS district may propose development that crosses over lot lines between individual abutting lots and without regard to individual lot setbacks, provided that (a) all of the lots on which the development is to occur are in common ownership, and (b) the proposed development is consistent with the approved master plan for the district.
+(10)   Regulations Applicable to Germantown Avenue. 146
+The following additional regulations are applicable to SP-INS-zoned lots located adjacent to an RSD-1 zoning district and with street frontage on Germantown Avenue between Northwestern Avenue and Bells Mills Road. When the regulations of this § 14-404(10) (Regulations Applicable to Germantown Avenue) conflict with any other subsection of § 14-404 (SP-INS, Institutional (Special Purpose) District) or § 14-510 (Wissahickon Watershed Overlay District), the requirements of this § 14-404(10) (Regulations Applicable to Germantown Avenue) shall control.
+	(a)   The following uses shall be prohibited:
+		(.1)   Pool or billiards rooms;
+		(.2)   Bowling alleys;
+		(.3)   Fraternity and sorority houses;
+		(.4)   Hospitals;
+		(.5)   Post offices;
+		(.6)   Repair of household appliances and fixtures;
+		(.7)   Personal vehicle sales and rentals;
+		(.8)   Retail sales of department store merchandise, electric appliances and fixtures, floor coverings, furniture, household appliances, meat, packaged paints, seafood, or variety store merchandise;
+		(.9)   Animal services; and
+		(.10)   Basic utilities and services, limited to telephone exchange buildings.
+	(b)   The minimum area of the SP-INS district shall be 30 acres of contiguous land area.
+	(c)   Solely within the buildable area of the approved Master Plan and the internal road system, construction and earth moving activity on previously disturbed slopes in excess of 25% may be permitted when such construction is 		in accordance with applicable regulations of and plans approved by the Water Department, the Commission, the Pennsylvania Department of Environmental Protection, and any other agencies having jurisdiction.
+	(d)   Portions of the SP-INS district located on the north side of Germantown Avenue between Northwestern Avenue and Hillcrest Avenue shall comply with the following:
+		(.1)   The gross floor area of all buildings shall not exceed 48.5% of the total area of the SP-INS district nor 925,000 sq. ft., exclusive of streets.
+		(.2)   Solely within the buildable area of the approved Master Plan and the internal road system, new impervious ground cover may be constructed as part of the relocation and widening of existing internal roads when 		the internal road improvements result in a net decrease in impervious surface within the floodplain and floodway and when such construction is in accordance with applicable regulations of and plans approved by the 			Water Department, the Commission, the Pennsylvania Department of Environmental Protection, and any other agencies having jurisdiction.
+	(e)   Portions of the SP-INS district located on the south side of Germantown Avenue between Northwestern Avenue and Bells Mills Road shall comply with the following:
+		(.1)   The gross floor area of all buildings shall not exceed 38% of the total area of the SP-INS district nor 500,000 sq. ft., exclusive of streets.
+		(.2)   Solely within the buildable area of the approved Master Plan and the internal road system, ground coverage may not exceed 20% in Category 1 areas of the /WWO Wissahickon Watershed overlay district when 			accompanied by mitigation measures such as green roofs, stormwater cisterns and bioswales, or other engineering countermeasures which reduce the volume and rate of stormwater runoff to the Wissahickon Creek in 			accordance with applicable regulations of and plans approved by the Water Department, the Commission, the Pennsylvania Department of Environmental Protection, and any other agencies having jurisdiction.
+	(f)   The exceptions authorized by the provisions of § 14-404(10)(c), § 14-404(10)(d)(.2), and § 14-404(10)(e)(.2), above shall be applicable only to those improvements authorized through the enactment of SP-INS district 		rezoning legislation and the accompanying approved Master Plan for the Chestnut Hill College campuses and which are consistent with the allowances provided in § 14-404(10)(d)(.1) and § 14-404(10)(e)(.1), above.
+	(g)   Notwithstanding the provisions of § 14-404(10)(c), § 14-404(10)(d)(.2), and § 14-404(10)(e)(.2), above, all rights of appeal under § 14-303(15)(a) (Appeals to Zoning Board of Adjustment) from any decision of L&I, 		including, without limitation the issuance of any zoning permit under § 14-303(6) (Zoning Permits), shall be preserved.
+********************************************************************
+
+hh)SP-PO-A: Special Purpose--Active Parks & Open Space**************
+(1)   Purpose.
+The SP-PO Parks and Open Space (Special Purpose) district is intended to help preserve and protect lands set aside for park and open space use. Such areas and facilities provide many benefits to City residents and visitors. They provide cultural and recreation opportunities; preserve natural and scenic areas; protect sensitive natural resource areas; and offer refuge from the built, urban environment. The SP-PO district is intended to be applied to public parks and open space lands under the jurisdiction of City, state or federal government agencies. The district may be applied to privately owned lands only with the private property owner’s consent.
+(2)   Designations.
+Lots in the SP-PO district will be designated on the zoning maps as SP-PO-A (Active Parks and Open Space) or SP-PO-P (Passive Parks and Open Space).
+(3)   Use Regulations.
+	(a)   Principal uses are allowed in SP-PO districts in accordance with Table 14-602-4. Notwithstanding Table 14-602-4, subject to Pennsylvania law, any use expressly authorized by City Council ordinance is permitted as of 		right.
+	(b)   The following accessory uses are permitted in the SP-PO districts:
+		(.1)   Accessory parking;
+		(.2)   Day care in recreational buildings; and
+		(.3)   Underground basic utilities and services.
+	(c)   Multiple principal uses and principal structures are allowed on a single lot in the SP-PO district.
+(4)   Area and Height Regulations. 150
+The size, location, and design of all buildings, structures, activity areas, and other improvements must comply with the dimensional regulations of the most restrictive adjacent zoning district that is not separated by a waterway, except fences surrounding athletic fields may be up to 15 ft. in height.
+(5)   Lighting.
+All lighting must prevent glare onto surrounding Residentially-zoned properties.
+********************************************************************
+
+ii)SP-PO-P: Special Purpose--Passive Parks & Open Space*************
+(1)   Purpose.
+The SP-PO Parks and Open Space (Special Purpose) district is intended to help preserve and protect lands set aside for park and open space use. Such areas and facilities provide many benefits to City residents and visitors. They provide cultural and recreation opportunities; preserve natural and scenic areas; protect sensitive natural resource areas; and offer refuge from the built, urban environment. The SP-PO district is intended to be applied to public parks and open space lands under the jurisdiction of City, state or federal government agencies. The district may be applied to privately owned lands only with the private property owner’s consent.
+(2)   Designations.
+Lots in the SP-PO district will be designated on the zoning maps as SP-PO-A (Active Parks and Open Space) or SP-PO-P (Passive Parks and Open Space).
+(3)   Use Regulations.
+	(a)   Principal uses are allowed in SP-PO districts in accordance with Table 14-602-4. Notwithstanding Table 14-602-4, subject to Pennsylvania law, any use expressly authorized by City Council ordinance is permitted as of 		right.
+	(b)   The following accessory uses are permitted in the SP-PO districts:
+		(.1)   Accessory parking;
+		(.2)   Day care in recreational buildings; and
+		(.3)   Underground basic utilities and services.
+	(c)   Multiple principal uses and principal structures are allowed on a single lot in the SP-PO district.
+(4)   Area and Height Regulations. 150
+The size, location, and design of all buildings, structures, activity areas, and other improvements must comply with the dimensional regulations of the most restrictive adjacent zoning district that is not separated by a waterway, except fences surrounding athletic fields may be up to 15 ft. in height.
+(5)   Lighting.
+All lighting must prevent glare onto surrounding Residentially-zoned properties.
+********************************************************************
+
+jj)SP-STA: Special Purpose--Stadium*********************************
+(1)   Purpose.
+The purpose of the SP-STA, Sports Stadium (Special Purpose) district is to accommodate large scale specialized sporting facilities, associated large capacity automobile parking areas, and related uses and facilities, while promoting high quality design of those facilities and mitigating any related adverse impacts on surrounding areas of the City.
+(2)   Use Regulations.
+	(a)   Principal uses are allowed in SP-STA districts in accordance with Table 14-602-4.
+	(b)   The following accessory uses are permitted in SP-STA districts, except that regulated uses, as set forth in § 14-603(13) (Regulated Uses), shall be prohibited:
+		(.1)   Grandstands, clubhouses, fieldhouses, stables;
+		(.2)   Accessory parking;
+		(.3)   Training areas;
+		(.4)   Day care;
+		(.5)   Offices;
+		(.6)   Retail sales of consumer goods; sundries, pharmaceuticals, and convenience sales; and wearing apparel and accessories;
+		(.7)   Sit-down restaurants and prepared food shops;
+		(.8)   Financial services;
+		(.9)   Personal services; and
+		(.10)   Visitor accommodations.
+	(c)   Multiple principal uses and principal structures are allowed on a single lot in the SP-STA district.
+(3)   Area Regulations.
+All buildings, structures, and parking facilities within the district must comply with the following setback requirements:
+	(a)   No building may be erected within 300 ft. of any residential district;
+	(b)   No building may be erected within 200 ft. of any lot line fronting on a street that is opposite to a residential district, provided that this will apply only to the opposite sides of the same block;
+	(c)   Security buildings or ticket booths of no more than 14 ft. in height and 150 ft. in area may be erected with a minimum setback of 25 ft. from the lot line; and
+	(d)   Surface parking areas must be at least 150 ft. from any residential district.
+(4)   Height Regulations.
+No building on the lot, except as provided below, may exceed 38 ft. in height. This height restriction shall not apply to the following:
+	(a)   Grandstands, stadia, commercial recreation buildings, judges stands;
+	(b)   Chimneys, stacks, tanks, tank towers, flagpoles, aerials, beacons, lighting poles, camera towers;
+	(c)   Parking garages or facilities; or
+	(d)   Hotels, motels, or office buildings, which may be up to a maximum of 150 ft. in height.
+(5)   Off-Street Parking.
+Off-street parking spaces must be provided in accordance with the following schedule and requirements within the SP-STA district, on any lot abutting the district, or on a lot on the opposite side of any street bounding the district:
+	(a)   Stadia or buildings used for commercial recreation and exhibition facilities where patrons or guests are customarily seated as spectators: one space for every 10 seats;
+	(b)   Commercial recreation and exhibition facilities where patrons or guests are not customarily seated as spectators or participants: one space for every 200 sq. ft. of floor space or ground area used for commercial 		recreation, exhibition, and related accessory and support facilities, but not including parking facilities;
+	(c)   Office, retail sales, or commercial services uses: one space for every 1,000 sq. ft. of net leasable area; and
+	(d)   Housing accommodations exclusively for employees and hotels or motels: one space for every two living units.
+(6)   Off-Street Parking, Layout, and Access Conditions.
+The district or any lot in the district must be adequately served by high capacity roads or driveways approved by the Streets Department as being adequate to safely serve the ingress and egress of patrons and guests using the facility, further provided:
+	(a)   All entrances to parking areas or facilities must be provided with adequate vehicle reservoir spaces, as approved by the Streets Department;
+	(b)   All proposed plans for off-street parking lots must be approved by the Streets Department; and
+	(c)   The Streets Department will have 45 days to approve or disapprove all plans and take all actions required by this section. This time will begin at the time complete plans are submitted to the Streets Department. After 45 		days the approval of the Streets Department will be presumed.
+(7)   Lighting.
+	All stadium and grandstand lighting must be oriented to prevent glare on surrounding residential areas.
+(8)   Landscape Buffer.
+Where the district or a lot within the district abuts a residential district, a landscaped buffer must be provided along the entire length of the common lot line, the plan for which must be approved by the Commission.
+(9)   Accessory Signs. 149
+	(a)   Accessory signs in the SP-STA district shall comply with this § 14-406(9) and applicable provisions of Chapter 14-900 (Signs).
+	(b)   Accessory and public service signs are permitted as set forth in Table 14-406-1 [OMITTED]. For the purposes of this § 14-406(9) (Accessory Signs), "public service sign" shall mean a sign that exclusively gives public 		service information such as time, date, temperature, weather, or similar information.
+*******************************************************************************************************************************************************
+*******************************************************************************************************************************************************
+II) Sale Type Descriptions
+
+1: No Commonwealth of PA/City of Philadelphia Transfer Tax Indication.
+2: Forced, Sheriff, Bankruptcy or Court-ordered Sales, Condemnation, Deed in lieu of Condemnation.
+3: Deed of subdivision or consolidation or containing multiple properties or assemblage.
+4: Sales between related parties, i.e. Grantor/Grantee, Owner/Tenant.
+5: Ratio of assessment to market value or sale price is under 1%.
+6: Deeds with properties that overlap the county line or include other jurisdictions.
+7: Flood Properties.
+8: Resale of property on same day or within a short period of time.
+9: Part ownership in a property conveyed. Less than 100% of fee simple title was transferred.
+A: Ratio of assessment to market value or sale price is over 100%
+B: Unfinished improvements. Improvements underway, repairs without permits.
+C: Property purchased or sold by exempt owner.
+D: Nominal sale price (less than $500).
+E: Non-typical conditions of sale or terms of financing.
+F: Partial assessment, assessment for lot, building not yet assessed.
+H: Deeds of Correction, Quit Claim, Reversion, Adverse Possession or Duplication.
+I: Assessments by law can only be on real estate. Sales possibly including furniture, fixtures, equipment, tax benefits inventories, goodwill, business entities, products, entitlements or other personal property; should be reviewed.
+J: Others, for some reason does not meet the criteria in the definition of market value. Similar to STEB code 20.
+K: No Assessment. Similar to STEB code 2.
+L: Sale deferred for closer review by Evaluation staff.
+M: Closer review of sale completed. Sale determined to be good, bona fide and at arms length. This then becomes similar to blank.
+V: Market Review Complete – Supportable by market values and sale prices in area. This then becomes similar to blank.
+X: Unverified automatic records department update (also identified as $3.00 in the consideration field).
+
+Unknown types(Frequency)
+0(2), N(1), O(7), S(1), Q(1), Y(1), Z(52553), Â¨(1), b(187), c(2), j(21), x(37), z(1)
+b,c,j,x,z should all be typos for B,C,J,X,Z, resp.
+*******************************************************************************************************************************************************
+*******************************************************************************************************************************************************
+III) City Council Districts & Representatives
+
+MAP: http://cbsphilly.files.wordpress.com/2011/09/billno110547dicicco.jpg
+
+ 1: Mark Squilla              | C  Philly (Old City, Fish Town, Northern Liberties, etc.)
+ 2: Kenyatta Johnson          | S  Philly (Grey's Ferry, Point Breeze & South)
+ 3: Jannie L. Blackwell       | W  Philly (U City & West)
+ 4: Curtis Jones Jr.          | NW Philly (Fairmount Park, Manayunk, etc.)
+ 5: Darrell L. Clarke         | N  Philly (Temple & West)
+ 6: Bobby Henon               | EE Philly (Bridesburg, Frankford, etc.)
+ 7: Maria D. Quiñones-Sánchez | NE Philly (Juniata Park, etc.)
+ 8: Cindy Bass                | NW Philly (Germantown, etc.)
+ 9: Marian B. Tasco           | NN Philly (Olney, Oxford Circle/Castor, etc.)
+10: Brian J. O'Neill          | NE Philly (Somerton, Bustleton, etc.)
+*******************************************************************************************************************************************************
+*******************************************************************************************************************************************************
+IV) Lien status encoding
+
+LBR:  collections being pursued by Linebarger Collection Agency. Please call (215)790-1117
+GRB:  collections being pursued by GRB Collection Agency. Please call (866)677-5970
+AGRE: active payment agreement plan in effect for delinquent taxes
+INST: active installment payment plan in effect for current taxes
+PIO:  collections being pursued by Pioneer Collection Agency. Please call (866)439-1318
+BRTA: under appeal with the Board of Revision of Taxes.
+RETU: ??? Perhaps lien payed off / resolved
+*******************************************************************************************************************************************************
+*******************************************************************************************************************************************************
+V) GMA Descriptions
+
+MAP: http://www.phila.gov/OPA/Documents/OPA_Zone_Maps.pdf
+Zone 	General Area
+A      	University City
+B      	SW Philly
+C      	NE Philly
+D 		NE Philly
+E   	NE Philly
+F 		Fish Town/Northern Liberties/Kensington
+G 		N Philly (Temple)
+H 		Strawberry Mansion		
+J 		S Philly East
+K 		S Philly West
+L 		NN Philly
+M 		NW Philly
+N 		NW Philly
+P 		Center City
+*******************************************************************************************************************************************************
+*******************************************************************************************************************************************************
+VI) Exterior Condition Codes
+
+Code 	Description
+0 		N/A
+2 		New/Rehab
+3 		Above Average
+4 		Average
+5 		Below Average
+6 		Vacant
+7 		Sealed
+*******************************************************************************************************************************************************
+*******************************************************************************************************************************************************
+VII) Abatement exemption codes
+
+A variety of reasons exist why properties may be exempt, generally because the property is owned by some government entity. 
+
+1 - Ordinance 961 Uncapped (Rehab Construction for Residential Properties — A ten-year abatement from Real Estate Taxes on improvements to existing residential properties. (Sale/owner-occupant only.); see http://www.phila.gov/OPA/PDF/961%20Abatement%20Form.pdf)
+8 - Ordinance 1130 as Amended (Rehab & New Construction for Commercial & Industrial Properties — A ten-year abatement from Real Estate Taxes on improvements due to rehabilitation or new construction of commercial, industrial, and any other business properties, including rental residential properties. (For property owners/developers.); see http://www.phila.gov/OPA/PDF/1130%20Abatement%20Form.pdf)
+9 - Housing and Urban Development
+A - Federal Government
+B - Commonwealth of Pennsylvania
+C - City of Philadelphia
+D - School District of Philadelphia
+E - Philadelphia Housing Authority
+F - Redevelopment Authority
+H - P.A.I.D.
+J - Cultural Institution
+K - Total Disabled Vets (see http://www.phila.gov/OPA/AbatementsExemptions/Pages/DisabledVeterans.aspx)
+L - Veterans Post
+M - Ordinance 961 as Amended
+N - Ordinance 1456A/983 Amend (New Construction for Residential Properties (Ordinance 1456-A) — A ten-year abatement from Real Estate Taxes for new construction of residential properties that will be sold upon completion. (Sale/owner-occupant only.); see http://www.phila.gov/OPA/PDF/1456-A%20Abatement%20Form.pdf)
+O - Philadelphia Housing Development
+P - Misc. Authorities
+Q - Misc. Exempt Prop.
+R - Railroads except SEPTA
+S - SEPTA
+T - Telecommunications
+U - PECO
+V - Institutes of Learning
+W - Religious Institutes
+X - Cemeteries
+Y - Medical/Health Facilities
+*******************************************************************************************************************************************************
+*******************************************************************************************************************************************************
+VIII) Assorted adjustments to raw .csv files
+-completed task
+^incomplete task
+
+a) OPA RECORDS.csv
+b) REVENUE RECORDS.csv
+c) VALUATION RECORDS.csv
+d) dor_data_may_2014.csv
+e) prop2014.txt
+f) dor_data_june_2014.csv
+g) dor_data_aug_2014.txt
+h) opa_cycles.csv
+i) RT201410_AccessTable5RealEstate1stGroupByAccount.txt
+j) RT.PY.D141204.T6060.P700101.P151231.V141001.txt
+k)payment_data_dec.txt
+l) dor_data_nov.txt
+m) dor_data_feb.txt
+n) round_two_property_file.csv / 2015 Delinquent 05152015.xlsx
+
+
+a) OPA RECORDS.csv
+-Removed quotation marks (",") to facilitate reading .csv by R
+-Replaced hash marks (#) everywhere with NO. to facilitate reading .csv by R
+-Eliminated errant commas (,) everywhere to assure each line has exactly 28 commas (29 fields)
+^Merge repetitive categories in DESCRIPTION
+-Used Philadelphia website's zoning map to assign proper zoning category to property's for which this is missing
+-Updated the ZONING_DESCRIPTION field for a few cases which were incorrect
+^Corrected obvious typos in MAILING_CITY, especially for the most common places of residence (Philadelphia and Huntingdon Valley, other suburbs)
+-Unify names in MAILING_STATE to be the 2-letter postal categories for US states, and the full country name for foreign addresses
+^Corrected obvious typos in MAILING_ZIP by cross-referencing street address with Google Maps.
+-Added zip codes to properties for which it was missing and the mailing address is available
+-Changed property w BRT ID 882918130--Lat/Lon indicate the address should be 515-17 SPRING GARDEN ST instead of 515-17 SPRING GARDEN ML (also, no overlap with any other address at 515-17 SPRING GARDEN)
+-Updated Lon/Lat manually for 3 properties found on a map at Philadelinquency (here: http://www.philadelinquency.com/map/address.html): 1426 CRESCENT PLACE (442168300), 1422-24 CRESCENT PLACE (442168200), and 1420 CRESCENT PLACE(442168100) (I suspected their vicinity after some sleuthing, and this map confirmed my suspicions)
+-Geocoded properties listed on LOMBARD MEW via 812 LOMBARD ST in accordance with a brief conversation with the secretary of Andy Oei, a real estate agent in charge of selling one of the properties
+^COUNCIL
+^LAST_SOLD
+-Used GMA map from OPA to restore proper capitalization to GMA codes
+^Used SmartyStreets geocoding service to reconcile what seem like incorrect GPS coordinates in the file.
+	API Secret Key Pairs
+	MichaelChirico2014
+	Auth ID	 	||	531f6429-44f0-48a2-8e8a-f800044663d7
+	Auth Token	||	qPm9bO0yKQrQ%2FbWsm4ICNR9%2BDjC4nrCdPZCrnWr2kcoweBokdvugLIDhU6oeJfUi0Fh3FYtksxT4QH8%2BR6k48Q%3D%3D
+
+b) REVENUE RECORDS.csv
+^Synthesized owner name where obvious (CITY OF PHILA -> CITY OF PHILADELPHIA; PHILA HOUSING AUTH->PHILADELPHIA HOUSING AUTHORITY; more similar)
+-deleted record with BRT ID 313001000 as an apparent typo--the same address and owner are listed as well under 313001019,
+ and the latter matches the other data records (the owner also fairs to appear elsewhere)
+-replaced YEAR="MISC" with YEAR=0000 --the former was causing issues by causing year to be cast as character/string.
+-removed duplicate of line: 8142284,786020100,01503 - 11 ARCH ST,COMMONWEALTH OF PENNSYLVANIA,2005,0,0,0,0,0,,
+
+c) VALUATION RECORDS.csv
+-corrected EXEMPT_CODE of BRT_ID 571158714 to get rid of trailing backslash: N\ -> N 
+
+d) dor_data_may_2014.csv
+-corrected zip code on 771513101 (missing prefix 1)
+-replace ,NULL, with ,, (in multiple stages)
+-replace 
+NULL,
+ with 
+,
+-add mailing states for the following: 441151600 (PA), 652227100 (MEXICO), 884344145 (PA), 888110530 (RUSSIA; also confirmed zip listed in address as 105062 according to GoogleMaps lookup), 514108400 (NJ; also changed zip according to the rest of address), 057038000 (PA), 057037900 (PA)
+-change abatement exemption code for the following (clear typo Y20->Y): 471009400,471009600,471010300,471009500,471009800,471009900,471009700,471010200
+-remove the following lines (no BRT ID, so useless, despite almost 70,000 apparently owed):
+	0.00 0 2013 Y O,,30411.52,26001.85,2128.81,10561.19,69103.37,1,20041231,20041231,,,,,,,,,,,,,,,,,,,N,,
+	SCHMIDT ROBERT J,,2475.5,1448.17,173.29,761.05,4858.01,1,20071231,20071231,,,,,,,,,,,,,,,,,,,N,,
+	,,1599.65,1079.77,111.98,526.05,3317.45,1,20061231,20061231,,,,,,,,,,,,,,,,,,,N,,
+-changed mailing city to PHILADELPHIA for the following obvious typos/abbreviations: PHIADELPHIA
+-changed interest owed on 222016900 to 0 from 1.73472347597681E-18
+-corrected council district on 4 properties so they match in May and June datasets (confirmed via Council map): 886650703 (3->5), 884038649 (8->7), 871085900,871085950 (4->5)
+
+e) prop2014.txt
+-records 061198000,592062600: remove extra quotes("") in ,"B""H INVESTMENTS LLC",
+-record 778777001: remove extra quotes in ,"NEW FRANKFORD COMMUNITY """,
+-record 883361600: remove extra quotes in ,"J PAUL INCORPORATED ""CLOS",
+-records 281344600,281357600: remove extra quotes in ,"""Q S"" MILES ASSOCIATES IN",
+-record 882690700: remove extra quotes in ,"TOYS ""R"" US PROPERTY COMP",
+-records 092144100,882072725,882126101,882735640,882840405,884079050,785673300: replace comma in REG NO with space. Too many digits anyway--maybe an extension?
+-removed extra commas: 032047600,021308700,033093500,034053900,034098200,034112800,042023900,043294900,053009000,061323800,101302700,101394700,102081500,102166300,112162500,112163000,121174700,131154200,141055505,141060300,041149800,061268400,151057300,151355010,152045100,161109100,033067100,171235000,183080300,192327700,251483100,291116300,301404200,323100810,363227900,395330000,403255500,406204100,432372000,471208400,511158100,521037600,551346200,621196900,651120200,661054600,774470000,774588000,778108000,282142600,292126900,381056400,393436300,441197900,561005400,882400010,322170900
+-replaced: , LLC 92 times; , INC 18 times; , LL 8 times; , 55 times (excludes previous cases)
+-replaced: ,"," with "," (this patter means that there is a trailing comma after a name) 60 times--there were more in the file, all listed among those above with extra commas
+-records 031024600,262261000: reorder names formatted "last, first"
+-record 243113800: change REG NO to 057N080184 from 57N080184\ (causing read problems, and the change fits the format of REG NO on nearby properties)
+-record 361082300: remove \ in ZAUSNER-\MANNES ANNELIESE
+-record 522028400: replace \ in B)T\Y J with space
+-record 531166100: replace \ in H\W with space
+-records 571158714,583114640: remove \ in N\ (Exempt code?)
+-record 888093286: remove \ in 8\ (exempt code?)
+-record 055029835: change geographic ward to 05 from 02 (cross-referenced with ward shapefile to be sure 02 is incorrect)
+-record 213082925: change geographic ward to 21 from 59 (idem)
+-record 592142905: change geographic ward to 59 from 22 (idem)
+-record 771513101: changed zip code to 19123 from 09123 (cross-referenced with zip code shapefile)
+-records 141096300,141096400,141096500: changed zip code to 19123 from 19113 (idem)
+-records 631127405,631127410: changed zip code to 19111 from 19113
+-record 777603000: changed zip to 19134 from 19113 (after extensive cross-referencing)
+-record 786065000: changed zip to 19134 from 19137 (idem)
+-record 313239820: changed zip to 19125 from 9125 (checked on map)
+-records 021193802,021193804: changed zip to 19147 from 9147 (idem)
+-added zips from blank slates for: 181359830,212473610,471091000,471091100,471169200,884549570
+-records 884343860, 172326500,033062000,776269200,091053100,182292902,211167000,241201210,252111500,342239500,432055700,453229240,871229300,871238150,888083405: changed sale type to blank from unrecognize types (not in data dictionary)
+-records 051064200,212338428,471179500,881146630,881146635,881146640,888022014,888036022,888088038: remove leading/trailing zeros & nonsense characters on exempt codes
+-record 472062010: changed exempt code to F from F01--nearby properties are also exempt as F
+-record 773563000: changed exempt code to V from V01--idem
+-record 777007050: changed exempt code to Y from Y29--property ownership suggests it is indeed a medical/health facility
+-replaced zoning code SPAI as SP-AIR (more clear); similarly SPEN -> SP-ENT,SPST -> SP-STA
+-record 881817760: changed zoning code to RM1 from SR (which doesn't exist) based on Phila Licenses & Inspections website map
+-records 212414410,212414420,212414430,212414440: changed zoning code to RSA3 from RE5 (as above)
+-record 888070750: changed zoning code to RMX3 from RC4 (idem)
+-changed zoning code R9A to RSA5 (as above) for 21 properties
+-record 403075700: changed zoning code to RM1 from R9 (as above)
+-record 301382010: changed zoning code to RSA5 from R70A (idem)
+-records 212074105,212074110,778271100,881439770: changed zoning code to RSA3 from R5 (idem)
+-records 562443441,562443446,562443451,562443456: changed zoning code to RSA2 from R4 (idem)
+-record 888082686: changed zoning code to RM4 from R16 (idem)
+-records 181248915,181249015,181254300,211134710: changed zoning code to RSA5 from R10A
+-records 471169710,881111434: changed zoning code to CMX2 from R10
+-records 888140770,888140772: changed zoning code to RSA5 from R10
+-changed zoning code R10 to RM1 for 26 properties (as above)
+-record 092136165: changed zoning code to RSD1 from R1
+-records 212154810,212154820: changed zoning code to RSA3 from R
+-records 211532510,211532520,211532530,211532540: changed zoning code to ICMX from L4
+-records 882926394,884265003,884265005,888035804: changed zoning code to I2 from G2
+-records 888054738,888054740: changed zoning code to CMX4 from DW
+-records 882628999,882931243: remove hyphen from zoning code for uniformity
+-records 882076510,882076520,882076530: changed zoning code to CA1 from C7
+-changed zoning code C5 to CMX5 for 12 properties
+-changed zoning code C4 to RM2 for 10 properties
+-records 883036800,883036900,883400600,888037866,888112952: changed zoning code to CMX4 from C4
+-records 881097326,888061694: changed zoning to CMX3 from C3
+-records 301027750,888290606,888290608: changed zoning to RM1 from C2
+-records 311067110,882735640,888180920,888180922: changed zoning to CMX2 from C2
+-record 883552815: changed zoning to CMX1 from C1
+-records 882572700,882572705,882572780,882572785: changed zoning to CA2 from ASC
+-record 211341172: changed address: Holly Rd -> Manayunk Ave (surrounded by properties on Manayunk Ave, including 4062-4070 and 4074-4084 Manayunk, south side), and changed street code to match
+-record 777659005: changed shape to A (irregular) from Y based on glance at phila.gov/map#
+-record 785180000: changed shape to E (rectangular) from Y (idem)
+-records 212338402,212338406,212338422,212338424: changed view to I from F (nonexistent) based on other properties at same address
+-records 191252701,314130900: cleared heater from F (nonexistent) to blank
+-records 021178030,021178035: cleared amenities from 0 (nonexistent) to blank
+-record 773689500: cleared separate utilities from N (nonexistent) to blank)
+-record 882748051: changed census tract to 137 from 378 (cross-referenced with tract map)
+-record 213266866: changed census tract to 212 from 400 (idem)
+-manually added geographic ward info for the following records after cross-referencing with ward map: 882034100-360(35);881104476,88110477(23);884292903(66);882938690(12);882748934(59);882926394(19);882920184(37);884346512(31);884588221,881078745,888680013(18);881006225,886806500,882607001(05);882896507,881041766(08);881040630,881705610,881817220(24);882048601(27);871067910(06)
+
+f) dor_data_june_2014
+-data received in not comma-separated but v-bar (|)-separated list.
+-first, find and eliminate all commas in the |-separated file (as these are the troublesome commas we always find in .csv s); 77 total commas
+-next, replace | with , (who wants a |-separated list anyway)
+-replace ,NULL, with ,, so numberical variables with missing entries can be read as numbers and not strings (2342 matches)
+-repeat (doing so created 1400 new matches)
+-removed tail of file:
+	
+	
+	(93999 row(s) affected)
+
+-corrected zip code on 771513101 (missing prefix 1)
+-changed zip code from missing as "     " to just "" on 16 properties
+-add mailing states for the following: 441151600 (PA), 652227100 (MEXICO), 884344145 (PA), 888110530 (RUSSIA; also confirmed zip listed in address as 105062 according to GoogleMaps lookup), 514108400 (NJ), 057038000 (PA), 057037900 (PA)
+-remove the following lines (no BRT ID, so useless, despite almost 70,000 apparently owed):
+	0.00 0 2014 Y O,         ,,,30411.52,26229.94,2128.81,10602.25,69372.52,1,20041231,20041231,40000,40000,0,0,     ,3305.6,STORE 2 STY MASONRY,retail,commercial,,,,,,,,,,,N
+	SCHMIDT ROBERT J,         ,,,2475.5,1466.74,173.29,764.4,4879.93,1,20071231,20071231,40000,40000,0,0,     ,3305.6,STORE 2 STY MASONRY,retail,commercial,,,,,,,,,,,N
+	,         ,,,1599.65,1091.76,111.98,528.21,3331.6,1,20061231,20061231,40000,40000,0,0,     ,3305.6,STORE 2 STY MASONRY,retail,commercial,,,,,,,,,,,N
+-change abatement exemption code for the following (clear typo Y20->Y): 471009400,471009600,471010300,471009500,471009800,471009900,471009700,471010200
+-eliminated all occurrences of 6 spaces: "      " to help clear up the mess of blank space, then all occurrences of 5 spaces: "     " (still 172411 such), then 4 spaces (98870 such), then 3 spaces (46424 such)
+-replace all occurrences of ,  , with ,, (58386 such), then "  ," with "," (198582 such), then "  " with " " (3065 such)
+-replace all occurrences of " ," with "," (24597 such)
+^replace obvious typos of Philadelphia in the mailing city list
+-changed interest owed on 222016900 to 0 from 1.73472347597681E-18
+^check building description: VAC LAND RESID. ACRE is same as VAC LAND < ACRE? or is this VAC LAND RESID ACRE+??
+
+g) dor_data_aug_2014.txt
+
+-Our 3 no-BRT ID culprits have remained. This time the file is not sorted by BRT ID, so they must be rooted out according to the field ACCOUNT-ID. The three IDs are 1000600003, 1000655543, and 1000647372
+
+h) opa_cycles.csv
+
+-OPA # 532161500: Mailing State listed as "--" for an address in Puerto Rico; changed to PR and removed PR from the zip code
+-OPA # 272050000: Mailing State listed as "13.0" for an address in London, UK; changed to UK and rearranged the characters in the zip code to mirror that suggested by a Google search of the property.
+-OPA # 332563200: Address typo: "SPRUNGFIELD, IK" -> SPRINGFIELD, IL (based on zip code & street address match on Google)
+-OPA # 471038400: Address typo: "PENNSAUKEN, N" -> NJ
+-OPA #s 021397200, 132079700, 162312100, 342290500: Address typo: "KING,OF,PRUSSIA PA"->"KING OF PRUSSIA,PA,19406"
+-OPA #s 271185900, 271160800: Mailing State listed as "W1" for an address in London, UK; changed to UK and...
+-tried to match some common owner names with many misspellings--USA-like -> UNITED STATES OF AMERICA; DEPT OF INTERIOR-like -> DEPARTMENT OF THE INTERIOR
+
+i) RT201410_AccessTable5RealEstate1stGroupByAccount.txt
+
+-deal with all instances of commas as appropriate (144 such)
+-replace all instances of NULL| with | (causing troubles forcing numerics back to characters when read; 325046 such instances)
+-duplicated row: OPA # 243178100
+
+j) RT.PY.D141204.T6060.P700101.P151231.V141001.txt
+
+-deal with all instances of commas as appropriate (127 such)
+
+k) payment_data_dec.txt
+
+-remove trailing information
+
+l) dor_data_nov.txt
+
+-remove trailing information
+-remove all instances of NULL 329233 first iteration (|NULL|->||); 269699 second iteration (|NULL|->||); 4297 third iteration (NULL\n -> \n)
+
+m) dor_data_feb.txt
+
+-remove trailing information
+-remove all instances of NULL 675704 first iteration (|NULL|->||); 468975 second iteration (|NULL|->||)
+
+n) round_two_property_file.csv / 2015 Delinquent 05152015.xlsx
+
+-change Azavea from NULL to the following (via Google Maps / PhilaDelinquency cross-references)
+  -404019700->Penrose
+  -141184200,141184300->West Poplar
+  -774605505->West Parkside
+-change "" to ' wherever it appears (ugly formatting)

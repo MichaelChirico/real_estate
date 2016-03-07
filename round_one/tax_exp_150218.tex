@@ -1,0 +1,1166 @@
+\documentclass[12pt,titlepage]{article}
+
+\renewcommand\baselinestretch{1.0}
+\setlength{\parskip}{0.08in}
+\setlength{\medskipamount}{0.05in}
+\textheight 8.0 in
+\textwidth 6.0 in
+\topmargin 0.25in
+\tolerance=11000
+
+\usepackage[utf8]{inputenc}
+\usepackage{bbm}
+\usepackage[pdfencoding=auto,unicode=true]{hyperref}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+
+
+\begin{document}
+
+\title{An Experimental Evaluation of Strategies to Increase
+Property Tax Revenue Collection}
+\author{Michael Chirico%
+\thanks{The research presented here was supported in part by the Institute
+of Education Sciences, U.S. Department of Education, through Grant
+\#R305B090015 to the University of Pennsylvania. The opinions expressed
+are those of the presenter and do not represent the views of the Institute
+or the U.S. Department of Education.%
+}, Robert Inman, Charles Loeffler, \\
+John MacDonald, and Holger Sieg \\
+ \\
+University of Pennsylvania}
+\date{\today}  
+\maketitle
+
+
+
+\renewcommand{\thefootnote}{\arabic{footnote}}
+
+\section{Introduction}
+\label{sec:intro}
+
+The purpose of this experimental study is to evaluate a set of
+strategies that are intended to increase property tax revenue
+collection in the City of Philadelphia. Philadelphia has one of the 
+highest delinquency rates in the United States (Cite Pew
+Charitable Trusts 2013); our data shows roughly 134,000 properties,
+or 23\%, late or delinquent as of November 2014.  The total tax
+bill due to the city from these properties is close to 
+\$600,000,000.
+
+We design a number of different treatments that are motivated by the theoretical literature
+on tax compliance, which distinguishes between extrinsic and intrinsic
+motivations for paying taxes. Extrinsic motivations are primarily
+based on the deterrence model which explains tax compliance as a
+combination of penalties and costly monitoring. Intrinsic motivations
+are captured in models that rely either on social norms or social
+contracts.  We develop and implement a sequence of experiments to test
+three of most commonly suggested hypotheses. The basic strategy behind
+our controlled randomized experiments is to vary the informational content of a
+sequence of letters sent to real estate tax-delinquent property owners.
+
+The first experiment is based on the the deterrence model of tax
+compliance which emphasizes extrinsic motivations of behavior. Key
+elements of the model are the probability of detection (the monitoring
+probability) and the size of the penalty or fine that is levied on those tax
+evaders who are caught. Given the uncertainty of law enforcement,
+behavior is based on subjective probabilities of detection and
+perceptions regarding the size of penalties.\footnote{The behavioral
+  literature suggests that there may be behavioral biases since agents
+  deal small detection probabilities} The key idea behind the first
+experiment is to change these subjective beliefs over penalties and
+detection probabilities in an experimental design. Note that our
+experiment does not explicitly involve tax amnesties. Neither do we change the
+fiscal incentives to pay taxes in our proposed experiment. We simply
+attempt to change subjective beliefs regarding detection and the
+consequences of tax delinquencies by merely threatening repercussions for nonpayment.
+
+Our second experiment is based on a more recent theory that emphasizes
+the intrinsic motivations of tax payers and focuses more broadly on tax
+morale. The social contract approach emphasizes the promise of the
+city to efficiently deliver public goods and services in exchange for
+more-or-less voluntary tax payments.  Loyalties and emotional ties
+play a large role in creating high tax moral. Parallels are drawn betwen
+the problem of raising taxes and the fund-raising problem faced by
+non-for-profit organizations.\footnote{For example, publicly funded radio
+  stations typically need to raise funds from their listeners.} The basic idea
+behind the second experiment is then to design an informational
+treatment that reinforces this social contract. The treatment takes
+the form of a moral appeal to the delinquent tax payer and emphasizes
+the \textit{quid pro quo} of tax compliance in the city--public goods
+and services (namely, education and safety provision) funded by compliant taxpayers.
+ 
+Our third experiment is based on the recent literature on social norms
+which emphasizes concepts of social fairness and reciprocity. This
+literature suggests that social exposure of delinquent tax payers may
+be an effective tool for penalizing tax evasion.  The idea behind our
+third experiment is then to appeal to delinquents' proclivities for peer conformity.
+
+We conduct these tax revenue collection experiments in collaboration
+with the Revenue Department of the City of Philadelphia, which is
+an eminently useful city in which to study property tax evasion.  As of April
+2012, the city and school district were owed \$292.3 million in
+delinquent taxes on 102,789 properties, a figure which balloons to 
+\$515.4 million when interest and penalties are included.
+
+The rest of the paper is organized as follows. Section \ref{sec:background} discusses the
+institutional background.  Section \ref{sec:treatments} provides a
+detailed discussion of our treatments. Section \ref{sec:design_fidelity} discusses the experimental design
+and the fidelity of its implementation. Section \ref{sec:methods} details the statistical approach
+to measuring treatment response. Section \ref{sec:results} provides our current empirical findings.
+Section \ref{sec:conclusions} offers some conclusions.
+
+
+\section{Institutional Background}
+\label{sec:background}
+
+Real Estate Taxes in Philadelphia are levied annually on a property-level basis. 
+The Office of Property Assessment evaluates the market value of each property, 
+1.34 \% of which must be paid to the Philadelphia Department of Revenue (DOR). The City
+then splits this take between the City's coffers and the School District of
+Philadelphia (with the former getting roughly 45\% of Real Estate Tax revenues).
+
+Tax bills are mailed by DOR in batches throughout December and early January each year; 
+the owners have until March 31\textsuperscript{st} to remit their balance to the City\footnote{Those 
+enterprising owners who file their taxes prior to March 1st are credited a 1 \% 
+discount.}, after which time their bill begins to accrue penalties and interest.
+
+The City begins actively pursuing non-paying properties in the September following nonpayment.
+First, the city delegates roughly $\frac{2}{3}$ of the debts to the authority of one of
+the two designated external law firms which have contracts with the City for this purpose,
+with each being assigned half of the externalized nonpayers\footnote{Currently, these 
+law firms are Linebarger, Goggan, Blair \& Sampson and Goehring, Rutter \& Boehm.}. These law firms
+are free to pursue the collection of the debt as they see fit, and are rewarded with a portion
+of any debts recovered for the City.
+
+For those debts that remain targeted by DOR itself, the City traditionally leverages one of
+several legal options as threat and punishment for nonpayment.
+Beginning on March 31\textsuperscript{st}, the city 
+regularly sends plain bills to properties still in hock--roughly once every 10
+weeks\footnote{See the section on implementation below for exact details.}. More substantive
+enforcement strategies begin upon expiry of the tax year on
+December 31\textsuperscript{st}--since these
+properties are then officially delinquent, the City has the
+right to put a lien on any property which has not yet paid Real Estate Taxes 9 months
+past the March 31\textsuperscript{st} deadline.
+Having a lien on a property entitles the city to several powerful
+recovery mechanisms. If they see fit, the City can send a property to Sheriff's Sale, which is
+basically a public auction of the property, whereby all ownership rights to the property are
+stripped from the former owner upon successful bid\footnote{A list of properties currently
+up for Sheriff's Sale by the City of Philadelphia can be found at 
+\href{http://www.officeofphiladelphiasheriff.com/en/real-estate/foreclosure-listings}
+{http://www.officeofphiladelphiasheriff.com/en/real-estate/foreclosure-listings}}. Next, 
+for commercial properties, the City may sequester income from the business, become the 
+property manager, or even shut down the business. City employees may see their taxes 
+deducted from their salaries, and applicants for City jobs are vetted for eligibility--
+new employees must either be fully repaid or have started a payment plan\footnote{The City 
+has also begun recently to explore several alternative enforcement options, such as levying
+liens on owners' home addresses outside Philadelphia (targeting delinquent nonresident landlords)
+and intermediate penalties such as impounding of delinquents' cars, etc.}.
+
+\section{Treatments}
+\label{sec:treatments}
+
+To explore softer avenues for revenue take augmentation, we determined that the
+most logistically feasible approach was to include a ``stuffer'' in the bills regularly
+mailed to nonpayers, the language of which was carefully chosen to target one of three
+enforcement strategies: deterrence (the ``Threat'' treatment), social normality
+(the ``Moral'' treatment), and conformity (the ``Peer'' treatment). To properly isolate
+the treatment effects of receiving a specific stuffer from the effects of receiving
+\textit{any} stuffer (given the status quo of plain bills), we also randomly sent
+properties a plain stuffer (the ``Control'' treatment).
+
+The letters were designed carefully to differ only in the wording of their second 
+paragraph; for clarity, the idiosyncratic wording is reiterated here. We also took care
+to minimize communication issues by vigorously simplifying the language of our
+chosen messages--shunning uncommon words and syntactic complexity by churning the
+stuffers text through the latest linguistic tools for complexity analysis to be sure
+our vocabulary was accessible to any nonpayers who may be of limited literacy.
+
+Further, in accordance with the City's general desire to reach out to its substantial
+immigrant populations, we agreed with the City to include Spanish translations of each
+treatment's text on the reverse of the stuffers, given that Puerto Ricans make up
+the plurality of Philadelphia's non-English-speaking population\footnote{See Appendix
+for the exact style and full wording of each treatment, including the Spanish 
+translations we ultimately chose with input from several native speakers}. 
+
+\subsection{Stuffer 1: Deterrence}
+
+The goal of the Threat treatment was to emphasize the repurcussions of 
+noncooperation with the city and highlight the policy tools available to the city,
+with the idea that owners may have poorly-formed notions of the extent of action
+the city may be willing to take to recover taxes from each property.
+
+\subsubsection*{Stuffer Text}
+
+\begin{quotation}Not paying your Real Estate Taxes is breaking the law.\end{quotation}
+
+\begin{quotation}Failure to pay your Real Estate Taxes may result in
+seizure or sale of your property by the City.\end{quotation}
+
+\begin{quotation}Do not make the mistake of assuming we are too busy
+to pursue your case.\end{quotation}
+
+\subsection{Stuffer 2: Moral Appeal}
+
+The goal of the Moral treatment was to emphasize the social contract between
+tax payers and the City--that, in exchange for compliance and timely submission
+of taxes due to the City, the City provides a level of public goods
+commensurate with the level of tax intake. In particular, we chose to 
+highlight the correspondence between Real Estate Tax compliance and
+the City's provision of public education and safety services.
+
+\subsubsection*{Stuffer Text}
+
+\begin{quotation}We understand that paying your taxes
+can feel like a burden.\end{quotation}
+
+\begin{quotation}We want to remind you of all the great services that
+you pay for with your Real Estate Tax Dollars.\end{quotation}
+
+\begin{quotation}Your tax dollars pay for schools to teach our children.
+They also pay for the police and firefighters who help keep our city safe.
+Please pay your taxes as soon as you can to help us pay for these
+essential services.\end{quotation}
+
+\subsection{Stuffer 3: Social Pressure}
+
+The goal of the Peer treatment was to socially penalize delinquents
+by underlining their nonconformity among their fellow Philadelphians.
+
+\subsubsection*{Stuffer Text}
+
+\begin{quotation}You have not paid your Real Estate Taxes.\end{quotation}
+
+\begin{quotation}Almost all of your neighbors pay their fair share--
+9 out of 10 Philadelphians do so. Paying your taxes is your duty to the city
+you live in. By failing to pay, you are abusing the good will of your
+Philadelphia neighbors.\end{quotation}
+
+\subsection{Stuffer 4: Control}
+
+The Control stuffer was designed to be as plain and unpersuasive as possible, 
+with the goal of the informational content being orthogonal to each of the
+three treatment stuffers. 
+
+\subsubsection*{Stuffer Text}
+
+\begin{quotation}The enclosed bill details your outstanding 
+Real Estate Taxes due to the City of Philadelphia.\end{quotation}
+
+\section{Experimental Design and Fidelity of Implementation}
+\label{sec:design_fidelity}
+
+Our approach to treatment was constrained by the logistics of DOR's
+enforcement faculties. Ideally, we would have randomly assigned one
+of the four treatment stuffers at the property level; we concluded
+after several discussions with our correspondents at DOR that this 
+would be logistically nigh-impossible.
+
+Mailing of delinquent Real Estate Tax Bills by DOR works roughly as follows.
+Every property in the city is assigned to one of 50 mailing cycles; since it is
+cheaper and simpler to send at once all bills to those owners owing taxes on
+multiple properties, assignment to cycles is done at the owner level, so that
+each mailing cycle has roughly the same number of owners.
+Every morning, a printer at DOR taps the in-house accounting system to find
+all properties that a) owe taxes to the City and b) are in the current day's 
+mailing cycle, which increases by one each day (as well as several other 
+restrictions discussed in more detail below). After identifying the bills to be 
+printed for the day, the printer merges several other pieces of information 
+stored with the delinquent balance (e.g., the mailing address and an in-house 
+ID associated with the property). The 1200 or so bills that are printed each 
+day are then brought to the City's mailing room, wherein they are stuffed 
+into envelopes and delivered to the property owners.
+
+Given the volume of bills printed each day and the existing infrastructure
+for processing them, especially the machine-automated process of envelope
+stuffing, we determined the most practical solution would be to randomize
+treatment at the mailing cycle level, so that every bill printed on the same
+day would be paired with the same stuffer.
+
+Randomization of mailing days was handled by the authors (code and
+random seed available upon request). At the beginning of treatment,
+we were unsure when our treatment period would end for the year. As
+such, we could not easily take a simple random sample of days (i.e.,
+we could not take one of the $4^T$ possible treatment schedules 
+because we did not know $T$ \textit{ex ante}). We therefore elected to
+take a sort of \textit{ad hoc} approach that would balance this
+uncertainty with a desire to see a balance of treatment group
+representation in our final sample, which we did by randomizing in
+4-day cycles--for each 4-day period, we picked at random among the $4!=24$
+possible arrangements of treatments over the subsequent 4 days.
+
+We were optimistic that we could continue mailing through the Thanksgiving
+holiday and even into the beginning of December, but this was snuffed
+by the constraint that DOR began mailing new bills for the 2015 Tax Year
+starting from early December, which is a logistically intensive process
+given the roughly 400,000 bills to be sent in a few weeks' period. Ultimately,
+we succeeded in stuffing bills for 15 days in November, from the 
+4\textsuperscript{th} through the 25\textsuperscript{th}. The Threat
+treatment group drew the short straw, as we had 4 days of treatment for the
+Control, Moral, and Peer groups but only 3 days of treatment for
+the Threat group. 
+
+\begin{center}
+\begin{tabular}{|c||c|c|c|c|}
+\hline 
+Treatment & THREAT & MORAL & PEER & CONTROL\tabularnewline
+\hline 
+\hline 
+Count & 3 & 4 & 4 & 4\tabularnewline
+\hline 
+\end{tabular}
+\par\end{center}
+
+While we are certain of the sanctity of our mailing cycle-level
+randomization process, a latent concern, is that assignment of properties to mailing cycles
+by the city was done via some outcome-correlated mechanism. Luckily, however,
+the city claims to have done so randomly, which would mean that we could
+achieve proper full-scale two-stage randomization of the properties through our 
+process of day-level randomization. 
+
+In particular, the city assigned properties to cycles based on the last two
+digits of an in-house ID number; those with final two digits 01 and 02 are
+mapped to cycle 1, those with final digits 03 and 04 are mapped to cycle 2,
+and so on. The in-house ID itself is motley in nature. For many properties,
+DOR has on file the owner's Social Security Number (SSN); for many others,
+mainly commercial properties, the DOR stores their Employer Identification
+Number (EIN); and for the remainder of properties, DOR assigns its own
+in-house ID number. This last is a 9-digit code which is assigned 
+sequentially to property owners who cannot be matched to either of the 
+federal ID numbers.
+
+The assignment of SSNs has not historically been itself random (cite SSA 2015)
+\footnote{This has been updated as of June 25, 2011; see 
+\href{http://www.ssa.gov/employer/randomization.html}
+{http://www.ssa.gov/employer/randomization.html} for details on the
+newly implemented randomization scheme. We expect the lion's share of 
+SSNs in our sample to have been assigned prior to this regime shift.}. In
+particular, the last 4 digits within each Area Number-Group Number (first
+5 digits) combination are assigned sequentially. One can imagine most property
+owners were born in the Philadelphia area, and it is possible a spate of
+births in a particular neighborhood engendered some degree of spatial
+correlation in the assignment process, but it would be, practically speaking,
+farfetched to believe this was substantially undermining randomization in the scheme
+outlined above.
+
+The assignment of EINs is less clear\footnote{The most complete source
+we could find in this respect is
+\href{http://www.irs.gov/Businesses/Small-Businesses-\&-Self-Employed/How-EINs-are-Assigned-and-Valid-EIN-Prefixes}
+{http://www.irs.gov/Businesses/Small-Businesses-\&-Self-Employed/How-EINs-are-Assigned-and-Valid-EIN-Prefixes}.},
+but for similar reasons we are satisfied with the likelihood that assignment
+based on EIN digits is effectively random. Lastly, given the mapping from 
+final digits to mailing cycle, because the DOR-assigned
+ID is assigned sequentially, all but pairs of numbers assigned to a given 
+mailing cycle will be randomly separated by the second stage of 
+randomization which we implemented ourselves.
+
+\begin{center}
+\includegraphics[width=2.9in]{cycle_intended_vs_actual}
+\label{fig:leakage}
+\par\end{center}
+
+Nevertheless, the skeptical reader is correct to be suspicious of this 
+somewhat nontraditional randomization mechanism. This is compounded by the fact that
+we never saw the code used to implement the assignment (its engineer has
+since retired), and for the subsample of properties for which we we able
+to obtain the ID used by DOR, as depicted in Figure \ref{fig:leakage} 
+there appears to have been infrequent yet noteworthy
+leakage from the asserted mapping assignment (i.e., there are properties
+whose actual assignment does not conform to the officially designated mapping).
+
+\subsection{Sample Balance on Observables}
+
+To confirm whether or not we indeed achieved randomization, we performed
+a series of balance-on-observables tests, the null hypotheses of which are that
+a given observable data moment is identical across mailing cycles. We turn now to
+the results of those tests.
+
+Analysis of balance on observables is complicated by the random assignment at the owner level. 
+Because there is some strong clustering by some massive holders of property (thousands of 
+properties owned by public entities like the City of Philadelphia, the Philadelphia Housing 
+Authority, and the Redevelopment Authority of Philadelphia, hundreds owned by many others such as
+the University of Pennsylvania and Drexel University), a simple analysis of balance at the
+property level is strongly skewed by these outliers; further, it's not clear how to aggregate
+many of the property-level characteristics to the owner level meaningfully (especially 
+geographic variables).
+
+Our approach to solve this issue was to examine sample balance on the subset of properties for which
+a) the owner is unique (i.e., owns no other properties) and b) any tax exemption claimed by the 
+property is related to abatements for new construction.\footnote{A full list of exemptions can be found in the
+Appendix, but the most important non-abatement restrictions cover religious institutions, institutions
+of learning, and medical/health facilities.}\textsuperscript{,}
+\footnote{We ran several other similar specifications, with the 
+qualitative results remaining unchanged. We also ran tests on the subsample of properties for which
+we could obtain the secure ID used by the City, for which the putative mapping was violated; again, the
+results are qualitatively identical. See the Appendix for details.}.
+
+% latex table generated in R 3.0.2 by xtable 1.7-4 package
+% Sun Feb 15 13:28:45 2015
+\begin{table}[ht]
+\centering
+\begin{tabular}{rllllll}
+  \hline
+% latex table generated in R 3.0.2 by xtable 1.7-4 package
+% Sun Feb 15 17:23:13 2015
+ & Threat & Moral & Peer & Control & Test & $p$-value \\ 
+  \hline
+Postive balance due & 4864.72 & 4614.98 & 4504.19 & 4574.43 & ANOVA & 0.36 \\ 
+  Market value ('000)$^{*}$ & 185 & 205 & 195 & 196 & $\chi^2$ & 0.66 \\ 
+  Land Area (ft\textsuperscript{2})$^{*}$ & 1710.88 & 1705.57 & 1702.84 & 1721.64 & $\chi^2$ & 0.87 \\ 
+  \# Rooms$^{**}$ & 6.11 & 6.11 & 6.11 & 6.11 & ANOVA & 0.84 \\ 
+  Case Assignment$^{***}$ &  &  &  &  & $\chi^2$ & 0.87 \\ 
+  Political Ward$^{***}$ &  &  &  &  & $\chi^2$ & 0.81 \\ 
+   Category: \\ 
+ \hline
+Residential & 0.2 & 0.27 & 0.27 & 0.27 & $\chi^2$ & 0.87 \\ 
+  Hotels\&Apts & 0.2 & 0.26 & 0.27 & 0.27 &  &  \\ 
+  Store w. Dwell. & 0.19 & 0.27 & 0.26 & 0.28 &  &  \\ 
+  Commercial & 0.2 & 0.26 & 0.27 & 0.27 &  &  \\ 
+  Industrial & 0.22 & 0.29 & 0.23 & 0.26 &  &  \\ 
+  Vacant Land & 0.2 & 0.27 & 0.27 & 0.26 &  &  \\ 
+   \hline
+Distribution of Properties & 0.2 & 0.27 & 0.27 & 0.27 & $\chi^2$ & 0.99 \\ 
+   \hline
+Expected Distribution & 0.2 & 0.27 & 0.27 & 0.27 &  &  \\ 
+   \hline
+%End piece imported from R-xtable
+\multicolumn{7}{l}
+{\scriptsize{$^{*}$Tested as a two-way $\chi^2$ test of quartile vs. treatment, due to outliers.}} \\
+\multicolumn{7}{l}
+{\scriptsize{$^{**}$Properties below 2 or above 12 rooms were trimmed to reduce the influence of outliers.}} \\
+\multicolumn{7}{l}
+{\scriptsize{$^{***}$See Appendix for full two-way tables of these variables.}}
+\end{tabular}
+\caption{Tests of Sample Balance on Observables}
+\label{table:balance}
+\end{table}
+
+As can be seen in Table \ref{table:balance}, randomization appears to have been successful. 
+The properties are strongly randomly distributed by location (their political ward, of
+which there are 66 in Philadelphia), category (type of property usage),
+property size (as measured by the number of rooms or by the size of the tract),
+and case assignment (this variable captures, if applicable, to which outside
+law firm a property is assigned, whether the property is in sequestration, 
+or has entered a payment agreement with the city). The number of properties
+assigned to each treatment is further exactly as expected, given the unequal number of 
+mailing days in our treatment.
+
+\begin{center}
+\includegraphics[width=2.9in]{total_balance_single_property_nonexempt}
+\label{fig:balance_balance}
+\par\end{center}
+
+Evidence of randomization is slightly weaker for randomization on delinquent balance and
+randomization on market value, though tests of both are far from rejecting the null
+hypothesis of equal group means. We suspect this is largely due to the influence of outliers--
+as seen in Figure \ref{fig:balance_balance}, the distributions are highly similar visually
+\footnote{see the Appendix for more robust examination of these variables.}.
+
+\subsection{Implementation Fidelity}
+
+Given the logistic devils in the details of implemenation, we were apprehensive
+about the experiment's fidelity. In addition to the foreseeable difficulty of
+coordinating among many actors in order for our experiment to fit in with
+the DOR's normal billing process, there was a particular hiccup in the normal
+flow of work towards the beginning of our treatment period when the
+DOR printer failed to print its daily allotment of bills. This reverberated
+and was compounded by the fact that this happened just prior to Veterans' Day,
+a City holiday, which led to a substantial backup of bill processing.
+
+To help assuage our meticulous trepidation, we leveraged a unique secondary check on 
+implementation to help update our beliefs about the extent to which our beliefs about 
+who got which stuffer were correct. The Department of Revenue regularly posts envelopes
+destined for addresses that are either unattended (e.g., vacant) or do not exist in the
+first place (e.g., typos). Either before or after an attempted delivery to such an 
+address, the postal service flags down these bills and returns the missives to DOR,
+which then process them and attempts, if they can identify a suitable alternative
+address, to re-deliver the tax bill. We took advantage of the fact that a (presumably
+random, or at least orthogonal to assignment) subset of bills made their way back to DOR
+to check firsthand the extent of treatment fidelity.
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rlllllllllllllll}
+  \hline
+ Day: & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 \\ 
+  \hline
+Intended Stuffer & M & P & T & C & T & P & C & M & M & C & P & T & C & P & M \\ 
+\% Inaccurate & 0 & 35 & 55 & 21 & 70 & 35 & 0 & 0 & 0 & 38 & 1 & 0 & 9 & 7 & 2 \\ 
+Actual Stuffer & M & P & T & T & P & P & C & M & M & M & P & T & C & P & M \\
+   \hline
+\multicolumn{16}{l}
+{\scriptsize{T: Threat, M: Moral, P: Peer, C: Control}}
+\end{tabular}
+\caption{Measured Fidelity of Implementation}
+\label{table:fidelity}
+\end{table}
+
+As can be seen from Table \ref{table:fidelity}, actual implementation was less than
+perfect. We retrieved 929 returned letters, 122 (13\%) of which were found to have
+a different stuffer from what we expected. On six days--the second through sixth 
+and the tenth--more than ten percent of returned letters were mismatched
+\footnote{See Appendix for more details about the sample of returned letters}.
+A small number (8) of the letters were found to be completely empty--no
+stuffer whatsoever was packaged with the posted bill. 
+
+Given this substantial deviation from intended treatment, we present main results
+only for the subsample of treatment days for which greater than 90\% fidelity
+was achieved--that is, days 1, 7-9, and 12-15. For robustness purposes, we 
+provide intent-to-treat (ITT) and instrumented analyses in the Appendix.
+
+\begin{center}
+\begin{tabular}{|c||c|c|c|c|}
+\hline 
+Treatment & THREAT & MORAL & PEER & CONTROL\tabularnewline
+\hline 
+\hline 
+Count & 1 & 4 & 2 & 2\tabularnewline
+\hline 
+\end{tabular}
+\par\end{center}
+
+\section{Methods}
+\label{sec:methods}
+
+To analyze the statistical effect of our experiments, we implement four tests
+consisting of two pairs of related tests. One pair examines the effect of
+treatment on two binary outcomes--namely, one indicator for whether a given
+account submitted some payment to DOR in the sample period and another
+for whether the account at a property was cleared completely. The other pair
+turns instead to the intensity of activity. Specifically, we attempt to 
+detect if treatment causally impacted the dollar value of payments submitted
+to the city or the relative value of payments submitted to the city.
+
+We turn next to a more formal presentation of the models outlined above.
+
+\subsection{Model I: Logistic Regression of 
+\texorpdfstring{$\mathbbm{1}\left[Ever Paid\right]$}{\unichar{"1D7D9}[Ever Paid]}}
+
+Let $y_{I,i}=\mathbbm{1}\left[x_i>0\right]$, where $\mathbbm{1}\left[\cdot\right]$
+is an indicator taking the value one when its argument $\cdot$ is true and
+0 otherwise and $x_i$ is the cumulative remittance to the city at the conclusion
+of the sample period by property $i$.
+
+Given the randomized nature of our analysis, we get consistent estimates of
+the causal impact of treatment on $y_I$ by evaluating the following logistic
+regression model:
+
+\begin{equation}
+y_{I,i}=\beta_{I}+D_{T,i}\gamma_{I,T}+D_{M,i}\gamma_{I,M}+D_{P,i}\gamma_{I,P}
++\epsilon_{I,i},\hspace{1em}\epsilon_I\enskip\mbox{logistic}
+\end{equation}
+
+The $D_{k,i}$ are indicators for the three treatments, i.e.
+$D_{k,i}=\mathbbm{1}\left[treatment_i=k\right]$, $k\in{T,M,P}$ for Threat, Moral, and Peer,
+respectively. The $\gamma_{I,k}$, then, are the causal impacts of the treatments on the
+likelihood of some degree of remittance to the city, relative to the control treatment of
+a plain stuffer.
+
+These estimates are consistent, but for precision's sake, it is prudent to include
+some controls which, though asymptotically orthogonal to the treatments, retain
+some correlations in small samples and thus are a source of standard error inefficiency.
+As such, we also estimate logistic regressions with controls of the form:
+
+\begin{equation}
+y_{I,i}=X_i^T\beta_{I}+D_{T,i}\gamma_{I,T}+D_{M,i}\gamma_{I,M}+D_{P,i}\gamma_{I,P}
++\epsilon_{I,i},\hspace{1em}\epsilon_I\enskip\mbox{logistic}
+\end{equation}
+
+We include such variables as (log) land area, maturity of debt (more or less than 5 years),
+geographic location (as proxied by City Council District), usage category, 
+property exterior condition (whether or not the property was categorized as sealed/compromised
+by the city), whether the property took a homestead exemption\footnote{Philadelphia
+offers a tax discount of \$30,000 off the taxable value of the property for those
+residents who are verifiably owner-occupants of a property--thus not taking a homestead
+exemption is a signal that a property is operated by a remote landlord.}, (log) balance at mailing,
+and (log) market value.
+
+\subsection{Model II: Logistic Regression of
+\texorpdfstring{$\mathbbm{1}\left[PaidFull\right]$}{\unichar{"1D7D9}[Paid Full]}}
+
+Next, we examine a more restrictive yes-no participation outcome--namely, whether
+or not the property offered not just token repayment in our sample period, but 
+whether its debts were paid back in full\footnote{Due to some measurement issues, it is
+not possible to track on a day-to-day basis exactly the balance due for each property--
+accrual of interest and other charges is hard to pinpoint exactly. In the main results 
+below, we actually measure full repayment as submission of at least 95\% of the 
+balance due; see the Appendix for some exploration of the robustness of this threshold,
+but suffice it so say here that results are qualitatively identical.}.
+
+To this end, let $y_{II,i}=\mathbbm{1}\left[x_i=m_i\right]$ be an indicator for 
+full repayment of debt in the sample timeframe ($m_i$ is the amount owed by 
+property $i$ at the start of treatment). Then causal estimates of the impacts of
+treatment are recovered through estimation of the logistic model:
+
+\begin{equation}
+y_{II,i}=\beta_{II}+D_{T,i}\gamma_{I,T}+D_{M,i}\gamma_{I,M}+D_{P,i}\gamma_{I,P}
++\epsilon_{II,i},\hspace{1em}\epsilon_{II}\enskip\mbox{logistic}
+\end{equation}
+
+Again for precision's sake, we estimate the controlled analogue of this regression:
+
+\begin{equation}
+y_{II,i}=X_i^T\beta_{II}+D_{T,i}\gamma_{I,T}+D_{M,i}\gamma_{I,M}+D_{P,i}\gamma_{I,P}
++\epsilon_{II,i},\hspace{1em}\epsilon_{II}\enskip\mbox{logistic}
+\end{equation}
+
+\subsection{Model III: Tobit Regression of Amount Paid vs. Market Value}
+
+Next, we turn our attention to measuring effects of treatment on the magnitude of
+debt drawdown--that is, instead of answering questions to the effect of
+``Did our treatment(s) significantly induce repayment?'', we hope to address
+the intermediate question of ``Did our treatment(s) induce significantly more 
+repayment?''.
+
+In particular, we hope to isolate the relative magnitude of repayment by
+essentially normalizing the dollar amount repaid by the ``size'' of the property,
+so that bigger payments by ``bigger'' properties in some group don't mechanically skew our
+results in favor of that group.
+
+In our first Tobit Model, our notion of ``size'' is the market value of 
+the property. The estimates of this model will highlight any significant differences
+in the amount repaid relative to market value.
+
+Specifically, we estimate the following Tobit model:
+
+\begin{eqnarray}
+\log x_{i}^{*} & = & \beta_{III}+\delta_{III}\log v_{i}+
+\sum_{k\in\{T,M,P\}}D_{k,i}\left(\gamma_{III,k}+\log v_{i}\eta_{III,k}\right)+u_{III,i}\\
+x_{i} & = & \mathbbm{1}\left[x_{i}^{*}>=0\right]x_{i}^{*}
+\end{eqnarray}
+
+$x_{III,i}^{*}$ is the latent repayment amount, whose observed counterpart $x_i$ only takes
+nonzero value when $x_i^{*}$ is strictly positive. By controlling for (log) market value $v_i$,
+the $\eta_{III,k}$ represent the group-specific additional repayment for each (log) 
+market value. Thus a positive coefficient on $D_{k,i}\times\log v_i$ has the interpretation
+that higher-value properties were more likely to pay their taxes.
+
+The controlled analogue to Model III is as follows:
+
+\begin{eqnarray}
+\log x_{III,i}^{*} & = & X^T_i \beta_{III}+\delta_{III}\log v_{i}+
+\sum_{k\in\{T,M,P\}}D_{k,i}\left(\gamma_{III,k}+\log v_{i}\eta_{III,k}\right)+u_{III,i}\\
+x_{i} & = & \mathbbm{1}\left[x_{III,i}^{*}>=0\right]x_{III,i}^{*}
+\end{eqnarray}
+
+\subsection{Model IV: Tobit Regression of Amount Paid vs. Amount Owed}
+
+Our second pair of Tobit regressions entails a different (but correlated) measure
+of the ``size'' of a property--namely, the amount owed by the property at the 
+onset of treatment\footnote{Though, on each year's initial tax bill, the market value
+is exactly proportional to the property's tax debt (modulo any exemptions claimed,
+but these properties are excluded from our analysis), the history of payments 
+in general stands to create a wedge in this proportional relationship--low-value
+properties that have a long history of nonpayment or high value properties that
+have already partially repaid their debts drive dissonance in either direction.}.
+Here, we are primarily concerned with whether those properties that owed more
+to begin with ended up remitting more to DOR in our sample timeframe. 
+
+Specifically, Model IV is the Tobit regression:
+
+\begin{eqnarray}
+\log x_{IV,i}^{*} & = & \beta_{IV}+\delta_{IV}\log m_{i}+
+\sum_{k\in\{T,M,P\}}D_{k,i}\left(\gamma_{IV,k}+\log m_{i}\eta_{IV,k}\right)+u_{IV,i}\\
+x_{i} & = & \mathbbm{1}\left[x_{IV,i}^{*}>=0\right]x_{IV,i}^{*}
+\end{eqnarray}
+
+Again, $x_{IV,i}^{*}$ is the latent repayment amount. The controlled version is:
+
+\begin{eqnarray}
+\log x_{IV,i}^{*} & = & X_i^T \beta_{IV}+\delta_{IV}\log m_{i}+
+\sum_{k\in\{T,M,P\}}D_{k,i}\left(\gamma_{IV,k}+\log m_{i}\eta_{IV,k}\right)+u_{IV,i}\\
+x_{i} & = & \mathbbm{1}\left[x_{IV,i}^{*}>=0\right]x_{IV,i}^{*}
+\end{eqnarray}
+
+\section{Empirical Results}
+\label{sec:results}
+
+\subsection{Data and Sample Selection}
+
+\begin{enumerate}
+\item {\footnotesize{Delinquency Snapshot, November 3rd}}{\footnotesize \par}
+
+\begin{enumerate}
+\item {\scriptsize{Covariates on every property with positive balance due
+as of 11/3}}{\scriptsize \par}
+\item {\scriptsize{Owner name, stock debt breakdown (principal/interest/penalty/other/total),
+\# years owed \& rough period, taxable value, tax abatements, homestead,
+building usage code, property address \& $\left(X,Y\right)$ coordinates,
+mailing address, City Council District}}{\scriptsize \par}
+\item {\scriptsize{Also used for sample restrictions (next): Payment agreements,
+case status, sheriff's sale status, bankruptcy status, sequestration
+status, returned mail flag}}{\scriptsize \par}
+\end{enumerate}
+\item {\footnotesize{Payments File (October 6th - January 6th)}}{\footnotesize \par}
+
+\begin{enumerate}
+\item {\scriptsize{Every payment (credit/debit) from every account over
+the period}}{\scriptsize \par}
+\item {\scriptsize{Valid \& posting dates, period and breakdown (principal/interest/penalty/other)
+of debited debt}}{\scriptsize \par}
+\end{enumerate}
+\item {\footnotesize{Office of Property Assessment Data}}{\footnotesize \par}
+
+\begin{enumerate}
+\item {\scriptsize{Covariates maintained by the OPA for assessment--every
+property in Philadelphia}}{\scriptsize \par}
+\item {\scriptsize{market value, property usage category, land area, exterior
+condition}}{\scriptsize \par}
+\end{enumerate}
+\item {\footnotesize{Mailing Cycle info}}{\footnotesize \par}
+
+\begin{enumerate}
+\item {\scriptsize{mainly, the mailing cycle associated with each property}}{\scriptsize \par}
+\end{enumerate}
+\end{enumerate}
+
+Sample restrictions (original sample: 134,888 delinquent properties)
+\begin{enumerate}
+\item Payment agreement (23\%=31456)
+\item Any tax abatement (5\% = 4706)
+\item Not handled by DOR (62\%=61170)
+\item Sheriff's Sale (11\%=4098)
+\item Bankruptcy (3\%=948)
+\item Sequestration (3\%=1130)
+\item Returned mail flag (5\%=1429)
+\item Not mailed during treatment between Nov. 4 \& Nov. 24 (83\%=24800)
+\end{enumerate}
+Final sample: 5151 properties
+
+Timing restrictions
+\begin{itemize}
+\item Want same measurement timeframe for all cycles (and hence all properties)
+
+\begin{itemize}
+\item Prior to mailing day, data limited by first mailing day (40 days between
+start of sample \& mailing day 1)
+\item Subsequent to mailing day, data limited by final mailing day (currently
+36 days between end of sample \& final mailing day)
+\end{itemize}
+\end{itemize}
+So in the end, we currently have 77 relatively matched days of payment
+behavior for each account
+
+(for a total of 77{*}5151=393085 day-account observations)
+
+Our choice of mailing day is bolstered by the fact that we found the most
+locally common day of payment for each cycle (see Figure \ref{fig:mailing_day})
+
+\begin{center}
+\includegraphics[width=2.9in]{fidelity_check_mailing_day_act}
+\label{fig:mailing_day}
+\par\end{center}
+
+\subsection{Descriptive Statistics}
+
+\begin{table}[ht] \centering \begin{tabular}{rrrrrr}
+\hline
+                 & Full & Threat & Moral & Peer & Control \\
+\hline
+Years: [0,2]          & 0.66 & 0.63 & 0.64 & 0.69 & 0.69 \\
+Years: (2,5]          & 0.17 & 0.16 & 0.18 & 0.16 & 0.16 \\
+Years: (5,10]         & 0.09 & 0.12 & 0.09 & 0.08 & 0.08 \\
+Years: (10,20]        & 0.06 & 0.06 & 0.06 & 0.05 & 0.05 \\ 
+Years: (20,40]        & 0.02 & 0.03 & 0.02 & 0.02 & 0.02 \\   
+Cat: Commercial       & 0.04 & 0.04 & 0.04 & 0.04 & 0.02 \\    
+Cat: Hotels/Apts      & 0.08 & 0.10 & 0.09 & 0.08 & 0.08 \\   
+Cat: Industrial       & 0.01 & 0.02 & 0.01 & 0.01 & 0.02 \\    
+Cat: Residential      & 0.69 & 0.65 & 0.70 & 0.70 & 0.70 \\   
+Cat: Store+Resid      & 0.07 & 0.06 & 0.07 & 0.07 & 0.06 \\    
+Cat: Vacant           & 0.10 & 0.14 & 0.09 & 0.11 & 0.12 \\    
+\% Sealed/Compromised & 0.03 & 0.02 & 0.04 & 0.02 & 0.03 \\    
+\% Homestead          & 0.23 & 0.19 & 0.23 & 0.24 & 0.22 \\     
+\hline 
+\end{tabular} 
+\end{table}
+
+We present results as the outcomes of estimation of the aforementioned models,
+followed by some time series demonstrating the evolution of the results 
+throughout the sample period and some subsample analysis to isolate some sources
+of the overall effects as well as to illustrate differential effects of 
+treatment beyond our main results.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{l c c }
+\hline
+                       & Ever Paid & Ever Paid (with Controls) \\
+\hline
+Intercept              & $-1.74^{***}$ & $-3.35^{***}$ \\
+                       & $(0.08)$      & $(0.74)$      \\
+Treatment Group        &               &               \\
+                       &               &               \
+\\quad Moral            & $-0.06$       & $-0.07$       \\
+                       & $(0.10)$      & $(0.10)$      \\
+\quad Peer             & $0.22$        & $0.18$        \\
+                       & $(0.11)$      & $(0.12)$      \\
+\quad Threat           & $-0.10$       & $-0.07$       \\
+                       & $(0.15)$      & $(0.15)$      \\
+Log Balance at Mailing &               & $-0.00$       \\
+                       &               & $(0.01)$      \\
+Log Market Value       &               & $0.09$        \\
+                       &               & $(0.06)$      \\
+\hline
+AIC                    & 4343.10       & 4225.54       \\
+BIC                    & 4369.25       & 4382.46       \\
+Log Likelihood         & -2167.55      & -2088.77      \\
+Deviance               & 4335.10       & 4177.54       \\
+Num. obs.              & 5105          & 5105          \\
+\hline
+\multicolumn{3}{l}{\scriptsize{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$. Control coefficients omitted for brevity; see Appendix}}
+\end{tabular}
+\caption{Model I: Logistic on $\mathbbm{1}[EverPaid]$}
+\label{table:modelI}
+\end{center}
+\end{table}
+
+As can be seen from Table \ref{table:modelI}, none of the treatments had
+a strongly significant effect at the conclusion of the sample period; the 
+Peer treatment was marginally signficant ($p=.056$), but this
+significance disappears upon inclusion of control variables ($p=.124$).
+
+\noindent NEED TO DO FORMAL TESTING OF TIME SERIES
+
+\begin{center}
+\includegraphics[width=2.9in]{time_series_pct_ever_paid_act}
+\label{fig:ever_paid_act}
+\par\end{center}
+
+The end-of-sample insignificance contrasts with a sustained outpacing of the 
+rise in repayment participation since about two weeks subsequent to mailing.
+This can be seen in Figure \ref{fig:ever_paid_act}.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{l c c }
+\hline
+                       & Paid in Full & Paid in Full (with Controls) \\
+\hline
+Intercept              & $-2.28^{***}$ & $-3.04^{**}$  \\
+                       & $(0.10)$      & $(1.03)$      \\
+Treatment Group        &               &               \\
+                       &               &               \\
+\quad Moral            & $-0.41^{**}$  & $-0.40^{**}$  \\
+                       & $(0.13)$      & $(0.14)$      \\
+\quad Peer             & $0.25$        & $0.21$        \\
+                       & $(0.14)$      & $(0.14)$      \\
+\quad Threat           & $-0.22$       & $-0.19$       \\
+                       & $(0.19)$      & $(0.20)$      \\
+Log Balance at Mailing &               & $-0.11^{***}$ \\
+                       &               & $(0.02)$      \\
+Log Market Value       &               & $-0.02$       \\
+                       &               & $(0.08)$      \\
+\hline
+AIC                    & 2915.19       & 2748.35       \\
+BIC                    & 2941.34       & 2905.26       \\
+Log Likelihood         & -1453.60      & -1350.17      \\
+Deviance               & 2907.19       & 2700.35       \\
+Num. obs.              & 5105          & 5105          \\
+\hline
+\multicolumn{3}{l}{\scriptsize{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$. Control coefficients omitted for brevity; see Appendix}}
+\end{tabular}
+\caption{Model II: Logistic on $\mathbbm{1}[PaidFull]$}
+\label{table:modelII}
+\end{center}
+\end{table}
+
+Table \ref{table:modelII} presents the results of the second model,
+which examined the likelihood of full repayment of debts by
+treatment group. As with Model I, the Peer treatment shows signs from
+about two weeks past treatment onset of outpacing the control group;
+as seen in Figure \ref{fig:paid_full_act}, the trajectory of full
+repayment tracks that of partial repayment for the Peer group quite well.
+
+\begin{center}
+\includegraphics[width=2.9in]{time_series_pct_paid_full_act}
+\label{fig:paid_full_act}
+\par\end{center}
+
+Further, the Moral treatment caused a significant reduction in
+full repayment. Figure \ref{fig:paid_full_act} suggests full
+repayment started flagging about three weeks after treatment after
+tracking the control group quite well thereto. The Threat
+treatment is all but indistinguishable from the control.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{l c c }
+\hline
+                       & Paid vs. Market Value & Paid vs. Market Value (with Controls) \\
+\hline
+Intercept              & $-12348.07^{***}$ & $-11096.96^{***}$ \\
+                       & $(2318.61)$       & $(2883.17)$       \\
+Treatment Group        &                   &                   \\
+                       &                   &                   \\
+\quad Moral            & $-7128.53^{*}$    & $-7441.16^{*}$    \\
+                       & $(2893.30)$       & $(2985.93)$       \\
+\quad Peer             & $1398.56$         & $806.87$          \\
+                       & $(3150.31)$       & $(3223.92)$       \\
+\quad Threat           & $-1364.18$        & $-1456.06$        \\
+                       & $(3998.04)$       & $(4110.60)$       \\
+Log Market Value       & $563.40^{**}$     & $404.39$          \\
+                       & $(200.81)$        & $(253.71)$        \\
+Moral*MV               & $624.16^{*}$      & $653.08^{*}$      \\
+                       & $(251.37)$        & $(259.30)$        \\
+Peer*MV                & $-79.53$          & $-32.17$          \\
+                       & $(274.75)$        & $(281.09)$        \\
+Threat*MV              & $106.23$          & $114.47$          \\
+                       & $(348.01)$        & $(357.51)$        \\
+Log Balance at Mailing &                   & $61.90$           \\
+                       &                   & $(45.97)$         \\
+\hline
+AIC                    & 17746.27          & 17729.78          \\
+BIC                    & 17805.12          & 17912.85          \\
+Log Likelihood         & -8864.14          & -8836.89          \\
+Deviance               & 3088.60           & 3027.81           \\
+Total                  & 5105              & 5105              \\
+Left-censored          & 4331              & 4331              \\
+Uncensored             & 774               & 774               \\
+Right-censored         & 0                 & 0                 \\
+Wald Test              & 83.35             & 125.02            \\
+\hline
+\multicolumn{3}{l}{\scriptsize{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$. Control coefficients omitted for brevity; see Appendix}}
+\end{tabular}
+\caption{Model III: Tobit of Repayment vs. Market Value}
+\label{table:modelIII}
+\end{center}
+\end{table}
+
+The resuls of the first Tobit model are displayed in Table \ref{table:modelIII}.
+Only about 15\% of observations were uncensored. Results of Model III suggest that
+those owing the most in the Moral treatment were significantly more likely
+to pay more than their control counterparts. This is confirmed in Figure
+\ref{fig:repay_quart_act}, which depicts the trajectories of (normalized) repayments
+by each group, for each quartile of debt owed at mailing day. Though the 
+paths are largely similar for the first three quartiles, those in the highest
+quartile of property value ultimately renumerated much more.
+
+\begin{center}
+\includegraphics[width=2.9in]{time_series_average_payments_by_quartile_act}
+\label{fig:repay_quart_act}
+\par\end{center}
+
+
+\begin{table}
+\begin{center}
+\begin{tabular}{l c c }
+\hline
+                       & Paid vs. Total Debt & Paid vs. Total Debt (with Controls) \\
+\hline
+Intercept              & $-5478.88^{***}$ & $-13650.77^{***}$ \\
+                       & $(598.31)$       & $(2074.35)$       \\
+Treatment Group        &                  &                   \\
+                       &                  &                   \\
+\quad Moral            & $-1505.26^{*}$   & $-1669.69^{*}$    \\
+                       & $(752.51)$       & $(748.86)$        \\
+\quad Peer             & $779.26$         & $773.16$          \\
+                       & $(785.66)$       & $(778.14)$        \\
+\quad Threat           & $-629.38$        & $-579.61$         \\
+                       & $(1031.67)$      & $(1029.50)$       \\
+Log Balance at Mailing & $-107.27$        & $-37.85$          \\
+                       & $(87.24)$        & $(87.50)$         \\
+Moral*Balance          & $249.08^{*}$     & $272.72^{*}$      \\
+                       & $(110.60)$       & $(110.23)$        \\
+Peer*Balance           & $-44.45$         & $-58.25$          \\
+                       & $(119.07)$       & $(118.16)$        \\
+Threat*Balance         & $79.00$          & $70.76$           \\
+                       & $(151.02)$       & $(151.20)$        \\
+Log Market Value       &                  & $687.78^{***}$    \\
+                       &                  & $(175.00)$        \\
+\hline
+AIC                    & 17820.05         & 17728.50          \\
+BIC                    & 17878.89         & 17911.57          \\
+Log Likelihood         & -8901.02         & -8836.25          \\
+Deviance               & 3119.44          & 3022.06           \\
+Total                  & 5105             & 5105              \\
+Left-censored          & 4331             & 4331              \\
+Uncensored             & 774              & 774               \\
+Right-censored         & 0                & 0                 \\
+Wald Test              & 13.48            & 126.19            \\
+\hline
+\multicolumn{3}{l}{\scriptsize{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$. Control coefficients omitted for brevity; see Appendix}}
+\end{tabular}
+\caption{Model IV: Tobit of Repayment vs. Total Debt}
+\label{table:modelIV}
+\end{center}
+\end{table}
+
+We move finally to the results from the final model, which focuses not on 
+payments relative to property value, but instead on payments relative
+to the balanced owed by each account at mailing day. The results of this
+model are qualitatively identical to those of Model III, which is further
+mirrored in the time series results of Figure \ref{fig:drawdown_quart_act}.
+
+\begin{center}
+\includegraphics[width=2.9in]{time_series_debt_paydown_by_quartile_act}
+\label{fig:drawdown_quart_act}
+\par\end{center}
+
+
+\subsection{Robustness}
+
+\subsubsection{Sensitivity to multiple ownership}
+\begin{center}
+\includegraphics[width=2.9in]{time_series_pct_ever_paid_act_single_owners}
+\label{fig:ever_paid_act_so}
+\par\end{center}
+
+\begin{center}
+\includegraphics[width=2.9in]{time_series_pct_paid_full_act_single_owners}
+\label{fig:paid_full_act_so}
+\par\end{center}
+
+\begin{center}
+\includegraphics[width=2.9in]{time_series_average_payments_int_single_owners}
+\label{fig:repay_act_so}
+\par\end{center}
+
+\begin{center}
+\includegraphics[width=2.9in]{time_series_debt_paydown_int_single_owners}
+\label{fig:drawdown_act_so}
+\par\end{center}
+
+\subsubsection{Sensitivity to Intended vs. Actual Treatment}
+\begin{center}
+\includegraphics[width=2.9in]{time_series_pct_ever_paid_int_single_owners}
+\label{fig:ever_paid_int_so}
+\par\end{center}
+
+\begin{center}
+\includegraphics[width=2.9in]{time_series_pct_paid_full_int_single_owners}
+\label{fig:paid_full_int_so}
+\par\end{center}
+
+\begin{center}
+\includegraphics[width=2.9in]{time_series_average_payments_int_single_owners}
+\label{fig:repay_int_so}
+\par\end{center}
+
+\begin{center}
+\includegraphics[width=2.9in]{time_series_debt_paydown_int_single_owners}
+\label{fig:drawdown_int_so}
+\par\end{center}
+
+\section{Conclusions}
+\label{sec:conclusions}
+
+\end{document}  
+
+
+
+\section{Property Tax Compliance in Philadelphia}
+
+The following is a summary of the recent study by the Pew Charitable
+Trust entitled ``DELINQUENT PROPERTY TAX IN PHILADELPHIA'', published in
+2013.
+
+Philadelphia operates with relatively wide latitude under the
+Pennsylvania Municipal Claims and Tax Lien Law (MCTLL), enacted in
+1923 and amended at least a dozen times. It applies mainly to the
+state's first class and second class cities, namely Philadelphia and
+Pittsburgh.
+
+In Philadelphia, a property is considered tax delinquent nine months
+after the city's March 31 payment deadline passes. Delinquent parcels
+are assessed interest and fees, which over time can grow larger than
+the principal. By law, properties can be sold at public auction as
+quickly as nine months after they become delinquent. In practice, that
+rarely happens, and many properties are allowed to linger on the
+delinquency rolls for decades.
+
+A tax lien may be imposed for delinquent taxes owed on real property
+as a result of failure to pay taxes. A claim for payment that takes
+precedence over all other claims and gives the holder of the
+lien basis for legal action, including foreclosure. Tax liens are
+imposed by a taxing jurisdiction after a property becomes delinquent
+and typically includes the principal tax amount, plus any interest
+and penalties. Some states allow local jurisdictions to sell or
+transfer liens as certificates, akin to bonds, as a way of
+recouping the lost revenue in the short term.
+
+Foreclosure is the legal process of seizing title of a property (or
+the deed) and forcing its sale for the purpose of paying off a debt,
+such as a tax lien. In a tax foreclosure, the local jurisdiction
+petitions a court to award it the title based on an unpaid
+lien. The jurisdiction may then sell the property in a tax-deed sale
+or auction, hoping at least for enough to cover the tax lien. The
+original owner usually has the right to regain the property if she or
+he pays the back taxes within a set time period after the sale,
+called the redemption period. If nobody buys the deed, the tax lien
+remains unpaid, and the jurisdiction keeps the title and
+responsibility for the property.
+
+Compared to laws governing delinquency collection in some other states
+and other Pennsylvania counties, the state statutes governing
+Philadelphia give city government a lot of discretion in setting
+policies on when to initiate foreclosures or what kind of catch-up
+payment plans to offer. In the past, Philadelphia has tended to use
+this discretion to delay taking action, put up fewer properties for
+sale, or let delinquents enroll and default on payment plans many
+times, all of which has caused delinquencies to accumulate over the
+years. (As of April 2012, owners of roughly one in six delinquent
+properties were paying on installment plans; they owed \$57.6 million
+in taxes and penalties.) In 2013, the city adopted new rules intended
+to change most of those practices.
+
+To reduce the number of new delinquencies, Philadelphia has begun to
+adopt effective strategies used in some other places. The city has
+significantly reduced the time it takes to notify delinquents about
+their overdue bills, as well as property owners who are merely late
+and in danger of becoming delinquent. (Non-payers are considered ÒlateÓ
+until Dec. 31 each tax year, at which point they are considered
+delinquent). Philadelphia has begun centralizing all revenue
+collections, leading to faster and better coordinated actions on
+delinquencies. The city also is considering creation of a Òland bankÓ
+to help acquire and redevelop tax-foreclosed properties. The city has
+not adopted other practices, including the selling of tax liens, which
+generates immediate revenue.
+
+Land banks are able to buy tax-foreclosed properties, often vacant
+land, for the face value of their tax liens prior to a tax
+auction. That enables the city to receive full payment and avoid the
+expense of an auction, while helping to move property toward
+development. In 2012, the Pennsylvania legislature enacted a law
+authorizing localities to create land banks specifically for the
+purpose of acquiring tax-delinquent and blighted property. The Nutter
+administration, members of City Council and other organizations have
+been weighing their options for creating a Philadelphia land bank.
+
+
+
+\subsection{Some Stylized Facts}
+
+As of April 2012, the city and school district were owed \$292.3
+million in delinquent taxes on 102,789 properties, \$515.4 million
+when interest and penalties are included. (The numbers have increased
+since then.) About one-quarter of those properties had been delinquent
+for more than a decade.
+
+Of 36 cities studied in the PCT study, Philadelphia had the fifth
+highest delinquency rate in 2011, the last year for which statistics
+were available. Our study found that many of the cities with lower
+delinquency rates than Philadelphia adhere to stricter timetables for
+imposing enforcement measures against delinquent
+property-owners timetables usually set by the stateÑand are more
+willing to take properties away from owners who do not pay their
+taxes. At the same time, a lot of these cities have lower percentages
+of poor people, stronger real estate markets, and higher shares of
+homeowners who pay their taxes automatically through mortgages.
+
+In Philadelphia, 9 percent of 2011 property taxes went uncollected in
+that year. The median delinquency rate in the 36 cities in this study
+was 4.1 percent. It was closer to the 6 percent median for 14 cities
+that, like Philadelphia, have poverty rates
+above 25 percent.
+
+Finally, our forth experiment focuses on procedural justice and, more
+broadly speaking, interactions between a local government and tax
+payers. Theory distinguishes between respectful and authoritarian
+interactions. Here the idea is that hierarchical relationships that
+treat tax payers as inferiors can create resentment and tax avoidance.
+Transparency and clearness are other aspects of the procedural
+approach. We could design a forth experiment that addresses these
+concerns. We could focus on an elderly population that is likely to be
+eligible for state aid.
+

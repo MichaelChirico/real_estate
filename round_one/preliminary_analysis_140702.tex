@@ -1,0 +1,228 @@
+% Preview source code
+
+%% LyX 2.0.6 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[english]{article}
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{geometry}
+\geometry{verbose,lmargin=2.54cm,rmargin=2.54cm}
+\usepackage{babel}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[unicode=true]
+ {hyperref}
+
+\makeatletter
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
+\numberwithin{figure}{section}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{color}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{babel}
+\usepackage{bbm}
+\usepackage{dsfont}
+\usepackage[]{natbib}
+%\bibliographystyle{econometrica}
+%\bibliographystyle{/home/michael/Dropbox/Papers/chicago}
+%\bibliographystyle{/home/michael/Dropbox/Papers/ecta}
+\bibliographystyle{/home/michael/Dropbox/Papers/aer}
+\renewcommand{\cite}{\citet}
+\renewcommand\[{\begin{equation}}
+\renewcommand\]{\end{equation}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argMax}{arg\,Max}
+\DeclareMathOperator*{\Max}{\,Max}
+
+\makeatother
+
+\begin{document}
+
+\title{Real Estate Tax Collection in Philadelphia\\
+Preliminary Analysis}
+
+
+\author{Michael Chirico, Charles Loeffler, Robert Inman, John MacDonald,
+Holger Sieg}
+
+\maketitle
+
+\part*{Preliminary Highlights}
+\begin{itemize}
+\item Roughly \$36 million in property taxes is owed by properties which,
+\textit{prima facie}, should be out of hock%
+\footnote{By this, we mean that the predicted probability of delinquency is
+quite low--8.14\% or less (only 1\% of properties had a predicted
+probability of delinquency so far off)--but the property is behind
+on its taxes nonetheless%
+}--this is roughly 8 percent of the total delinquency bill in the sample
+we have thus far.
+\item The strongest independent predictors of delinquency are, perhaps not
+surprisingly, property condition and assessed value. Other things
+(including property vlaue) being equal, vacant properties are 15\%
+and sealed properties 24\% more likely to owe taxes than properties
+with no exterior (e.g. apartments); even simply having the exterior
+rated as ``below average'' is associated with an 8\% increase in
+delinquency incidence. As to property value, keeping other things
+equal, we would predict a 9\% increase in delinquency likelihood when
+changing a property from the first quartile (\$60,500) to the third
+quartile (\$172,600).
+\item The city GMA owing the most in taxes is West Philadelphia (GMA-A)--over
+\$83 million--but, relative to the value of property, North Philadelphia
+West (north of Poplar, south of Lincoln Highway west of Broad, GMA-H)
+owes the most (3 cents of tax owed for every dollars' worth of real
+estate). This is compared to the angels--GMA-D (Rhawnhurst-Fox Chase-Burholme)
+owes only \$34 million and GMA-P (center city) owes only .07 cents
+(7/10000 of a dollar) per dollar of real estate (understandable given
+housing prices). Certain city council districts also seem to contain
+disproportionate likelihood of tax delinquency.
+\item Over \$76 million is owed by taxpayers claiming the homestead exemption,
+\textit{but} owner-occupied tracts are predicted to be delinquent
+less often (by about 7\%).
+\end{itemize}
+
+\part*{Data}
+
+We pulled the data offered publicly by the blog \href{http://philadelinquency.com}{philadelinquency.com}
+(found \href{http://www.philadelinquency.com/FULL\%20OPA\%20AND\%20REVENUE\%20DUMP\%20APR2014\%20(REVISED).zip}{here}),
+which contains a point-in-time snapshot of the city's records from
+three sources: the OPA, Revenue, and Valuations. The data appears
+to be current to around March 6th, 2014 (this is the most recent date
+of sale for any property in the OPA database).
+
+
+\subsection*{Sample Restrictions}
+\begin{enumerate}
+\item Use residential properties only. Specifically, we use properties with
+an ``R'' zoning code OR listed as mixed commercial-residential or
+mixed industrial-residential.
+\item Use properties with positive market value only (some 27 properties
+had an assessed value of \$0; 22 of these had had positive assessments
+in prior years, so these numbers were used instead).
+\item Use properties identified with their GMA--not all properties had their
+GMA listed in the OPA records, which is essential for identifying
+neighborhood level effects.
+\end{enumerate}
+
+\subsection*{Descriptive Statistics}
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrr}
+  \hline
+ & All Properties & Delinquent Properties & Nondelinquent Properties \\ 
+  \hline
+  Delinquent & 0.163 & 1.000 & 0.000 \\ 
+  Owe $>$1 Year & 0.145 & 0.891 & 0.000 \\ 
+  Exterior: N/A & 0.070 & 0.197 & 0.045 \\ 
+  Exterior: New/Remodeled & 0.032 & 0.010 & 0.036 \\ 
+  Exterior: Above Average & 0.032 & 0.009 & 0.036 \\ 
+  Exterior: Average & 0.803 & 0.611 & 0.840 \\ 
+  Exterior: Below Average & 0.041 & 0.094 & 0.030 \\ 
+  Exterior: Vacant & 0.007 & 0.019 & 0.005 \\ 
+  Exterior: Sealed & 0.016 & 0.060 & 0.007 \\ 
+  Owner-Occupied & 0.419 & 0.192 & 0.463 \\ 
+  Philly Mailing Address & 0.892 & 0.894 & 0.891 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+\begin{center}
+\includegraphics[scale=0.3]{gmas_by_population}\includegraphics[scale=0.4]{council_districts_by_n_properties}
+\par\end{center}
+
+\begin{center}
+\includegraphics[scale=0.5]{log_market_values}\includegraphics[scale=0.5]{log_delinquency_levels}
+\par\end{center}
+
+
+\section*{Regression Tables from Chosen Model}
+
+For simplicity, for now we've used a linear probability model of the
+binary delinquency variable (defined to be 1 when the OPA records
+show a nonzero value in the delinquent field). This was regressed
+on log market value, dummy variables for GMA zone (lettered A through
+P, excluding I and O), exterior condition (coded 0 and 2-7), owner
+occupancy, having a philadelphia mailing address, and city council
+district (districts 1-10). The omitted GMA was A, the omitted exterior
+code 0, and the omitted council district was 1 (which is roughly Old
+City, Fish Town, and Northern Liberties).
+
+Standard errors are sloppy--standard linear regression errors were
+assumed.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{l c c c }
+\hline
+                             & LPM & LPM (Robust SE) & Probit \\
+\hline
+Intercept                    & $1.152 \; (0.009)^{***}$  & $1.152 \; (0.009)^{***}$  & $3.060 \; (0.045)^{***}$  \\
+Log Market Value (\$)        & $-0.083 \; (0.001)^{***}$ & $-0.083 \; (0.001)^{***}$ & $-0.364 \; (0.004)^{***}$ \\
+GMA B                        & $-0.013 \; (0.003)^{***}$ & $-0.013 \; (0.004)^{**}$  & $-0.049 \; (0.014)^{***}$ \\
+GMA C                        & $-0.044 \; (0.005)^{***}$ & $-0.044 \; (0.005)^{***}$ & $-0.456 \; (0.031)^{***}$ \\
+GMA D                        & $-0.052 \; (0.005)^{***}$ & $-0.052 \; (0.005)^{***}$ & $-0.469 \; (0.032)^{***}$ \\
+GMA E                        & $-0.070 \; (0.004)^{***}$ & $-0.070 \; (0.004)^{***}$ & $-0.477 \; (0.021)^{***}$ \\
+GMA F                        & $-0.035 \; (0.004)^{***}$ & $-0.035 \; (0.004)^{***}$ & $-0.234 \; (0.021)^{***}$ \\
+GMA G                        & $0.049 \; (0.004)^{***}$  & $0.049 \; (0.005)^{***}$  & $0.025 \; (0.020)$        \\
+GMA H                        & $0.056 \; (0.004)^{***}$  & $0.056 \; (0.004)^{***}$  & $0.020 \; (0.017)$        \\
+GMA J                        & $-0.039 \; (0.005)^{***}$ & $-0.039 \; (0.005)^{***}$ & $-0.330 \; (0.024)^{***}$ \\
+GMA K                        & $-0.009 \; (0.004)^{*}$   & $-0.009 \; (0.005)$       & $-0.017 \; (0.019)$       \\
+GMA L                        & $-0.026 \; (0.005)^{***}$ & $-0.026 \; (0.005)^{***}$ & $-0.168 \; (0.022)^{***}$ \\
+GMA M                        & $-0.009 \; (0.004)^{*}$   & $-0.009 \; (0.004)^{*}$   & $-0.063 \; (0.019)^{**}$  \\
+GMA N                        & $-0.070 \; (0.003)^{***}$ & $-0.070 \; (0.003)^{***}$ & $-0.530 \; (0.022)^{***}$ \\
+GMA P                        & $-0.024 \; (0.004)^{***}$ & $-0.024 \; (0.004)^{***}$ & $-0.444 \; (0.023)^{***}$ \\
+Exterior: New/Remodeled      & $-0.076 \; (0.004)^{***}$ & $-0.076 \; (0.004)^{***}$ & $-0.151 \; (0.022)^{***}$ \\
+Exterior: Above Average      & $-0.059 \; (0.004)^{***}$ & $-0.059 \; (0.004)^{***}$ & $-0.083 \; (0.023)^{***}$ \\
+Exterior: Average            & $-0.059 \; (0.003)^{***}$ & $-0.059 \; (0.003)^{***}$ & $0.107 \; (0.012)^{***}$  \\
+Exterior: Below Average      & $0.077 \; (0.003)^{***}$  & $0.077 \; (0.004)^{***}$  & $0.506 \; (0.014)^{***}$  \\
+Exterior: Vacant             & $0.147 \; (0.006)^{***}$  & $0.147 \; (0.009)^{***}$  & $0.661 \; (0.024)^{***}$  \\
+Exterior: Sealed             & $0.242 \; (0.004)^{***}$  & $0.242 \; (0.006)^{***}$  & $0.832 \; (0.017)^{***}$  \\
+Owner Occupied               & $-0.072 \; (0.001)^{***}$ & $-0.072 \; (0.001)^{***}$ & $-0.398 \; (0.006)^{***}$ \\
+Philadelphia Mailing Address & $0.046 \; (0.002)^{***}$  & $0.046 \; (0.002)^{***}$  & $0.188 \; (0.008)^{***}$  \\
+City Council District 2      & $0.006 \; (0.004)$        & $0.006 \; (0.003)$        & $-0.081 \; (0.024)^{***}$ \\
+City Council District 3      & $0.068 \; (0.004)^{***}$  & $0.068 \; (0.004)^{***}$  & $0.144 \; (0.023)^{***}$  \\
+City Council District 4      & $0.029 \; (0.004)^{***}$  & $0.029 \; (0.004)^{***}$  & $0.047 \; (0.021)^{*}$    \\
+City Council District 5      & $0.009 \; (0.003)^{**}$   & $0.009 \; (0.003)^{**}$   & $0.028 \; (0.017)$        \\
+City Council District 6      & $-0.014 \; (0.004)^{***}$ & $-0.014 \; (0.003)^{***}$ & $-0.147 \; (0.020)^{***}$ \\
+City Council District 7      & $-0.006 \; (0.003)$       & $-0.006 \; (0.003)$       & $0.001 \; (0.015)$        \\
+City Council District 8      & $0.076 \; (0.004)^{***}$  & $0.076 \; (0.004)^{***}$  & $0.252 \; (0.019)^{***}$  \\
+City Council District 9      & $0.003 \; (0.004)$        & $0.003 \; (0.003)$        & $-0.018 \; (0.020)$       \\
+City Council District 10     & $-0.006 \; (0.005)$       & $-0.006 \; (0.004)$       & $-0.207 \; (0.029)^{***}$ \\
+\hline
+R$^2$                        & 0.182                     & 0.182                     &                           \\
+Adj. R$^2$                   & 0.182                     & 0.182                     &                           \\
+Num. obs.                    & 511513                    & 511513                    & 511513                    \\
+AIC                          &                           &                           & 366504.212                \\
+BIC                          &                           &                           & 366860.856                \\
+Log Likelihood               &                           &                           & -183220.106               \\
+Deviance                     &                           &                           & 366440.212                \\
+\hline
+\multicolumn{4}{l}{\scriptsize{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$}}
+\end{tabular}
+\caption{Modelling (Binary) Delinquency vs. Property Characteristics}
+\label{table:coefficients}
+\end{center}
+\end{table}
+
+\newpage{}
+
+
+\subsection*{Good Candidates for Collection}
+
+These plots depict histograms of the predicted probabilities of delinquency
+for houses that are actually delinquent. That there are actually delinquent
+houses with low predicted probabilities of delinquency means that
+there are many properties which are delinquent but don't ``fit the
+mold'' of the other delinquent properties--as such, there should
+be a good chance of collecting taxes due from these properties.
+
+\begin{center}
+\includegraphics[scale=0.5]{delinquency_probability_fitted_for_delinquents_lpm}\includegraphics[scale=0.5]{delinquency_probability_fitted_for_delinquents_probit}
+\par\end{center}
+\end{document}

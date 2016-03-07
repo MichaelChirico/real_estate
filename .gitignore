@@ -3,8 +3,16 @@
 *.png
 *.lyx
 *.odt
+*.ods
+*.ots
 *.ps
 *.docx
+*.pptx
+*.zip
+*.wpd
+*.jpg
+*.pngw
+*.xlsx
 
 #never ended up using this
 round_one/Analysis and Plot.do
@@ -14,10 +22,21 @@ round_one/Analysis and Plot.do
 
 #data files
 round_one/analysis_dictionary.csv
+round_two/round_2_full_data.csv
+
+#images in all different formats, all binary
+round_one/images/
+
+#documents associated with implementation (all binary)
+#  should remain *LOCKED* so they aren't edited hereafter
+round_two/FINAL_files_used_in_round_2
 
 #presentation-associated folders
 round_two/micro_lunch_160301_cache/
 round_two/micro_lunch_160301-figure/
 round_two/micro_lunch_160301_files/
+
+#until something comes of it
+round_three/
 
 .Rhistory

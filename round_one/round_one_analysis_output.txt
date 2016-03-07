@@ -1,0 +1,213 @@
+% latex table generated in R 3.2.2 by xtable 1.7-4 package
+% Wed Oct  7 09:20:26 2015
+\begin{table}[ht]
+\centering
+\caption{Descriptive Statistics} 
+\label{table:descriptives}
+\begin{tabular}{|r|r|r|r|r|}
+  \hline
+ & All Delinquent & Law Firm & Restricted & Analysis \\ 
+  \hline
+Average Amount Due & \$4,409 & \$4,608 & \$3,761 & \$3,465 \\ 
+  Median Amount Due & \$1,695 & \$2,216 & \$1,285 & \$1,311 \\ 
+  Average Assessed Property Value & \$138,867 & \$76,478 & \$242,604 & \$186,691 \\ 
+  Median Assessed Property Value & \$66,700 & \$50,100 & \$82,900 & \$81,900 \\ 
+  Original Tax Due & \$1,586 & \$925 & \$3,123 & \$2,405 \\ 
+  Avg. Years of Debt & 6 & 8 & 4 & 4 \\ 
+  Med. Years of Debt & 2 & 4 & 1 & 1 \\ 
+  \% Residential & 80 & 74 & 81 & 80 \\ 
+  \% with Philadelphia Mailing Address & 88 & 87 & 82 & 83 \\ 
+  \% Owner-Occupied & 24 & 14 & 21 & 22 \\ 
+  Number Observations & 134,887 & 70,031 & 29,951 & 4,927 \\ 
+   \hline
+\end{tabular}
+\end{table}
+% latex table generated in R 3.2.2 by xtable 1.7-4 package
+% Wed Oct  7 09:21:43 2015
+\begin{table}[ht]
+\centering
+\caption{Tests of Sample Balance on Observables} 
+\label{table:balance}
+\begin{tabular}{|l|c|c|c|c|c|}
+  \hline
+Variable & Control & Threat & Public Service & Civic Duty & $p$-value \\ 
+  \hline 
+Taxes Due Quartiles & & & & & \\ 
+$<$ \$300 & 0.22 & 0.10 & 0.40 & 0.28 & 0.00 \\ 
+  \lbrack\$300, \$1300) & 0.24 & 0.08 & 0.46 & 0.22 &  \\ 
+  \lbrack\$1300, \$3300) & 0.23 & 0.11 & 0.45 & 0.20 &  \\ 
+  $>$ \$3300 & 0.18 & 0.11 & 0.48 & 0.23 &  \\ 
+   \hline 
+Market Value Quartiles & & & & & \\ 
+$<$ \$46k & 0.24 & 0.12 & 0.43 & 0.21 & 0.33 \\ 
+  \lbrack\$46k, \$82k) & 0.22 & 0.09 & 0.46 & 0.23 &  \\ 
+  \lbrack\$82k, \$151k) & 0.21 & 0.09 & 0.45 & 0.25 &  \\ 
+  $>$ \$151k & 0.21 & 0.10 & 0.45 & 0.24 &  \\ 
+   \hline 
+Land Area Quartiles & & & & & \\ 
+$<$ 800 sq. ft & 0.22 & 0.10 & 0.45 & 0.23 & 0.92 \\ 
+  \lbrack800, 1200) sq. ft & 0.23 & 0.10 & 0.43 & 0.24 &  \\ 
+  \lbrack1200, 1800) sq. ft & 0.21 & 0.10 & 0.47 & 0.22 &  \\ 
+  $>$ 1800 sq. ft & 0.21 & 0.10 & 0.44 & 0.24 &  \\ 
+   \hline 
+\# Rooms & & & & & \\ 
+0-5 & 0.22 & 0.11 & 0.44 & 0.23 & 0.51 \\ 
+  6 & 0.21 & 0.09 & 0.46 & 0.23 &  \\ 
+  7+ & 0.22 & 0.10 & 0.44 & 0.24 &  \\ 
+   \hline 
+Years of Debt & & & & & \\ 
+1 Years & 0.23 & 0.09 & 0.43 & 0.24 & 0.11 \\ 
+  2 Years & 0.22 & 0.10 & 0.44 & 0.24 &  \\ 
+  3-5 Years & 0.20 & 0.10 & 0.48 & 0.22 &  \\ 
+  6+ Years & 0.20 & 0.13 & 0.47 & 0.20 &  \\ 
+   \hline 
+Category & & & & & \\ 
+Residential & 0.22 & 0.09 & 0.45 & 0.23 & 0.28 \\ 
+  Hotels\&Apts & 0.20 & 0.12 & 0.45 & 0.23 &  \\ 
+  Store w/ Dwelling & 0.21 & 0.09 & 0.48 & 0.22 &  \\ 
+  Commercial & 0.15 & 0.11 & 0.50 & 0.24 &  \\ 
+  Industrial & 0.27 & 0.11 & 0.42 & 0.20 &  \\ 
+  Vacant & 0.25 & 0.13 & 0.39 & 0.23 &  \\ 
+   \hline
+Distribution of Properties & 0.22 & 0.10 & 0.45 & 0.23 & 0.62 \\ 
+   \hline
+Expected Distribution & 0.22 & 0.11 & 0.44 & 0.22 &  \\ 
+   \hline
+\end{tabular}
+\end{table}
+% latex table generated in R 3.2.2 by xtable 1.7-4 package
+% Wed Oct  7 09:21:43 2015
+\begin{sidewaystable}[ht]
+\centering
+\caption{Estimated Average Treatment Effects: Revenues} 
+\label{table:summary}
+\begin{tabular}{|p{2.2cm}|p{1.4cm}|p{1.8cm}|p{1.2cm}|p{1.2cm}|p{1.4cm}|p{1.4cm}|p{2.2cm}|p{1.8cm}|}
+  \hline
+Sample & Treatment (Properties) & Total Debt Owed & Percent Ever Paid & Percent Paid in Full & Dollars Received & Percent Debt Received & Dollars above Control Per Property & Total Surplus over All Properties \\ 
+  \hline
+Full & Control (n=1,075) & \$3,294,516 & 16 & 10 & \$120,585 & 3.7 & \$0 & \$0 \\ 
+  (N=4,927) & Threat (n=499) & \$1,839,826 & 14 & 8 & \$71,176 & 3.9 & \$30 & \$15,202 \\ 
+   & Public Service (n=2,211) & \$8,003,148 & 15 & 7 & \$447,728 & 5.6 & \$90 & \$199,714 \\ 
+   & Civic Duty (n=1,142) & \$3,794,900 & 18 & 12 & \$152,217 & 4.0 & \$21 & \$24,116 \\ 
+   \hline
+Non-Commercial & Control (n=1,048) & \$2,930,759 & 16 & 10 & \$120,069 & 4.1 & \$0 & \$0 \\ 
+  (N=4,749) & Threat (n=480) & \$1,657,379 & 15 & 8 & \$71,176 & 4.3 & \$34 & \$16,183 \\ 
+   & Public Service (n=2,122) & \$7,024,458 & 15 & 7 & \$288,758 & 4.1 & \$22 & \$45,642 \\ 
+   & Civic Duty (n=1,099) & \$3,350,147 & 19 & 12 & \$146,227 & 4.4 & \$18 & \$20,315 \\ 
+   \hline
+Unique Owner & Control (n=837) & \$3,007,232 & 16 & 9 & \$66,597 & 2.2 & \$0 & \$0 \\ 
+  (N=3,888) & Threat (n=406) & \$1,437,902 & 15 & 9 & \$51,309 & 3.6 & \$47 & \$19,005 \\ 
+   & Public Service (n=1,754) & \$6,956,034 & 16 & 7 & \$418,767 & 6.0 & \$159 & \$279,207 \\ 
+   & Civic Duty (n=891) & \$3,331,168 & 20 & 13 & \$130,016 & 3.9 & \$66 & \$59,123 \\ 
+   \hline
+\end{tabular}
+\end{sidewaystable}
+
+\begin{table}[htbp]
+\caption{Estimated Average Treatment Effects: Revenues}
+\begin{center}
+\begin{tabular}{l c c c }
+\hline
+               & Main Sample & Non-Commercial & Unique Owner \\
+\hline
+Threat         & $10.78$   & $23.00$   & $40.55$       \\
+               & $(42.34)$ & $(41.65)$ & $(31.37)$     \\
+Public Service & $76.04$   & $14.03$   & $152.38^{**}$ \\
+               & $(55.53)$ & $(31.27)$ & $(66.57)$     \\
+Civic Duty     & $28.95$   & $22.96$   & $82.31^{**}$  \\
+               & $(38.15)$ & $(38.62)$ & $(40.58)$     \\
+\hline
+Num. obs.      & 4927      & 4749      & 3888          \\
+\hline
+\multicolumn{4}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
+\end{tabular}
+\label{dif_mean}
+\end{center}
+\end{table}
+
+\begin{table}[htbp]
+\caption{Logistic Regressions for Ever Paid: Compliance}
+\begin{center}
+\begin{tabular}{l c c c }
+\hline
+               & Full Sample & Non-Commercial & Unique Owner \\
+\hline
+Threat         & $-0.07$  & $-0.04$  & $-0.03$     \\
+               & $(0.17)$ & $(0.17)$ & $(0.17)$    \\
+Public Service & $-0.06$  & $-0.08$  & $0.05$      \\
+               & $(0.13)$ & $(0.13)$ & $(0.11)$    \\
+Civic Duty     & $0.22$   & $0.20$   & $0.30^{**}$ \\
+               & $(0.13)$ & $(0.14)$ & $(0.12)$    \\
+\hline
+Log Likelihood & -2127.64 & -2054.97 & -1749.98    \\
+Num. obs.      & 4927     & 4749     & 3888        \\
+\hline
+\multicolumn{4}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
+\end{tabular}
+\label{table:ep_log_I}
+\end{center}
+\end{table}
+
+\begin{table}[htbp]
+\caption{Logistic Regressions for Ever Paid with Interactions: Compliance}
+\begin{center}
+\begin{tabular}{l c c c }
+\hline
+                             & Full Sample & Non-Commercial & Sole Owner \\
+\hline
+Balance MOD                  & $-0.46$       & $-0.52^{*}$   & $-0.33$       \\
+                             & $(0.25)$      & $(0.24)$      & $(0.24)$      \\
+Balance HIGH                 & $-1.03^{***}$ & $-0.97^{***}$ & $-1.54^{***}$ \\
+                             & $(0.28)$      & $(0.27)$      & $(0.32)$      \\
+Balance VHIGH                & $-1.25^{***}$ & $-1.15^{***}$ & $-1.36^{***}$ \\
+                             & $(0.33)$      & $(0.32)$      & $(0.34)$      \\
+Threat                       & $-0.05$       & $-0.01$       & $-0.13$       \\
+                             & $(0.29)$      & $(0.28)$      & $(0.29)$      \\
+Threat*Balance MOD           & $-0.27$       & $-0.27$       & $-0.22$       \\
+                             & $(0.46)$      & $(0.45)$      & $(0.45)$      \\
+Threat*Balance HIGH          & $0.40$        & $0.38$        & $0.94$        \\
+                             & $(0.44)$      & $(0.43)$      & $(0.48)$      \\
+Threat*Balance VHIGH         & $-0.07$       & $-0.20$       & $-0.19$       \\
+                             & $(0.57)$      & $(0.59)$      & $(1.22)$      \\
+Public Service               & $-0.30$       & $-0.34$       & $-0.34$       \\
+                             & $(0.20)$      & $(0.20)$      & $(0.21)$      \\
+Public Service*Balance MOD   & $0.02$        & $0.10$        & $0.10$        \\
+                             & $(0.31)$      & $(0.31)$      & $(0.30)$      \\
+Public Service*Balance HIGH  & $0.53$        & $0.53$        & $1.07^{**}$   \\
+                             & $(0.33)$      & $(0.32)$      & $(0.37)$      \\
+Public Service*Balance VHIGH & $0.70$        & $0.62$        & $0.92^{*}$    \\
+                             & $(0.38)$      & $(0.37)$      & $(0.39)$      \\
+Civic Duty                   & $0.16$        & $0.13$        & $0.21$        \\
+                             & $(0.21)$      & $(0.22)$      & $(0.21)$      \\
+Civic Duty*Balance MOD       & $-0.23$       & $-0.09$       & $-0.30$       \\
+                             & $(0.33)$      & $(0.33)$      & $(0.32)$      \\
+Civic Duty*Balance HIGH      & $0.27$        & $0.15$        & $0.59$        \\
+                             & $(0.35)$      & $(0.36)$      & $(0.40)$      \\
+Civic Duty*Balance VHIGH     & $-0.13$       & $-0.14$       & $-0.06$       \\
+                             & $(0.42)$      & $(0.42)$      & $(0.44)$      \\
+\hline
+Log Likelihood               & -2010.63      & -1948.34      & -1639.28      \\
+Num. obs.                    & 4927          & 4749          & 3888          \\
+\hline
+\multicolumn{4}{l}{\scriptsize{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$}}
+\end{tabular}
+\label{table:ep_log_II}
+\end{center}
+\end{table}
+% latex table generated in R 3.2.2 by xtable 1.7-4 package
+% Wed Oct  7 09:56:28 2015
+\begin{table}[htbp]
+\centering
+\caption{Marginal Predictions - Ever Paid} 
+\label{table:modelI_marg}
+\begin{tabular}{|l|c|c|c|c|}
+  \hline
+ & LOW & MOD & HIGH & VHIGH \\ 
+  \hline
+Control & 23.35 & 16.13 & 9.82 & 7.99 \\ 
+  Threat & 22.42 & 12.23 & 13.41 & 7.11 \\ 
+  Public Service & 18.45 & 12.69 & 12.10 & 11.44 \\ 
+  Civic Duty & 26.37 & 15.23 & 14.38 & 8.25 \\ 
+   \hline
+\end{tabular}
+\end{table}

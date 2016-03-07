@@ -1,0 +1,1602 @@
+\documentclass[12pt,titlepage]{article}
+
+\renewcommand\baselinestretch{1.5}
+\setlength{\parskip}{0.08in}
+\setlength{\medskipamount}{0.05in}
+\textheight 8.0 in
+\textwidth 6.0 in
+\topmargin 0.25in
+\tolerance=11000
+
+\usepackage[utf8]{inputenc}
+\usepackage{longtable}
+\usepackage{bbm}
+\usepackage{rotating}
+\usepackage[pdfencoding=auto,unicode=true]{hyperref}
+\usepackage{graphicx}
+\usepackage[outdir=./]{epstopdf}
+\graphicspath{{images/analysis/act/}{images/}{images/balance/}}
+\renewcommand{\thefootnote}{\fnsymbol{footnote}}
+
+\begin{document}
+
+\title{An Experimental Evaluation of Notification Strategies to
+  Increase Property Tax Compliance: \\ Free-Riding in the City of
+  Brotherly Love} \author{Michael Chirico, Robert Inman, Charles
+  Loeffler, \\ John MacDonald, and Holger Sieg\thanks{We would like to
+    thank Rob Dubow (Director of Finance), Clarena Tolson (Revenue
+    Commissioner), and Marisa Waxman (Deputy Commissioner for
+    Assessment of Properties) in the Department of Revenue of the City
+    of Philadelphia for their help and support. We would also like to
+    thank Jeff Brown, Chris Sanchirico, Wolfgang Sch\"on, Reed
+    Shuldiner and participants of numerous seminars for comments and
+    suggestions. The views expressed here are those of the authors and
+    do not necessarily represent or reflect the views of the City of
+    Philadelphia.}  \\ University of Pennsylvania \\ \\ Prepared for
+  the 2015 NBER Conference on Tax Policy and the Economy}
+  
+  \date{\today}
+
+\maketitle
+
+\begin{abstract}
+
+This study evaluates a set of notification strategies intended to
+increase property tax collection. To test these strategies, we develop
+a field experiment in collaboration with the Philadelphia Department
+of Revenue.  The resulting notification strategies draw on core
+rationales for tax compliance: deterrence, the need to finance the
+provision of public goods and services, as well as the appeal to civic
+duty. Our empirical findings provide evidence that carefully designed
+and targeted notification strategies can modestly improve tax
+compliance.
+
+\noindent KEYWORDS: Tax Compliance, Property Taxation, Field
+Experiment, Deterrence, Public Service Appeal, Appeal to Civic Duty.
+
+\end{abstract}
+
+\newpage
+
+\renewcommand{\thefootnote}{\arabic{footnote}}
+
+\renewcommand{\thefootnote}{\arabic{footnote}}
+
+\section{Introduction}
+
+The lack of tax compliance has become a policy issue of central
+importance to all levels of government in developed and developing
+economies. In 2009, the developed economies of the OECD reported a tax
+non-compliance rate of 14.2, ranging from a low of 2-3 percent in
+Austria, Denmark, Germany, Korea, and Norway to 25 percent or more in
+Belgium, Iceland, Portugal, the Slovak Republic, to a high of 73
+percent in Greece (OECD, 2011, Table 36). In developing economies with
+significant cash economies, tax non-compliance is likely much higher. The
+OECD estimates an average rate of tax non-compliance in non-OECD
+countries of 37 percent (OECD, 2011, Chart 7).
+
+Noncompliance is a significant concern for at least four reasons.
+First, governments are denied the revenues needed to provide basic
+public services essential for ensuring the safety, health, and minimal
+well-being of all citizens.  Second, if there is significant
+non-compliance and basic services are to be provided, then tax rates
+will need to rise on those who pay taxes. Rising tax rates for honest
+payers will discourage their use and desire of public services,
+potentially encouraging their exit from the formal economy. The
+negative consequences for overall economic performance can be sizable;
+Greece today serves as an unfortunate reminder.  Third, non-compliance
+undermines the principle that everyone has to pay their ``fair share"
+of taxes.  The evidence suggests upper income taxpayers are more
+likely to be non-compliers.  Finally, significant non-compliance may
+threaten the stability of democratic governance.  When democratic
+governments fail to deliver essential services, impose large tax
+burdens on the legitimate private economy, and are viewed as
+capricious or actively unfair, then dictatorial alternatives may
+become attractive. In an important sense, tax compliance is a first
+order of business for efficient, fair, and democratic governance.
+
+Tax compliance requires government to manage the taxpayer's decision
+to pay taxes.  Taxpayers may ask: What do I owe and what happens if I
+don't pay?  Taxpayers have the ability to influence what is owed on
+any tax that requires self-reporting of income or assets, such as
+self-reported consulting or business income.  Taxing jurisdictions can
+in principle increase compliance by requiring less self reporting and
+directly assessing the tax base.  Since property cannot be hidden,
+scuppered away to a tax haven, or concealed in an electronic data
+system, self- or non-reporting is less of an issue in a property tax
+system.  Privately assessed wages, dividends, and interest income by
+individuals and businesses are easier to conceal to the tax
+authorities.  However, private assessors have an incentive to report
+incomes truthfully as those payments are typically deductible expenses
+for their own taxes.  The need for self-reporting is also reduced as
+the formal economy and the use of audited business records expands.
+Taxes which can take advantage of those records maximize tax
+compliance and are preferred for just this reason.  The increased
+popularity of the value-added tax (VAT) over the past twenty years in
+economies with developing formal consumption sectors is a case on
+point (see Keen and Lockwood, 2010; Pomeranz, 2014).  Self-reporting
+matters for tax compliance in developed economies as well.  Kleven
+et. al. (2011), for example, show that tax non-compliance among Danish
+taxpayers is significantly higher for individuals with self-reported
+income.
+
+The taxing jurisdiction can also control compliance by influencing the
+decision to evade, once the tax liability has been assessed.  The most
+common strategy is the economic stick - fines and penalties.  Failure
+to pay in time leads to interest penalties sufficiently large that
+there is no arbitrage advantage to waiting, and perhaps to a
+significant late fine as well.  For long-time non-payers, fines may
+include the garnishment of wages, seizure of property, or jail.  Early
+empirical studies found little impact of such penalties on aggregate
+tax compliance, however; see Slemrod (2007).  But more recent, nuanced
+studies, did find an impact of fines on both the level and speed of
+tax payments.  Increasing fines have increased self-assessment of tax
+liabilities for those facing possible audits of self-reported incomes;
+see Kleven, et. al. (2011 and Pomeranz (2014).  Hallsworth, et. al.
+(2014) find the speed with which taxpayers pay their liabilities can
+also be improved with increased fines.  But fines only work if
+taxpayers believe they will be enforced.  Large fines may be seen by
+taxpayers as a signal of a desperate and ineffective tax collector, as
+politically not viable and thus as empty threats, or in the extreme,
+as a breakdown of cooperative democratic governance.  If so, an
+increase in fines may even reduce tax compliance, as indeed happened
+in Israel with the payment of corporate taxes; see Ariel (2012).  On
+balance, the estimated effects of fines on tax payments have been
+positive, but modest in magnitude.
+
+Given evidence as to the limited ability of economic sanctions to
+impact aggregate collections, attention has turned to employing
+non-economic or ``behavioral" motivations for increasing tax
+compliance.  Such motives are grounded in the value taxpayers place
+upon their role and position within the democratic community.  The
+role may be instrumental leading to outcomes valued by the taxpayer,
+such as additional public services, or of value in its own right.
+Both provide an incentive for tax compliance.
+
+Instrumentally, for example, if each taxpayer thought of himself as
+simply a single citizen within the democracy, there would be no
+incentive, apart from a fine, to pay for services.  If fines are too
+low or unenforced, then free-riding is the preferred private strategy.
+But if each taxpayer views himself as part of a community of taxpayers
+and assumes all other taxpayers also think in a private way, then no
+services would be provided.  Facing this possibility, there may arise
+a community, or cooperative, equilibrium in which all citizens agree
+to pay their taxes, as long as all others agree to pay as well.  But
+citizens must think of themselves as representatives of their
+community, not as a citizen alone; see Feddersen and Sandroni (2006).
+If so, the cooperative outcome can emerge.  As examples, we vote, we
+tip in restaurants we will never visit again, and we put our litter in
+waste cans.
+
+Or the citizen's role in the community may be valued in its own right,
+quite apart from any impact playing such a role may have on valued
+social outcomes.  Individuals may derive satisfaction from knowing, or
+from having others know, that they have done their ``civic duty."
+Duty can extend far beyond tax compliance to all forms of law abiding
+behavior; see Posner (2000).  Consistent with theories of social
+norms, the more people conform to law-abiding behavior, the more
+likely it may be that the ``marginal" citizen will conform as well;
+see Benabou and Tirole (2011).
+
+Both the instrumental motive and the motive born from civic duty have
+been used to stimulate tax compliance.  The evidence is mixed.  The
+most careful study of the two motives was done Blumenthal et
+al. (2001), where two different letters were sent to Minnesota state
+taxpayers reminding the taxpayer when taxes were due and to report
+their income accurately.  One letter stressed that taxes pay for
+important state services.  The other letter emphasized that most state
+taxpayers correctly report their taxable income on time.  There were
+15,000 taxpayers in each group, and their reported taxable incomes
+were compared to a control group of 15,000 taxpayers who received no
+letter.  From the work of Kleven et al. (2011) and Pomeranz (2014) we
+should expect the largest effect on self-reported incomes.  For both
+letters, there were statistically significant positive and negative
+effects on the various categories of self-reported incomes, with no
+statistically significant change in aggregate taxable income over that
+reported by the control group.  The one strong effect was a relatively
+large negative effect on reported income by the richest taxpayers from
+having received the civic duty letter.
+
+Three more recent studies have been more encouraging as to impact of
+behavioral appeals. In an effort to improve the speed of tax
+compliance for British income taxpayers, Hallsworth et al. (2014)
+sent either of two letters to taxpayers both encouraging them to pay
+their taxes on time, with one letter stressing that payment ensures
+important national services will be provided and a second stressing
+that ``nine out of ten" taxpayers pay their taxes on time.  Both sets
+of letters had a statistically significant effect in encouraging
+sooner tax payments, and the effects were greatest for the appeal to
+``civic duty" when explicitly mentioned the taxpayer's most likely
+reference group of fellow citizens.
+
+Perez-Truglia and Troiano (2015) explored the impact of what they call
+a ``shaming penalty" administered through a letter to a subset of
+delinquent state taxpayers reminding them that the state has placed
+their name on a publicly available list of tax delinquents and that
+only payment in full or acceptance of a payment schedule can remove
+their name from the delinquent list.  The reminder letter made a
+significant positive difference to eventual tax compliance, with the
+greatest effects observed for taxpayers with the lowest level of taxes
+owed.  In addition, reminding tax delinquents that there is a growing
+financial penalty to late payments also had a positive impact on
+compliance and particularly so for wage-only taxpayers whose income
+can be most easily attached for payment and penalties.
+
+Finally, Besley, Jensen, and Persson (2014) estimate a dynamic model
+of tax compliance to explore whether more complying taxpayers
+encourages further compliance as implied by social norm behaviors.
+The theory is tested for British local government tax compliance
+following the tax revolt of 1990 in response to the replacement of the
+wealth-based property tax by a regressive poll or ``head" tax.  Local
+compliance fell from an average rate of 97 percent to 82 percent
+within two years.  The poll tax was removed and wealth taxation
+restored in 1993 but it took more than ten years for tax compliance
+for the wealth tax to return to its original levels.
+
+Our agenda here is to extend our understanding of tax compliance to
+include the payment of local property taxation.  We do so by
+implementing a tax compliance experiment in one large U.S. city,
+Philadelphia.  In the early fall of 2014, we assisted the City of
+Philadelphia's Department of Revenue (DoR) in an evaluation
+of their efforts to improve local property tax collection through
+redrafting letters reminding taxpayers that their 2014 property tax
+payments were overdue.  The City's historical performance in tax
+compliance has not been good, collecting only 90 percent of assessed
+property tax revenues compared to an average compliance rate among
+large U.S. cities of nearly 95 percent.
+
+In Philadelphia, each year's property tax payments are mailed to
+property owners by mid-January and are due in full by March 31st of
+that year.  Beginning in May of the tax year, the DoR sends a common
+reminder letter to each late taxpayer, usually once every two months
+until payment is received.  The common reminder letter states the
+taxpayer's liability and accrued interest and penalties.  If payment
+has not been received by September of the tax year, 2 out of 3 taxpayers
+are assigned  to either of two law firms for collection The remaining third 
+stays with DoR for continued efforts at collection.  We
+assisted DoR with collection from their share of these ``tardy"
+taxpayers.  We proposed three additional formats for DoR's reminder
+letter.  In addition to the listing of tax payments, interest, and
+penalties, the alternative letters contained a sentence that either
+(i) threatened the potential loss of the taxpayer's home or property
+if taxes were not paid, or (ii) appealed to the positive community
+benefits in provided public services that the taxpayer's dollars
+provide, or (iii), appealed to the positive benefits of fulfilling
+your civic duty to yourself and others by paying your taxes.
+
+We find evidence that the letter that appealed the benefits of
+fulfilling your civic duty had a positive 
+effect on tax compliance above that of the City's standard reminder
+letter.  This appeal was an effective strategy for encouraging
+at least some tax payment and often payment in full, and had its
+biggest differential and most significant impact on those residents
+with relatively low levels of tax debt.  We also find some evidence
+that stressing the benefits of payment for the provision of city
+services may also improve tax compliance for tax payer. The effects
+are most significant for tax payers that owe larger
+amounts of taxes. The letter that threatened the possible loss of the
+taxpayer's property did not significantly improve tax
+collection. Finally, our results suggest that a preferred overall
+strategy may take advantage of the differential responses of taxpayers
+to the treatment letters. A uniform message to all late or
+non-compliant tax payers is not likely to be desirable.
+
+The rest of the paper is organized as follows.  Section 2 provides a
+brief overview of tax compliance in U.S. cities. Section 3 provides
+a detailed discussion of our three treatments and the control. It also
+discusses the experimental design and the fidelity of its
+implementation. Section 4 presents a descriptive analysis summarizing
+the main effects of our experiment.  Section 5 provides some additional
+analysis of discrete outcomes focusing on whether tax payers made 
+payments at all or paid the debt back in full.
+Section 6 offers some conclusions and discusses future research.
+
+
+\section{Property Tax Compliance in U.S. Cities: An Overview}
+
+
+The property tax is one of the most important taxes for the financing
+of local government services in the United States.  For the country as
+a whole, approximately 21 percent of all state and local government
+revenues were raised using the property tax in 2011 (Gruber, 2014).
+For the largest cities that percentage is much higher.  The potential
+economic advantages of the property tax are well known.\footnote{A
+  well administered property tax is has two potential economic
+  advantages, one relating to economic efficiency and the other to
+  economic fairness.  First, if households and businesses are mobile
+  across local political jurisdiction and if local jurisdictions use
+  their zoning powers to ``sort" taxpayers by the value of their
+  properties, then the property tax becomes the economic equivalent of
+  a benefit tax relating taxes paid directly to the costs of the
+  services provided (see Hamilton, 1975).  This will lead to the
+  efficient provision of local government services.  The two
+  efficiency assumptions are likely to hold in suburbs, but not in
+  central cities.  In the case of the central city, efficiency will
+  require the tax be close to a tax on existing structures and ideally
+  land, rather than on new investment.  The tax will be least
+  efficient in those cities with very elastic demand and supply for
+  new construction.  In declining cities with no new construction, the
+  supply curve is inelastic, at the level of existing structures.  In
+  successful, growing cities demand for location is likely to be
+  inelastic and new supply constrained by available land.  In these
+  two cases, therefore, the property tax remains a relatively
+  efficient local tax.  With regard to economic fairness, if the
+  property tax is based on market value assessments, then the tax
+  becomes a proportional tax on property wealth (see Aaron, 1975;
+  Mieszkowski, 1972).  Since property wealth increases at least in
+  proportion to increases in income, the tax will be proportional or
+  perhaps progressive.}  But so too does the tax have significant
+administrative advantages.  With modern techniques for assessment,
+properties can be accurately assessed at their market values, and
+assessments can be easily updated at the time of each ``arms-length"
+transaction.  Thus, there is no need for taxpayer reporting of the tax
+base, as with income, profits, sales, or VAT taxation.  Property
+values, based as they are on long-run economic returns, are usually
+less volatile than tax bases dependent on current economic activity,
+such as income or sales. Stable tax bases allow for stable revenue
+flows and thus less volatile service flows or, alternatively, tax
+rates.\footnote{Any remaining volatility in revenues can be managed
+  with rainy day funds.} Finally, when the tax base is determined by
+market-based assessments, the taxpayer's tax bases will have been
+objectively set and easily understood.  There is no need for
+complicated tax forms or contentious appeals.  This too saves on
+administrative costs, and one hopes, increases citizen confidence in
+the fairness of their tax payments.
+
+\begin{center}
+\begin{longtable}{| l | c |  c|}
+\caption{Property Tax Compliance: 2005-2014} \label{table:comp} \\
+\hline 
+\multicolumn{1}{|c|}{\textbf{City}} & \multicolumn{1}{c|}{\textbf{Percent Compliance}} & \multicolumn{1}{c|}{\textbf{Delinquent Tax Collected }} \\ 
+\multicolumn{1}{|c|}{\textbf{}} & \multicolumn{1}{c|}{\textbf{Current Yr; 10 Year Average}} & \multicolumn{1}{c|}{\textbf{Five Year, Yearly Average}} \\ 
+\hline 
+\endfirsthead
+\multicolumn{3}{c}%
+{{\bfseries \tablename\ \thetable{} -- continued from previous page}} \\
+\hline \multicolumn{1}{|c|}{\textbf{City}} &
+\multicolumn{1}{c|}{\textbf{Percent Compliance}} &
+\multicolumn{1}{c|}{\textbf{Delinquent Tax Collected}} \\ 
+\multicolumn{1}{|c|}{\textbf{}} & \multicolumn{1}{c|}{\textbf{Current Yr; 10 Year Average}} & \multicolumn{1}{c|}{\textbf{Five Year, Yearly Average}} \\ 
+\hline 
+\endhead
+\hline \multicolumn{3}{|l|}{{Continued on next page}} \\ \hline
+\endfoot
+\hline 
+\multicolumn{3}{l}{* City Poverty Rate is greater than or equal to .20 in 2009-2013.}  \\
+\multicolumn{3}{l}{{\it Annals of Statistics}: Each city's Comprehensive Annual Financial Report,} \\
+\multicolumn{3}{l}{annually over the years, 2005 to 2014.} \\
+\multicolumn{3}{l}{ \textit{Percent Compliance}: Computed as the percent of property taxes levied in} \\
+\multicolumn{3}{l}{each fiscal year that are actually paid during the fiscal (or collection) year.} \\ 
+\multicolumn{3}{l}{\textit{Delinquent Taxes Collected}: Delinquent taxes not paid in the year due may} \\
+\multicolumn{3}{l}{be paid in subsequent years.  The annual rate is computed as the average collection} \\
+\multicolumn{3}{l}{ rate over a five year period following the year after the tax is first due. The aggregate} \\
+\multicolumn{3}{l}{ percent of the delinquent taxes paid after five years, the typical horizon over which} \\
+\multicolumn{3}{l}{no further payments can be expected, can be computed as 5 x [yearly average].  } \\
+\multicolumn{3}{l}{The (-) indicates that data were not available to compute the rate of delinquent tax} \\
+\multicolumn{3}{l}{collection for that city.}  \\
+\endlastfoot
+Large City Average & .946; .945	& .112 \\
+Atlanta*	  & .982 ;  .960 & .182 \\
+Baltimore*	 & .960 ;  .950	 & .128 \\
+Birmingham*	 & .983;  .955	& - \\
+Boston	         & .996;  .992	 & - \\
+Buffalo*	 & .947;  .945	 & .175 \\
+Charlotte	 & .984;  .980	 & - \\
+Chicago*	 & .962;  .930	 & - \\
+Cincinnati*	 & .940;  .925	 & .120 \\
+Cleveland*	 & .841;  .850	 & .090 \\
+Columbus*	 & .938;  .920	 & .075 \\
+Dallas*	         & .989;  .985	 & .085 \\
+Washington, DC	 & .985;  .980	 & - \\
+Denver	         & .990;  .989	 & - \\
+Detroit*	 & .683;  .891	 & - \\
+Flint*	         & .654;  .785	 & .151 \\
+Houston*	 & .983;  .975	 & .171 \\
+Kansas City	 & .943; 938	 & - \\
+Los Angeles	 & .992;  .940	 & - \\
+Memphis*	 & .984;  .945	 & .085 \\
+Miami*	         & .975;  .970	 & .045 \\
+Milwaukee*	 & .865;  .875	 & .191 \\
+Minneapolis*	 & .985;  .972	 & .102 \\
+Nashville	 & .984;  .986	 & - \\
+New Orleans*	 & .948;  .921	 & .172 \\
+New York City	 & .915;  .925	 & .041 \\
+Oklahoma City	 & .958;  .949	 & .161 \\
+Orlando	         & .991;  .988	 & .072 \\
+Philadelphia*	 & .940;  .880	 & .125 \\
+Phoenix*	 & .977;  .965	 & .130 \\
+Pittsburgh*	 & .849;  .860	 & .048 \\
+Portland	 & .942;  .934	 & .109 \\
+Richmond*	 & .924;  .955	 & .171 \\
+Riverside	 & .990;  .982	 & - \\
+Sacramento	 & .996;  .980	 & - \\
+Salt Lake City	 & .985;  .980	 & .140 \\
+San Antonio	 & .989;  .985	 & .134 \\
+San Diego	 & .980;  .950	 & - \\
+San Francisco	 & .988;  .980	 & - \\
+San Jose	 & .999;  .990	 & - \\
+Seattle	         & .985;  .983	 & .170 \\
+St.  Louis*	 & .921;  .890	 & .123 \\
+Tampa	         & .959;  .957	 & .032 \\
+\end{longtable}
+\end{center}
+
+Once market-based assessments are in place, the administrative issue
+that remains is this: Will property owners pay their taxes?  Table
+\ref{table:comp} summarizes the record for property tax compliance for
+forty of the largest U.S. cities, plus Flint, Michigan, a poster child
+for weak compliance.  Tax compliance is defined as the percent of
+taxes levied in the collection year that are paid in the year due.
+Taxes not paid in the collection year are then considered
+delinquent.\footnote{A city's collection year need not correspond to
+  the city's fiscal year.  For example, in Philadelphia the collection
+  year is the calendar year while the fiscal year runs from July 1 to
+  June 30 of the next year.  Tax bills are mailed in January of each
+  collection year - the middle of the fiscal year - and are due on
+  March 31 of that year.  Payments received after March 31 are
+  considered late payments and will incur interest and late payment
+  penalties.  All payments received by December 31 of the collection
+  year are then recorded as taxes paid during the collection year.
+  Payments that are not paid by December 31 are then classified as
+  delinquent for that collection year.  Since property tax payments
+  arrive in the last half of each fiscal year, Philadelphia will use
+  some its tax receipts to repay the short-term ``cash-flow" loans of
+  that fiscal year and then save a significant fraction of the
+  remaining revenues for spending in the first half of the next fiscal
+  year.}
+
+Property tax compliance in these large cities over the past ten years,
+years that included the deepest recession in decades, has been very
+good.  On average, these large cities collected nearly 95 percent of
+their property taxes in the tax year due, and the recession years did
+not lower collection rates at all significantly.  Still the average
+amount of uncollected, delinquent revenues is significant too, and
+particularly so for the seven poorest performing cities: Cleveland
+(.85), Detroit (.89), Flint (.79), Milwaukee (.88), Philadelphia
+(.88), Pittsburgh (.86), and St. Louis (.89).
+
+Taxes that have not been paid in the tax year become delinquent
+payments, and cities seek to collect those taxes through various
+enforcement mechanisms.  The most common strategy is to send a
+reminder letter to the taxpayer stressing that unpaid taxes accumulate
+interest and penalties and need to be paid.  If still unpaid, the tax
+bill can be given to a private collection agent with revenues shared
+between the agent and city or perhaps sold to the agent for immediate
+revenues.  Or the wages of, or payment to, the tax delinquent can be
+garnished.  Philadelphia does so for public employees and for private
+contractors working for the city.  Finally, a tax lien can be imposed
+on the property to be paid when the home is sold.  As a last resort,
+the city can seize the property and require a sheriff's sale to
+collect back taxes.  The end result is the collection of some portion
+of delinquent taxes.  Table 1 reports each city's five year, yearly
+average for the collection of delinquent taxes.\footnote{The average
+  annual collection rate for delinquent taxes was estimated from data
+  provided by the sample cities in each city's Comprehensive Annual
+  Financial Report.  The required data was reported either as the
+  amount finally collected from a given year's delinquent taxes -
+  reported as ``Collections in Subsequent Years" - or as all
+  delinquent taxes collected in a year from all previous years -
+  reported as ``Delinquent Tax Collections."  For cities reporting
+  ``Collections in Subsequent Years" the average annual rate was
+  computed as ratio [Collections/(Tax Year Taxes Levied - Tax Year
+    Taxes Collected)] then divided by 5.  The assumption is that all
+  taxes levied but not collected in the tax year are classified as
+  delinquent and that no significant amount of delinquent taxes are
+  collected after five years.  For cities reporting ``Delinquent Tax
+  Collections" the average annual rate was computed as ratio
+  [Collections/ $\sum$ (Tax Year Taxes Levied - Tax Year Taxes
+    Collected)], summed over the previous five tax years.  In both
+  cases the average annual rate is an average of the actual
+  collections in each of the five years following tax delinquency,
+  where typically the first year rate of collection is the highest
+  with a declining rate in years two to five.  Included in
+  ``Collections" in both cases will be taxes plus interest plus
+  penalties collected, the proceeds from the sale of tax liens to
+  private collection agents, and the proceeds from the sheriff's sales
+  of delinquent properties.} The typical pattern of collection for
+delinquent taxes shows a relatively high success rate in the first
+year of delinquency, and then a very sharp decline in payments
+thereafter.\footnote{Atlanta is one of the better performing cities in
+  its collection of delinquent taxes and the pattern of its collection
+  success is typical.  We estimate that in the first year of
+  delinquency for its 2005 tax collection year, the city collected 56
+  percent of delinquent taxes owed. That was in 2006.  In 2007, the
+  second year of delinquency for 2005 taxes, an additional 8 percent
+  was collected.  In 2008, an additional 1 percent was collected.  In
+  2009, an additional 7 percent was collected.  And in the 2010, an
+  additional 12 percent was collected.  After five years, the final
+  amount collected of the 2005 delinquent tax owed was 84 percent.
+  The five year annual average for 2005 was therefore .168.  In
+  subsequent years, Atlanta has done a bit better.  Its annual average
+  collection rate has been .182 for an aggregate average collection
+  rate of delinquent taxes of .91.} Most cities view tax bills that
+have been delinquent for more than five years as uncollectible.
+Multiplying the five year average rate reported in Table 1 by five
+yields the average aggregate collection rate of any one year's
+delinquent taxes.  For the average city in our sample, this aggregate
+collection rate is .560 ( = .112 x 5).  The better performing cities,
+such as Atlanta, may eventually collect more than 90 percent of their
+delinquent taxes, the poorer performing cities perhaps not much more
+than 30 percent.
+
+Table 1 also indicates those cities with poverty rates greater than
+.20 for the period 2009-2013.  The expectation is that high poverty
+cities should have lower rates of initial tax compliance and possibly
+more difficulty in collecting delinquent taxes.  A comparison of the
+mean rates of tax compliance shows this to be case for initial
+collection efforts: .92 for the 22 high poverty rate cities (.94
+excluding Detroit and Flint) and .98 for the 20 cities with relatively
+low poverty rates.  The average annual ability to collect delinquent
+taxes in the two sets of cities is about the same (= .11), however,
+perhaps because the pool of delinquent taxpayers is very poor in all
+cities.  Importantly, however, some cities with high poverty rates are
+very successful in collecting property taxes on time and in collecting
+delinquent taxes.  Among the poorer cities, Atlanta, Baltimore,
+Houston, New Orleans, and Phoenix perform as well, and often better,
+than the average low poverty city.  The fact that property tax
+compliance can be well managed in the face of difficult economic
+realities suggests the value of looking at the administrative
+strategies of successful cities and searching for new strategies as
+well.  It is the latter agenda we pursue here, using taxpayer
+compliance in Philadelphia as a laboratory to experimentally evaluate
+four alternative collection strategies to encourage payment by tardy,
+soon to be delinquent, city taxpayers.
+
+\section{The Philadelphia Tax Experiment}
+
+\subsection{Treatments}
+
+In Philadelphia, each year's property tax payments are mailed to
+property owners by mid-January and are due in full by March 31st of
+that year.  Beginning in May of the tax year, the DoR sends a common
+reminder letter to each late taxpayer, usually once every two months
+until payment is received.  The common reminder letter is impersonal
+and simply states the taxpayer's liability and accrued interest and
+penalties; see Figure 1.  The only means for responding to the letter
+is to either send a check with the detached portion of the letter to
+DoR or to call a phone number given at the top of the letter, but
+without instructions.  If payment has not been received by September
+of the tax year, the taxpayer is randomly assigned with a 1/3
+probability to either of two law firms for collection or to the DoR
+for continued efforts at collection.  The law firms are free to pursue
+the collection of the debt as they see fit.  Proceeds from their
+efforts are shared with the City.  In the past, DoR's efforts at
+collection from these tardy taxpayers have been limited to simply
+re-mailing the usual reminder letter.
+
+In collaboration with the staff of DoR, we proposed two changes to
+their usual tax collection efforts.  First, a generic reminder letter,
+that included a Spanish translation of the letter on the reverse side
+and also provided a list of contact numbers for taxpayers whose
+native language is not English, was included with the traditional tax
+bill.\footnote{The Spanish translation was targeted at the hispanic
+  population.  Phone contacts were also included.}  This revised
+letter serves as our ``control" treatment.  Second, we offered three
+alternative letters to the control letter which might encourage
+additional tax compliance: one that threatened the potential loss of
+the taxpayer's home or property if taxes were not paid, a second that
+appealed to the positive community benefits in provided public
+services that the taxpayer's dollars provides, and third that appealed
+to the positive benefits the taxpayer may feel from fulfilling their
+civic duty to themselves and to others by paying their taxes.
+Specifically:
+
+{\it Treatment Letter 1: Threat: } {\bf Not paying your Real Estate
+  Taxes is breaking the law.} Failure to pay your Real Estate Taxes
+may result in seizure or sale of your property by the City. Do not
+make the mistake of assuming we are too busy to pursue your case.
+
+{\it Treatment Letter 2: Service Appeal: } {\bf We understand that
+  paying your taxes can feel like a burden.} We want to remind you of
+all the great services that you pay for with your Real Estate Tax
+Dollars. Your tax dollars pay for schools to teach our children.  They
+also pay for the police and firefighters who help keep our city safe.
+Please pay your taxes as soon as you can to help us pay for these
+essential services.
+  
+{ \it Treatment Letter 3: Civic Appeal: } {\bf You have not paid your
+  Real Estate Taxes.}  Almost all of your neighbors pay their fair
+share-- 9 out of 10 Philadelphians do so. Paying your taxes is your
+duty to the city you live in. By failing to pay, you are abusing the
+good will of your Philadelphia neighbors.
+
+The formats of the three letters were constructed to only differ in
+their wording of the middle paragraph; see Appendix A.  Care was taken
+to minimize issues of communication for those with limited English
+literacy, ensuring that each letter was intelligible to those with a
+5th grade education.  Like the revised control letter, all treatment
+letters also included a Spanish translation as well as a list of phone
+lines for different language translations on the reverse side of the
+letter.  Letters were mailed in the November mailing cycle to the
+still tardy taxpayers.  The receipt of tax payments, or not, were
+recorded for 30 days, beginning five days after the mailing date.
+
+
+\subsection{Experimental Design}
+
+To ensure that the results of the experiment allow for a causal
+interpretation from the receipt of the letter to increased payment,
+great care was taken to establish a random assignment of all four
+letters across the pool of DoR's tardy taxpayers.  Unfortunately,
+DoR's administration for mailing the letters did not allow for a
+purely random assignment of tardy taxpayers to each letter.  
+
+Our approach to randomization was constrained by the logistics of
+DoR's enforcement capabilities. We concluded after several discussions
+with our collaborators at DoR that it would be  impossible in practice
+to assign individual properties at random to different
+treatments. Instead, we chose to exploit the pseudo-random assignment
+of properties to billing cycles and randomized treatments across them.
+To understand this decision it is useful to discuss the current
+practice of posting reminder letters by DoR.
+
+Mailing of tardy real estate tax bills is as follows.
+Since it is cheaper and simpler to send all bills at once to those
+owners owing taxes on multiple properties, assignment to cycles is
+done at the owner level, so that each mailing cycle has roughly the
+same number of owners.  Every morning, a printer at DoR taps the
+in-house accounting system to find all properties that a) owe taxes to
+the City and b) are in the current day's mailing cycle, with the
+numbered cycles progressing in sequence day-by-day.  After identifying
+the bills to be printed for the day, the printer merges into the bill
+several other pieces of information stored with the tardy balance such
+as the mailing address and an in-house ID associated with the
+property. The bills printed each day are then
+brought to the City's mailing room, wherein they are stuffed into
+envelopes and delivered to the property owners.
+
+Given the volume of bills printed each day and the existing
+infrastructure for processing them, especially the machine-automated
+process of envelope stuffing, the most practical solution was to
+randomize treatment at the mailing cycle level, so that every bill
+printed on the same day would be paired with the same message.  We
+elected to randomize 4-day cycles--for each 4-day period, we picked at
+random among the $4!=24$ possible arrangements of treatments over the
+subsequent 4 days. Our experiment was conducted on 9 days in November
+2014, between the 4\textsuperscript{th} and the
+25\textsuperscript{th}.
+
+While we are certain of the sanctity of our mailing cycle-level
+randomization process, one may be concerned about the assignment of
+properties to mailing cycles. Fortunately, however, the city uses a
+pseudo-random mechanism to assign owners to billing cycles, which
+means that we achieve proper full-scale two-stage randomization of the
+properties through our process of day-level randomization. In
+particular, the city assigns properties to cycles based on the last
+two digits of the property owner's social security number, or Employer
+Identification Number, or (lacking those identifiers) to a DoR nine
+digit identification number.  We are confident that this quasi-random
+assignment removes any significant sorting or self-selection bias in
+the assignment of treatment letters.
+
+
+\subsection{Implementation Fidelity}
+
+To assess whether the final implementation of our mailing of treatment
+letters is as intended, we leveraged a unique feature of the DoR's
+mailing process.  The Department of Revenue regularly posts envelopes
+destined for addresses that are either unattended (vacant) or do not
+exist in the first place due to typos. Either before or after an
+attempted delivery to such an address, the postal service identifies
+these letters and returns them to the DoR, which then processes the
+letters and attempts, if they can identify a suitable alternative
+address, to re-deliver the tax bill. We took advantage of the fact
+that a subset of bills made their way back to DoR to check first-hand
+the extent of treatment fidelity. Our final sample consists of the
+nine treatment days for which greater than 90\% fidelity was achieved.
+
+\subsection{Sample Size}
+
+From this original sample of 134,888 tardy tax payments we select a
+final sample of 4,927 properties for our experiment.  This final
+sample removes all properties no longer handled by DoR (= 61,170), or
+for which payment agreements have been reached (= 31,456), or were not
+part of our nine day mailing cycle (= 24,800), or which qualified for
+a tax abatement (= 4706), or in sheriff's sale (=4098), sequestration
+(= 1130) or bankruptcy (= 948), or for which we had no working address
+(= 1429), or had a tax bill remaining of less than \$.61 (=
+224).\footnote{The city operates 50 billing cycles. Each cycles has
+  approximately 2,500 observations.  Once we apply the sample
+  selection criteria discussed above we obtain between 493 and 633
+  observations per day.}
+
+
+Table \ref{table:ds} provides some descriptive statistics of the full
+sample of all tardy and delinquent properties in the city -- i.e.,
+without any sample restrictions (Sheriff's Sale, etc.). It also
+includes full restricted sample and the sample used in our analysis.
+
+\begin{table}[htb]
+\begin{center}
+\caption{Descriptive Statistics}\label{table:ds}
+\begin{tabular}{|r|r|r|r|}
+  \hline
+ & All Properties & Restricted Properties & Analysis Sample \\ 
+  \hline
+Amount Due & 4409 & 3761 & 3465 \\ 
+  Assessed Property Value & 138867 & 242604 & 186691 \\ 
+  Value of Tax & 1586 & 3123 & 2405 \\ 
+  Length of Debt & 6 & 4 & 4 \\ 
+  \% Residential & 80 & 81 & 80 \\ 
+  \% w/ Phila. Mailing Address & 88 & 82 & 83 \\ 
+  \% Owner-Occupied & 24 & 21 & 22 \\ 
+  Number Observations & 134887 & 29951 & 4927 \\ 
+   \hline
+\end{tabular}
+\end{center}
+NOTE: This table provides some descriptive statistics for all
+properties in Philadelphia, all properties that satisfy our sampling
+restrictions, and the sample used in the analysis.
+\end{table}
+
+Note in particular that this sample selection means that our sample
+consists only of properties that are not in the purview of the two law
+firms that DoR uses as collection agencies. It is therefore useful to
+compare briefly the properties that are kept in-house with those that
+are assigned to the law firms. We find that properties kept in-house
+have lower balances, with a median of \$1,000, as compared to \$1,700
+overall. However, in-house properties have higher market values--the
+DoR median is \$91,000 vs. \$66,100 overall. Properties handled by DoR
+have younger debt--an average of 4 years vs. 7 and 11 for the two law
+firms.  Even conditional on age of debt, in-house balances are low.
+DoR-managed accounts are more likely to be owner-occupied, less likely
+to be in payment agreements, and more likely to result in a sheriff's
+sales. In summary, it appears that the outside firms are holding
+properties which, even given other characteristics, have the highest
+potential returns.
+
+\subsection{Sample Balance on Observables}
+
+To confirm whether or not we indeed achieved randomization, we
+performed a series of balance-on-observables tests. The null
+hypotheses of these tests are that a given observable data moment is
+identical across mailing cycles. We turn now to the results of those
+tests.
+
+Analysis of balance on observables is complicated by the random
+assignment at the owner level.  Because there are some large holders
+of property -- e.g., the City of Philadelphia, the Philadelphia
+Housing Authority, the Redevelopment Authority of Philadelphia, The
+University of Pennsylvania and Drexel University -- a simple analysis
+of balance at the property level will likely be skewed by these
+outliers. In addition, it is not clear how to aggregate many of the
+property-level characteristics to the owner level meaningfully,
+especially geographic variables, complicating the task of testing
+balance at the owner level. Our compromise was to examine sample
+balance on the subset of properties for which a) the owner is unique,
+and b) any tax exemption claimed by the property is related to
+abatements for new construction.
+  
+Most of the observed characteristics are categorical variables, so we
+can test balance using standard $\chi^2$ tests. The full sample
+consists of letters mailed over nine days, two of which sent the
+Threat treatment letter, four of which sent the Public Service
+treatment letter, two of which sent the Civic Duty treatment letter,
+and one final day which mailed the control letter.  This meant that of
+the 4,297 letters mailed, 22 percent (2/9's) where threat letters, 44
+percent (4/9's) were public service letters, 22 percent (2/9's) were
+civic duty letters, and 11 percent (1/9) were control letters.  If our
+treatment letters are randomly allocated across observable
+characteristics of properties owing taxes, then we should observe the
+same distribution of letters by each observable characteristic.  Table
+\ref{table:balance} shows these distributions and the resulting p
+values for the test of the null hypothesis that the letter
+distribution by characteristic matches the overall distribution of
+letters.  In each case, we cannot reject the null hypothesis that the
+letters have been randomly distributed by the observable
+characteristics shown in Table \ref{table:balance}.
+
+
+\begin{center}
+\begin{longtable}{| l | c |  c| c| c| c|}
+\caption{Tests of Sample Balance on Observables} \label{table:balance} \\
+\hline 
+  & Threat & Service & Civic Duty & Control & $p$-value \\ 
+\hline 
+\endfirsthead
+\multicolumn{3}{c}%
+{{ \tablename\ \thetable{} -- continued from previous page}} \\
+\hline 
+  & Threat & Service & Civic Duty & Control & $p$-value \\ 
+  \hline 
+\endhead
+\hline 
+\multicolumn{6}{|l|}{{Continued on next page}} \\ 
+\hline
+\endfoot
+\multicolumn{6}{|l|}{NOTE: This table shows that there are no significant differences in the} \\
+\multicolumn{6}{|l|}{distribution of observed variables among the treatment and control samples.} \\ 
+\hline 
+\endlastfoot
+
+ Taxes Due Quartiles &  &  &  &  &  \\ 
+  $<$\$300 & 0.22 & 0.4 & 0.28 & 0.1 & 0.2 \\ 
+  \lbrack\$300,\$1300) & 0.24 & 0.47 & 0.22 & 0.08 &  \\ 
+  \lbrack\$1300,\$3300) & 0.23 & 0.45 & 0.2 & 0.11 &  \\ 
+$>$  \$3300 & 0.18 & 0.48 & 0.23 & 0.11 &  \\ 
+   \hline
+Market Value Quartiles &  &  &  &  &  \\ 
+  $<$\$46k & 0.24 & 0.43 & 0.21 & 0.12 & 0.2 \\ 
+  \lbrack\$46k,\$82k) & 0.22 & 0.46 & 0.23 & 0.1 &  \\ 
+  \lbrack\$82k,\$152k) & 0.21 & 0.45 & 0.25 & 0.09 &  \\ 
+$>$  \$152k & 0.21 & 0.45 & 0.24 & 0.1 &  \\ 
+   \hline
+Land Area Quartiles &  &  &  &  &  \\ 
+  $<$800 sq. ft. & 0.22 & 0.45 & 0.23 & 0.1 & 0.83 \\ 
+  \lbrack800,1200) sq. ft. & 0.23 & 0.43 & 0.24 & 0.1 &  \\ 
+  \lbrack1200,1800) sq. ft. & 0.21 & 0.47 & 0.22 & 0.1 &  \\ 
+  $>$1800 sq. ft. & 0.21 & 0.44 & 0.24 & 0.1 &  \\ 
+   \hline
+Distribution of Properties & 0.22 & 0.45 & 0.23 & 0.1 & 0.08 \\ 
+   \hline
+Expected Distribution & 0.22 & 0.44 & 0.22 & 0.11 &  \\ 
+   \hline
+ \# Rooms &  &  &  &  &  \\ 
+  0-5 & 0.22 & 0.44 & 0.23 & 0.11 & 0.32 \\ 
+  6 & 0.21 & 0.46 & 0.23 & 0.09 &  \\ 
+  7+ & 0.22 & 0.44 & 0.24 & 0.1 &  \\ 
+   \hline
+Years of Debt &  &  &  &  &  \\ 
+  1 Year & 0.23 & 0.43 & 0.24 & 0.09 & 0.32 \\ 
+  2 Years & 0.22 & 0.44 & 0.24 & 0.1 &  \\ 
+  3-5 Years & 0.2 & 0.48 & 0.22 & 0.1 &  \\ 
+  6+ Years & 0.2 & 0.47 & 0.2 & 0.13 &  \\ 
+   \hline
+Category &  &  &  &  &  \\ 
+  Residential & 0.22 & 0.45 & 0.23 & 0.09 & 0.07 \\ 
+  Hotels\&Apts & 0.2 & 0.45 & 0.23 & 0.12 &  \\ 
+  Store w. Dwell. & 0.21 & 0.48 & 0.22 & 0.09 &  \\ 
+  Commercial & 0.15 & 0.5 & 0.24 & 0.11 &  \\ 
+  Industrial & 0.27 & 0.42 & 0.2 & 0.11 &  \\ 
+  Vacant Land & 0.25 & 0.39 & 0.23 & 0.13 &  \\ 
+   \hline
+Expected Distribution & 0.22 & 0.44 & 0.22 & 0.11 &  \\ 
+   \hline
+\end{longtable}
+\end{center}
+
+As can be seen from Table \ref{table:balance} randomization appears to
+have been successful.  The properties are strongly randomly
+distributed by location (their political ward, of which there are 66
+in Philadelphia), category (type of property usage), property size (as
+measured by the number of rooms or by the size of the tract), case
+assignment (this variable captures, if applicable, to which outside
+law firm a property is assigned), and whether the property is in
+sequestration or has entered a payment agreement with the city. The
+number of properties assigned to each treatment is further exactly as
+expected, given the unequal number of mailing days in our treatment.
+
+
+\section{Average Treatment Effects}
+
+
+We consider results for three different subsamples.  The first sample
+(I) is the full sample and consists of all 4927 observations; The
+second sample (II) eliminates commercial property owners, which
+reduces the sample to 4749 observations; the third sample (III)
+eliminates owners of multiple properties, resulting in a sample size
+of 3888.
+
+Table \ref{table:summary} summarizes the impact of our experimental
+intervention on revenue collection.  The table reports the total
+taxes owed, the amount generated, and the number of mailing days for
+the three treatments and the control groups. It also reports the
+percent of properties that paid the City anything and the percent that
+paid off their full debt in our sample period.
+
+
+\begin{sidewaystable}[htbp]
+\caption{Summary of Effectiveness of Treatment}  \label{table:summary}
+\bigskip
+\centering
+\begin{tabular}{|p{1.3cm}|p{1.3cm}|p{1.3cm}|p{1.3cm}|p{2cm}|p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.4cm}|p{1.6cm}|}
+  \hline
+Sample & Group & Treated Days & No. Treated & Total Taxes Owed & Percent Ever Paid & Percent Paid in Full & Dollars Received & Dollars Per Day Treated & Dollars above Control Per Day & Total Generated over All Days \\ 
+  \hline
+ & Threat & 1 & 499 & \$1,839,826 & 14 &  8 & \$71,176 & \$71,176 & \$10,883 & \$ 10,883 \\ 
+   & Service & 4 & 2,211 & \$8,003,148 & 15 &  7 & \$447,728 & \$111,932 & \$51,639 & \$206,557 \\ 
+  I & Civic Duty & 2 & 1,142 & \$3,794,900 & 18 & 12 & \$152,217 & \$76,109 & \$15,816 & \$ 31,632 \\ 
+  & Control & 2 & 1,075 & \$3,294,516 & 16 & 10 & \$120,585 & \$60,293 & \$     0 & \$      0 \\ 
+   \hline
+ & Threat & 1 & 480 & \$1,657,379 & 15 &  8 & \$71,176 & \$71,176 & \$11,142 & \$11,142 \\ 
+ & Service & 4 & 2,122 & \$7,024,458 & 15 &  7 & \$288,758 & \$72,189 & \$12,155 & \$48,621 \\ 
+II & Civic Duty & 2 & 1,099 & \$3,350,147 & 19 & 12 & \$146,227 & \$73,114 & \$13,079 & \$26,158 \\ 
+ & Control & 2 & 1,048 & \$2,930,759 & 16 & 10 & \$120,069 & \$60,034 & \$     0 & \$     0 \\ 
+   \hline
+ & Threat & 1 & 406 & \$1,437,902 & 15 &  9 & \$51,309 & \$51,309 & \$18,011 & \$ 18,011 \\ 
+ & Service & 4 & 1,754 & \$6,956,034 & 16 &  7 & \$418,767 & \$104,692 & \$71,393 & \$285,572 \\ 
+  III & Civic Duty & 2 & 891 & \$3,331,168 & 20 & 13 & \$130,016 & \$65,008 & \$31,710 & \$ 63,419 \\ 
+ & Control & 2 & 837 & \$3,007,232 & 16 &  9 & \$66,597 & \$33,299 & \$     0 & \$      0 \\ 
+   \hline
+\multicolumn{11}{l}{NOTE: The table shows how much additional revenues were generated by the different treatments.} \\
+\end{tabular}
+\end{sidewaystable}
+
+We also report the dollars in revenue raised per day, which ranges
+from \$60,292 in the control group to \$111,931 in the service
+treatment group. Note that the average payments per day is higher in
+all three treatment group. A simple difference between the treatment
+and the control group provides an impression of the overall
+effectiveness of the intervention. These estimates range from \$10,883
+for the threat treatment to \$51,639 for the service
+treatment. Summing over all treatment groups and days suggests that
+our experiment generated approximately \$250,000 for the DoR in just
+nine days.  
+
+To conduct a formal statistical analysis and determine whether the treatments 
+had a significant positive effect on tax collections, we estimate a regression model 
+for each of the three samples. The basic idea is to  regress the tax receipts on an intercept 
+and the three treatment dummies. The intercept is the mean of the control group and the 
+regression coefficients measure the change in tax collection induced by the treatments.
+Table 5 reports our parameter estimates and estimated robust std errors.
+
+\begin{table}
+\caption{Difference in Mean Tests}\label{dif_mean}
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\multicolumn{3}{|c|}{Main Sample} \\
+\hline
+parameter & estimate & std error \\
+\hline
+Intercept&  112.172 & 17.52 \\
+Threat & 30.465  & 36.18 \\
+treatmentService & 90.328 & 57.85 \\ 
+treatmentCivic & 21.118 & 33.90 \\
+\hline
+\multicolumn{3}{|c|}{Non-Commercial Sample} \\
+\hline
+parameter & estimate & std error \\
+\hline
+Intercept & 114.56 & 17.95 \\
+Threat & 33.71 &  37.46 \\
+Service & 21.51 &  26.97 \\
+Civic & 18.48 & 34.97 \\
+\hline
+\multicolumn{3}{|c|}{Unique Owner Sample} \\
+\hline
+parameter & estimate & std error \\
+\hline
+Intercept &  79.56 &  12.73  \\
+Threat & 46.81 &  29.86 \\ 
+Service & $159.18^{*}$ & 70.50 \\ 
+Civic  & 66.35 &  38.74 \\
+\hline
+\multicolumn{3}{|l|}{* indicates $p<0.05$.} \\
+\hline
+\end{tabular}
+\end{center}
+\end{table}
+
+Table \ref{dif_mean} shows there is a fair bit of heterogeneity among treatments. The differences in means 
+are \$90 for the service treatment, \$21 per civic duty treatment, and \$30 for the 
+threat treatment. The results are qualitatively similar for the two other samples. However, 
+there are some important quantitative differences. If we restrict attention to the subsample of
+non-commercial properties, we find that the service treatment raises a
+much smaller amount. That suggests that excluding by a relatively small number of 
+commercial property owners affects the magnitude of the overall effects.  If we restrict
+attention the properties of sole owners, all treatments appear in a
+more positive light as the intake of the control group drops
+precipitously. While the differences in means are suggestive of
+an average positive impact of the treatment letters on taxpayer compliance, only one of the nine key coefficients is significantly different from zero 
+at conventional significance levels.
+
+\section{Analysis of Discrete Compliance Outcomes}
+
+\subsection{Specification}
+
+To gain some additional insights into the nature of compliance, we 
+consider two discrete compliance outcomes, denoted by $y \in \{0,1\}$. 
+In the first case, $y= 1$, if the taxpayer made any payment at all (``ever paid"), 0
+otherwise.  In the second case  $y = 1$, if the taxpayer made a full payment of their
+taxes owed (``paid in full"), 0 otherwise.  Both responses are of
+potential interest.  Paid in full is of obvious interest to DoR as
+this is a measure of how well the city does in collecting taxes owed.
+Even the small payments measured in ever paid are of interest,
+however.  First, every dollar helps.  Second, making even a small
+payment, rather than no payment at all, stands as recognition that the
+citizen still values, however modestly, their relationship to the city
+government and its governance; that is, they have not ``dropped out."
+
+We specify and estimate compliance
+as a logistic function of the control and three treatments, with each
+estimated effect measuring the treatment's impact on tax payment
+relative to that available from receipt of the control letter.
+Generally, for $y = 1$ if the individual pays their taxes, and 0
+otherwise, the probability of paying taxes can be specified as:
+\begin{eqnarray*}
+Pr \{ y=1 \} \; = \; \frac{exp(X' \beta)}{1 + exp(X' \beta)}
+\end{eqnarray*}
+where $X$ is a vector of explanatory variables and $\beta$ a vector of
+coefficients to be estimated.
+
+The benefits of the logistic specification, over the more familiar
+linear specification, is that once estimated the computed
+probabilities of payment are bounded between 0 and 1, and the partial
+effect of any of the independent variables on the probability of
+payment can vary according to the overall value of $X'\beta$.  For our
+analysis, the vector of explanatory variables $X$ will include three
+(1,0) indicator variables for whether the taxpayer received a Threat
+Letter, a Service Letter, or a Civic Letter, respectively.  The
+omitted category is receipt of the reminder control letter.
+
+The estimated coefficient for each treatment letter will allow us to
+compute the marginal impact on payment of that letter over that of the
+usual (revised) reminder letter.  A positive and statistically
+significant value of the coefficient for a treatment letter indicates
+that this letter encouraged more tax payments than did the control
+letter; conversely so, for a negative and statistically significant
+value of the coefficient.  
+
+We also explore how payment behaviors may vary across the level of
+taxes owed.  Each taxpayer is assigned to one of four categories of
+tax debt: LOW (Less than \$300), MODerate (\$300 to \$1300), HIGH
+(\$1301 to \$3300), and Very HIGH (Greater than \$3300).  The taxpayer
+is assigned a value of 1 if they tax bill falls within a debt level,
+and 0 otherwise.  The omitted debt level for comparison is LOW.  In
+addition, we allow for an interaction of each debt level with each
+treatment letter to explore the possible advantages of targeting
+treatment letters to taxpayers of varying debt levels. 
+
+Finally, while care has been taken to randomly assign the treatment
+and control letters across taxpayers, and our initial balance tests
+reported above suggest that we have been successful along the broad
+categories of taxes owed and years of tax debt, property values and
+property type, and property size and land area, the question remains
+of whether taxpayer compliance behaviors might vary along other
+attributes of the property or the taxpayer.  If so, and if compliance
+behavior is correlated with these excluded variables, then the
+estimated effects on payment behavior of the treatment letters may be
+biased.  To control for this possibility, we also include in our basic
+logistic regression as elements of X measures of the location of the
+property within one of ten city neighborhoods (each a City Council
+District), the exterior condition of the property (classified as a
+``sealed/compromised," i.e. dilapidated and dangerous), and whether
+the property qualified for a low income homestead exemption.  
+
+
+
+\subsection{Results}
+  
+Table \ref{XX} summarizes the estimates and the estimated standard
+errors for the three samples that we considered above. We report
+robust standard errors that are clustered to deal with multiple
+ownership. As can be seen from Table \ref{XX}, the service appeal and
+the threat treatments had no significant effect on ``ever paid" at the
+conclusion of the 30 day payment period.  The Civic Duty treatment is
+consistently positive and statistically significant at least the 10
+percent level of confidence and at the 5 percent level for the sample
+of sole owners.
+
+\begin{table}[htbp]
+\caption{Logistic Regressions -- Ever Paid}\label{XX}
+\begin{center}
+\begin{tabular}{| l |  c | c | c |}
+\hline
+               & Full Sample & Non-Commercial & Sole Owner \\
+\hline
+Intercept      & $-1.69^{***}$ & $-1.67^{***}$ & $-1.68^{***}$ \\
+               & $(0.08)$      & $(0.08)$      & $(0.10)$      \\
+Service          & $-0.07$       & $-0.10$       & $0.04$        \\
+               & $(0.10)$      & $(0.10)$      & $(0.12)$      \\
+Civic Duty           & $0.21$        & $0.19$        & $0.30^{*}$    \\
+               & $(0.11)$      & $(0.11)$      & $(0.13)$      \\
+Threat         & $-0.09$       & $-0.06$       & $-0.03$       \\
+               & $(0.15)$      & $(0.15)$      & $(0.17)$      \\
+\hline
+Log Likelihood & -2136.16      & -2068.89      & -1758.95      \\
+Num. obs.      & 4927          & 4749          & 3888          \\
+\hline
+\multicolumn{4}{l}{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$.} \\
+\multicolumn{4}{l}{NOTE: This table reports the parameter estimates from the} \\
+\multicolumn{4}{l}{basic Logit Model that uses ``ever paid" as outcome.}
+\end{tabular}
+\end{center}
+\end{table}
+
+Next we investigate whether there is heterogeneity in response to the
+treatment. It is plausible that tax payers who owe small amounts of
+money behave differently than those who owe larger amounts.  To gain
+insight into this possibility we include in our regression for ``ever
+paid" the indicator variables for the levels of taxes owed - LOW, MOD,
+HIGH, and VHIGH - and the interaction of those variables with our
+three treatments.  The variable LOW is omitted from the regression so
+all results provide comparisons to the behavior of those in the higher
+debt levels to taxpayers in the lowest level of taxes owed.  Table
+\ref{YY} summarizes the estimates and the estimated standard errors
+for the full sample and the two subsamples.
+
+\begin{center}
+\begin{longtable}{| l | c |  c| c|}
+\caption{Logistic Regressions -- Ever Paid} \label{YY} \\
+\hline 
+ & Full Sample & Non-Commercial & Sole Owner \\
+\hline 
+\endfirsthead
+\multicolumn{4}{c}%
+{{\tablename\ \thetable{} -- continued from previous page}} \\
+\hline
+& Full Sample & Non-Commercial & Sole Owner \\
+\hline 
+\endhead
+\hline \multicolumn{4}{|l|}{{Continued on next page}} \\ \hline
+\endfoot
+\hline 
+\multicolumn{4}{l}{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$. Control coefficients omitted.} \\
+\multicolumn{4}{l}{NOTE: This table reports the parameter estimates from the} \\
+\multicolumn{4}{l}{Logit Model with interactions that uses ``ever paid" as outcome.}
+\endlastfoot
+Balance MOD        & $-0.46^{*}$   & $-0.52^{*}$   & $-0.33$       \\
+                  & $(0.21)$      & $(0.22)$      & $(0.24)$      \\
+Balance HIGH        & $-1.03^{***}$ & $-0.97^{***}$ & $-1.54^{***}$ \\
+                  & $(0.24)$      & $(0.24)$      & $(0.30)$      \\
+Balance VHIGH        & $-1.25^{***}$ & $-1.15^{***}$ & $-1.36^{***}$ \\
+                  & $(0.30)$      & $(0.30)$      & $(0.33)$      \\
+Service             & $-0.30$       & $-0.34$       & $-0.34$       \\
+                  & $(0.18)$      & $(0.19)$      & $(0.20)$      \\
+Service*Balance MOD  & $0.00$        & $0.00$        & $0.00$        \\
+                  & $(0.00)$      & $(0.00)$      & $(0.00)$      \\
+Service*Balance HIGH  & $0.06$        & $0.08$        & $-0.11$       \\
+                  & $(0.16)$      & $(0.16)$      & $(0.18)$      \\
+Service*Balance VHIGH  & $0.40^{*}$    & $0.42^{*}$    & $0.33$        \\
+                  & $(0.20)$      & $(0.20)$      & $(0.21)$      \\
+Civic Duty              & $0.16$        & $0.13$        & $0.21$        \\
+                  & $(0.19)$      & $(0.19)$      & $(0.21)$      \\
+Civic Duty*Balance MOD   & $0.54^{**}$   & $0.58^{***}$  & $0.58^{**}$   \\
+                  & $(0.17)$      & $(0.17)$      & $(0.18)$      \\
+Civic Duty*Balance HIGH   & $-0.08$       & $-0.07$       & $-0.19$       \\
+                  & $(0.17)$      & $(0.17)$      & $(0.18)$      \\
+Civic Duty*Balance VHIGH   & $-0.49^{**}$  & $-0.45^{*}$   & $-0.61^{**}$  \\
+                  & $(0.17)$      & $(0.17)$      & $(0.19)$      \\
+Threat            & $-0.05$       & $-0.01$       & $-0.13$       \\
+                  & $(0.26)$      & $(0.26)$      & $(0.29)$      \\
+Threat*Balance MOD & $0.07$        & $0.10$        & $0.11$        \\
+                  & $(0.16)$      & $(0.16)$      & $(0.17)$      \\
+Threat*Balance HIGH & $-0.50^{**}$  & $-0.49^{**}$  & $-0.64^{***}$ \\
+                  & $(0.17)$      & $(0.18)$      & $(0.19)$      \\
+Threat*Balance VHIGH & $-0.04$       & $-0.03$       & $-0.20$       \\
+                  & $(0.16)$      & $(0.16)$      & $(0.17)$      \\
+\hline
+Log Likelihood    & -2010.55      & -1948.32      & -1639.28      \\
+Num. obs.         & 4927          & 4749          & 3888          \\
+\end{longtable}
+\end{center}
+
+
+Table \ref{YY} shows the indicator variables for taxes owed by
+quartile are significantly negative - that is, the more a taxpayer
+owes the less likely he is to pay their taxes.  The Civic Duty
+treatment helps to moderate this growing negative effect of tax debt,
+but only for those who owe a moderate amount of taxes.  For taxpayers
+with a very large tax debt, the Civic Duty letter discourages payment.
+Exactly the opposite responses are observed for those who receive the
+Public Service letter.  Those with low or moderate levels of taxes
+owed react negatively or not at all to the service letter, while those
+with high levels of taxes owed are more likely to make a contribution
+when they receive the Public Service letter.  The Threat letter never
+helps tax payment and significantly discourages payment by those with
+high levels of taxes owed.  One can speculate as to why motives for
+payment are tied to the levels of taxes owed - civic duty is ``price
+elastic" and free riding falls with larger property holdings and
+greater payments - but the important conclusion here is that treatment
+strategies need to be targeted strategies.
+
+\begin{table}[htbp]
+\caption{Marginal  Predictions -- Ever Paid}  \label{ZZ} 
+\bigskip
+\begin{center}
+\begin{tabular}{| l | c | c | c | c |}
+  \hline
+ & LOW & MOD & HIGH & VHIGH \\ 
+  \hline
+Control & 23.40 & 16.10 & 9.80 & 8.00 \\ 
+  Service & 18.50 & 12.70 & 12.10 & 11.40 \\ 
+  Civic Duty & 26.40 & 15.20 & 14.40 & 8.20 \\ 
+  Threat & 22.40 & 12.20 & 13.40 & 7.10 \\ 
+   \hline
+\multicolumn{5}{l}{NOTE: This table reports the marginal effects} \\
+\multicolumn{5}{l}{from the Logit Model with interactions that uses} \\
+\multicolumn{5}{l}{``ever paid" as outcome.} \\
+\end{tabular}
+\end{center}
+\end{table}
+
+
+Table \ref{ZZ} shows the marginal predictions for the probability that
+properties in each treatment group and for each quartile of taxes owed
+will make some payment (``ever paid").  The values here represent the
+predicted probability of payment, computed for the ``average taxpayer"
+as represented by the sample average level of all indicator control
+variables and the median values of the continuous control variables.
+Here we observe the final impacts of the treatments as they apply to
+taxpayers with different levels of taxes owed.  The Civic Duty letter
+increases the chance of payment over the control letter for taxpayers
+with low debt by about 3 percentage points and for taxpayers with
+relatively high payments by as much 4 percentage points.  The Public
+Service letter is most effective for taxpayers with very high levels
+of taxes owed.
+
+Next we examine whether our treatment strategies might also impact the
+larger matter: When do taxpayers pay their full amount of taxes owed?
+The ever-paid outcome does not differentiate between taxpayers that
+made full payment and those who made only a partial contribution.
+
+Table \ref{VV} presents the results for the Logit specification for
+the outcome ``paid in full" by the end of our 30 day payment period.
+Again the analysis is separated into that for the full sample and the
+two subsamples.  The results are similar to those for ``ever paid."
+The Threat letter is never effective.  The Public Service letter
+discourages full payment while the Civic Duty letter encourages full
+payment.
+
+\begin{table}[htbp]
+\caption{Logistic Regressions -- Paid in Full}\label{VV}
+\begin{center}
+\begin{tabular}{| l c | c | c | }
+\hline
+               & Full Sample & Non-Commercial & Sole Owner \\
+\hline
+Intercept      & $-2.23^{***}$ & $-2.22^{***}$ & $-2.29^{***}$ \\
+               & $(0.10)$      & $(0.10)$      & $(0.12)$      \\
+Service          & $-0.42^{**}$  & $-0.44^{**}$  & $-0.29$       \\
+               & $(0.13)$      & $(0.14)$      & $(0.15)$      \\
+Civic Duty           & $0.24$        & $0.24$        & $0.41^{**}$   \\
+               & $(0.14)$      & $(0.14)$      & $(0.16)$      \\
+Threat         & $-0.21$       & $-0.18$       & $-0.04$       \\
+               & $(0.19)$      & $(0.20)$      & $(0.21)$      \\
+\hline
+Log Likelihood & -1435.15      & -1395.06      & -1175.05      \\
+Num. obs.      & 4927          & 4749          & 3888          \\
+\hline
+\multicolumn{4}{l}{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$.} \\
+\multicolumn{4}{l}{NOTE: This table reports the parameter estimates from the} \\
+\multicolumn{4}{l}{basic Logit Model that uses ``paid in full" as outcome.}
+\end{tabular}
+\end{center}
+\end{table}
+
+
+Table \ref{WW} presents the results that allow for the influence of
+taxes owed - MOD, HIGH, and VHIGH - on ``paid in full."  Owing more
+taxes reduces the likelihood of paying in full and the negative effect
+increases with the level of taxes owed.  These effects are even larger
+than those in the ``ever paid" analysis suggesting that many tardy
+taxpayers in the higher quartiles of taxes owed make only partial
+payments when the respond (if at all) to the control and treatment
+letters.  We continue to see the negative impact of the Public Service
+letter on full payment, but again, as for ever paid, the strong
+negative effect disappears for those with the greatest tax debts.  The
+letter that has the greatest positive impact on encouraging full tax
+payment is the Civic Duty letter, and this is particularly so for
+those with low and moderate levels of taxes owed.
+
+
+\begin{center}
+\begin{longtable}{| l | c |  c| c|}
+\caption{Logistic Regressions -- Paid in Full} \label{WW} \\
+\hline 
+ & Full Sample & Non-Commercial & Sole Owner \\
+\hline 
+\endfirsthead
+\multicolumn{4}{c}%
+{{ \tablename\ \thetable{} -- continued from previous page}} \\
+\hline
+& Full Sample & Non-Commercial & Sole Owner \\
+\hline 
+\endhead
+\hline \multicolumn{4}{|l|}{{Continued on next page}} \\ \hline
+\endfoot
+\hline 
+\multicolumn{4}{l}{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$. Control coefficients omitted.} \\
+\multicolumn{4}{l}{NOTE: This table reports the parameter estimates from the} \\
+\multicolumn{4}{l}{Logit Model with interactions that uses ``paid in full" as outcome.}
+\endlastfoot
+Balance MOD        & $-1.28^{***}$ & $-1.42^{***}$ & $-1.35^{***}$ \\
+                  & $(0.27)$      & $(0.28)$      & $(0.31)$      \\
+Balance HIGH        & $-2.32^{***}$ & $-2.18^{***}$ & $-3.18^{***}$ \\
+                  & $(0.39)$      & $(0.37)$      & $(0.61)$      \\
+Balance VHIGH        & $-3.27^{***}$ & $-2.85^{***}$ & $-3.83^{***}$ \\
+                  & $(0.74)$      & $(0.61)$      & $(1.03)$      \\
+Service             & $-0.45^{*}$   & $-0.49^{*}$   & $-0.49^{*}$   \\
+                  & $(0.19)$      & $(0.20)$      & $(0.22)$      \\
+Service*Balance MOD  & $0.00$        & $0.00$        & $0.00$        \\
+                  & $(0.00)$      & $(0.00)$      & $(0.00)$      \\
+Service*Balance HIGH  & $-0.27$       & $-0.23$       & $-0.54^{*}$   \\
+                  & $(0.23)$      & $(0.24)$      & $(0.26)$      \\
+Service*Balance VHIGH  & $0.61^{*}$    & $0.65^{*}$    & $0.49$        \\
+                  & $(0.26)$      & $(0.26)$      & $(0.27)$      \\
+Civic Duty  & $0.25$        & $0.22$        & $0.29$        \\
+                  & $(0.19)$      & $(0.19)$      & $(0.22)$      \\
+Civic Duty*Balance MOD   & $1.01^{*}$    & $0.99^{*}$    & $1.06^{*}$    \\
+                  & $(0.42)$      & $(0.42)$      & $(0.46)$      \\
+Civic Duty*Balance HIGH   & $-0.18$       & $-0.13$       & $-0.33$       \\
+                  & $(0.25)$      & $(0.25)$      & $(0.26)$      \\
+Civic Duty*Balance VHIGH   & $-0.39$       & $-0.32$       & $-0.54^{*}$   \\
+                  & $(0.23)$      & $(0.23)$      & $(0.25)$      \\
+Threat            & $-0.07$       & $-0.03$       & $-0.05$       \\
+                  & $(0.27)$      & $(0.27)$      & $(0.29)$      \\
+Threat*Balance MOD & $0.21$        & $0.25$        & $0.13$        \\
+                  & $(0.22)$      & $(0.22)$      & $(0.24)$      \\
+Threat*Balance HIGH & $-0.64^{**}$  & $-0.65^{**}$  & $-0.80^{**}$  \\
+                  & $(0.25)$      & $(0.25)$      & $(0.27)$      \\
+Threat*Balance VHIGH & $0.20$        & $0.22$        & $-0.03$       \\
+                  & $(0.22)$      & $(0.22)$      & $(0.24)$      \\
+\hline
+Log Likelihood    & -1150.17      & -1120.45      & -919.68       \\
+Num. obs.         & 4927          & 4749          & 3888          \\
+\end{longtable}
+\end{center}
+
+
+These impacts are seen most clearly in Table \ref{TT} (constructed as
+was Table \ref{ZZ}) which presents the predicted probabilities for
+payment in full for the control letter and each of the three treatment
+letters, disaggregated by the level of taxes owed.  The Civic Duty
+letter has strongest effect on the decision by tardy taxpayers to meet
+their full tax obligations.
+
+
+\begin{table}[htbp]
+\caption{Marginal Predictions -- Paid in Full}  \label{TT}
+\bigskip
+\begin{center}
+\begin{tabular}{| l | c | c | c | c |}
+  \hline
+ & LOW & MOD & HIGH & VHIGH \\ 
+  \hline
+Control & 19.90 & 6.40 & 2.40 & 0.90 \\ 
+  Service & 13.60 & 4.00 & 2.90 & 1.20 \\ 
+  Civic Duty & 24.10 & 6.90 & 3.10 & 1.80 \\ 
+  Threat & 18.80 & 3.50 & 4.20 & 0.90 \\ 
+   \hline
+\multicolumn{5}{l}{NOTE: This table reports the marginal effects} \\
+\multicolumn{5}{l}{from the Logit Model with interactions that uses} \\
+\multicolumn{5}{l}{``paid in full" as outcome.} \\
+\end{tabular}
+\end{center}
+\end{table}
+
+Our study reveals there is heterogeneity in response to different
+treatments.  A preferred overall strategy might take advantage of
+these differential responses of taxpayers to the treatment
+letters. More research is clearly needed to assess the efficiency of
+targeted reminding strategies.
+
+
+\section{Conclusions}
+
+This field experiment evaluated three alternative notification
+strategies intended to increase property tax compliance.  We have
+implemented our experiment in collaboration with Philadelphia's
+Department of Revenue (DoR).  We feel this initial study of property
+tax compliance in Philadelphia has value for at least three reasons.
+First, it is the first study that systematically examines alternative
+tax compliance strategies for taxation in a large city.  Second, the
+study of property tax compliance for which there is a known tax
+liability has allowed us to focus directly on motives for paying
+taxes.  Third, great care was given to separately specify, identify,
+and directly compare the three common motives for tax payment that
+play a prominent role in the tax compliance literature.
+
+Our findings provide tentative support that appeals both to public
+services provided and to a citizen's sense of civic duty can improve
+tax compliance. These findings are consistent with other recent tax compliance
+experiments (Fellner, Sausgruber, and Traxler 2013). Providing social information about
+tax compliance provides a modest increase in collection (Wenzel and
+Taylor 2004; Wenzel 2005; Hallsworth et al. 2014).
+
+In contrast to several papers that show the benefits of audit threats
+(Kleven et al. 2011; Slemrod, Blumenthal, and Christian 2001), we find
+no support for use of a threats over that of DoR's usual reminder of
+taxes owed.  It would be useful to examine the benefits of an
+intervention with a more specific threat, such as randomly assigning
+tax delinquents to publicity in a local newspaper or website.
+Alternatively, one could add more local specificity to the
+notification letter. For example, one could provide information about
+local sheriff sales or foreclosures. More research is clearly needed
+to determine effective notification letters that reinforce the
+likelihood of fines and penalties.
+
+
+There are limitations to our study, of course.  Strictly speaking, our
+conclusions apply only to Philadelphia taxpayers, and among those
+citizens, only those who are tardy in paying their taxes. Second, our
+sample of taxpayers is small, only 4900 in total.  And finally, while
+our focus on property tax compliance has the advantage of allowing us
+to more cleanly identify motives for tax payments, Philadelphia and
+other cities raise significant revenues from wage taxes, income and
+profits taxes, sales taxes, and fees.  Payment compliance for cities
+for these other revenue instruments deserves careful analysis too.
+All said, however, we feel our work here is an encouraging first step
+towards introducing the new methodologies of tax compliance into the
+practice of city government finances.
+
+\newpage
+
+\section*{References}
+
+Aaron, Henry (1975), Who Pays the Property Tax? Washington, DC:
+Brookings Institution. \\
+\\
+Ariel, Barak (2012), ``Deterrence and moral persuasion effects on
+corporate tax compliance: Findings from a randomized controlled
+trial." Criminology, 50 (1), 27-69. \\
+\\
+Allingham, Michael G., and Agnar Sandmo (1972) ``Income Tax Evasion: A
+Theoretical Analysis." Journal of Public Economics, 1: 323-38. \\
+\\
+Alm, James, Gary H. McClelland, and William D. Schulze (1992), ``Why Do People
+Pay Taxes?" Journal of Public Economics 48: 21-38. \\
+\\
+Alm, James (1999), ``Tax compliance and administration." In: Hildreth,
+W. Bartley and James A. Richardson (eds.) Handbook on Taxation. New
+York, USA, Marcel Dekker, Inc., pp. 741-768. \\ 
+\\
+Andreoni, James, Erard, Brian and Jonathan Feinstein (1998), ``Tax
+compliance." Journal of Economic Literature, 36, 818-860. \\ 
+\\
+Becker, Gary S. (1968), ``Crime and Punishment: An Economic Approach."
+Journal of Political Economy 76: 169-217.\\
+\\
+Benabou, Roland and Jean Tirole (2011), ``Laws and Norms," NBER
+Working Paper, No. 17579. \\
+\\
+Bernheim, B. Douglas (1994), ``A Theory of Conformity." Journal of
+Political Economy, 102, 5, 841-877. \\
+\\
+Besley, Timothy, Anders Jensen, and Torsten Persson (2014), ``Norm,
+Enforcement, and Tax Evasion," London School of Economics.  \\ 
+\\
+Blumenthal, Marsha, Christian, Charles and Joel Slemrod (2001), ``Do
+normative appeals affect tax compliance? Evidence from a controlled
+experiment in Minnesota." National Tax Journal, 54 (1), 125 -
+138. \\ 
+\\ 
+Cowell, Frank A. and James P. F. Gordon (1988), `` Unwillingness to
+pay tax: tax evasion and public provision."  Journal of Public
+Economics, 36, 305-321.\\ 
+\\ 
+Feddersen, Timothy and Alvaro Sandroni (2006), ``A Theory of
+Participation in Elections," American Economic Review, Vol. 96
+(September), 1271-1282.  \\ 
+\\ 
+Fehr, Ernst and Simon Gachter (1998), ``Reciprocity and economics: The
+economic implications of homo reciprocans." European Economic Review
+42 (3-5), 845-59. \\ 
+\\ 
+Fellner, Gerlinde, Rupert Sausgruber, and Christian Traxler (2013),
+``Testing Enforcement Strategies in the Field: Threat, Moral Appeal
+and Social Information." Journal of the European Economic Association
+11, 3, 634-60.\\ 
+\\ 
+Frey, Bruno S., and Lars P. Feld (2002), ``Deterrence and Morale in
+Taxation: An Empirical Analysis."  CESifo Working Paper no. 760,
+August 2002. \\ 
+\\ 
+Hallsworth, Michael., John List, Robert Metcalfe and Ivo Vlaev (2014),
+``The Behavioralist as Tax Collector," Using Natural Field Experiments
+to Enhance Tax Compliance." NBER Working Paper 20007. \\ 
+\\ 
+Hamilton, Bruce (1975), ``Zoning and Property Taxation in a System of
+Local Governments," Urban Studies, Vol. 12 (June),
+205-211. \\ 
+\\ 
+Harrison, Glenn W. and John A. List (2004), ``Field Experiments."
+Journal of Economic Literature, 42 (4), 1009-1055.\\ 
+\\ 
+Keen, Michael and Ben Lockwood (2010), ``The Value-Added Tax: Its
+Causes and Consequences," Journal of Development Economics, Vol. 92
+(July), 138-151. \\ 
+\\ 
+Kleven, Henrik J., Knudsen, Martin B., Kreiner, Claus T., Pedersen,
+Soren and Emmanuel Saez (2011), ``Unwilling or Unable to Cheat?
+Evidence From a Tax Audit Experiment in Denmark."  Econometrica, 79
+(3), 651-692. \\ 
+\\ 
+Mieszkowski, Peter (1972), ``The Property Tax: an Excise or a Profits
+Tax?" Journal of Public Economics, Vol. 1 (April),
+73-96. \\ 
+\\ 
+Organization for Economic Cooperation and Development 2011, Tax
+Administration in OECD and Selected Non-OECD Countries: Comparative
+Information Series (2010), Center for Tax Policy and Administration.
+\\ 
+\\ 
+Perez-Truglia, Ricardo and Ugo Troiano (2015), ``Tax Debt Enforcement:
+Theory and Evidence from a Field Experiment in the United States,"
+University of Michigan.  \\ 
+\\ 
+Pew Charitable Trust (2013), ``Delinquent Property Tax in
+Philadelphia." Technical Report. \\ 
+\\ 
+Pomeranz, Dina (2013), ``No taxation without information: Deterrence
+and self-enforcement in the Value Added Tax."  Harvard Business School
+Working Paper. \\ 
+\\ 
+Posner, Eric (2000), ``Law and Social Norms: the Case of Tax
+Compliance," Virginia Law Review, Vol. 86, (No. 8)
+1781-1819. \\ 
+\\ 
+Reckers, Philip M. J., Sanders, Debra L. and Stephen J. Roark (1994),
+``The influence of ethical attitudes on taxpayer compliance." National
+Tax Journal, 47 (4), 825-836. \\ 
+\\ 
+Sherman, Lawrence (1993), ``Defiance, deterrence, and irrelevance: A
+theory of the criminal sanction."  Journal of Research in Crime and
+Delinquency, 30, 445-473. \\ 
+\\ 
+Slemrod, Joel (2007), ``Cheating ourselves: The economics of tax
+evasion." Journal of Economic Perspectives, 21 (1),
+25-48. \\ 
+\\ 
+Slemrod, Joel, Marsha Blumenthal, and Charles Christian (2001),
+``Taxpayer Response to an Increased Probability of Audit: Evidence
+from a Controlled Experiment in Minnesota." Journal of Public
+Economics 79, 3, 455-83.\\ 
+\\ 
+Torgler, Benno (2002), ``Moral-suasion: An alternative tax policy
+strategy?  Evidence from a controlled field experiment in
+Switzerland." Economics of Governance 5 (3), 235-253. \\ 
+\\ 
+Torgler, Benno (2012), ``A field experiment on moral-suasion and tax
+compliance focusing on under-declaration and over-deduction." QUT
+School of Economics and Finance Working Paper no. 285. \\ 
+\\ 
+Wenzel, Michael (2005), ``Misperceptions of social Norms about Tax
+Compliance: From Theory to Intervention." Journal of Economic
+Psychology 26, 6, 862-83\\ 
+\\ 
+Wenzel, Michael and Natalie Taylor (2004), ``An experimental
+evaluation of tax-reporting schedules: a case of evidence-based tax
+administration." Journal of Public Economics, 88 (12), 2785-2799.
+
+\bigskip
+
+\bigskip
+
+\section*{Appendix A: Figures 1 through 5}
+ \newpage
+ 
+\begin{figure}[htpb]
+\begin{center}
+\caption{Standard Due Letter}
+\bigskip
+\includegraphics[width=6in]{PastDueLetter.pdf}
+\end{center}
+\end{figure}
+\newpage
+\begin{figure}[htpb]
+\begin{center}
+\caption{Treatment 1: Deterrence}
+\bigskip
+\includegraphics[width=6in]{flyer_options_141104_treat1.pdf}
+\end{center}
+\end{figure}
+\newpage
+\begin{figure}[htpb]
+\begin{center}
+\caption{Treatment 2: Service Appeal}
+\bigskip
+\includegraphics[width=6in]{flyer_options_141104_treat2.pdf}
+\end{center}
+\end{figure}
+\newpage
+\begin{figure}[htpb]
+\begin{center}
+\caption{Treatment 3: Civic Duty}
+\bigskip
+\includegraphics[width=6in]{flyer_options_141104_treat3.pdf}
+\end{center}
+\end{figure}
+\newpage
+\begin{figure}[htpb]
+\begin{center}
+\caption{Control}
+\bigskip
+\includegraphics[width=6in]{flyer_options_141104_treat4.pdf}
+\end{center}
+\end{figure}
+
+\end{document}
+
+

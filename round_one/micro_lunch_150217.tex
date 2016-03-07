@@ -1,0 +1,885 @@
+% Preview source code
+
+%% LyX 2.0.6 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[english]{beamer}
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{3}
+\usepackage{amsmath}
+\usepackage{graphicx}
+
+\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+%% Because html converters don't know tabularnewline
+\providecommand{\tabularnewline}{\\}
+%% A simple dot to overcome graphicx limitations
+\newcommand{\lyxdot}{.}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Textclass specific LaTeX commands.
+ % this default might be overridden by plain title style
+ \newcommand\makebeamertitle{\frame{\maketitle}}%
+ \AtBeginDocument{
+   \let\origtableofcontents=\tableofcontents
+   \def\tableofcontents{\@ifnextchar[{\origtableofcontents}{\gobbletableofcontents}}
+   \def\gobbletableofcontents#1{\origtableofcontents}
+ }
+\numberwithin{figure}{section}
+ \long\def\lyxframe#1{\@lyxframe#1\@lyxframestop}%
+ \def\@lyxframe{\@ifnextchar<{\@@lyxframe}{\@@lyxframe<*>}}%
+ \def\@@lyxframe<#1>{\@ifnextchar[{\@@@lyxframe<#1>}{\@@@lyxframe<#1>[]}}
+ \def\@@@lyxframe<#1>[{\@ifnextchar<{\@@@@@lyxframe<#1>[}{\@@@@lyxframe<#1>[<*>][}}
+ \def\@@@@@lyxframe<#1>[#2]{\@ifnextchar[{\@@@@lyxframe<#1>[#2]}{\@@@@lyxframe<#1>[#2][]}}
+ \long\def\@@@@lyxframe<#1>[#2][#3]#4\@lyxframestop#5\lyxframeend{%
+   \frame<#1>[#2][#3]{\frametitle{#4}#5}}
+ \def\lyxframeend{} % In case there is a superfluous frame end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{color}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{babel}
+\usepackage{bbm}
+\usepackage{dsfont}
+\usepackage[]{natbib}
+\usepackage{pdflscape}
+\usepackage{transparent}
+%\bibliographystyle{econometrica}
+%\bibliographystyle{/home/michael/Dropbox/Papers/chicago}
+%\bibliographystyle{/home/michael/Dropbox/Papers/ecta}
+\bibliographystyle{/home/michael/Dropbox/Papers/aer}
+\renewcommand{\cite}{\citet}
+\renewcommand\[{\begin{equation}}
+\renewcommand\]{\end{equation}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argMax}{arg\,Max}
+\DeclareMathOperator*{\Max}{\,Max}
+
+\makeatother
+
+\usepackage{babel}
+\begin{document}
+
+\title{Real Estate Tax Collection in Philadelphia:\\
+Early Results from a Behavioral Experiment}
+
+
+\author{Michael Chirico%
+\thanks{The research presented here was supported in part by the Institute
+of Education Sciences, U.S. Department of Education, through Grant
+\#R305B090015 to the University of Pennsylvania. The opinions expressed
+are those of the presenter and do not represent the views of the Institute
+or the U.S. Department of Education.%
+}, Robert Inman, Charles Loeffler,\\
+John MacDonald, and Holger Sieg}
+
+
+\date{February 17, 2015}
+
+\makebeamertitle
+
+\lyxframeend{}\lyxframe{Outline}
+\begin{itemize}
+\item Motivation
+\item Background
+\item Treatments
+\item Experimental Design \& Implementation Fidelity
+\item Preliminary Results
+\end{itemize}
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Motivation}
+\begin{itemize}
+\item From Ten Miles: Why do people pay their taxes? More poignantly for
+this presentation, why DON'T some people pay their taxes?
+
+\begin{itemize}
+\item Standard economics: Deterrence \& Detection
+\item More recently: Tax Morale \& Social Contracts
+\item Also: Conformity \& Peer Isolation
+\end{itemize}
+\item Why Real Estate Taxes?
+
+\begin{itemize}
+\item Generally under-studied vis-a-vis income taxes
+\item Perfectly observable--impossible to hide a tract of land
+\item In devolved US public revenue system, key ingredient to local public
+financing
+
+\begin{itemize}
+\item So, arguably more tangible as an embodiment of social contract
+\end{itemize}
+\item Particularly poignant in Philadelphia
+\end{itemize}
+\end{itemize}
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Motivation}
+\begin{itemize}
+\item Why Philadelphia?
+\end{itemize}
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Motivation}
+\begin{itemize}
+\item Why Philadelphia?
+
+\begin{itemize}
+\item 5th most of 36 US cities in delinquency rate (2011; Pew Charitable
+Trusts 2013)
+\end{itemize}
+\end{itemize}
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Motivation}
+\begin{itemize}
+\item Why Philadelphia?
+\end{itemize}
+\begin{center}
+\includegraphics[width=5cm]{images/delinquents_as_of_nov_3}
+\par\end{center}
+
+\begin{center}
+134,000 ($\approx$23\%) In-Hock Properties as of Nov. 3, 2015
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Motivation}
+\begin{itemize}
+\item Why Philadelphia?
+\end{itemize}
+\begin{center}
+\includegraphics[width=5cm]{images/delinquents_as_of_nov_3_by_amt}
+\par\end{center}
+
+\begin{center}
+Total of \$595 million dollars owed to the city
+\par\end{center}
+
+\begin{center}
+(granted, 70\% deemed uncollectable by Pew Charitable Trusts 2013)
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Motivation}
+\begin{itemize}
+\item Why Philadelphia?
+\end{itemize}
+\begin{center}
+\includegraphics[width=5cm]{images/delinquents_as_of_nov_3_by_amt_wash_west}
+\par\end{center}
+
+\begin{center}
+Camilo?
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Motivation}
+\begin{itemize}
+\item Why Philadelphia?
+\end{itemize}
+\begin{center}
+\includegraphics[width=5cm]{images/delinquents_as_of_nov_3_by_amt_ritt_fit}
+\par\end{center}
+
+\begin{center}
+Andrew? Dirk?
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Motivation}
+\begin{itemize}
+\item One last thing: a popular blog specifically dedicated to outing delinquents:
+\end{itemize}
+\begin{center}
+\includegraphics[width=11cm]{\string"../../../../Pictures/Screenshot from 2015-02-16 11:34:51\string".png}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Experiment Basics}
+\begin{itemize}
+\item Slew of policies considered which could increase remittance
+\item We settled on the most logistically feasible experiment: altering
+the content of regularly mailed bills
+
+\begin{itemize}
+\item specifically, we randomly included one of 3 treatment flyers or one
+control flyer, with each treatment addressing one of the theories
+of tax compliance mentioned before:
+
+\begin{enumerate}
+\item Deterrence (Threat)
+\item Social Norms (Moral)
+\item Conformity (Peer)
+\end{enumerate}
+\end{itemize}
+\end{itemize}
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Treatments: Threat}
+
+\begin{center}
+\includegraphics[height=7.5cm]{\lyxdot \lyxdot /flyer_options_141104_treat1}\includegraphics[height=7.5cm]{\lyxdot \lyxdot /flyer_options_141104_treat1_espanol}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Treatments: Moral}
+
+\begin{center}
+\includegraphics[height=7.5cm]{\lyxdot \lyxdot /flyer_options_141104_treat2}\includegraphics[height=7.5cm]{\lyxdot \lyxdot /flyer_options_141104_treat2_espanol}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Treatments: Peer}
+
+\begin{center}
+\includegraphics[height=7.5cm]{\lyxdot \lyxdot /flyer_options_141104_treat3}\includegraphics[height=7.5cm]{\lyxdot \lyxdot /flyer_options_141104_treat3_espanol}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Treatments: Control}
+
+\begin{center}
+\includegraphics[height=7.5cm]{\lyxdot \lyxdot /flyer_options_141104_treat4}\includegraphics[height=7.5cm]{\lyxdot \lyxdot /flyer_options_141104_treat4_espanol}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Implementation}
+\begin{itemize}
+\item Turns out, running as simple an experiment as this is much more logistically
+difficult than you could imagine.
+\item We needed to integrate ourselves into the regular flow of operations
+at the Department of Revenue (DOR) in order to run our experiment
+\item First, an overview of how Real Estate Taxation works in Philadelphia
+\end{itemize}
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Real Estate Taxes in Philadelphia}
+\begin{itemize}
+\item 1.34\% annual tax on assessed value levied by the city on all properties
+
+\begin{itemize}
+\item .6018\% $\rightarrow$ City's coffers
+\item .7382\% $\rightarrow$ School District of Philadelphia
+\item slew of exemptions
+
+\begin{itemize}
+\item by property usage--publicly owned (local, state or federal government),
+cultural/educational institution, hospitals/medical facilities...
+\item new construction abatements (encourage renovation, etc.)
+\end{itemize}
+\end{itemize}
+\item ``Assessed Value''?
+
+\begin{itemize}
+\item Office of Property Assessment has a model by which they assess the
+market value of every property in Philadelphia
+\item Actual Value Initiative (2013)
+\end{itemize}
+\end{itemize}
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Real Estate Taxes in Philadelphia}
+\begin{itemize}
+\item Tax bills are mailed in December for the following year, with a due-by
+date of March 31
+
+\begin{itemize}
+\item (1\% discount for pre-March payees irrelevant here)
+\end{itemize}
+\item Don't pay by March 31: ``Late''
+
+\begin{itemize}
+\item Additional charges/fees
+\end{itemize}
+\item Active pursuit by the City begins in September (more in a minute)
+\item Don't pay by Dec 31: ``Delinquent''
+
+\begin{itemize}
+\item Municipal lien--city can sieze ownership of the property ``at will''
+\item Sheriff's Sale
+\end{itemize}
+\end{itemize}
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Real Estate Taxes in Philadelphia}
+\begin{itemize}
+\item Active pursuit of nonpaying properties
+
+\begin{itemize}
+\item $\frac{2}{3}$ of properties are delegated to private law firms; for
+a portion of recovered value, law firms are free \& legally enabled
+to pursue debts of assigned properties
+
+\begin{itemize}
+\item Given perverse incentive to allow debts to lapse into delinquency,
+the two outside firms switch ownership starting in January--nudging
+timely pursual.
+\end{itemize}
+\item Sequestration of income from commercial properties
+\item Extensive garnishing rights for delinquent city employees / applicants
+\item \textbf{Regular mailing of plain bills to late and delinquent account
+holders}
+\end{itemize}
+\end{itemize}
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Mailing Logistics}
+
+Starting March 31, the City phases in its \textquotedblleft{}soft
+nudge\textquotedblright{} approach--regular reminders of unpaid Real
+Estate Tax balances
+\begin{itemize}
+\item Mailing Cycles
+
+\begin{itemize}
+\item Assigned $\phantom{\mbox{{\color{red}?RANDOMLY?}}}$ to \textit{ALL}
+properties, delinquent or not
+\item Every day, printer at City Hall automatically taps the accounts database
+to figure out the day's bill sample
+
+\begin{itemize}
+\item roughly 1200 bills printed daily
+\end{itemize}
+\item Then processed \& mailed
+\end{itemize}
+\end{itemize}
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Mailing Logistics}
+
+Starting March 31, the City phases in its \textquotedblleft{}soft
+nudge\textquotedblright{} approach--regular reminders of unpaid Real
+Estate Tax balances
+\begin{itemize}
+\item Mailing Cycles
+
+\begin{itemize}
+\item Assigned \textcolor{red}{?RANDOMLY?} to \textit{ALL} properties, delinquent
+or not
+\item Every day, printer at City Hall automatically taps the accounts database
+to figure out the day's bill sample
+
+\begin{itemize}
+\item roughly 1200 bills printed daily
+\end{itemize}
+\item Then processed \& mailed
+\end{itemize}
+\end{itemize}
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Mailing Logistics}
+\begin{itemize}
+\item Mailing Cycles
+
+\begin{itemize}
+\item We decided to randomize treatment at the mailing cycle level--basically
+logistics
+
+\begin{itemize}
+\item Randomized in 4-day sequences
+\end{itemize}
+\item 15 treatment days in November
+
+\begin{itemize}
+\item (thereafter, nudge billing ceased as 2015 tax bills processed and
+posted)
+\end{itemize}
+\end{itemize}
+\end{itemize}
+\begin{center}
+\begin{tabular}{|c||c|c|c|c|}
+\hline 
+Treatment & THREAT & MORAL & PEER & CONTROL\tabularnewline
+\hline 
+\hline 
+Count & 3 & 4 & 4 & 4\tabularnewline
+\hline 
+\end{tabular}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Sample Balance}
+\begin{itemize}
+\item DOR \textit{CLAIMS} properties were assigned randomly
+
+\begin{itemize}
+\item assignment on final 2 digits of secure ID
+
+\begin{itemize}
+\item 01,02 $\rightarrow$ Cycle 1; 03,04 $\rightarrow$ Cycle 2; $\cdots$
+99,00 $\rightarrow$ Cycle 50
+\item SSN, EIN, or in-house ID--none of these are themselves randomly assigned,
+but can expect random assignment for the purposes at hand
+\end{itemize}
+\end{itemize}
+\end{itemize}
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Sample Balance}
+\begin{itemize}
+\item DOR \textit{CLAIMS} properties were assigned randomly
+
+\begin{itemize}
+\item However:
+\end{itemize}
+\end{itemize}
+\begin{center}
+\includegraphics[width=7cm]{images/cycle_intended_vs_actual}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Sample Balance}
+\begin{itemize}
+\item Given extensive ``leakage'' from claimed randomization, we take
+more seriously the standard ``balance-on-observables'' exercise--which
+substantiated the utility of our day-level randomization process.
+\item Basic approach of balance-on-observables test:
+\[
+X\perp T
+\]
+
+
+\begin{itemize}
+\item i.e., is variable $X$ independent of random assignment $T$?
+\end{itemize}
+\item Problems with simple tests \& troubles of aggregation
+
+\begin{itemize}
+\item influence of outliers
+\end{itemize}
+\end{itemize}
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Sample Balance}
+\begin{itemize}
+\item First test: sanity check--do the \textit{COUNTS} of properties at
+least even out across treatment groups?
+\end{itemize}
+\begin{center}
+\includegraphics[width=7cm,bb = 0 0 200 100, draft, type=eps]{images/balance/treatment_count_single_property_nonexempt}
+\par\end{center}
+
+\begin{center}
+$p=.9905$ (from $\chi^{2}$ test)
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Sample Balance}
+\begin{itemize}
+\item Second tests: Treatment orthogonal to debt or property valuation?
+\end{itemize}
+\begin{center}
+\includegraphics[width=4cm,bb = 0 0 200 100, draft, type=eps]{images/balance/total_balance_single_property_nonexempt}
+\includegraphics[width=4cm,bb = 0 0 200 100, draft, type=eps]{images/balance/market_value_single_property_nonexempt}
+\par\end{center}
+\begin{itemize}
+\item $p$-values (from ANOVA): .351 (total balance); .17 (total positive
+balance); .608 (market value)
+
+\begin{itemize}
+\item not clear why first two are so disparate, given high visual similarity
+of distributions
+\end{itemize}
+\end{itemize}
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Sample Balance}
+\begin{itemize}
+\item Further exploration of debt balance distribution, given (insignificant)
+yet low $p$-values.
+\end{itemize}
+\begin{table}[ht] \centering \begin{tabular}{rrr}   \hline  & Average Balance & Average Positive Balance \\    \hline Threat & 1039.11 & 4864.72 \\    Moral & 972.41 & 4614.98 \\    Peer & 959.95 & 4504.19 \\    Control & 961.35 & 4574.43 \\     \hline \end{tabular} \end{table}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Sample Balance}
+\begin{itemize}
+\item Further exploration of debt balance distribution, given (insignificant)
+yet low $p$-values.
+\end{itemize}
+\begin{center}
+\includegraphics[width=6cm,bb = 0 0 200 100, draft, type=eps]{images/balance/total_balance_quartiles_single_property_nonexempt}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Fidelity}
+\begin{itemize}
+\item So randomization appears to have been observably successful.
+\item However, we ran into some further issues with implementation fidelity
+\end{itemize}
+\begin{table}[ht] \centering \scalebox{.75}{\begin{tabular}{rlllllllllllllll}   \hline  Day: & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & 9 & 10 & 11 & 12 & 13 & 14 & 15 \\    \hline Intended Stuffer & M & P & T & C & T & P & C & M & M & C & P & T & C & P & M \\  \% Inaccurate & 0 & 35 & 55 & 21 & 70 & 35 & 0 & 0 & 0 & 38 & 1 & 0 & 9 & 7 & 2 \\  Actual Stuffer & M & P & T & T & P & P & C & M & M & M & P & T & C & P & M \\    \hline \multicolumn{16}{l} {\scriptsize{T: Threat, M: Moral, P: Peer, C: Control}} \end{tabular}} \caption{Measured Fidelity of Implementation} \end{table}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Fidelity}
+\begin{itemize}
+\item So randomization appears to have been observably successful.
+\item However, we ran into some further issues with implementation fidelity
+\end{itemize}
+\begin{center}
+\includegraphics[width=8cm]{images/calendar_intended_treatment}
+\par\end{center}
+
+\begin{center}
+\includegraphics[width=8cm]{images/calendar_empirical_treatment}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Fidelity}
+\begin{itemize}
+\item So randomization appears to have been observably successful.
+\item However, we ran into some further issues with implementation fidelity
+\end{itemize}
+\begin{center}
+\includegraphics[width=8cm]{images/calendar_empirical_treatment}
+\par\end{center}
+
+\begin{center}
+\begin{tabular}{|c||c|c|c|c|}
+\hline 
+Treatment & THREAT & MORAL & PEER & CONTROL\tabularnewline
+\hline 
+\hline 
+Count & \textcolor{red}{1} & 4 & \textcolor{red}{2} & \textcolor{red}{2}\tabularnewline
+\hline 
+\end{tabular}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Sample Description}
+
+Data sources, linked by OPA Account Number (9-digit code)
+\begin{enumerate}
+\item {\footnotesize{Delinquency Snapshot, November 3rd}}{\footnotesize \par}
+
+\begin{enumerate}
+\item {\scriptsize{Covariates on every property with positive balance due
+as of 11/3}}{\scriptsize \par}
+\item {\scriptsize{Owner name, stock debt breakdown (principal/interest/penalty/other/total),
+\# years owed \& rough period, taxable value, tax abatements, homestead,
+building usage code, property address \& $\left(X,Y\right)$ coordinates,
+mailing address, City Council District}}{\scriptsize \par}
+\item {\scriptsize{Also used for sample restrictions (next): Payment agreements,
+case status, sheriff's sale status, bankruptcy status, sequestration
+status, returned mail flag}}{\scriptsize \par}
+\end{enumerate}
+\item {\footnotesize{Payments File (October 6th - January 6th)}}{\footnotesize \par}
+
+\begin{enumerate}
+\item {\scriptsize{Every payment (credit/debit) from every account over
+the period}}{\scriptsize \par}
+\item {\scriptsize{Valid \& posting dates, period and breakdown (principal/interest/penalty/other)
+of debited debt}}{\scriptsize \par}
+\end{enumerate}
+\item {\footnotesize{Office of Property Assessment Data}}{\footnotesize \par}
+
+\begin{enumerate}
+\item {\scriptsize{Covariates maintained by the OPA for assessment--every
+property in Philadelphia}}{\scriptsize \par}
+\item {\scriptsize{market value, property usage category, land area, exterior
+condition}}{\scriptsize \par}
+\end{enumerate}
+\item {\footnotesize{Mailing Cycle info}}{\footnotesize \par}
+
+\begin{enumerate}
+\item {\scriptsize{mainly, the mailing cycle associated with each property}}{\scriptsize \par}
+\end{enumerate}
+\end{enumerate}
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Sample Description}
+
+Sample restrictions (original sample: 134,888 delinquent properties)
+\begin{enumerate}
+\item Payment agreement (23\%=31456)
+\item Any tax abatement (5\% = 4706)
+\item Not handled by DOR (62\%=61170)
+\item Sheriff's Sale (11\%=4098)
+\item Bankruptcy (3\%=948)
+\item Sequestration (3\%=1130)
+\item Returned mail flag (5\%=1429)
+\item Not mailed during treatment between Nov. 4 \& Nov. 24 (83\%=24800)
+\end{enumerate}
+Final sample: 5151 properties
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Sample Description}
+
+Timing restrictions
+\begin{itemize}
+\item Want same measurement timeframe for all cycles (and hence all properties)
+
+\begin{itemize}
+\item Prior to mailing day, data limited by first mailing day (40 days between
+start of sample \& mailing day 1)
+\item Subsequent to mailing day, data limited by final mailing day (currently
+36 days between end of sample \& final mailing day)
+\end{itemize}
+\end{itemize}
+So in the end, we currently have 77 relatively matched days of payment
+behavior for each account
+
+(for a total of 77{*}5151=393085 day-account observations)
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Sample Description}
+
+Timing restrictions
+\begin{itemize}
+\item Choice of ``Mailing Day''
+\end{itemize}
+\begin{center}
+\includegraphics[width=8cm,bb = 0 0 200 100, draft, type=eps]{images/analysis/fidelity_check_mailing_day_act}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Sample Description}
+
+Initial Delinquent Pool vs. Final Pool
+
+\begin{center}
+\includegraphics[height=5cm]{images/delinquents_as_of_nov_3}\includegraphics[height=5cm]{images/delinquents_as_of_nov_3_act}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Sample Description}
+
+Initial Delinquent Pool vs. Final Pool
+
+\begin{center}
+\includegraphics[width=4cm]{images/distribution_delinquency_nov_3}\includegraphics[width=4cm,bb = 0 0 200 100, draft, type=eps]{images/analysis/distribution_delinquency_mail_day_act}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Sample Description}
+
+Descriptive Statistics
+
+\begin{table}[ht] \centering \begin{tabular}{rrrrrr}   \hline  & Full & Threat & Moral & Peer & Control \\    \hline Years: [0,2] & 0.66 & 0.63 & 0.64 & 0.69 & 0.69 \\    Years: (2,5] & 0.17 & 0.16 & 0.18 & 0.16 & 0.16 \\    Years: (5,10] & 0.09 & 0.12 & 0.09 & 0.08 & 0.08 \\    Years: (10,20] & 0.06 & 0.06 & 0.06 & 0.05 & 0.05 \\    Years: (20,40] & 0.02 & 0.03 & 0.02 & 0.02 & 0.02 \\    Cat: Commercial & 0.04 & 0.04 & 0.04 & 0.04 & 0.02 \\    Cat: Hotels/Apts & 0.08 & 0.10 & 0.09 & 0.08 & 0.08 \\    Cat: Industrial & 0.01 & 0.02 & 0.01 & 0.01 & 0.02 \\    Cat: Residential & 0.69 & 0.65 & 0.70 & 0.70 & 0.70 \\    Cat: Store+Resid & 0.07 & 0.06 & 0.07 & 0.07 & 0.06 \\    Cat: Vacant & 0.10 & 0.14 & 0.09 & 0.11 & 0.12 \\    \% Sealed/Compromised & 0.03 & 0.02 & 0.04 & 0.02 & 0.03 \\    \% Homestead & 0.23 & 0.19 & 0.23 & 0.24 & 0.22 \\     \hline \end{tabular} \end{table}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Preliminary Results}
+
+Did the property ever pay during our sample period? Did they pay in
+full?
+
+\begin{center}
+\includegraphics[width=4.5cm,bb = 0 0 200 100, draft, type=eps]{images/analysis/time_series_pct_ever_paid_act}\includegraphics[width=4.5cm,bb = 0 0 200 100, draft, type=eps]{images/analysis/time_series_pct_paid_full_act}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Preliminary Results}
+
+Did the property ever pay during our sample period? Did they pay in
+full?
+
+\begin{table} \begin{center} \scalebox{.5}{\begin{tabular}{l|cc|cc} \hline                        & Ever Paid & Ever Paid (with Controls) & Paid in Full & Paid in Full (with Controls) \\ \hline Intercept              & $-1.74^{***}$ & $-3.35^{***}$ & $-2.28^{***}$ & $-3.04^{**}$  \\                        & $(0.08)$      & $(0.74)$      & $(0.10)$      & $(1.03)$      \\ Treatment Group        &               &               &               &               \\                        &               &               &               &               \\ \quad Moral            & $-0.06$       & $-0.07$       & $-0.41^{**}$  & $-0.40^{**}$  \\                        & $(0.10)$      & $(0.10)$      & $(0.13)$      & $(0.14)$      \\ \quad Peer             & $0.22$        & $0.18$        & $0.25$        & $0.21$        \\                        & $(0.11)$      & $(0.12)$      & $(0.14)$      & $(0.14)$      \\ \quad Threat           & $-0.10$       & $-0.07$       & $-0.22$       & $-0.19$       \\                        & $(0.15)$      & $(0.15)$      & $(0.19)$      & $(0.20)$      \\ Log Balance at Mailing &               & $-0.00$       &               & $-0.11^{***}$ \\                        &               & $(0.01)$      &               & $(0.02)$      \\ Log Market Value       &               & $0.09$        &               & $-0.02$       \\                        &               & $(0.06)$      &               & $(0.08)$      \\ \hline AIC                    & 4343.10       & 4225.54       & 2915.19       & 2748.35       \\ BIC                    & 4369.25       & 4382.46       & 2941.34       & 2905.26       \\ Log Likelihood         & -2167.55      & -2088.77      & -1453.60      & -1350.17      \\ Deviance               & 4335.10       & 4177.54       & 2907.19       & 2700.35       \\ Num. obs.              & 5105          & 5105          & 5105          & 5105          \\ \hline \multicolumn{5}{l}{\scriptsize{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$.}} \end{tabular}} \end{center} \end{table}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Preliminary Results}
+
+Did the properties pay more absolutely? Did they pay down a bigger
+chunk of the pie owed?
+
+\begin{center}
+\includegraphics[width=4.5cm,bb = 0 0 200 100, draft, type=eps]{images/analysis/time_series_average_payments_act}\includegraphics[width=4.5cm,bb = 0 0 200 100, draft, type=eps]{images/analysis/time_series_debt_paydown_act}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Preliminary Results}
+
+Did the properties pay more absolutely? Did they pay down a bigger
+chunk of the pie owed?
+
+\begin{table} \begin{center} \scalebox{.5}{\begin{tabular}{l c c } \hline                        & Paid vs. Market Value & Paid vs. Market Value (with Controls) \\ \hline Intercept              & $-12348.07^{***}$ & $-11096.96^{***}$ \\                        & $(2318.61)$       & $(2883.17)$       \\ Treatment Group        &                   &                   \\                        &                   &                   \\ \quad Moral            & $-7128.53^{*}$    & $-7441.16^{*}$    \\                        & $(2893.30)$       & $(2985.93)$       \\ \quad Peer             & $1398.56$         & $806.87$          \\                        & $(3150.31)$       & $(3223.92)$       \\ \quad Threat           & $-1364.18$        & $-1456.06$        \\                        & $(3998.04)$       & $(4110.60)$       \\ Log Market Value       & $563.40^{**}$     & $404.39$          \\                        & $(200.81)$        & $(253.71)$        \\ Moral*MV               & $624.16^{*}$      & $653.08^{*}$      \\                        & $(251.37)$        & $(259.30)$        \\ Peer*MV                & $-79.53$          & $-32.17$          \\                        & $(274.75)$        & $(281.09)$        \\ Threat*MV              & $106.23$          & $114.47$          \\                        & $(348.01)$        & $(357.51)$        \\ Log Balance at Mailing &                   & $61.90$           \\                        &                   & $(45.97)$         \\ \hline AIC                    & 17746.27          & 17729.78          \\ BIC                    & 17805.12          & 17912.85          \\ Log Likelihood         & -8864.14          & -8836.89          \\ Deviance               & 3088.60           & 3027.81           \\ Total                  & 5105              & 5105              \\ Left-censored          & 4331              & 4331              \\ Uncensored             & 774               & 774               \\ Right-censored         & 0                 & 0                 \\ Wald Test              & 83.35             & 125.02            \\ \hline \multicolumn{3}{l}{\scriptsize{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$.}} \end{tabular}} \end{center} \end{table}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Preliminary Results}
+
+Breakdown of indicator results by balance quartile
+
+\begin{center}
+\includegraphics[width=5cm,bb = 0 0 200 100, draft, type=eps]{images/analysis/time_series_pct_ever_paid_by_quartile_act}\includegraphics[width=5cm,bb = 0 0 200 100, draft, type=eps]{images/analysis/time_series_pct_paid_full_by_quartile_act}
+\par\end{center}
+
+
+\lyxframeend{}\lyxframe{Preliminary Results}
+
+Did the properties pay more absolutely? Did they pay down a bigger
+chunk of the pie owed?
+
+\begin{table} \begin{center} \scalebox{.5}{\begin{tabular}{l c c } \hline                        & Paid vs. Total Debt & Paid vs. Total Debt (with Controls) \\ \hline Intercept              & $-5478.88^{***}$ & $-13650.77^{***}$ \\                        & $(598.31)$       & $(2074.35)$       \\ Treatment Group        &                  &                   \\                        &                  &                   \\ \quad Moral            & $-1505.26^{*}$   & $-1669.69^{*}$    \\                        & $(752.51)$       & $(748.86)$        \\ \quad Peer             & $779.26$         & $773.16$          \\                        & $(785.66)$       & $(778.14)$        \\ \quad Threat           & $-629.38$        & $-579.61$         \\                        & $(1031.67)$      & $(1029.50)$       \\ Log Balance at Mailing & $-107.27$        & $-37.85$          \\                        & $(87.24)$        & $(87.50)$         \\ Moral*Balance          & $249.08^{*}$     & $272.72^{*}$      \\                        & $(110.60)$       & $(110.23)$        \\ Peer*Balance           & $-44.45$         & $-58.25$          \\                        & $(119.07)$       & $(118.16)$        \\ Threat*Balance         & $79.00$          & $70.76$           \\                        & $(151.02)$       & $(151.20)$        \\ Log Market Value       &                  & $687.78^{***}$    \\                        &                  & $(175.00)$        \\ \hline AIC                    & 17820.05         & 17728.50          \\ BIC                    & 17878.89         & 17911.57          \\ Log Likelihood         & -8901.02         & -8836.25          \\ Deviance               & 3119.44          & 3022.06           \\ Total                  & 5105             & 5105              \\ Left-censored          & 4331             & 4331              \\ Uncensored             & 774              & 774               \\ Right-censored         & 0                & 0                 \\ Wald Test              & 13.48            & 126.19            \\ \hline \multicolumn{3}{l}{\scriptsize{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$.}} \end{tabular}} \end{center} \end{table}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Preliminary Results}
+
+Breakdown of magnitude results by balance quartile
+
+\begin{center}
+\includegraphics[width=5cm,bb = 0 0 200 100, draft, type=eps]{images/analysis/time_series_average_payments_by_quartile_act}\includegraphics[width=5cm,bb = 0 0 200 100, draft, type=eps]{images/analysis/time_series_debt_paydown_by_quartile_act}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Preliminary Results}
+
+Sensitivity to multiple ownership?
+
+\begin{center}
+\includegraphics[width=3.5cm,bb = 0 0 200 100, draft, type=eps]{images/analysis/time_series_pct_ever_paid_act_single_owners}\includegraphics[width=3.5cm,bb = 0 0 200 100, draft, type=eps]{images/analysis/time_series_pct_paid_full_act_single_owners}
+\par\end{center}
+
+\begin{center}
+\includegraphics[width=3.5cm,bb = 0 0 200 100, draft, type=eps]{images/analysis/time_series_average_payments_act_single_owners}\includegraphics[width=3.5cm,bb = 0 0 200 100, draft, type=eps]{images/analysis/time_series_debt_paydown_act_single_owners}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Preliminary Results}
+
+What about intended versus empirical treatment?
+
+\begin{center}
+\includegraphics[width=3.5cm,bb = 0 0 200 100, draft, type=eps]{images/analysis/time_series_pct_ever_paid_int_single_owners}\includegraphics[width=3.5cm,bb = 0 0 200 100, draft, type=eps]{images/analysis/time_series_pct_paid_full_int_single_owners}
+\par\end{center}
+
+\begin{center}
+\includegraphics[width=3.5cm,bb = 0 0 200 100, draft, type=eps]{images/analysis/time_series_average_payments_int_single_owners}\includegraphics[width=3.5cm,bb = 0 0 200 100, draft, type=eps]{images/analysis/time_series_debt_paydown_int_single_owners}
+\par\end{center}
+
+
+\lyxframeend{}
+
+
+\lyxframeend{}\lyxframe{Conclusion}
+\begin{itemize}
+\item Lots more to do (sensitivity \& subgroup analyses)
+\item Any suggestions are appreciated!
+\item Thanks for watching!
+\end{itemize}
+
+\lyxframeend{}
+\end{document}

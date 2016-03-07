@@ -1,0 +1,665 @@
+\documentclass{beamer}
+
+\usepackage{graphics,pdflscape}
+
+\title{An Experimental Evaluation of Strategies to Increase Property Tax Compliance: \\
+Free-riding in the City of Brotherly Love}
+\author{Michael Chirico, Robert Inman, Charles Loeffler, \\
+John MacDonald, and Holger Sieg\thanks{We would like to thank  Rob Dubow, Clarena Tolson  and Marisa Waxman  in the 
+Department of Revenue of City of Philadelphia for their help and suggestions.}
+\\
+University of Pennsylvania}
+
+
+\begin{document}
+
+\frame{\titlepage}
+
+\frame{
+\frametitle{Overview}
+\begin{itemize}
+\item The purpose of this study is to evaluate a set of notification strategies intended to increase property tax 
+collection. 
+\item We have developed and implemented a field experiment in collaboration with the Philadelphia 
+Department of Revenue  to test three of the most commonly
+suggested hypotheses of tax compliance: deterrence, moral appeal, and peer conformity.
+\item Our findings provide some evidence that both moral appeal
+and peer conformity modestly improve tax compliance, while deterrence
+notifications are no different from standard notifications. 
+\end{itemize}
+}
+
+\frame{
+\frametitle{Real Estate or Property Taxation}
+\begin{itemize}
+\item Property taxation plays an integral role in financing municipalities and 
+their school districts in the U.S. (in contrast to most other developed countries.)
+\item In theory, levying a property tax is straightforward:
+\begin{enumerate}
+\item It only requires a valuation of the property and a register of the identities of the property holders. 
+\item There is no need for the tax payers to deal with complicated forms or to give up personal information as with an income tax. 
+\item Since property cannot be hidden, removed to a tax haven or concealed in an electronic data system, the tax cannot be evaded.
+\item Moreover, there are some compelling theoretical arguments for taxing property instead of its alternatives (income, consumption, wealth).
+\end{enumerate}
+\end{itemize}
+}
+
+\frame{
+\begin{center}
+\includegraphics[width=3in]{PastDueLetter.pdf}
+\end{center}
+}
+
+\frame{
+\frametitle{Property Tax Compliance}
+\begin{itemize}
+\item The practice of property taxation is a lot less appealing. 
+\item Property tax compliance is a significant problem in the many
+large U.S. cities. Philadelphia is a leading example.
+\item A recent study by the
+Pew Charitable Trust (2013) focused on a sample of 36 cities and found
+that Philadelphia had the fifth highest delinquency rate in 2011.
+\item Nine percent of  property taxes went uncollected in Philadelphia.  This compares to 
+a median delinquency rate of 4.1 percent in 36 large U.S. cites. 
+\item{Why do some property owner decide not to pay property taxes?  What can we learn from the related economic literature on tax
+compliance?}
+\end{itemize}
+}
+
+\frame{
+\frametitle{Notation}
+\begin{itemize}
+\item Tax payer's utility, denoted by $U(h,c)$,  is defined over housing, $h$ and consumption, $c$.
+\item Income: $y$
+\item Housing value or price: $v(h)$ 
+\item Property taxes: $t \; v(h)$
+\item Probability of detection of non-compliance: $p$ 
+\item  Fine if caught: $f \; v(h)$
+
+\end{itemize}
+}
+
+\frame{
+\frametitle{Becker's Deterrence Model}
+\begin{itemize}
+\item The utility of  complying with the tax laws is:
+\begin{eqnarray*}
+U_c= U(h, y - (1+ t) \; v(h))
+\end{eqnarray*}
+\item The (expected) utility of non-compliance is:
+\begin{eqnarray*}
+U_n = (1-p) \; U(h, y - v(h)) + p U(h, (1+ t + f) y - v(h)) 
+\end{eqnarray*}
+\end{itemize}
+}
+
+\frame{
+\frametitle{Tax Compliance in the Becker Model}
+\begin{itemize}
+\item  A variable $d$  indicates whether or not the agents pays property taxes:
+\begin{itemize}
+\item $d=1$ if comply. 
+\item $d=0$ if not comply.
+\end{itemize}
+\item We can write the objective function of the tax payer  as
+\begin{eqnarray*}
+U(d) = d \; U_c \; + \; (1-d) U_n
+\end{eqnarray*}
+\item A tax payer will comply with the law ($d=1$) if and only if:
+\begin{eqnarray*}
+U_c \ge U_n
+\end{eqnarray*}
+\end{itemize}
+}
+
+\frame{
+\frametitle{Predictions of the Becker Model}
+
+Key implications:
+\begin{itemize}
+\item Compliance is increasing in the fine.
+\item Compliance is increasing in the detection probability.
+\item Compliance is decreasing in the property tax rate.
+\item Compliance is increasing in the risk aversion of a tax payer.
+\end{itemize}
+
+}
+
+\frame{
+\frametitle{Testing the Predictions of the Becker Model}
+
+\begin{itemize}
+\item Suppose we wanted to test the predictions of the Becker model using a randomized controlled trial (RCT). \item Ideally we would like to randomly vary a) the fine (amnesty program); b) the enforcement
+or detection probability; c) the property tax rate.
+\item Unfortunately, none of this seems to be feasible.
+\item The only feasible strategy is to try to change the subjective beliefs or the perceptions 
+of tax payers regarding the probability of detection.
+\item How credible are threats of enforcement in a city that has a long history of not enforcing 
+property tax collection?
+\end{itemize}
+}
+
+\frame{
+\begin{center}
+\includegraphics[width=3in]{flyer_options_141104_treat1.pdf}
+\end{center}
+}
+
+\frame{
+\frametitle{What is missing from the Becker Model?}
+
+The recent literature in public economics points to a number of short-comings of the Becker model:
+\begin{itemize}
+\item Property taxes are used to provide local public goods and services. We study the problem of tax compliance using insights of the literature on voluntary public good provision.
+\item Tax payers may comply with tax laws because of deeply engrained social norms. In particular, tax payers may comply with the tax laws due to peer pressure and the desire to conform
+to acceptable standards of behavior. 
+\end{itemize}
+To capture these ideas, we need to recast the Becker model as a {\bf game} between tax
+payers since {\bf strategic interactions} among tax payers matter!
+}
+
+\frame{
+\frametitle{Some Additional Notation}
+
+\begin{itemize}
+\item Two tax payers: $i=A,B$.
+\item Indicator variables $d_A$ and $d_B$ that indicate whether or 
+not the agent pays his property taxes.
+\item Tax revenues, $T$, are used to provide local public goods and services, $G$.
+\item Initially, let us simply assume that $G=T$.
+\item Utility is now given by $U(h,c) + V(G)$.
+\end{itemize}
+}
+
+\frame{
+\frametitle{Tax Collection}
+
+\begin{itemize}
+\item Expected tax payments of agent $i$:  
+\begin{eqnarray*}
+T(d_i) = d_i \; t \; v(h) +  (1-d_i) \;  [p \;[ (t+f) \; v(h)] + (1-p) \; 0] 
+\end{eqnarray*}
+\item Total tax collection:
+\begin{eqnarray*}
+T (d_A,d_B) = T(d_A) + T(d_B)
+\end{eqnarray*}
+\end{itemize}
+}
+
+\frame{
+\frametitle{Public Good Provision}
+\begin{itemize}
+\item Realistically, we want to assume that:
+\begin{eqnarray*}
+ t \; v(h) &>&    p \; [(t+f) \; v(h)] 
+\end{eqnarray*}
+Tax revenues generated under compliance are larger than under non-compliance. 
+\item Hence, we have:
+\begin{eqnarray*}
+T(1,1) > T(1,0) = T(0,1) > T(0,0)
+\end{eqnarray*}
+Moreover, $T = G$ implies that:
+\begin{eqnarray*}
+G(1,1) > G(1,0) = G(0,1) > G(0,0)
+\end{eqnarray*}
+\end{itemize}
+}
+
+\frame{
+\frametitle{Pay-offs in the Extended Becker Game}
+\begin{itemize}
+\item The pay-offs now depend on the strategies of both players:
+\begin{eqnarray*}
+U_A(d_A, d_B) = d_A U_c + (1-d_A) U_n + V(G(d_A,d_B)) \\
+U_B(d_A, d_B) = d_B U_c + (1-d_B) U_n + V(G(d_A,d_B))
+\end{eqnarray*}
+\item This game can have different equilibria in which zero, one or both players 
+comply with the tax laws. 
+\item Free riding can, therefore, occur in equilibrium.
+\end{itemize}
+}
+
+\frame{
+\frametitle{Predictions of the Extended Becker Game}
+\begin{itemize}
+\item Note that tax payers now have stronger incentives to pay taxes than
+in the basic Becker model since they will also benefit from the increase in 
+public good provision.
+\item An increase in the cost or a decrease in the efficiency of providing public goods leads to lower
+tax compliance.
+\item Again this prediction is impossible to test within a controlled randomized experiment.
+\end{itemize}
+}
+
+\frame{
+\frametitle{Warm-glow}
+\begin{itemize}
+\item The simple voluntary tax compliance model with enforcement is not likely to be
+consistent with observed behavior since compliance is too high given the enforcement
+policies and the incentives to voluntarily provide public good.
+\item Andreoni (1989) suggested to include a term in the utility function that captures "warm glow," or "doing the right thing."
+\item  In the Adreoni model, the pay-offs of both tax payers:
+\begin{eqnarray*}
+U_A(d_A, d_B) = d_A U_c + (1-d_A) U_n + V(G(d_A,d_B)) +  W(T_A(d_A)) \\
+U_B(d_A, d_B) = d_B U_c + (1-d_B) U_n + V(G(d_A,d_B)) +  W(T_A(d_B)) 
+\end{eqnarray*}
+\end{itemize}
+}
+
+\frame{
+\frametitle{Implications of the Becker-Andreoni-Model}
+\begin{itemize}
+\item Tax payers have even stronger incentives to pay taxes.
+\item We cannot randomly assign "warm glow" within a controlled experiment.
+\item The basic idea behind our moral appeal treatment is to reinforce these two aspects of 
+tax compliance.
+\end{itemize}
+}
+
+\frame{
+\begin{center}
+\includegraphics[width=3in]{flyer_options_141104_treat2.pdf}
+\end{center}
+}
+
+\frame{
+\frametitle{Conformity and Social Norms}
+\begin{itemize}
+\item A more recent literature in public economics focuses on the importance on social norms. 
+One branch of the literature explores the tendency of individuals to behave like
+other individuals due to conformity or peer effects.
+\item Suppose that individuals bear some costs, $C$, if they do not manage to coordinate their actions in equilibrium.
+\item The pay-offs in this model are then given by:
+\begin{equation*}
+\resizebox{.9\hsize}{!}{$U_A(d_A, d_B) = d_A U_c + (1-d_A) U_n + V(G(d_A,d_B)) +  1\{d_A \ne d_B \} C$}
+\end{equation*}
+\begin{equation*}
+\resizebox{.9\hsize}{!}{$U_B(d_A, d_B) = d_B U_c + (1-d_B) U_n + V(G(d_A,d_B)) +  1\{d_A \ne d_B \} C$}
+\end{equation*}
+\end{itemize}
+}
+
+\frame{
+\frametitle{Implications of Conformity}
+\begin{itemize}
+\item Equilibria in which both tax payers take the same action become
+more prevalent. 
+\item One could, in principle, vary the conformity costs within a randomized controlled experiment.
+\item For example, one could threaten delinquent tax payers with public exposure by
+printing names in newspapers or online web pages. 
+\item Of course, these interventions face larger legal hurdles and, therefore, harder to implement. 
+\item The basic idea behind our peer conformity treatment is to reinforce the notion
+that your peers are paying taxes.
+\end{itemize}
+}
+
+\frame{
+\begin{center}
+\includegraphics[width=3in]{flyer_options_141104_treat3.pdf}
+\end{center}
+}
+
+\frame{
+\frametitle{The Timing of Property Tax Collection}
+\begin{itemize}
+\item Tax bills are mailed in December for the following year.
+\item The due date for payment is  March 31.
+% \item 1\% discount for pre-March payees.
+\item If you do not pay by March 31, you are considered to be {\bf late}.
+\item Additional charges/fees are added to your bill. City will send out reminders that 
+you are late.
+\item In September, $2/3$ of properties are delegated to private law firms for a portion
+of the  recovered value. The law firms are free to
+pursue debts of assigned properties
+\item Our experiment took place during 15 business days in November 2014.
+\item If you do not pay by December 3, you are considered to be {\bf delinquent}.
+\end{itemize}
+}
+
+\frame{
+\frametitle{Randomization}
+\begin{itemize}
+\item Our approach to randomization was constrained by the logistics of
+DoR's enforcement faculties. 
+\item We concluded after several discussions with  our collaborators at DoR that it would be logistically 
+impossible to assign properties 
+at random to different treatments. 
+\item Instead, we chose to exploit the
+pseudo-random assignment of properties to billing cycles and randomized
+treatments across these cycles.  
+\end{itemize}
+}
+
+\frame{
+\frametitle{Mailing Cycles}
+\begin{itemize}
+\item Mailing of delinquent real estate tax bills by DoR works as
+follows. 
+\item Every property in the city is assigned to one of 50 mailing
+cycles.
+\item The city assigned properties to cycles based on the
+last two digits of an in-house ID number.
+\item The in-house ID itself is based on  the owner's Social
+Security Number (SSN); for many others, mainly commercial properties,
+the DoR stores their Employer Identification Number (EIN).
+\item We treat this as pseudo-random assignment of properties to billing cycles
+and conduct some balance checks.
+\end{itemize}
+}
+
+\frame{
+\frametitle{Implementation Fidelity}
+\begin{itemize}
+\item The Department of Revenue regularly posts envelopes destined
+for addresses that are either unattended, vacant, or do not
+exist in the first place due to typos. 
+\item After an
+attempted delivery to such an address, the postal service flags down
+these bills and returns the missives to DoR, which then process them
+and attempts, if they can identify a suitable alternative address, to
+re-deliver the tax bill. 
+\item We took advantage of the fact that a
+subset of bills made their way back to DoR to check firsthand the extent of
+treatment fidelity. 
+\item Our final sample consists of the nine  treatment days
+for which greater than 90\% fidelity was achieved.
+\end{itemize}
+}
+
+\frame{
+\frametitle{Sample Size}
+{\footnotesize
+Starting with the original sample of 134,888 delinquent properties, we
+obtained our final sample by using the following screening devices:
+\begin{enumerate}
+\item Payment agreement (23\%=31456)
+\item Any tax abatement (5\% = 4706)
+\item Not handled by DoR (62\%=61170)
+\item Sheriff's Sale (11\%=4098)
+\item Bankruptcy (3\%=948)
+\item Sequestration (3\%=1130)
+\item Returned mail flag (5\%=1429)
+\item Not mailed during treatment period (83\%=24800)
+\item Paid off all but \$0.61 of debt by mailing (4\%=224)
+\end{enumerate}
+Our final sample thus consisted of 4927 properties. }
+}
+
+
+\frame{
+{\tiny
+\begin{table}[htbp]
+\caption{Tests of Sample Balance on Observables} \label{table:balance}
+\centering
+\begin{tabular}{rllllll}
+  \hline
+ & Threat & Moral & Peer & Control & Test & $p$-value \\ 
+ Positive balance due & 3489.33 & 3893.58 & 3658.15 & 3476.07 & ANOVA & 0 \\ 
+  Market value ('000)$^{*}$ & 189 & 168 & 189 & 300 & $\chi^2$ & 0.2 \\ 
+  Land Area (ft\textsuperscript{2})$^{*}$ & 4002.41 & 3531.88 & 3456.6 & 3789.79 & $\chi^2$ & 0.83 \\ 
+   \hline 
+ \# Rooms: \\ 
+0-5 & 0.22 & 0.43 & 0.23 & 0.11 & $\chi^2$ & 0.32 \\ 
+  6 & 0.2 & 0.47 & 0.24 & 0.1 &  &  \\ 
+  7+ & 0.22 & 0.42 & 0.25 & 0.11 &  &  \\ 
+   \hline 
+ Years Owed: \\ 
+1 Year & 0.21 & 0.44 & 0.25 & 0.1 & $\chi^2$ & 0.32 \\ 
+  2 Years & 0.24 & 0.42 & 0.24 & 0.1 &  &  \\ 
+  3-5 Years & 0.21 & 0.46 & 0.23 & 0.1 &  &  \\ 
+  6+ Years & 0.2 & 0.48 & 0.21 & 0.12 &  &  \\ 
+   \hline
+City Council District$^{**}$ &  &  &  &  & $\chi^2$ & 0.12 \\ 
+   \hline 
+ Category: \\ 
+Residential & 0.21 & 0.45 & 0.24 & 0.1 & $\chi^2$ & 0.07 \\ 
+  Hotels\&Apts & 0.2 & 0.46 & 0.21 & 0.13 &  &  \\ 
+  Store w. Dwell. & 0.22 & 0.47 & 0.22 & 0.09 &  &  \\ 
+  Commercial & 0.16 & 0.48 & 0.25 & 0.11 &  &  \\ 
+  Industrial & 0.25 & 0.42 & 0.21 & 0.12 &  &  \\ 
+  Vacant Land & 0.25 & 0.4 & 0.22 & 0.13 &  &  \\ 
+   \hline
+Distribution of Properties & 0.21 & 0.45 & 0.23 & 0.11 & $\chi^2$ & 0.08 \\ 
+   \hline
+Expected Distribution & 0.22 & 0.44 & 0.22 & 0.11 &  &  \\ 
+   \hline
+%End piece imported from R-xtable
+\multicolumn{7}{l}
+{\scriptsize{$^{*}$Tested as a two-way $\chi^2$ test of quartile vs. treatment, due to outliers.}} \\
+\end{tabular}
+\end{table}
+}
+}
+
+\frame{
+\frametitle{Logistic Regressions}
+
+\begin{itemize}
+\item To analyze discrete outcomes we use logistic regressions.
+\item We focus on two outcomes:
+\begin{enumerate}
+\item Ever paid
+\item Paid in full
+\end{enumerate}
+\item Given the random assignment of treatments, we can obtain a consistent estimator of the causal effect of the three treatments on the outcome.
+\item To improve the small sample properties of our estimators, we also include some controls variables such as  land area, maturity of debt, geographic location, etc.
+\end{itemize}
+}
+
+\frame{
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=3in]{time_series_pct_ever_paid_act}
+\par\end{center}
+\end{figure}
+}
+
+\frame{
+{\footnotesize
+\begin{table}[htbp]
+\caption{Model I: Logistic Regressions -- Ever Paid}
+\begin{center}
+\begin{tabular}{l c c }
+\hline
+                   & Ever Paid & Ever Paid (with Controls) \\
+\hline
+Intercept          & $-1.69^{***}$ & $-2.62^{***}$ \\
+                   & $(0.08)$      & $(0.22)$      \\
+Treatment Group    &               &               \\
+                   &               &               \\
+\quad Moral        & $-0.07$       & $-0.07$       \\
+                   & $(0.10)$      & $(0.11)$      \\
+\quad Peer         & $0.21$        & $0.17$        \\
+                   & $(0.11)$      & $(0.12)$      \\
+\quad Threat       & $-0.09$       & $-0.05$       \\
+                   & $(0.15)$      & $(0.16)$      \\
+Balance at Mailing &               & $-0.00$       \\
+                   &               & $(0.00)$      \\
+Market Value       &               & $-0.00$       \\
+                   &               & $(0.00)$      \\
+\hline
+Log Likelihood     & -2136.16      & -2050.10      \\
+Num. obs.          & 4927          & 4927          \\
+\hline
+\multicolumn{3}{l}{\scriptsize{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$.}}
+\end{tabular}
+\end{center}
+\end{table}
+}
+}
+
+
+
+\frame{
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=3in]{time_series_pct_paid_full_act}
+\par\end{center}
+\end{figure}
+}
+
+
+
+\frame{
+{\footnotesize
+\begin{table}[htbp]
+\caption{Model II: Logistic Regressions -- Paid Full}
+\begin{center}
+\begin{tabular}{l c c }
+\hline
+                   & Paid in Full & Paid in Full (with Controls) \\
+\hline
+Intercept          & $-2.23^{***}$ & $-2.68^{***}$ \\
+                   & $(0.10)$      & $(0.46)$      \\
+Treatment Group    &               &               \\
+                   &               &               \\
+\quad Moral        & $-0.42^{**}$  & $-0.33^{*}$   \\
+                   & $(0.13)$      & $(0.14)$      \\
+\quad Peer         & $0.24$        & $0.29$        \\
+                   & $(0.14)$      & $(0.15)$      \\
+\quad Threat       & $-0.21$       & $-0.04$       \\
+                   & $(0.19)$      & $(0.21)$      \\
+Balance at Mailing &               & $-0.00^{***}$ \\
+                   &               & $(0.00)$      \\
+Market Value       &               & $0.00$        \\
+                   &               & $(0.00)$      \\
+\hline
+Log Likelihood     & -1435.15      & -1212.37      \\
+Num. obs.          & 4927          & 4927          \\
+\hline
+\multicolumn{3}{l}{\scriptsize{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$. Control coefficients omitted for brevity; see Appendix}}
+\end{tabular}
+\end{center}
+\end{table}
+}}
+
+\frame{
+\frametitle{Tobit Models}
+\begin{itemize}
+\item We would also like to measure the  effects of the treatments on the
+magnitude of debt drawdown.
+\item Given the heterogeneity among properties, we use  two normalized outcomes:
+\begin{enumerate}
+\item payment / market value
+\item payment / amount owed
+\end{enumerate}
+\item Given the large number of zeros in our sample, Tobit models are more appropriate than
+simple regressions.
+\end{itemize}
+}
+
+\frame{
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=3in]{time_series_average_payments_act}
+\par\end{center}
+\end{figure}
+}
+
+\frame{
+{\footnotesize
+\begin{table}[htbp]
+\caption{Model III: Tobit of Repayment vs. Market Value}
+\begin{center}
+\begin{tabular}{l c c }
+\hline
+                       & Paid vs. Market Value & Paid vs. Market Value (with Controls) \\
+\hline
+% Intercept              & $-12993.34^{***}$ & $-11912.88^{***}$ \\
+%                       & $(2330.31)$       & $(2762.31)$       \\
+% Treatment Group        &                   &                   \\
+%                       &                   &                   \\
+Moral            & $-6990.56^{*}$    & $-7091.87^{*}$    \\
+                       & $(2908.00)$       & $(3048.72)$       \\
+Peer             & $2011.56$         & $1778.39$         \\
+                       & $(3152.93)$       & $(3289.50)$       \\
+Threat           & $-1009.07$        & $-898.01$         \\
+                       & $(4007.54)$       & $(4194.58)$       \\
+Log Market Value       & $632.52^{**}$     & $728.71^{**}$     \\
+                       & $(201.99)$        & $(262.97)$        \\
+Moral*MV               & $609.88^{*}$      & $625.86^{*}$      \\
+                       & $(252.90)$        & $(264.99)$        \\
+Peer*MV                & $-136.17$         & $-124.13$         \\
+                       & $(275.17)$        & $(287.03)$        \\
+Threat*MV              & $77.71$           & $73.18$           \\
+                       & $(349.15)$        & $(365.11)$        \\
+Log Balance at Mailing &                   & $-278.14^{***}$   \\
+                       &                   & $(64.39)$         \\
+\hline
+% Log Likelihood         & -8825.60          & -8787.60          \\
+%Total                  & 4927              & 4927              \\
+% Left-censored          & 4154              & 4154              \\
+% Uncensored             & 773               & 773               \\
+%Right-censored         & 0                 & 0                 \\
+% \hline
+\multicolumn{3}{l}{\scriptsize{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$.}}
+\end{tabular}
+\end{center}
+\end{table}
+}}
+
+
+\frame{
+\begin{figure}[htbp]
+\begin{center}
+\includegraphics[width=3in]{time_series_debt_paydown_act}
+\par\end{center}
+\end{figure}
+}
+
+\frame{
+{\footnotesize
+\begin{table}[htbp]
+\caption{Model IV: Tobit of Repayment vs. Total Debt}
+\begin{center}
+\begin{tabular}{l c c }
+\hline
+                       & Paid vs. Total Debt & Paid vs. Total Debt (with Controls) \\
+\hline
+% Intercept              & $-3107.24^{***}$ & $-13378.75^{***}$ \\
+%                        & $(790.97)$       & $(1858.34)$       \\
+% Treatment Group        &                  &                   \\
+%                        &                  &                   \\
+Moral            & $-2908.48^{**}$  & $-3163.27^{**}$   \\
+                       & $(988.24)$       & $(977.39)$        \\
+Peer             & $356.31$         & $92.29$           \\
+                       & $(1042.74)$      & $(1027.14)$       \\
+Threat           & $-3.06$          & $-128.17$         \\
+                       & $(1477.44)$      & $(1459.56)$       \\
+Log Balance at Mailing & $-465.92^{***}$  & $-495.20^{***}$   \\
+                       & $(120.33)$       & $(122.53)$        \\
+Moral*Balance          & $466.40^{**}$    & $500.21^{***}$    \\
+                       & $(146.58)$       & $(144.94)$        \\
+Peer*Balance           & $13.29$          & $36.09$           \\
+                       & $(159.56)$       & $(157.07)$        \\
+Threat*Balance         & $2.48$           & $17.45$           \\
+                       & $(218.47)$       & $(215.99)$        \\
+Log Market Value       &                  & $971.09^{***}$    \\
+                       &                  & $(181.88)$        \\
+\hline
+% Log Likelihood         & -8851.31         & -8783.51          \\
+%Total                  & 4927             & 4927              \\
+% Left-censored          & 4154             & 4154              \\
+% Uncensored             & 773              & 773               \\
+%Right-censored         & 0                & 0                 \\
+% \hline
+\multicolumn{3}{l}{\scriptsize{$^{***}p<0.001$, $^{**}p<0.01$, $^*p<0.05$. }}
+\end{tabular}
+\end{center}
+\end{table}
+}}
+
+\frame{
+\frametitle{Conclusions}
+\begin{itemize}
+\item  Unlike several recent papers (Kleven et al. 2011; Slemrod, Blumenthal, and Christian 2001), which have found large increases in compliance after providing information about the threat of auditing, we find no evidence of a deterrent effect. 
+\item It is probably not surprising that our deterrence treatment was not effective. Philadelphia is city with a history of high property tax delinquency. 
+\item It is hard to belief that one could significantly alter perceptions of beliefs of punishment by sending one letter in a city with already high property tax delinquency. 
+\item  It would be more interesting to design an intervention that is based on a credible threat.
+\item The peer conformity treatment is also subject to the same potential criticism. 
+\end{itemize}
+}
+
+
+\end{document}
+

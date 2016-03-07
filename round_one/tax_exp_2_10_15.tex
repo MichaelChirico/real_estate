@@ -1,0 +1,294 @@
+\documentstyle[12pt,titlepage]{article}
+
+\renewcommand\baselinestretch{1.0}
+\setlength{\parskip}{0.08in}
+\setlength{\medskipamount}{0.05in}
+\textheight 8.0 in
+\textwidth 6.0 in
+\topmargin 0.25in
+\tolerance=11000
+
+\begin{document}
+
+\title{An Experimental Evaluation of Strategies to Increase
+Property Tax Revenue Collection}
+\author{Michael Chirico, Robert Inman, Charles Loeffler, \\
+John MacDonald, and Holger Sieg \\
+$$ \\
+University of Pennsylvania}
+\date{\today}  
+\maketitle
+
+
+
+\renewcommand{\thefootnote}{\arabic{footnote}}
+
+\section{Introduction}
+
+The purpose of this experimental study to evaluate alternative
+strategies that are intended to increase property tax revenue
+collection in the City of Philadelphia.  We design a number of
+different treatments that are motivated by the theoretical literature
+on tax compliance, which distinguished between extrinsic and intrinsic
+motivations for paying taxes. Extrinsic motivations are primarily
+based on the deterrence model which explains tax compliance by a
+combination of penalties and costly monitoring. Intrinsic motivations
+are captured in models that rely either on social norms or social
+contracts.  We develop and implement a sequence of experiments to test
+three of most commonly suggested hypothesis. The basic strategy behind
+our randomized experiments is to vary the informational content of a
+sequence of letters are sent to delinquent property tax payers.
+
+The first experiment is based on the the deterrence model of tax
+compliance which emphasizes extrinsic motivations of behavior. Key
+elements of the model are the probability of detection (the monitoring
+probability) and the size of the penalty or fine that is levied on tax
+evaders who are caught. Given the uncertainty of law enforcement,
+behavior is based on subjective probabilities of detection and
+perceptions regarding the size of penalties.\footnote{The behavioral
+  literature suggests that there may be behavioral biases since agents
+  deal small detection probabilities} The key idea behind the first
+experiment is to change the subjective beliefs regarding penalties and
+detection probabilities in an experimental design. Note that our
+experiment does involve a tax amnesties. We also do not change the
+fiscal incentives to pay taxes in our proposed experiment. Instead, we
+attempt to change subjective beliefs regarding detection and the
+consequences of tax delinquencies.
+
+Our second experiment is based on a more recent theory that emphasizes
+intrinsic motivations of tax payers and focuses more broadly on tax
+morale. The social contract approach emphasizes the promise of the
+city to efficiently deliver public goods and services in exchange for
+more or less voluntary tax payments.  Loyalties and emotional ties
+play a large role in creating high tax moral. The problem of raising
+taxes is viewed similarly as the fund-raising problem faced by
+non-for-profit organizations.\footnote{For example, Public Radio
+  stations need to raise funds from their listeners.} The basic idea
+behind the second experiment is then to design an informational
+treatment that reinforces this social contract. The treatment takes
+the form of a moral appeal to the delinquent tax payer and emphasizes
+progress in reductions in government waste and the need to raise tax
+revenues to stay competitive and address serious problems.
+ 
+Our third experiment is based on the recent literature on social norms
+which emphasizes concepts of social fairness and reciprocity. This
+literature suggests that social exposure of delinquent tax payers may
+be an effective tool for penalizing tax evasion.  The idea behind our
+third experiment is then to threaten delinquent property owners with 
+public exposure.
+
+We conduct these tax revenue collection experiments in collaboration
+with the Revenue Department of the City of Philadelphia, which is
+particularly useful city to study property tax evasions.  As of April
+2012, the city and school district were owed \$292.3 million in
+delinquent taxes on 102,789 properties, \$515.4 million when interest
+and penalties are included.
+
+The rest of the paper is organized as follows. Section 2 discusses the
+institutional background.  Section 3 provides a
+detailed discussion of our treatments. Section 4 discusses the experimental design and its
+ implementation. Section 5 provides our current empirical findings. Section 6 offers some conclusions.
+
+
+\section{Institutional Background}
+
+The exact timing of payment and enforcement is as follows: 
+\begin{enumerate}
+\item Bills sent in December and early January, and payment is due on March 31.  
+\item If taxes are played by February 28, the tax payer gets a 1 \% discount.  
+\item After March 31 interests and penalties begin to accrue.  
+\item If there is still no payment after by end of the summer, then beginning in September the “nudge” begins  using an outside collection agency.  About 2/3’s of the delinquent files go to the agency (and they do their thing) but 1/3 stay with the city.  
+\end{enumerate}
+The potential penalties for delinquent tax payers are the following
+\begin{enumerate}
+\item If no payment by December 31, then there is a lien on the property.  
+\item Those properties are divided between 1/3 to law firm 1, 1/3 to law firm 2, and 1/3 stay with the city.  it is up to the law firms to decide what they can do, with the ultimate threat of the sheriff’s sale.  
+\item If the tax payer is a city employee, the city  can deduct taxes from salary. 
+\item If the delinquent is an applicant for city job, he will need to fully paid (or be in a payment plan) to be eligible for employment.  
+\item For business properties, the city can also sequester the income from the property, become the property manager.  
+\item It can also shut down the business.  
+\end{enumerate}
+Finally, the city is considering an intermediate penalty which is to go after private property e.g., boot the taxpayer’s car. 
+
+
+
+\section{Treatments}
+
+The basic research design is then straightforward. Delinquent property
+owners in the treatment group receive a sequence of letters that are
+discussed in detail below. We randomly assign the treatment status
+conditional on predicted default probabilities.
+
+\subsection{Experiment 1: Deterrence}
+
+The owners in the control group receive the usual letter. The owners in the treatment group
+receive an augmented letter that also contains a  threat of enforcing liens and foreclosure.
+Here is an example that captures the key idea: \\
+
+\noindent NEED TO UPDATE TO INCLUDE THE MESSAGES THAT WE ACTUALLY USED
+
+"Our department is required by law to fully enforce the tax code. You are in violation of the law.
+The City of Philadelphia will pursue all penalties available under statue, including, but not limited to,
+obtaining a lien on your property and seeking eventual foreclosure. Please do not make the mistake of assuming 
+that we are too busy to investigate your case. Ignoring this letter will only increase the jeopardy you may already 
+be in. We strongly suggest that you contact the Department of Revenue and arrange a payment schedule
+to avoid even more drastic sanctions."
+
+
+\subsection{Experiment 2: Moral Appeal}
+
+The owners in the control group receive the usual letter. The owners in the treatment group
+receive an augmented letter that also contains a  strong moral appeal.
+Here is an example: \\
+
+"We know that you try to deal honestly with your taxes and may genuinely 
+believe that you have good reasons for not filing your property tax returns. But there are many compelling reasons why 
+ it is necessary for you  to file your outstanding returns. Without property taxes the City of
+Philadelphia cannot afford essential services such as educating our children, providing public safety, and
+maintaining our roads and parks. Your tax dollars are spent of goods and services that you and your
+neighbors rely on every day. When taxpayers do not pay what they owe, the entire community suffers.
+We would like to remind you to meet your obligations to the community and file your property tax return."
+
+\subsection{Experiment 3: Social Pressure}
+
+The objective is to evaluate an approach that is based on social pressure. The owners in the control group receive the usual letter. The owners in the treatment group receive an augmented letter that also contains a threat of public exposure. Here is an example:
+
+" You are probably not aware of the fact that you belong to a small minority of residents that tries to take advantage of the community. On average, more than 90 percent of your neighbors have already paid their property taxes on time. You are currently free-riding on their willingness to support the community. Please do not make the mistake of assuming that you will be able to hide in anonymity forever. We strongly suggest that you contact the Department of Revenue and arrange a payment schedule to avoid drastic sanctions. Additional sanctions will be inevitable once your neighbors find out the truth about your unwillingness to pay taxes."
+
+\section{Experimental Design and Fidelity of Implementation}
+
+Discuss how the experiment was implemented and how we decided what sample to use based on the returned letters.
+
+
+Show some tests that our sub-samples are balanced.
+
+\section{Methods}
+
+Describe four different regression models.
+
+
+\section{Empirical Results}
+
+Summarize the findings of the basic regression models (4 tables, one for each model) and plots that we have.
+
+\section{Conclusions}
+
+\end{document}  
+
+
+
+\section{Property Tax Compliance in Philadelphia}
+
+The following is a summary of the recent study by the Pew Charitable
+Trust entitled "DELINQUENT PROPERTY TAX IN PHILADELPHIA," published in
+2013.
+
+Philadelphia operates with relatively wide latitude under the
+Pennsylvania Municipal Claims and Tax Lien Law (MCTLL), enacted in
+1923 and amended at least a dozen times. It applies mainly to the
+state's first class and second class cities, namely Philadelphia and
+Pittsburgh.
+
+In Philadelphia, a property is considered tax delinquent nine months
+after the city's March 31 payment deadline passes. Delinquent parcels
+are assessed interest and fees, which over time can grow larger than
+the principal. By law, properties can be sold at public auction as
+quickly as nine months after they become delinquent. In practice, that
+rarely happens, and many properties are allowed to linger on the
+delinquency rolls for decades.
+
+A tax lien may be imposed for delinquent taxes owed on real property
+as a result of failure to pay taxes. A claim for payment that takes
+precedence over all other claims and gives the holder of the
+lien basis for legal action, including foreclosure. Tax liens are
+imposed by a taxing jurisdiction after a property becomes delinquent
+and typically includes the principal tax amount, plus any interest
+and penalties. Some states allow local jurisdictions to sell or
+transfer liens as certificates, akin to bonds, as a way of
+recouping the lost revenue in the short term.
+
+Foreclosure is the legal process of seizing title of a property (or
+the deed) and forcing its sale for the purpose of paying off a debt,
+such as a tax lien. In a tax foreclosure, the local jurisdiction
+petitions a court to award it the title based on an unpaid
+lien. The jurisdiction may then sell the property in a tax-deed sale
+or auction, hoping at least for enough to cover the tax lien. The
+original owner usually has the right to regain the property if she or
+he pays the back taxes within a set time period after the sale,
+called the redemption period. If nobody buys the deed, the tax lien
+remains unpaid, and the jurisdiction keeps the title and
+responsibility for the property.
+
+Compared to laws governing delinquency collection in some other states
+and other Pennsylvania counties, the state statutes governing
+Philadelphia give city government a lot of discretion in setting
+policies on when to initiate foreclosures or what kind of catch-up
+payment plans to offer. In the past, Philadelphia has tended to use
+this discretion to delay taking action, put up fewer properties for
+sale, or let delinquents enroll and default on payment plans many
+times, all of which has caused delinquencies to accumulate over the
+years. (As of April 2012, owners of roughly one in six delinquent
+properties were paying on installment plans; they owed \$57.6 million
+in taxes and penalties.) In 2013, the city adopted new rules intended
+to change most of those practices.
+
+To reduce the number of new delinquencies, Philadelphia has begun to
+adopt effective strategies used in some other places. The city has
+significantly reduced the time it takes to notify delinquents about
+their overdue bills, as well as property owners who are merely late
+and in danger of becoming delinquent. (Non-payers are considered “late”
+until Dec. 31 each tax year, at which point they are considered
+delinquent). Philadelphia has begun centralizing all revenue
+collections, leading to faster and better coordinated actions on
+delinquencies. The city also is considering creation of a “land bank”
+to help acquire and redevelop tax-foreclosed properties. The city has
+not adopted other practices, including the selling of tax liens, which
+generates immediate revenue.
+
+Land banks are able to buy tax-foreclosed properties, often vacant
+land, for the face value of their tax liens prior to a tax
+auction. That enables the city to receive full payment and avoid the
+expense of an auction, while helping to move property toward
+development. In 2012, the Pennsylvania legislature enacted a law
+authorizing localities to create land banks specifically for the
+purpose of acquiring tax-delinquent and blighted property. The Nutter
+administration, members of City Council and other organizations have
+been weighing their options for creating a Philadelphia land bank.
+
+
+
+\subsection{Some Stylized Facts}
+
+As of April 2012, the city and school district were owed \$292.3
+million in delinquent taxes on 102,789 properties, \$515.4 million
+when interest and penalties are included. (The numbers have increased
+since then.) About one-quarter of those properties had been delinquent
+for more than a decade.
+
+Of 36 cities studied in the PCT study, Philadelphia had the fifth
+highest delinquency rate in 2011, the last year for which statistics
+were available. Our study found that many of the cities with lower
+delinquency rates than Philadelphia adhere to stricter timetables for
+imposing enforcement measures against delinquent
+property-owners timetables usually set by the state—and are more
+willing to take properties away from owners who do not pay their
+taxes. At the same time, a lot of these cities have lower percentages
+of poor people, stronger real estate markets, and higher shares of
+homeowners who pay their taxes automatically through mortgages.
+
+In Philadelphia, 9 percent of 2011 property taxes went uncollected in
+that year. The median delinquency rate in the 36 cities in this study
+was 4.1 percent. It was closer to the 6 percent median for 14 cities
+that, like Philadelphia, have poverty rates
+above 25 percent.
+
+Finally, our forth experiment focuses on procedural justice and, more
+broadly speaking, interactions between a local government and tax
+payers. Theory distinguishes between respectful and authoritarian
+interactions. Here the idea is that hierarchical relationships that
+treat tax payers as inferiors can create resentment and tax avoidance.
+Transparency and clearness are other aspects of the procedural
+approach. We could design a forth experiment that addresses these
+concerns. We could focus on an elderly population that is likely to be
+eligible for state aid.
+
