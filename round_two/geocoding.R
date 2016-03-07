@@ -8,11 +8,12 @@
 ##Packages
 rm(list=ls(all=T))
 gc()
-setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
-wds<-c(data="/media/data_drive/real_estate/",
-       gis="/media/data_drive/gis_data/PA/",
-       sher="/media/data_drive/real_estate/sheriffs_sales/",
-       code="./analysis_code/")
+setwd(mn <- "~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
+wds<-c(data=(dt <- "/media/data_drive/") %+% "real_estate/",
+       gis=dt %+% "gis_data/PA/",
+       sher=dt %+% "real_estate/sheriffs_sales/",
+       code=mn %+% "round_two/",
+       log = mn %+% "/logs/round_two/")
 library(data.table)
 library(maptools)
 library(ggmap) #used for ggmap::geocode
@@ -20,13 +21,12 @@ library(funchir) #ggmap attaches ggplot which also has a %+% function
 library(getcartr)
 library(sp)
 library(xlsx)
-write.packages(wds["code"]%+%"logs/round_2_"%+%
-                 "geocoding_session.txt")
+write.packages(wds["log"]%+%"geocoding_session.txt")
 
 #Data Import ####
 ##Addresses mentioned in any letter in Round 2
 used_sheriff<-unique(unlist(fread(
-  "./round_two/round_2_full_data.csv",
+  wds["code"]%+%"round_2_full_data.csv",
   select="example_address_"%+%1:3)))
 
 ##Get OPA Numbers for those addresses for merging
@@ -38,7 +38,7 @@ sheriffs_delinquent<-
 
 ##Get experiment data for counts
 exper.data<-
-  fread("./round_two/round_2_full_data.csv"
+  fread(wds["code"]%+%"round_2_full_data.csv"
         )[setDT(read.xlsx3(
           wds["data"]%+%"req20150709_PennLetter"%+%
             "Experiment_v3_Coordinates.xlsx",

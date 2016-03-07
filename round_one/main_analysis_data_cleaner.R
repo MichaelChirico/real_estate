@@ -4,28 +4,27 @@
 #February 12, 2015
 # PACKAGES, CLEANUP, CONVENIENT FUNCTIONS ####
 rm(list=ls(all=T))
-setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
-data_wd<-"/media/data_drive/real_estate/"
-code_wd<-"./analysis_code/"
 #funchir is Michael Chirico's package of convenience functions
 #  install with devtools::install_github("MichaelChirico/funchir")
 library(funchir)
 library(data.table)
 library(foreign)
-write.packages(code_wd%+%"logs/real_estate_payment_"%+%
-                 "analysis_data_cleaner_session.txt")
+setwd(mn <- "~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
+wds <- c(main = mn %+% "round_one/", data = "/media/data_drive/real_estate/",
+         log = mn %+% "logs/round_one")
+write.packages(wds["log"]%+%"data_cleaner_session.txt")
 
 #READING IN THE DATA ####
 ##PAYMENTS DATA
 ###OCTOBER 1 - DECEMBER 4, 2014
-payments_nov<-fread(data_wd%+%"payment_data_oct_encrypted.csv",
+payments_nov<-fread(wds["data"]%+%"payment_data_oct_encrypted.csv",
                     drop=c("tax","encrypted_id","account_id"))
 dates<-c("period","valid","posting","due_date")
 payments_nov[,(dates):=lapply(.SD,as.Date,format="%Y%m%d"),.SDcols=dates]
 
 ###DECEMBER 3 - JANUARY 6
 payments_dec<-
-  setnames(fread(data_wd%+%"payment_data_dec.txt",sep="|",
+  setnames(fread(wds["data"]%+%"payment_data_dec.txt",sep="|",
                  colClasses=abbr_to_colClass("fcnfcn","143292")),
            c("tax","period","valid","posting","due_date","principal",
              "interest_and_penalty","other_paid","grp","tran",
@@ -75,7 +74,7 @@ payments_by_day<-
 rm(payments)
 
 ##DELINQUENCY DATA
-dor_data_oct<-fread(data_wd%+%"dor_data_15_oct_encrypted.csv")
+dor_data_oct<-fread(wds["data"]%+%"dor_data_15_oct_encrypted.csv")
 #Found/approximated by hand the council districts for some properties where missing
 dor_data_oct[,council_flag:=FALSE]
 cz<-c("council","zip")
@@ -124,14 +123,14 @@ keepvars<-c("legal_name","mail_address","council",
 dor_data_oct<-dor_data_oct[,keepvars,with=F]
 
 ##Property characteristics
-opa_data<-setnames(fread(data_wd%+%"prop2014.txt",
+opa_data<-setnames(fread(wds["data"]%+%"prop2014.txt",
                          select=c("PARCEL","MV","CAT CD","TOT AREA","EXT COND","NO RM")),
                    c("opa_no","market_value","category","land_area","exterior","rooms"))
 opa_data[,market_value:=as.numeric(market_value)]
 opa_data[,land_area:=as.numeric(land_area)/100] #Divide by 100 to convert to sq. feet
 ##Interpolate land area for properties where it's 0    *land_interp
 ##approach: set area equal to average of nearby properties
-opa_data[setDT(read.dbf("./gis_data/dor_data_aug_with_zoning_base_id.dbf")
+opa_data[setDT(read.dbf(wds["data"]%+%"dor_data_aug_with_zoning_base_id.dbf")
                #opa_no to proper format
                )[,opa_no:=sprintf("%09d",opa_no)], 
          zone_district:=i.OBJECTID,on="opa_no"] #merge into dor_data_oct
@@ -153,7 +152,7 @@ levels(opa_data$exterior)<-c("N/A","N/A","New/Rehab","Above Average","Average",
 
 ##CYCLE & TREATMENT GROUP DATA
 cycle_info<-
-  setnames(fread(data_wd%+%"opa_cycles.csv",
+  setnames(fread(wds["data"]%+%"opa_cycles.csv",
                  select=c("OPA #","Billing Cycle")),c("opa_no","cycle")
            #Round 1 Treatments: 33-47
            )[cycle %in% 33:47,]
@@ -275,4 +274,4 @@ keepvars<-c(keepvars,"treatment","category","exterior",
             "ever_paid","paid_full","total_paid")
 
 write.csv(payments_by_day[(end&!fidelity_flag),keepvars,with=F],
-          file="analysis_file_end_only_act.csv",quote=T,row.names=F)
+          file=wds["data"]%+%"analysis_file_end_only_act.csv",quote=T,row.names=F)

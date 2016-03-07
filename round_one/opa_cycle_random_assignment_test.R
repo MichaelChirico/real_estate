@@ -1,3 +1,7 @@
+##**note: file is a bit decrepit -- 
+##    may need extensive tinkering to be useful.
+##    will not be updating. **
+
 #Data Exploration
 #Philadelphia Real Estate Tax Evasion - Code for Testing Random Assignment of Cycle Numbers
 #Michael Chirico

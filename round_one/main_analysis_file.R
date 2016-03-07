@@ -8,10 +8,6 @@ rm(list=ls(all=T))
 gc()
 ##First and last 4 digits of my Cosi rewards card
 set.seed(60008645)
-setwd("~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
-data_wd<-"/media/data_drive/real_estate/"
-code_wd<-"./analysis_code/"
-log_fl<-"./papers_presentations/round_one_analysis_output.txt"
 BB<-5000 #number of bootstrap/resample repetitions throughout
 #funchir is Michael Chirico's package of convenience functions
 #  install with devtools::install_github("MichaelChirico/funchir")
@@ -21,9 +17,13 @@ library(texreg)
 library(xtable)
 library(parallel)
 library(lmtest)
+
+setwd(mn <- "~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
+wds <- c(main = mn %+% "round_one/",
+         data = "/media/data_drive/real_estate/",
+         log = mn %+% "logs/round_one/")
 #Log available upon request
-write.packages(code_wd%+%"logs/real_estate_payment_"%+%
-                 "analysis_session.txt")
+write.packages(wds["log"] %+% "analysis_session.txt")
 
 trt.nms <- c("Control","Threat","Public Service","Civic Duty")
 
@@ -47,7 +47,7 @@ rename_coef<-function(obj){
 }
 
 #Set up Analysis Data Sets ####
-analysis_data_main<-fread("analysis_file_end_only_act.csv")
+analysis_data_main<-fread(wds["data"] %+% "analysis_file_end_only_act.csv")
 #CLUSTERS DEFINED AT THE OWNER LEVEL
 #OWNER DEFINED AS ANYONE WITH IDENTICAL NAME & MAILING ADDRESS
 clust<-c("legal_name","mail_address")
@@ -151,7 +151,7 @@ all_samples<-list("main"=analysis_data_main,
 ##  Using full, restricted and law firm samples for comparison
 ##  **NOTE: These files contain some sensitive information and
 ##  **       as such may be prevented from public release **
-full_delinquent<-fread(data_wd%+%"dor_data_15_oct_encrypted.csv")
+full_delinquent<-fread(wds["data"]%+%"dor_data_15_oct_encrypted.csv")
 resid_grp <- c("apartmentLarge","apartmentSmall","condo",
                "house","house ","miscResidential","")
 full_delinquent[,residential:=bldg_group %in% resid_grp]
@@ -230,7 +230,8 @@ capture.output(print.xtable(xtable(sapply(list(
                   `Number Observations`=
                     prettyNum(.N,big.mark=","))],USE.NAMES=T),
   caption=c("Descriptive Statistics"),align=c("|r|r|r|r|r|"),
-  label="table:descriptives"),caption.placement="top"),file=log_fl)
+  label="table:descriptives"),caption.placement="top"),
+  file=log_fl <- wds["main"] %+% "round_one_analysis_output.txt")
   
 rm(phila_addr,resid_grp)
 

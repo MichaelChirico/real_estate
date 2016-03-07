@@ -37,16 +37,15 @@ library(doParallel)
 library(RgoogleMaps)
 library(maptools)
 library(lmtest)
-setwd((mn<-"~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")%+% 
-        "analysis_code/")
+setwd(mn<-"~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 wds<-c(data=(dwd<-"/media/data_drive/")%+%"real_estate/",
-       proj=mn,
-       imga=mn%+%"/papers_presentations/round_two/images/analysis/",
-       imgb=mn%+%"/papers_presentations/round_two/images/balance/",
-       gis=dwd%+%"gis_data/PA/",
-       sher=dwd%+%"real_estate/sheriffs_sales/",
-       cens=dwd%+%"census/")
-write.packages(mn%+%"analysis_code/logs/round_2_analysis_session.txt")
+       proj=mn %+% "round_two/", log = mn %+% "logs/round_two/",
+       imga=mn %+% "round_two/images/analysis/",
+       imgb=mn %+% "round_two/images/balance/",
+       gis=dwd %+% "gis_data/PA/",
+       sher=dwd %+% "real_estate/sheriffs_sales/",
+       cens=dwd %+% "census/")
+write.packages(wds["log"] %+% "analysis_session.txt")
 
 #"metavariables"
 trt.nms <- c("Control", "Amenities", "Moral", "Duty", "Peer", "Lien", "Sheriff")
@@ -155,7 +154,7 @@ update_opas<-
 followupIV[update_opas,opa_no:=i.old,on=c("opa_no"="new")]
 
 ##Block V: Main Sample Background Data
-mainBGV<-fread(wds["proj"]%+%"/round_2_full_data.csv",drop="treatment")
+mainBGV<-fread(wds["proj"]%+%"round_2_full_data.csv",drop="treatment")
 
 ##Block VI: Holdout Sample Background Data
 holdBGVI<-fread(wds["proj"]%+%"holdout_sample.csv")
