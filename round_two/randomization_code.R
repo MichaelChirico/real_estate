@@ -13,7 +13,7 @@ library(foreign)
 library(maptools)
 setwd(mn <- "~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 wds <- c(data = "/media/data_drive/real_estate/",
-         gis = "/media/data_drive/gis_data/PA/"
+         gis = "/media/data_drive/gis_data/PA/",
          code = mn %+% "round_two/",
          log = mn %+% "logs/round_two/")
 write.packages(wds["log"]%+%"randomization_code_session.txt")

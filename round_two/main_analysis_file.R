@@ -320,7 +320,7 @@ properties[,flag_holdout_overlap:=any(treat15=="Holdout")&
              any(treat15!="Holdout"),by=owner1]
 ### Was this property treated in Round 1?
 properties[,flag_round_one_overlap:=
-          opa_no %in% fread(wds["proj"]%+%"analysis_file_end_only_act.csv",
+          opa_no %in% fread(wds["data"]%+%"analysis_file_end_only_act.csv",
                             select=c("opa_no"))[,unique(opa_no)]]
 ### Does this property have any of the
 ###   tax exemptions excluded in Round 1?
@@ -432,38 +432,6 @@ owners[,flag_top01_h:=total_due>=quantile(total_due,.99)]
 owners[,flag_top05_h:=total_due>=quantile(total_due,.95)]
 
 owners[,unq_own:=N==1]
-
-getv <- c("treat"%+%c(2,3,7,8,14,15),
-          "rand_id","total_due","owner1")
-
-payments <- setDT(read_excel(
-  wds["data"]%+%
-    "req20150709_PennLetterExperiment "%+%
-    "(December 2015 update) v2.xlsx",
-  sheet="PAYMENT DETAILS",skip=1,
-  col_names=c("account","period","valid","past_due"
-              ,"principal","total_paid"),
-  col_types=abbr_to_colClass("tn","15"))
-  )[,c("period","valid"):=
-      lapply(.(period,valid),as.Date,
-             origin=as.Date("1899-12-30"))
-    ][format(as.Date(valid)-past_due,"%Y")==2015
-      ][,account:=gsub("\\s*","",account)
-        ][,.(period = max(period),
-             past_due = min(past_due),
-             principal = sum(principal),
-             total_paid = sum(total_paid)),
-          by = .(account, valid)
-          ][properties,.SD,on="account"
-            ][properties,(getv):=mget("i."%+%getv),
-              on="account"
-              ][is.na(valid),c("valid","total_paid"):=
-                                 .(as.Date("2015-06-01"),0)]
-
-payments[order(valid),
-         c("paid_full","cum_paid"):=
-         {cp <- cumsum(total_paid)
-         .(cp >= total_due, cp)},by=account]
 
 #Fidelity Checks ####
 ## @knitr fidelity
