@@ -835,50 +835,59 @@ marg[,{pdf2(wds["imga"]%+%"marginal_effect_of_letters_all.pdf")
 
 ##Regression Tables ####
 ## @knitr analysis_reg
-all_samples<-list("main"=owners[(!holdout)],
-                  "non_comm"=owners[(residential)],
-                  "single_owner"=owners[(unq_own)])
-lapply(all_samples,setkeyv,"owner1")
+reg_vars <- c("ever_paid","paid_full","total_paid")
+reg_all <- levels(interaction(reg_vars, mos,sep="_"))
+reg_ev = 
+  sapply(reg_all, function(x) 
+    if (grepl("total", x)) 
+      paste0("lm(", x," ~ treat7)")
+    else paste0("glm(", x, " ~ treat7, ",
+                "family = binomial)"))
 
-###Have to quote the model formulas so that 
-###  they don't evaluate until we're in the datas' frames
-tpfq<-quote(total_paid_sep~treat7)
-epfq<-quote(ever_paid_sep~treat7)
-pafq<-quote(pmt_agr1~treat7)
+reg_j <- 
+  parse(text = 
+          paste0(".(", paste(paste0(reg_all, "=list(reg=", 
+                                    reg_ev, ")"), 
+                             collapse = ","), ")"))
 
-reg_output<-lapply(all_samples,function(dt){
-  #Baseline regressions
-  regs<-list(tp=dt[,lm(eval(tpfq))],
-             ep=dt[,glm(eval(epfq),family=binomial)],
-             pa=dt[,glm(eval(pafq),family=binomial)])
-  owns<-dt[,unique(owner1)]
-  
-  #Parallelize bootstrap replications since MLE can be timely
-  cl <- makeCluster(8L,outfile="") #8 cores on main machine, via detectCores()
-  clusterEvalQ(cl,library("data.table"))
-  clusterExport(cl,c("dt","owns","tpfq","epfq","pafq"),envir=environment())
-  boot_dist<-Reduce(rbind,parLapply(cl,1:BB,function(ii,...){
-    #Progress counter
-    if (ii %% 625 == 0) cat("Replication",ii,"\n")
-    #Resample at the owner (cluster) level, with replacement
-    dt[.(sample(owns,rep=T)),
-       #Only keep coefficients
-       .(tp=list(lm(eval(tpfq))$coefficients),
-         ep=list(glm(eval(epfq),family=binomial)$coefficients),
-         pa=list(glm(eval(pafq),family=binomial)$coefficients))]}))
-  stopCluster(cl)
-  
-  #Bootstrap parameter vector variance & SDs
-  vars<-lapply(boot_dist,function(x)var(Reduce(rbind,x)))
-  ses<-lapply(vars,function(x)sqrt(diag(x)))
-  #(note that we impose symmetry here; some inspection
-  #   of the bootstrap parameter distributions
-  #   suggested this was reasonable)
-  ps<-lapply(c(tp="tp",ep="ep",pa="pa"),
-             function(mod)coeftest(regs[[mod]],
-                                   vcov=vars[[mod]])[,4L])
-  list("reg"=regs,"SE"=ses,"p.val"=ps)})
-rm(tpfq,epfq,pafq)
+coef_j <- 
+  parse(text = 
+          paste0(".(", paste(paste0(reg_all, "=", reg_ev, 
+                                    "$coefficients"), 
+                             collapse = ","), ")"))
+           
+samp_i <- 
+  expression("Main Sample" = (!holdout),
+             "Non-Commercial" = (residential&!holdout),
+             "Unique Owner" = (unq_own&!holdout))
+
+BB <- 5000
+setkey(owners, rand_id)
+reg_info <- 
+  rbindlist(lapply(samp_i, function(i_ev){
+    message("\n\n", i_ev, ":")
+    DT <- owners[eval(i_ev)]
+    
+    regs <- DT[ , eval(reg_j)]
+    
+    RBs <- DT[ , unique(rand_id)]
+    
+    cl <- makeCluster(8L, outfile = "")
+    clusterEvalQ(cl, library(data.table))
+    clusterExport(cl, c("DT", "RBs", "coef_j"),
+                  envir = environment())
+    boot_dist <- rbindlist(parLapply(cl, 1:BB, function(bb){
+      if (bb %% 625 == 0) cat("Replication", bb, "\n")
+      DT[.(sample(RBs, rep = TRUE)), eval(coef_j)]}))
+    stopCluster(cl)
+    
+    rbind(regs, boot_dist[ , lapply(.SD, function(x)
+      list(var(matrix(x, ncol = 7, byrow = TRUE))))]
+      )[ , lapply(.SD, function(x)
+        c(x, list(sqrt(diag(x[[2]])))))
+        ][ , lapply(.SD, function(x) 
+          c(x, list(coeftest(x[[1]], vcov = x[[2]])[ , 4])))]
+  }), idcol = "sample")
 
 ###Difference in Mean Tests
 rename_coef<-function(obj){
