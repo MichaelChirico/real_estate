@@ -837,24 +837,28 @@ marg[,{pdf2(wds["imga"]%+%"marginal_effect_of_letters_all.pdf")
 ## @knitr analysis_reg
 reg_vars <- c("ever_paid","paid_full","total_paid")
 reg_all <- levels(interaction(reg_vars, mos,sep="_"))
-reg_ev = 
-  sapply(reg_all, function(x) 
-    if (grepl("total", x)) 
-      paste0("lm(", x," ~ treat7)")
-    else paste0("glm(", x, " ~ treat7, ",
-                "family = binomial)"))
 
 reg_j <- 
   parse(text = 
-          paste0(".(", paste(paste0(reg_all, "=list(reg=", 
-                                    reg_ev, ")"), 
-                             collapse = ","), ")"))
+          paste0(".(", paste(paste0(
+            reg_all, "=list(", sapply(reg_all, function(x) 
+    if (grepl("total", x)) 
+      paste0("lm(", x," ~ treat7)")
+    else paste0("glm(", x, " ~ treat7, ",
+                "family = binomial)")), ")"), 
+    collapse = ","), ")"))
 
-coef_j <- 
+coef_j = 
   parse(text = 
-          paste0(".(", paste(paste0(reg_all, "=", reg_ev, 
-                                    "$coefficients"), 
-                             collapse = ","), ")"))
+          paste0(".(", paste(paste0(
+            reg_all, "=", sapply(reg_all, function(x) 
+              if (grepl("total", x)) 
+                paste0("lm.fit(model.matrix(", x,
+                       " ~ treat7), ",x)
+              else paste0("glm.fit(model.matrix(", x, 
+                          " ~ treat7), ",x,")")), 
+            "$coefficients"), 
+            collapse = ","), ")"))
            
 samp_i <- 
   expression("Main Sample" = (!holdout),
@@ -863,12 +867,19 @@ samp_i <-
 
 BB <- 5000
 setkey(owners, rand_id)
+system.time(
 reg_info <- 
   rbindlist(lapply(samp_i, function(i_ev){
     message("\n\n", i_ev, ":")
     DT <- owners[eval(i_ev)]
     
     regs <- DT[ , eval(reg_j)]
+    
+    starts <- 
+      sapply(reg_all[!grepl("total", reg_all)], 
+             function(rr) 
+               regs[[rr]][[1]]$coefficients,
+             simplify = FALSE)
     
     RBs <- DT[ , unique(rand_id)]
     
@@ -888,20 +899,22 @@ reg_info <-
         ][ , lapply(.SD, function(x) 
           c(x, list(coeftest(x[[1]], vcov = x[[2]])[ , 4])))]
   }), idcol = "sample")
+)
 
 ###Difference in Mean Tests
 rename_coef<-function(obj){
   nms<-names(obj$coefficients)
-  indx<-!grepl("treat7",nms)
+  idx<-!grepl("treat7",nms)
   #Add XXX to coefficients we'll exclude
-  nms[indx]<-nms[indx]%+%"XXX"
+  nms[idx]<-nms[idx]%+%"XXX"
   nms<-gsub("treat7","",nms)
   names(obj$coefficients)<-nms
   obj
 }
 
 texreg(
-  lapply(reg_output,function(y)rename_coef(y$reg$tp)),
+  lapply("ever_paid_"%+%mos,function(mo)
+    rename_coef(reg_info[sample=="Main Sample"][[mo]])),
   custom.model.names=c("Main Sample","Residential","Unique Owner"),
   caption="Estimated Average Treatment Effects: Revenues",
   override.se=lapply(reg_output,function(y)y$SE$tp),
