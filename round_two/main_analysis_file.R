@@ -915,25 +915,24 @@ rename_coef<-function(obj){
 proper <- c(ever_paid="Ever Paid",
             paid_full="Paid Full",
             total_paid="Total Paid")
-sapply(reg_vars,
-       function(rr)
-         sapply(names(samp_i),
-                function(samp)
-                  print(texreg(
-                    lapply(tp <- paste(rr,mos,sep="_"),function(mo)
-                      rename_coef(reg_info[sample==samp][[mo]][[1]])),
-                    custom.model.names=
-                      c("One Month","Three Months","Six Months"),
-                    caption="Estimated Average Treatment Effects: " %+% 
-                      proper[rr] %+% ", " %+% samp,
-                    override.se=lapply(tp,function(mo)
-                      reg_info[sample==samp][[mo]][[3]]),
-                    override.pval=lapply(tp,function(mo)
-                      reg_info[sample==samp][[mo]][[4]]),
-                    caption.above=TRUE,label="dif_mean",stars=c(.01,.05,.1),
-                    include.rsquared=F,include.adjrs=F,include.rmse=F,
-                    #Exclude Intercept
-                    omit.coef="XXX$",float.pos="htbp"))))
+invisible(sapply(
+  transpose(expand.grid(reg_vars, names(samp_i))),
+  function(meta)
+    print(texreg(
+      lapply(tp <- paste(rr <- meta[1],mos,sep="_"),function(mo)
+        rename_coef(reg_info[sample==meta[2]][[mo]][[1]])),
+      custom.model.names=
+        c("One Month","Three Months","Six Months"),
+      caption="Estimated Average Treatment Effects: " %+% 
+        proper[rr] %+% ", " %+% meta[2],
+      override.se=lapply(tp,function(mo)
+        reg_info[sample==meta[2]][[mo]][[3]]),
+      override.pval=lapply(tp,function(mo)
+        reg_info[sample==meta[2]][[mo]][[4]]),
+      caption.above=TRUE,label="dif_mean",stars=c(.01,.05,.1),
+      include.rsquared=F,include.adjrs=F,include.rmse=F,
+      #Exclude Intercept
+      omit.coef="XXX$",float.pos="htbp"))))
 
 ##Box and Whisker Plots ####
 ###Box-and-Whisker Repayment Distribution (among Payers)
