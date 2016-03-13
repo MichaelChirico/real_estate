@@ -854,7 +854,7 @@ coef_j =
             reg_all, "=", sapply(reg_all, function(x) 
               if (grepl("total", x)) 
                 paste0("lm.fit(model.matrix(", x,
-                       " ~ treat7), ",x)
+                       " ~ treat7), ",x,")")
               else paste0("glm.fit(model.matrix(", x, 
                           " ~ treat7), ",x,")")), 
             "$coefficients"), 
@@ -912,39 +912,28 @@ rename_coef<-function(obj){
   obj
 }
 
-texreg(
-  lapply("ever_paid_"%+%mos,function(mo)
-    rename_coef(reg_info[sample=="Main Sample"][[mo]])),
-  custom.model.names=c("Main Sample","Residential","Unique Owner"),
-  caption="Estimated Average Treatment Effects: Revenues",
-  override.se=lapply(reg_output,function(y)y$SE$tp),
-  override.pval=lapply(reg_output,function(y)y$p.val$tp),
-  caption.above=T,label="dif_mean",stars=c(.01,.05,.1),
-  include.rsquared=F,include.adjrs=F,include.rmse=F,
-  #Exclude Intercept & Log coefficients
-  omit.coef="XXX$",float.pos="htbp")
-
-###Logit - Ever Paid
-texreg(
-  lapply(reg_output,function(y)rename_coef(y$reg$ep)),
-  custom.model.names=c("Full Sample","Residential","Unique Owner"),
-  caption="Logistic Regressions for Ever Paid: Compliance",
-  override.se=lapply(reg_output,function(y)y$SE$ep),
-  override.pval=lapply(reg_output,function(y)y$p.val$ep),
-  caption.above=T,label="table:ep_log",stars=c(.01,.05,.1),
-  omit.coef="XXX$",float.pos="htbp",include.aic=FALSE,
-  include.bic=FALSE,include.deviance=FALSE)
-
-###Logit - Any Payment Agreement
-texreg(
-  lapply(reg_output,function(y)rename_coef(y$reg$pa)),
-  custom.model.names=c("Full Sample","Residential","Unique Owner"),
-  caption="Logistic Regressions for Any Payment Agreement",
-  override.se=lapply(reg_output,function(y)y$SE$pa),
-  override.pval=lapply(reg_output,function(y)y$p.val$pa),
-  caption.above=T,label="table:pa_log",stars=c(.01,.05,.1),
-  omit.coef="XXX$",float.pos="htbp",include.aic=FALSE,
-  include.bic=FALSE,include.deviance=FALSE)
+proper <- c(ever_paid="Ever Paid",
+            paid_full="Paid Full",
+            total_paid="Total Paid")
+sapply(reg_vars,
+       function(rr)
+         sapply(names(samp_i),
+                function(samp)
+                  print(texreg(
+                    lapply(tp <- paste(rr,mos,sep="_"),function(mo)
+                      rename_coef(reg_info[sample==samp][[mo]][[1]])),
+                    custom.model.names=
+                      c("One Month","Three Months","Six Months"),
+                    caption="Estimated Average Treatment Effects: " %+% 
+                      proper[rr] %+% ", " %+% samp,
+                    override.se=lapply(tp,function(mo)
+                      reg_info[sample==samp][[mo]][[3]]),
+                    override.pval=lapply(tp,function(mo)
+                      reg_info[sample==samp][[mo]][[4]]),
+                    caption.above=TRUE,label="dif_mean",stars=c(.01,.05,.1),
+                    include.rsquared=F,include.adjrs=F,include.rmse=F,
+                    #Exclude Intercept
+                    omit.coef="XXX$",float.pos="htbp"))))
 
 ##Box and Whisker Plots ####
 ###Box-and-Whisker Repayment Distribution (among Payers)
