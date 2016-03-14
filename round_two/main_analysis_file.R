@@ -436,7 +436,7 @@ owners[,unq_own:=N==1]
 ### Write output
 write.csv(owners, wds["data"] %+% "round_two_analysis_owners.csv",
           row.names = FALSE)
-write.csv(owners, wds["data"] %+% "round_two_analysis_properties.csv",
+write.csv(properties, wds["data"] %+% "round_two_analysis_properties.csv",
           row.names = FALSE)
 
 #Fidelity Checks ####
