@@ -1,4 +1,4 @@
-Package info for code run on 2016-03-14 14:46:43:
+Package info for code run on 2016-03-15 21:26:27:
 R version 3.2.4 (2016-03-10)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Ubuntu 14.04.3 LTS
@@ -13,14 +13,17 @@ attached base packages:
 [1] parallel  stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] lmtest_0.9-34       zoo_1.7-12          maptools_0.8-36     RgoogleMaps_1.2.0.7 doParallel_1.0.8   
- [6] iterators_1.0.7     foreach_1.4.2       sp_1.1-1            xlsx_0.5.7          xlsxjars_0.6.1     
-[11] rJava_0.9-7         readxl_0.1.0.9000   xtable_1.7-4        sandwich_2.3-4      texreg_1.35        
-[16] funchir_0.1.2       data.table_1.9.7   
+ [1] microbenchmark_1.4-2 rvest_0.2.0          lmtest_0.9-34        zoo_1.7-12           maptools_0.8-36     
+ [6] RgoogleMaps_1.2.0.7  doParallel_1.0.8     iterators_1.0.7      foreach_1.4.2        sp_1.1-1            
+[11] xlsx_0.5.7           xlsxjars_0.6.1       rJava_0.9-7          readxl_0.1.0.9000    xtable_1.7-4        
+[16] sandwich_2.3-4       texreg_1.35          funchir_0.1.2        data.table_1.9.7    
 
 loaded via a namespace (and not attached):
- [1] Rcpp_0.12.1        git2r_0.10.1       tools_3.2.4        digest_0.6.8       memoise_0.2.1     
- [6] lattice_0.20-33    png_0.1-7          curl_0.9.1         httr_1.0.0         stringr_1.0.0     
-[11] xml2_0.1.1         knitr_1.12.3       rversions_1.0.1    devtools_1.8.0     grid_3.2.4        
-[16] R6_2.1.1           foreign_0.8-66     RJSONIO_1.3-0      magrittr_1.5       codetools_0.2-14  
-[21] rsconnect_0.4.1.11 stringi_0.5-9003  
+ [1] reshape2_1.4.1     splines_3.2.4      lattice_0.20-33    colorspace_1.2-6   survival_2.38-3   
+ [6] XML_3.98-1.3       foreign_0.8-66     selectr_0.2-3      multcomp_1.4-1     plyr_1.8.3        
+[11] stringr_1.0.0      munsell_0.4.2      gtable_0.1.2       mvtnorm_1.0-3      devtools_1.8.0    
+[16] codetools_0.2-14   memoise_0.2.1      knitr_1.12.3       curl_0.9.1         TH.data_1.0-6     
+[21] proto_0.3-10       Rcpp_0.12.1        scales_0.2.5       rversions_1.0.1    ggplot2_1.0.1     
+[26] png_0.1-7          digest_0.6.8       stringi_0.5-9003   RJSONIO_1.3-0      grid_3.2.4        
+[31] tools_3.2.4        magrittr_1.5       MASS_7.3-44        rsconnect_0.4.1.11 xml2_0.1.1        
+[36] httr_1.0.0         R6_2.1.1           git2r_0.10.1      

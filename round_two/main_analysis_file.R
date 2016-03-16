@@ -856,7 +856,9 @@ coef_j =
                 paste0("lm.fit(model.matrix(", x,
                        " ~ treat7), ",x,")")
               else paste0("glm.fit(model.matrix(", x, 
-                          " ~ treat7), ",x,")")), 
+                          " ~ treat7), ",x,
+                          ', start = starts[["',x,'"]],',
+                          "family=binomial())")), 
             "$coefficients"), 
             collapse = ","), ")"))
            
@@ -885,7 +887,7 @@ reg_info <-
     
     cl <- makeCluster(8L, outfile = "")
     clusterEvalQ(cl, library(data.table))
-    clusterExport(cl, c("DT", "RBs", "coef_j"),
+    clusterExport(cl, c("DT", "RBs", "coef_j","starts"),
                   envir = environment())
     boot_dist <- rbindlist(parLapply(cl, 1:BB, function(bb){
       if (bb %% 625 == 0) cat("Replication", bb, "\n")
