@@ -1026,3 +1026,34 @@ boot.cis[(!is.na(edu_q)) , {
                main = "Ever Paid By Quartile of % College Grad (Dec.)")
   arrows(x,ys[[2]],x,ys[[3]],angle=90,
          code=3,lwd=1,length=.05)}]
+
+
+
+#Friedman's Rank Sum Test
+friedmans_p <- function(V, treat){
+  dcast(owners[(!holdout)], 
+        "rand_id ~ " %+% treat,
+        value.var = V, fun.aggregate = sum
+  )[ , friedman.test(as.matrix(.SD[,-1,with=FALSE]))$p.value]}
+
+round(sapply(reg_all, friedmans_p, "treat7"), digits = 3)
+
+#Permutation tests
+DT <- owners[(!holdout), c(list(treat7=treat7,
+                                rand_id=rand_id),
+                           mget(reg_all))]
+
+perm_cis <- 
+  dcast(rbindlist(lapply(integer(5000), function(...)
+    DT[ , tr := sample(treat7), by = rand_id
+        ][ , lapply(.SD, mean), keyby = tr, .SDcols = reg_all])
+  )[ , lapply(.SD, quantile, c(.025, .975), names = FALSE),
+     by = tr, .SDcols = reg_all],
+  tr ~ c("low", "high")[rowid(tr)], value.var = reg_all
+  )[DT[ , lapply(.SD, mean), by = .(tr = treat7),
+        .SDcols = reg_all], on = "tr"]
+
+sapply(reg_all, function(V){
+  perm_cis[ , c("tr", V %+% c("_low", "", "_high")), with = FALSE
+            ][ , {in_ci <- between(get(V), get(V %+% "_low"), get(V %+% "_high"))
+            out <- setNames(rep("", .N), tr); out[!in_ci] <- "**"; out}]})
