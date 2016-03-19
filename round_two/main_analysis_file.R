@@ -1241,25 +1241,119 @@ text(coordinates(phila_azav_quad),
 dev.off2()
 
 ##Financial Analysis ####
+sapply(
+  list(list(ii=expression((!holdout)),ky="treat7",nm=""),
+            list(ii=expression((!holdout&rand_id>2)),ky="treat7",
+                 nm=" (Excluding 28 Most Indebted Owners)"),
+            list(ii=expression((rand_id>2|is.na(rand_id))&unq_own),ky="treat8",
+                 nm=" (vs. Holdout, Excluding 28 Most Indebted Owners and" %+%
+                   "Multiple Owners"),
+       list(ii=expression(((rand_id>2|is.na(rand_id))&unq_own&
+                             treat8 %in% c("Holdout","Control","Lien"))),
+            nm=" (vs. Holdout, Excluding 28 Most Indebted Owners and" %+%
+              "Multiple Owners)",ky="treat8")),
+  function(lst)
+    lyx.xtable(xtable(
+      x <-
+        owners[eval(lst$ii),
+               .(.N,tot_due=sum(total_due),
+                 tpj=sum(total_paid_jul),
+                 tps=sum(total_paid_sep),
+                 tpd=sum(total_paid_dec)),keyby=c(lst$ky)
+               ][,.("Treatment"=get(lst$ky),
+                    "Total Owed"=dol.form(tot_due, dig=1, suff="m"),
+                    "Jul."=dol.form(tpj, 1, "m"),
+                    "Sep."=dol.form(tps, 1, "m"),
+                    "Dec."=dol.form(tpd, 1, "m"),
+                    "Jul."=to.pct(tpj/tot_due),
+                    "Sep."=to.pct(tps/tot_due),
+                    "Dec."=to.pct(tpd/tot_due),
+                    "Jul."=
+                      c(NA, dol.form(tpj[-1]/(Nnc <- N[-1])-tpj[1]/N[1])),
+                    "Sep."=c(NA, dol.form(tps[-1]/Nnc-tps[1]/N[1])),
+                    "Dec."=c(NA, dol.form(tpd[-1]/Nnc-tpd[1]/N[1])),
+                    "Jul."=
+                      c(NA, dol.form(tpj[-1]-tpj[1]/N[1]*Nnc, suff="k")),
+                    "Sep."=
+                      c(NA, dol.form(tps[-1]-tps[1]/N[1]*Nnc, suff="k")),
+                    "Dec."=
+                      c(NA, dol.form(tpd[-1]-tpd[1]/N[1]*Nnc, suff="k")))],
+      caption="Summary of Effectiveness of Treatment" %+% lst$nm,
+      label="table:fiscal", digits = 0,align=c("c|lr|lll|rrr|lll|lll|")),
+      include.rownames=F, hline.after=c(0, nrow(x)), 
+      NA.string="---", comment = FALSE,
+      add.to.row = 
+        list(pos=list(-1),
+             command=
+               paste("\\hline & & \\multicolumn{3}{c|}{Dollars Received} &", 
+                     "\\multicolumn{3}{c|}{Pct. Debt Rec'd} &",
+                     "\\multicolumn{3}{c|}{\\$ Net per Owner} &",
+                     "\\multicolumn{3}{c|}{Total Surplus} \\\\"))))
+
+###Excluding top two randomization blocks:
 lyx.xtable(xtable(
-  owners[(!holdout),
+  owners[(!holdout&rand_id>2),
          .(.N,tot_due=sum(total_due),
-           ev_pd=mean(ever_paid_jul),pd_fl=mean(paid_full_jul),
-           tot_pmt=sum(total_paid_jul)),keyby=treat7
+           tpj=sum(total_paid_jul),
+           tps=sum(total_paid_sep),
+           tpd=sum(total_paid_dec)),keyby=treat7
     ][,.("Treatment"=treat7,
-         "Total Debt Owed"=dol.form(tot_due),
-         "Percent Ever Paid"=to.pct(ev_pd,dig=0),
-         "Percent Paid in Full"=to.pct(pd_fl,dig=0),
-         "Dollars Received"=dol.form(tot_pmt),
-         "Percent Debt Received"=to.pct(tot_pmt/tot_due,dig=1),
-         "Dollars above Control Per Owner"=
-           dol.form(tot_pmt/N-tot_pmt[1]/N[1]),
-         "Total Surplus over All Owners"=
-           dol.form(tot_pmt-tot_pmt[1]/N[1]*N))],
-  caption=c("Summary of Effectiveness of Treatment (July)"),label="table:summary",
-  align="|c|p{1.4cm}|p{1.8cm}|p{1.2cm}|p{1.2cm}|"%+%
-    "p{1.6cm}|p{1.4cm}|p{2.2cm}|p{1.8cm}|",
-  digits=c(rep(0,6),1,0,0)),include.rownames=F)
+         "Total Owed"=dol.form(tot_due, dig=1, suff="m"),
+         "Jul."=dol.form(tpj, 1, "m"),
+         "Sep."=dol.form(tps, 1, "m"),
+         "Dec."=dol.form(tpd, 1, "m"),
+         "Jul."=to.pct(tpj/tot_due),
+         "Sep."=to.pct(tps/tot_due),
+         "Dec."=to.pct(tpd/tot_due),
+         "Jul."=c(NA, dol.form(tpj[-1]/(Nnc <- N[-1])-tpj[1]/N[1])),
+         "Sep."=c(NA, dol.form(tps[-1]/Nnc-tps[1]/N[1])),
+         "Dec."=c(NA, dol.form(tpd[-1]/Nnc-tpd[1]/N[1])),
+         "Jul."=c(NA, dol.form(tpj[-1]-tpj[1]/N[1]*Nnc, suff="k")),
+         "Sep."=c(NA, dol.form(tps[-1]-tps[1]/N[1]*Nnc, suff="k")),
+         "Dec."=c(NA, dol.form(tpd[-1]-tpd[1]/N[1]*Nnc, suff="k")))],
+  caption="Summary of Effectiveness of Treatment " %+% 
+    "(Excluding 28 Most Indebted Owners)",
+  label="table:fiscal", digits = 0,align=c("c|lr|lll|rrr|lll|lll|")),
+  include.rownames=F, hline.after=c(0, 7), NA.string="---",
+  add.to.row = 
+    list(pos=list(-1),
+         command=paste("\\hline & & \\multicolumn{3}{c|}{Dollars Received} &", 
+                       "\\multicolumn{3}{c|}{Pct. Debt Rec'd} &",
+                       "\\multicolumn{3}{c|}{\\$ Net per Owner} &",
+                       "\\multicolumn{3}{c|}{Total Surplus} \\\\")))
+
+###Excluding top two randomization blocks:
+lyx.xtable(xtable(
+  owners[((rand_id>2|is.na(rand_id))&unq_own&
+            treat8 %in% c("Holdout","Control","Lien")),
+         .(.N,tot_due=sum(total_due),
+           tpj=sum(total_paid_jul),
+           tps=sum(total_paid_sep),
+           tpd=sum(total_paid_dec)),keyby=treat8
+    ][,.("Treatment"=treat8,
+         "Total Owed"=dol.form(tot_due, dig=1, suff="m"),
+         "Jul."=dol.form(tpj, 1, "m"),
+         "Sep."=dol.form(tps, 1, "m"),
+         "Dec."=dol.form(tpd, 1, "m"),
+         "Jul."=to.pct(tpj/tot_due),
+         "Sep."=to.pct(tps/tot_due),
+         "Dec."=to.pct(tpd/tot_due),
+         "Jul."=c(NA, dol.form(tpj[-1]/(Nnc <- N[-1])-tpj[1]/N[1])),
+         "Sep."=c(NA, dol.form(tps[-1]/Nnc-tps[1]/N[1])),
+         "Dec."=c(NA, dol.form(tpd[-1]/Nnc-tpd[1]/N[1])),
+         "Jul."=c(NA, dol.form(tpj[-1]-tpj[1]/N[1]*Nnc, suff="k")),
+         "Sep."=c(NA, dol.form(tps[-1]-tps[1]/N[1]*Nnc, suff="k")),
+         "Dec."=c(NA, dol.form(tpd[-1]-tpd[1]/N[1]*Nnc, suff="k")))],
+  caption="Summary of Effectiveness of Treatment vs. Holdout" %+% 
+    "(Excluding 28 Most Indebted Owners and Multiple Owners)",
+  label="table:fiscal", digits = 0,align=c("c|lr|lll|rrr|lll|lll|")),
+  include.rownames=F, hline.after=c(0, 3), NA.string="---",
+  add.to.row = 
+    list(pos=list(-1),
+         command=paste("\\hline & & \\multicolumn{3}{c|}{Dollars Received} &", 
+                       "\\multicolumn{3}{c|}{Pct. Debt Rec'd} &",
+                       "\\multicolumn{3}{c|}{\\$ Net per Owner} &",
+                       "\\multicolumn{3}{c|}{Total Surplus} \\\\")))
 
 sapply(list(list(dt=owners[(!holdout)],fl="7_own",tl="",
                  tr="treat7",rf="Control"),
