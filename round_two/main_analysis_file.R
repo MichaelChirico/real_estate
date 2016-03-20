@@ -1020,6 +1020,7 @@ phila_azav_quad<-
     wds["gis"]%+%"Azavea_Quadrant_cartogram_r2.shp")
 #Done by copying for now; check GH FR #1310 for updates
 setkey(properties, rand_id)
+RBs <- properties[(!holdout), unique(rand_id)]
 phila_azav_quad@data<-setDT(phila_azav_quad@data)
 phila_azav_quad@data[,orig:=1:.N]
 phila_azav_quad@data<-
@@ -1035,7 +1036,7 @@ phila_azav_quad@data<-
                       by = azavea_quad
                       ][dcast(rbindlist(lapply(
                         integer(BB), function(...)
-                          properties[.(sample(bootlist$o2$rI, rep = TRUE)),
+                          properties[.(sample(RBs, rep = TRUE)),
                                      lapply(.SD, mean), 
                                        keyby = .(treat7, azavea_quad),
                                        .SDcols = "ever_paid_" %+% mos
@@ -1121,30 +1122,35 @@ title("Cartogram: Ever Paid (Sep.) by City Sector\n"%+%
 dev.off2()
 
 pdf2(wds["imga"]%+%"cartogram_quadrant_ever_paid_dec.pdf")
-layout(mat=matrix(c(1:7,7,7),byrow=T,nrow=3),
-       heights=c(.475,.475,.05))
-par(mar=c(0,0,1.1,0),
-    oma=c(5.1,4.1,4.1,1.1))
-vn<-"epd.over.control_"
+layout(mat=matrix(c(1:7, 7, 7), byrow = TRUE, nrow = 3),
+       heights=c(.475, .475, .05))
+par(mar=c(0, 0, 1.1, 0),
+    oma=c(5.1, 4.1, 4.1, 1.1))
+vn <- "ever_paid_dec_"; ncols <- 31
 for (trt in trt.nms[-1]){
-  plot(phila_azav_quad,col=phila_azav_quad@
-         data[,scale.value(get(vn%+%trt),nn=ncols,rng=c(-.15,.15),
+  plot(phila_azav_quad, col = phila_azav_quad@
+         data[ , scale.value(get(vn %+% trt),
+                             nn = ncols, rng = c(-.15,.15),
                            cols=c(get.col("Control"),
-                                  "white",get.col(trt)))],
-       main=trt,cex.main=.9)
-  text(coordinates(phila_azav_quad),font=2,
-       labels=phila_azav_quad@data[,to.pct(get(vn%+%trt),dig=1)])
+                                  "white", get.col(trt)))],
+       main = trt)
+  text(coordinates(phila_azav_quad), font = 2, cex = 1.3,
+       labels = phila_azav_quad@
+         data[ , to.pct(get(vn %+% trt), dig = 1) %+%
+                 c("*", "")[((get(vn %+% "low_" %+% trt) < 0 &
+                                get(vn %+% "high_" %+% trt) > 0) + 1L)]])
 }
-par(mar=c(0,0,0.1,0))
-plot(NA,type="n",ann=FALSE,xlim=c(1,2),ylim=c(1,2),
-     xaxt="n",yaxt="n",bty="n")
-xs<-seq(1,2,length.out=ncols+1)
-rect(xs[-(ncols+1)],1,
-     xs[-1],2,col=colorRampPalette(c("blue","white","black")
+par(mar = c(0, 0, 0.1, 0))
+plot(NA, type = "n", ann = FALSE, xlim = c(1, 2), 
+     ylim = c(1, 2), xaxt = "n", yaxt = "n", bty = "n")
+xs<-seq(1, 2, length.out = ncols + 1)
+rect(xs[-(ncols + 1)], 1,
+     xs[-1], 2, col = colorRampPalette(c("blue", "white", "black")
      )(ncols))
-mtext(c("-15%","even","15%"),at=c(1,1.5,2),side=3,adj=c(0,.5,1))
-title("Cartogram: Ever Paid (Dec.) by City Sector\n"%+%
-        "Percentage above Control",outer=T)
+mtext(c("-15%", "even", "15%"), at = c(1, 1.5, 2),
+      side = 3, adj = c(0, .5, 1))
+title("Cartogram: Ever Paid (at Six Months) by City Sector\n" %+%
+        "Percentage above Control", outer = TRUE, cex.main = 1.8)
 dev.off2()
 
 pdf2(wds["imga"]%+%"cartogram_quadrant_paid_full_jul.pdf")

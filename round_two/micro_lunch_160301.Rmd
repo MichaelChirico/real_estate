@@ -217,7 +217,7 @@ invisible(
             text(unclass(D("2015-10-21")), .07, col = "red", adj = c(0,0),
                  labels = "1: Small Envelopes\n2: Big Envelopes", pos = 4)
             title("Cumulative Partial Participation"%+%
-                    "\nControl vs. Holdout")}]
+                    "\nControl vs. Holdout (Unique Owners Only)")}]
 )
 ```
 
