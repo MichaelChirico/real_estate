@@ -202,8 +202,6 @@ text(md, .5, pos = 4L, cex = .8,
 ## Results: Acceleration
 ```{r C_H_BOOTSTRAP, echo = FALSE}
 <<analysis_ch_ep>>
-```
-```{r, echo = FALSE}
 invisible(
   cum_haz[cis,on=c("date")
           ][,{

@@ -583,7 +583,7 @@ print.xtable(xtable(dcast(melt(rbind(
 ## Cumulative Partial Participation
 ## @knitr analysis_ch_ep
 ### get range of dates for day-by-day averages
-dt.rng<-owners[(!holdout),{
+dt.rng<-owners[(!holdout&unq_own),{
   rng<-range(earliest_pmt_dec,na.rm=T)
   seq(from=rng[1],to=rng[2],by="day")}]
 #For pretty printing, get once/week subset
@@ -594,7 +594,7 @@ date.dt <-
   #  so we'll have to "fill-in-the-blanks" with this
   CJ(treat8 = c("Holdout","Control"), date = dt.rng,
      unique=TRUE, sorted = FALSE)
-owners[(!flag_holdout_overlap), hold_cont := treat8%in%c("Holdout","Control")]
+owners[(unq_own), hold_cont := treat8%in%c("Holdout","Control")]
 cum_haz<-owners[(hold_cont),
                 #total entrants by day, treatment
                 sum(ever_paid_dec)+0., #convert to numeric
@@ -869,6 +869,7 @@ samp_i <-
 
 BB <- 5000
 setkey(owners, rand_id)
+setindex(owners, holdout)
 system.time(
 reg_info <- 
   rbindlist(lapply(samp_i, function(i_ev){
@@ -958,14 +959,47 @@ dev.off2()
 owners[(!holdout),total_due_quartile:=
          create_quantiles(total_due,4)]
 ###Ever Paid
-print.xtable(xtable(setnames(dcast(
-  owners[(!holdout),mean(ever_paid_jul),
-              keyby=.(treat7,total_due_quartile)],
-  treat7~total_due_quartile,value.var="V1"),
-  c("Treatment","Q"%+%1:4)),
-  caption="Probability Ever Paid (July) by Treatment and Debt Quartile",
-  label="table:ever_paid_quartile"),
-  include.rownames=F)
+point_est <- 
+  dcast(owners[(!holdout),
+               .(j=mean(ever_paid_jul),
+                 s=mean(ever_paid_sep),
+                 d=mean(ever_paid_dec)),
+               keyby=.(treat7,total_due_quartile)],
+        treat7~total_due_quartile,value.var=c("j","s","d"))
+
+RBs <- owners[(!holdout), unique(rand_id)]
+cis <- 
+  dcast(rbindlist(lapply(integer(BB), function(...)
+  owners[(!holdout)
+         ][.(sample(RBs, rep = TRUE)),
+           .(j=mean(ever_paid_jul),
+             s=mean(ever_paid_sep),
+             d=mean(ever_paid_dec)),
+           keyby=.(treat7,Q=create_quantiles(total_due,4))
+           ][ , c(list(treat7=treat7), lapply(.SD, function(x) x - x[1])),
+              by = Q, .SDcols=c("j","s","d")])
+  )[ , lapply(.SD, quantile, c(.025, .975)), by = .(treat7, Q)],
+  treat7 ~ Q + c("low","high")[rowid(treat7, Q)], value.var=c("j","s","d"))
+
+jdx <- names(point_est)[-1]
+
+lyx.xtable(xtable(setnames(
+  point_est[ , c(list(treat7=treat7),
+                 lapply(names(.SD)[-1], 
+                        function(jj) 
+                          paste0(to.pct(get(jj), 0),
+                                 c("**", "")[
+    between(rep(0, 7), 
+            cis[[jj%+%"_low"]],
+            cis[[jj%+%"_high"]]) + 1L])))],
+  c("Treatment",rep("Q"%+%1:4,3))),
+  caption="Probability Ever Paid by Treatment and Debt Quartile",
+  label="table:ever_paid_quartile",align="c|l|llll|llll|llll|"),
+  include.rownames=F,hline.after=c(0,7),
+  add.to.row=list(pos=list(-1),
+                  command=paste("\\hline & \\multicolumn{4}{c|}{July} &",
+                                "\\multicolumn{4}{c|}{September} &",
+                                "\\multicolumn{4}{c|}{December} \\\\")))
 
 ###Paid Full
 print.xtable(xtable(setnames(dcast(
@@ -1243,7 +1277,7 @@ dev.off2()
 ##Financial Analysis ####
 sapply(
   list(list(ii=expression((!holdout)),ky="treat7",nm=""),
-            list(ii=expression((!holdout&rand_id>2)),ky="treat7",
+            list(ii=expression((!holdout&rand_id>3)),ky="treat7",
                  nm=" (Excluding 28 Most Indebted Owners)"),
             list(ii=expression((rand_id>2|is.na(rand_id))&unq_own),ky="treat8",
                  nm=" (vs. Holdout, Excluding 28 Most Indebted Owners and" %+%
