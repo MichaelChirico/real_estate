@@ -1283,11 +1283,13 @@ dev.off2()
 ##Financial Analysis ####
 sapply(
   list(list(ii=expression((!holdout)),ky="treat7",nm=""),
-            list(ii=expression((!holdout&rand_id>3)),ky="treat7",
-                 nm=" (Excluding 28 Most Indebted Owners)"),
-            list(ii=expression((rand_id>2|is.na(rand_id))&unq_own),ky="treat8",
-                 nm=" (vs. Holdout, Excluding 28 Most Indebted Owners and" %+%
-                   "Multiple Owners"),
+       list(ii=expression((!holdout&rand_id>2)),ky="treat7",
+            nm=" (Excluding 28 Most Indebted Owners)"),
+       list(ii=expression((!holdout&rand_id>2&unq_own)),ky="treat7",
+            nm=" (Excluding 28 Most Indebted Owners and Multiple Owners"),
+       list(ii=expression((rand_id>2|is.na(rand_id))&unq_own),ky="treat8",
+            nm=" (vs. Holdout, Excluding 28 Most Indebted Owners and" %+%
+              "Multiple Owners"),
        list(ii=expression(((rand_id>2|is.na(rand_id))&unq_own&
                              treat8 %in% c("Holdout","Control","Lien"))),
             nm=" (vs. Holdout, Excluding 28 Most Indebted Owners and" %+%
