@@ -566,21 +566,18 @@ BB<-5000
 setkey(owners, rand_id)
 
 outvar <- parse(text = paste0(
-  ".(", paste(paste0("mean(",
-                     c("ever_paid", "paid_full", "total_paid"),
-                     rep(c("_jul", "_sep", "_dec"), each = 3), ")"),
+  ".(", paste(paste0("mean(ever_paid_", mos, ")"),
               collapse = ","), ")"))
 
 outvar2 <- parse(text = paste0(
   ".(", paste(paste0("mean(",
-                     c("ever_paid", "paid_full", 
-                       "total_paid", "pmt_agr1"),
-                     rep(c("_jul", "_sep", "_dec"), c(3, 4, 4)), ")"),
+                     c("ever_paid_", "total_paid_"),
+                     rep(mos, each = 2), ")"),
               collapse = ","), ")"))
 
-outn <- c("ep", "pf", "tp") %+% rep(c("j","s","d"), each = 3)
+outn <- "ep" %+% c("j","s","d")
 
-outn2 <- c("ep", "pf", "tp", "pa") %+% rep(c("j","s","d"), c(3, 4, 4))
+outn2 <- c("ep", "tp") %+% rep(c("j","s","d"), each = 2)
 
 bootlist<-{
   #By owner, big vs. small
@@ -596,21 +593,6 @@ bootlist<-{
                ri = quote(.(sample(rI, rep = TRUE))),
                exprs=outvar2, nms=outn2,
                fn="7_own",tl="Treatment",lv=trt.nms,nx=.75,
-               sp=NULL,yl=NULL,dn=quote(NULL)),
-       #By owner, main 7 treatments, single-owner properties
-       o7so=list(dt=owners[(unq_own&!holdout)],tr="treat7",
-                 rI = owners[(!holdout), unique(rand_id)],
-                 ri = quote(.(sample(rI, rep = TRUE))),
-                 exprs=outvar,nms=outn,fn="7_own_so",
-                 tl="Treatment\nSingle-Owner Properties",
-                 lv=trt.nms,nx=.75,sp=NULL,
-                 yl=NULL,dn=quote(NULL)),
-       #By owner, main 7 treatments + holdout
-       o8=list(dt=owners[(!flag_holdout_overlap)],
-               ri = quote(sample(.N, .N, rep = TRUE)),
-               tr="treat8",exprs=outvar,nms=outn,
-               fn="8_own",tl="Treatment\nIncluding Holdout Sample",
-               lv=owners[,levels(treat8)],nx=.75,
                sp=NULL,yl=NULL,dn=quote(NULL)))}
 
 boot.cis<-{
