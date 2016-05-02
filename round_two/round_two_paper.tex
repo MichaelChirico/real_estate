@@ -11,6 +11,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage{csquotes}
 \usepackage[pdfencoding=auto,unicode=true]{hyperref}
+\usepackage{graphicx}
+\graphicspath{{images/analysis/}{images/balance/}}
 
 \begin{document}
 
@@ -522,7 +524,7 @@ Balance tests for pre-randomization characteristics,
 %Mike—Could you produce a balance table to match what I have as Table 3 of 
 %the first paper? Treatments are columns and property characteristics 
 %are rows? We’ll need a second one for the holdout comparison.
-reported in Table 1 and Figure 1, confirm that randomization was successful 
+reported in Table 1 and Figure \ref{fig:box_bal}, confirm that randomization was successful 
 with no discernable differences between any of our treatment groups.
 \footnote{For balance tests for the stage 1 holdout sample, see Appendix.}
 While large and multiple property owners introduced small variations 
@@ -538,7 +540,7 @@ on all variables for 99.9\% of all properties and remaining blocks.
 %in based on numbering before we figured out order.
 
 %TO DO: Programmatic numbering
-Table 1 and Figure 1 report the main experimental intervention results 
+Table 1 and Figure \ref{fig:box_bal} report the main experimental intervention results 
 at one-month, three-month, and six-month intervals. At the one month mark, 
 several weeks after receiving the experimental or control notifications, 
 35\% of delinquents in the control condition have made at least some payments 
@@ -550,6 +552,7 @@ extrinsic/consequentialist factors both show short-term differences of
 4.9\% (lien) and 3.4\% (sheriff sale). Both are statistically significant. 
 Results from logit models using paid-in-full (including fees) instead of any 
 %TO DO: Actual number
+%TO DO: Programmatic numbering
 payment reported Table 2, reveal that the majority (\#\#\% of) of the estimated 
 short-term effect of payment comes from recipients paying off their entire balance.
 
@@ -580,17 +583,17 @@ treatments, we fit OLS models for amount paid regressed on treatment status
 and randomization blocks. The results of these regressions are reported in 
 %TO DO: Programmatic numbering
 Table 3. Nonparametric tests with bootstrapped standard errors within 
-%TO DO: Programmatic numbering
-randomization blocks are reported visually in Figure 5. These results indicate 
-that the lien treatment was effective at boasting revenue collected within the 
+randomization blocks are reported visually in Figure \ref{fig:tp_time_7_own}. 
+These results indicate that the lien treatment was effective at boasting 
+revenue collected within the first month of the experiment. Lien recipients 
 %TO DO: Replace with true number
-first month of the experiment. Lien recipients paid \$\#\#.\#\#, on average, 
-during this period. However, no statistically significant different in 
-repayment occurred over the longer period of 3 or 6 months.
+paid \$\#\#.\#\#, on average, during this period. However, no statistically 
+significant different in repayment occurred over the longer period of 3 or 6 months.
 
 %possible insert sensitivity/heterogeneity results:
 %	Amount owed
 %	Owner occupied versus not
+
 \subsection{Intervention \#2: Mailer versus No-Mailer}
 
 %TO DO: Programmatic numbering
@@ -598,28 +601,28 @@ Table 4 reports the comparison of sending a generic reminder letter
 (control) versus sending no notification letter whatsoever. This 
 comparison is restricted to unique property owners owning just one 
 property within the City of Philadelphia. As can be seen visually in 
-%TO DO: Programmatic numbering
-Figure 4, a significant gap (4\%) in probability of any payment quickly 
-emerged after the letters were mailed. Until late August, corresponding
-to the time when still delinquent properties in the experiment were 
-released to tax collection agents, this gap of 4\% persisted. 
-After this time, hold-out property owners began paying at higher rates 
-leading to a convergence of trends—suggesting that while generic 
-notification does accelerate payment, that some combination of tardy 
-participants and other enforcement actions are likely to produce a 
-similar result eventually. 
+Figure \ref{fig:ep_time_ch_own}, a significant gap (4\%) in probability 
+of any payment quickly emerged after the letters were mailed. Until 
+late August, corresponding to the time when still delinquent properties 
+in the experiment were released to tax collection agents, this gap of 
+4\% persisted. After this time, hold-out property owners began paying 
+at higher rates leading to a convergence of trends—suggesting that 
+while generic notification does accelerate payment, that some
+combination of tardy participants and other enforcement actions are 
+likely to produce a similar result eventually. 
 
 \subsection{Intervention \#3: Standard Envelope versus Larger Envelope}
 
 %TO DO: Programmatic numbering
-Table 5 and Figure 5 report the results of a third tested
+Table 5 and Figure \ref{fig:ep_time_2_own} report the results of a third tested
 intervention—modified the size of the notification envelope.
 Previous research has hypothesized that increasing the visibility or visual 
 salience of a notification could increase uptake or response.
 However, the results of this particular version of increased visual salience 
 suggest that tax authorities sending tax bills are likely to receive little 
 benefit from the increased cost of mailing visually more eye-catching mailers. 
-At one, three and six months payment probabilities were similar and statistically indistinguishable. 
+At one, three and six months payment probabilities were similar and 
+statistically indistinguishable. 
 
 \section{Fiscal Analysis}
 % -- Charles --
@@ -767,15 +770,55 @@ Wenzel, Michael. 2005. “Misperceptions of Social Norms about Tax Compliance: F
 
 %Table 2: Total Paid @ 1,3,6 months, main treatments vs. Control
 
-%Figure 1: Box Plots of Initial Debt
+%Figure 1
+\begin{figure}[htpb]
+\begin{center}
+\caption{Sample Balance on Initial Debt across Main Treatments}
+\label{fig:box_bal}
+\bigskip
+\includegraphics[width=6in]{dist_log_due_by_trt_7_box}
+\end{center}
+\end{figure}
 
-%Figure 2: Bar Plots of EP @ 1,3,6 months, main treatments vs. Control
+%Figure 2
+\begin{figure}[htpb]
+\begin{center}
+\caption{Partial Participation in Main Treatments across Time}
+\label{fig:ep_time_7_own}
+\bigskip
+\includegraphics[width=6in]{bar_plot_ever_paid_julsepdec_7_own}
+\end{center}
+\end{figure}
 
-%Figure 3: Bar Plots of AP @ 1,3,6 months, main treatments vs. Control
+%Figure 3
+\begin{figure}[htpb]
+\begin{center}
+\caption{Average Repayment in Main Treatments over Time}
+\label{fig:tp_time_7_own}
+\bigskip
+\includegraphics[width=6in]{bar_plot_aver_paid_julsepdec_7_own}
+\end{center}
+\end{figure}
 
-%Figure 4: Time Series, Control vs. Holdout
+%Figure 4
+\begin{figure}[htpb]
+\begin{center}
+\caption{Comparison of Partial Participation between Control and Holdout over Time}
+\label{fig:ep_time_ch_own}
+\bigskip
+\includegraphics[width=6in]{cum_haz_ever_paid_control_holdout_own}
+\end{center}
+\end{figure}
 
-%Figure 5: Bar Plots of EP @ 1,3,6 months, Big vs. Small
+%Figure 5
+\begin{figure}[htpb]
+\begin{center}
+\caption{Partial Participation in Envelope Treatments across Time}
+\label{fig:ep_time_2_own}
+\bigskip
+\includegraphics[width=6in]{bar_plot_ever_paid_julsepdec_2_own}
+\end{center}
+\end{figure}
 
 \section{Appendix}
 

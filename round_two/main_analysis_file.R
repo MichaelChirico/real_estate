@@ -434,42 +434,8 @@ owners[,flag_top05_h:=total_due>=quantile(total_due,.95)]
 owners[,unq_own:=N==1]
 
 ### Write output
-write.csv(owners, wds["data"] %+% "round_two_analysis_owners.csv",
-          row.names = FALSE)
-write.csv(properties, wds["data"] %+% "round_two_analysis_properties.csv",
-          row.names = FALSE)
-
-#Fidelity Checks ####
-## @knitr fidelity
-##Returned Mail Rates by Envelope Size
-big_returns<-26+17+75+12+16+4+4+192
-small_returns<-766+9
-returns<-c(big_returns,small_returns)
-xtable(matrix(rbind(returns,100*returns/
-                      properties[(!holdout),.N,by=treat2]$N),
-              ncol=2,dimnames=list(c("Count","Percentage"),
-                                   paste(c("Large","Small"),
-                                         "Envelopes"))),
-       caption="Returned Mail by Envelope Type",
-       label="table:return_env",digits=matrix(c(0,0,0,1,0,1),ncol=3))
-
-##Letter Content Fidelity Checks
-print.xtable(xtable(matrix(cbind(
-  c(rep("Small",8),rep("Big",7)),
-  c(273036500,882697200,123233800,152054820,314169700,421552000,
-    381197900,"023067410",482183800,331052400,871550440,881105200,
-    888290588,621279300,282208400),
-  sprintf("%7.2f",c(253.45,29180.85,718.50,10726.30,64.41,191.84,
-                    480.30,3488.15,1047.42,20.62,1834.39,56.14,
-                    1849.80,1375.09,322.07)),
-  c("Amenities","Lien","Peer",rep("Lien",6),"Moral","Duty",
-    "Peer","Moral","Lien","Moral"),rep("Yes",15)),ncol=5,
-  dimnames=list(1:15,c("Envelope Size","OPA No.",
-                       "Balance","Treatment","Correct Content?"))),
-  caption="OPA Numbers Checked for Content Fidelity",
-  label="table:content_fidelity"),include.rownames=F)
-                              
-rm(big_returns,small_returns,returns)
+fwrite(owners, wds["data"] %+% "round_two_analysis_owners.csv")
+fwrite(properties, wds["data"] %+% "round_two_analysis_properties.csv")
 
 #Descriptive Stats ####
 ## @knitr descriptives
@@ -514,17 +480,22 @@ print.xtable(xtable(setnames(melt(
 #Balance on Observables ####
 ## @knitr balance
 ##Graphic Tests
-###Log Balance by Letter
+###Figure 1: Log Balance by Letter
 pdf2(wds["imgb"]%+%"dist_log_due_by_trt_7_box.pdf")
-par(mar=c(2.6,5.1,4.1,2.1))
-boxplot(total_due~treat7,data=owners,
-        main="Box Plots of Initial Debt\nOwner Level, By Treatment",
-        log="x",xaxt="n",cex.axis=.8,
-        col=get.col(trt.nms),notch=T,
-        boxwex=.5,horizontal=T,las=1,xlab="")
-axis(side=1,at=10^(1:6),cex.axis=.8,
-     labels="$"%+%prettyNum(10^(1:6),big.mark=",",scientific=FALSE))
-abline(v=owners[treat7=="Control",median(total_due)],lty=2)
+par(mar=c(2.6, 5.1, 4.1, 2.1))
+boxplot(total_due ~ treat7, data = owners, cex.main = 1.5,
+        main = "Box Plots of Initial Debt\nOwner Level, By Treatment",
+        log = "x", xaxt = "n", col = get.col(trt.nms),
+        notch = TRUE, #notch CIs: ~= 1.58 * IQR / sqrt(n); see ?boxplot.stats
+        boxwex = .5, horizontal = TRUE, las = 1L, xlab = "", 
+        names = owners[(!holdout), .N, keyby = treat7
+                       ][ , paste0(treat7, "\n(n = ", 
+                                   prettyNum(N, big.mark = ","), ")")])
+axis(side = 1L, at = p10 <- 10L^(1L:6L), cex.axis = .8,
+     labels = "$" %+% prettyNum(p10, big.mark = ",", scientific = FALSE))
+abline(v = md <- owners[treat7 == "Control", median(total_due)], lty = 2L)
+text(md, .5, pos = 4L, cex = .8, 
+     labels = "Control Median = $" %+% round(md))
 dev.off2()
 
 ##Bar Plot: Number of Properties and Owners by Letter
@@ -580,63 +551,6 @@ print.xtable(xtable(dcast(melt(rbind(
   include.rownames=F,sanitize.colnames.function=identity)
 
 #Analysis ####
-## Cumulative Partial Participation
-## @knitr analysis_ch_ep
-### get range of dates for day-by-day averages
-dt.rng<-owners[(!holdout&unq_own),{
-  rng<-range(earliest_pmt_dec,na.rm=T)
-  seq(from=rng[1],to=rng[2],by="day")}]
-#For pretty printing, get once/week subset
-dt.rng2<-dt.rng[seq(1,length(dt.rng),length.out=7)]
-
-date.dt <- 
-  #not all treatments saw activity on each day,
-  #  so we'll have to "fill-in-the-blanks" with this
-  CJ(treat8 = c("Holdout","Control"), date = dt.rng,
-     unique=TRUE, sorted = FALSE)
-owners[(unq_own), hold_cont := treat8%in%c("Holdout","Control")]
-cum_haz<-owners[(hold_cont),
-                #total entrants by day, treatment
-                sum(ever_paid_dec)+0., #convert to numeric
-                keyby=.(treat8,earliest_pmt_dec)
-                #running total of entrants; take care to eliminate NAs
-                ][,.(ep=cumsum(V1[idx<-!is.na(earliest_pmt_dec)]),
-                     date=earliest_pmt_dec[idx]),by=treat8
-                  #merge to get the denominator
-                  ][owners[(hold_cont),.N,treat8],
-                    ep:=ep/i.N,on="treat8"
-                    ][date.dt, on = c("treat8", "date"), roll = TRUE
-                      #express relative to holdout
-                      ][,.(ep=ep[idx<-treat8=="Control"]-ep[!idx]),by=date]
-
-BB <- 5000 #number of bootstrap simulations
-cis <- dcast(rbindlist(lapply(integer(BB), function(...){
-  dt <- owners[(hold_cont)][sample(.N,rep=T)]
-  dt[,sum(ever_paid_dec)+0.,keyby=.(treat8,earliest_pmt_dec)
-     ][,.(ep=cumsum(V1[idx<-!is.na(earliest_pmt_dec)]),
-          date=earliest_pmt_dec[idx]),by=treat8
-       ][dt[,.N,treat8],ep:=ep/i.N,on="treat8"
-         ][date.dt, on = c("treat8", "date"),roll = TRUE
-           ][,.(ep=ep[idx<-treat8=="Control"]-ep[!idx]),
-             by=date]}),idcol="bootID"
-  #extract for 95% CI
-  )[,quantile(ep, c(.025, .975), na.rm=T), by = date],
-  date~c("low","high")[rowid(date)],value.var="V1")
-
-## @knitr ignore
-### plot
-cum_haz[cis,on=c("date")
-        ][,{pdf2(wds["imga"]%+%"cum_haz_ever_paid_dec_cont_hold_own_cis.pdf")
-          matplot(date, do.call("cbind",mget(c("low","ep","high"))),
-                  type="l",lty=c(2,1,2),col=get.col("Control"),
-                  xaxt="n",lwd=3,xlab="Date",
-                  ylab="Probability Ever Paid vs. Holdout")
-          axis(side=1,at=dt.rng2,labels=format(dt.rng2,"%b %d"))
-          abline(h = 0, col = "black", lwd = 2)
-          title("Cumulative Partial Participation (Dec.)"%+%
-                  "\nControl vs. Holdout")
-          dev.off2()}]
-
 ## @knitr analysis_bs
 ## Bootstrap simulations ####
 ###Number of repetitions for all bootstrap
@@ -701,7 +615,7 @@ bootlist<-{
 
 boot.cis<-{
   lapply(bootlist,function(z){
-    print(z$tl)
+    cat(z$tl)
     with(z,list("dt"=setnames(
       #First, point estimates from raw data
       dt[ , eval(exprs), keyby = tr
@@ -716,86 +630,152 @@ boot.cis<-{
       "fn"=fn,"tr"=tr,"tl"=tl,"rf"=lv[1L],
       "nx"=nx,"sp"=sp,"yl"=yl,"dn"=dn))})}
 
-## @knitr ignore
 ##Bar Plots ####
-type.params<-{list(list(mfn="bar_plot_ever_paid_jul_",xn="epj",trans=to.pct,
-                        mtl="Percent Ever Paid (July)",xlb="Percent",xup=5,
-                        tps=c("o2","o7","o7so","o71","o75","p7","o8","o14")),
-                   list(mfn="bar_plot_ever_paid_sep_",xn="eps",trans=to.pct,
-                        mtl="Percent Ever Paid (Sep.)",xlb="Percent",xup=5,
-                        tps=c("o2","o7","o7so","o8")),
-                   list(mfn="bar_plot_ever_paid_dec_",xn="epd",trans=to.pct,
-                        mtl="Percent Ever Paid (Dec.)",xlb="Percent",xup=5,
-                        tps=c("o2","o7","o7so","o8")),
-                   list(mfn="bar_plot_paid_full_jul_",xn="pfj",trans=to.pct,
-                        mtl="Percent Paid Full (July)",xlb="Percent",xup=5,
-                        tps=c("o2","o7","o7so","o71","o75","p7","o8","o14")),
-                   list(mfn="bar_plot_paid_full_sep_",xn="pfs",trans=to.pct,
-                        mtl="Percent Paid Full (Sep.)",xlb="Percent",xup=5,
-                        tps=c("o2","o7","o7so","o8")),
-                   list(mfn="bar_plot_paid_full_dec_",xn="pfd",trans=to.pct,
-                        mtl="Percent Paid Full (Dec.)",xlb="Percent",xup=5,
-                        tps=c("o2","o7","o7so","o8")),
-                   list(mfn="bar_plot_paid_part_jul_",xn="pPj",trans=to.pct,
-                        mtl="Percent Paid Partial (July)",xlb="Percent",xup=5,
-                        tps=c("o2","o7","o7so","o71","o75","p7","o8","o14")),
-                   list(mfn="bar_plot_paid_part_sep_",xn="pPs",trans=to.pct,
-                        mtl="Percent Paid Partial (Sep.)",xlb="Percent",xup=5,
-                        tps=c("o2","o7","o7so","o8")),
-                   list(mfn="bar_plot_paid_part_dec_",xn="pPd",trans=to.pct,
-                        mtl="Percent Paid Partial (Dec.)",xlb="Percent",xup=5,
-                        tps=c("o2","o7","o7so","o8")),
-                   list(mfn="bar_plot_aver_paid_jul_",xn="tpj",trans=identity,
-                        mtl="Average Paid (July)",xlb="$",xup=10,
-                        tps=c("o2","o7","o7so","o71","o75","p7","o8","o14")),
-                   list(mfn="bar_plot_aver_paid_sep_",xn="tps",trans=identity,
-                        mtl="Average Paid (Sep.)",xlb="$",xup=10,
-                        tps=c("o2","o7","o7so","o8")),
-                   list(mfn="bar_plot_aver_paid_dec_",xn="tpd",trans=identity,
-                        mtl="Average Paid (Dec.)",xlb="$",xup=10,
-                        tps=c("o2","o7","o7so","o8")),
-                   list(mfn="bar_plot_med_pos_paid_jul_",xn="mdj",trans=identity,
-                        mtl="Median Positive Amount Paid (July)",xlb="$",
-                        tps=c("o7"),xup=10),
-                   list(mfn="bar_plot_med_pos_paid_sep_",xn="mds",trans=identity,
-                        mtl="Median Positive Amount Paid (Sep.)",xlb="$",
-                        tps=c("o7"),xup=10),
-                   list(mfn="bar_plot_avg_pos_paid_jul_",xn="ppj",trans=identity,
-                        mtl="Average Positive Amount Paid (July)",xlb="$",
-                        tps=c("o7"),xup=10),
-                   list(mfn="bar_plot_avg_pos_paid_sep_",xn="pps",trans=identity,
-                        mtl="Average Positive Amount Paid (Sep.)",xlb="$",
-                        tps=c("o7"),xup=10),
-                   list(mfn="bar_plot_pct_pmt_agr_one_sep_",xn="pa1s",trans=to.pct,
-                        mtl="Percent with >=1 Payment Agreement (Sep.)",xlb="$",
-                        tps=c("o7"),xup=5),
-                   list(mfn="bar_plot_pct_pmt_agr_all_sep_",xn="paAs",trans=to.pct,
-                        mtl="Percent with All in Payment Agreement (Sep.)",xlb="$",
-                        tps=c("o7"),xup=5),
-                   list(mfn="bar_plot_pct_pmt_agr_one_dec_",xn="pa1d",trans=to.pct,
-                        mtl="Percent with >=1 Payment Agreement (Dec.)",xlb="$",
-                        tps=c("o7"),xup=5),
-                   list(mfn="bar_plot_pct_pmt_agr_all_dec_",xn="paAd",trans=to.pct,
-                        mtl="Percent with All in Payment Agreement (Dec.)",xlb="$",
-                        tps=c("o7"),xup=5))}
+## @knitr ignore
+###Ever Paid, three cross-sections, vs. Control
+pdf2(wds["imga"] %+% "bar_plot_ever_paid_julsepdec_7_own.pdf")
+with(boot.cis$o7,
+     dt[order(treat7),
+        {par(mfrow = c(1,3), oma = c(5.6, 5.1, 4.1, 2.1))
+          Mo <- c(j = "One Month", s = "Three Months", d = "Six Months")
+          yup <- nx.mlt(1.05*to.pct(max(epj_high,eps_high,epd_high)),5)
+          for (mo in c("j", "s", "d")){
+            par(mar=c(0,0,0,0))
+            vals<-lapply(mget("ep"%+%mo%+%c("","_low","_high")),to.pct)
+            ind<-which(treat7=="Control")
+            x<-barplot(vals[[1]],names.arg=treat7,xlim=yl,
+                       ylim=c(0, yup),las=2,yaxt="n",
+                       col=get.col(treat7),main="",
+                       space=sp, cex.names = 1.3)
+            title(Mo[mo], line = -1)
+            arrows(x,vals[[2]],x,vals[[3]],code=3,
+                   angle=90,length=.07,lwd=2)
+            abline(h=c(vals[[2]][ind],vals[[3]][ind]),lty=2)
+            tile.axes(match(mo, names(Mo)), 1L, 3L, 
+                      params = list(y = list(las = 2L, cex.axis = 1.3)),
+                      use.x = FALSE)
+            box()}
+          title("Percent Ever Paid (by Owner)", outer = TRUE, cex = 1.3)
+          mtext("Percent",side=2,outer=T,line=2.5)}])
+dev.off2()
 
-sapply(type.params,
-       function(y){
-         with(y,sapply(boot.cis[tps],function(lst){
-           with(lst,
-             dt[order(get(tr)),{pdf2(wds["imga"]%+%mfn%+%fn%+%".pdf")
-               par(mar=c(5.1,5.1,4.1,1.6))
-               vals<-lapply(mget(xn%+%c("",".ci.lo",".ci.hi")),trans)
-               ind<-which(get(tr)==rf)
-               x<-barplot(vals[[1]],names.arg=get(tr),ylim=yl,
-                          xlim=c(0,nx.mlt(1.05*max(vals[[3]]),xup)),
-                          horiz=T,las=1,col=get.col(get(tr)),
-                          main=mtl%+%" by "%+%tl,space=sp,
-                          xlab=xlb,cex.names=nx,density=eval(dn))
-               arrows(vals[[2]],x,vals[[3]],x,code=3,
-                      angle=90,length=.07,lwd=2)
-               abline(v=c(vals[[2]][ind],vals[[3]][ind]),lty=2)
-               dev.off2()}])}))})
+###Average Paid, three cross-sections, vs. Control
+pdf2(wds["imga"] %+% "bar_plot_aver_paid_julsepdec_7_own.pdf")
+with(boot.cis$o7,
+     dt[order(treat7),
+        {par(mfrow = c(1,3), oma = c(5.6, 5.1, 4.1, 2.1))
+          Mo <- c(j = "One Month", s = "Three Months", d = "Six Months")
+          yup <- nx.mlt(1.05*max(tpj_high,tps_high,tpd_high),10)
+          for (mo in c("j", "s", "d")){
+            par(mar=c(0,0,0,0))
+            vals<-mget("tp" %+% mo %+% c("","_low","_high"))
+            ind<-which(treat7=="Control")
+            x<-barplot(vals[[1]],names.arg=treat7,xlim=yl,
+                       ylim=c(0, yup),las=2,yaxt="n",
+                       col=get.col(treat7),main="",
+                       space=sp, cex.names = 1.3)
+            title(Mo[mo], line = -1)
+            arrows(x,vals[[2]],x,vals[[3]],code=3,
+                   angle=90,length=.07,lwd=2)
+            abline(h=c(vals[[2]][ind],vals[[3]][ind]),lty=2)
+            tile.axes(match(mo, names(Mo)), 1L, 3L, 
+                      params = list(y = list(las = 2L, cex.axis = 1.3)),
+                      use.x = FALSE)
+            box()}
+          title("Average Paid (by Owner)", outer = TRUE)
+          mtext("$",side=2,outer=T,line=2.5)}])
+dev.off2()
+
+###Ever Paid, three cross-sections vs. Small
+pdf2(wds["imga"] %+% "bar_plot_aver_paid_julsepdec_2_own.pdf")
+with(boot.cis$o2,
+     dt[order(treat2),
+        {par(mfrow = c(1,3), oma = c(5.6, 5.1, 4.1, 2.1))
+          Mo <- c(j = "One Month", s = "Three Months", d = "Six Months")
+          xup <- nx.mlt(1.05*to.pct(max(epj_high,eps_high,epd_high)),5)
+          for (mo in c("j", "s", "d")){
+            par(mar=c(0,0,0,0))
+            vals<-lapply(mget("ep"%+%mo%+%c("","_low","_high")),to.pct)
+            ind<-which(treat2=="Small")
+            x<-barplot(vals[[1]],names.arg=treat2,xlim=c(0, 5),
+                       ylim=c(0, xup),las=2,yaxt="n",
+                       col=get.col(treat2),main="", space = .5,
+                       cex.names = 1.3, width = 1.5)
+            title(Mo[mo], line = -1)
+            arrows(x,vals[[2]],x,vals[[3]],code=3,
+                   angle=90,length=.07,lwd=2)
+            abline(h=c(vals[[2]][ind],vals[[3]][ind]),lty=2)
+            tile.axes(match(mo, names(Mo)), 1L, 3L, 
+                      params = list(y = list(las = 2L, cex.axis = 1.3)),
+                      use.x = FALSE)
+            box()}
+          title("Percent Ever Paid (by Owner)", outer = TRUE)
+          mtext("Percent",side=2,outer=T,line=2.5)}])
+dev.off2()
+
+## Cumulative Partial Participation
+## @knitr analysis_ch_ep
+### get range of dates for day-by-day averages
+dt.rng<-owners[(!holdout&unq_own),{
+  rng<-range(earliest_pmt_dec,na.rm=T)
+  seq(from=rng[1],to=rng[2],by="day")}]
+#For pretty printing, get once/week subset
+dt.rng2<-dt.rng[seq(1,length(dt.rng),length.out=7)]
+
+date.dt <- 
+  #not all treatments saw activity on each day,
+  #  so we'll have to "fill-in-the-blanks" with this
+  CJ(treat8 = c("Holdout","Control"), date = dt.rng,
+     unique=TRUE, sorted = FALSE)
+owners[(unq_own), hold_cont := treat8%in%c("Holdout","Control")]
+cum_haz<-owners[(hold_cont),
+                #total entrants by day, treatment
+                sum(ever_paid_dec)+0., #convert to numeric
+                keyby=.(treat8,earliest_pmt_dec)
+                #running total of entrants; take care to eliminate NAs
+                ][,.(ep=cumsum(V1[idx<-!is.na(earliest_pmt_dec)]),
+                     date=earliest_pmt_dec[idx]),by=treat8
+                  #merge to get the denominator
+                  ][owners[(hold_cont),.N,treat8],
+                    ep:=ep/i.N,on="treat8"
+                    ][date.dt, on = c("treat8", "date"), roll = TRUE
+                      #express relative to holdout
+                      ][,.(ep=ep[idx<-treat8=="Control"]-ep[!idx]),by=date]
+
+BB <- 5000 #number of bootstrap simulations
+cis <- dcast(rbindlist(lapply(integer(BB), function(...){
+  dt <- owners[(hold_cont)][sample(.N,rep=T)]
+  dt[,sum(ever_paid_dec)+0.,keyby=.(treat8,earliest_pmt_dec)
+     ][,.(ep=cumsum(V1[idx<-!is.na(earliest_pmt_dec)]),
+          date=earliest_pmt_dec[idx]),by=treat8
+       ][dt[,.N,treat8],ep:=ep/i.N,on="treat8"
+         ][date.dt, on = c("treat8", "date"),roll = TRUE
+           ][,.(ep=ep[idx<-treat8=="Control"]-ep[!idx]),
+             by=date]}),idcol="bootID"
+  #extract for 95% CI
+  )[,quantile(ep, c(.025, .975), na.rm=T), by = date],
+  date~c("low","high")[rowid(date)],value.var="V1")
+
+## @knitr ignore
+### plot
+pdf2(wds["imga"] %+% "cum_haz_ever_paid_control_holdout_own.pdf")
+cum_haz[
+  cis,on=c("date")
+  ][,{
+    matplot(date, do.call("cbind",mget(c("low","ep","high"))),
+            type="l",lty=c(2,1,2),col=get.col("Control"),
+            xaxt="n",lwd=3, las = 2,
+            ylab="Probability Ever Paid vs. Holdout")
+    axis(side=1,at=dt.rng2,labels=format(dt.rng2,"%b %d"))
+    abline(h = 0, col = "black", lwd = 2)
+    abline(v = ds <- unclass(D("2015-06-12", "2015-06-22")),
+           col = "black", lwd = 2, lty = 2)
+    text(ds, .07, pos = 4, labels = c("1", "2"), col = "red")
+    text(unclass(D("2015-10-21")), .07, col = "red", adj = c(0,0),
+         labels = "1: Small Envelopes\n2: Big Envelopes", pos = 4)
+    title("Cumulative Partial Participation"%+%
+            "\nControl vs. Holdout (Unique Owners Only)")}]
+dev.off2()
 
 ## @knitr analysis_marg
 some_letters<-

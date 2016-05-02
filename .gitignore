@@ -20,6 +20,7 @@
 *.log
 *.out
 *.synctex.gz
+.~lock*
 
 #never ended up using this
 round_one/Analysis and Plot.do
