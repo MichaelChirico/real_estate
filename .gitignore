@@ -13,6 +13,13 @@
 *.jpg
 *.pngw
 *.xlsx
+*.dvi
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
 
 #never ended up using this
 round_one/Analysis and Plot.do

@@ -1,0 +1,784 @@
+\documentclass[12pt,titlepage]{article}
+
+\renewcommand\baselinestretch{1.5}
+\setlength{\parskip}{0.08in}
+\setlength{\medskipamount}{0.05in}
+\textheight 8.1 in
+\textwidth 6.0 in
+\topmargin 0.25in
+\tolerance=11000
+
+\usepackage[utf8]{inputenc}
+\usepackage{csquotes}
+\usepackage[pdfencoding=auto,unicode=true]{hyperref}
+
+\begin{document}
+
+\title{Deterring Delinquency: A Field Experiment in Improving Tax Compliance Behavior}
+
+\author{Michael Chirico, Robert Inman, Charles Loeffler, \\
+        John MacDonald, and Holger Sieg\thanks{We would like to
+        thank Rob Dubow (Director of Finance), Clarena Tolson (Revenue
+        Commissioner), and Marisa Waxman (Deputy Commissioner for
+        Assessment of Properties) in the Department of Revenue of the City
+        of Philadelphia for their help and support.}  \\
+        University of Pennsylvania}
+
+\date{\today}
+
+\maketitle
+
+\begin{abstract}
+
+Taxing authorities commonly confront problems of revenue collection
+even when the tax base is known. This predicament, along with the more
+commonly considered case of tax avoidance in the presence of non-reporting,
+has led to extensive theorization of taxpayer motivation. Using a multi-arm
+RCT conducted with the City of Philadelphia, we compare the response of
+taxpayers to notifications reflecting a wide variety of theorized motivations
+for tax compliance. We find that while nudge-like reminders can accelerate
+tax payment, they do not increase payment rates above hold-out payment rates.
+Similarly, appeals to intrinsic motivations appear no better than generic
+reminders at accelerating or increasing payment. Only credible and
+consequentialist threats produce net increases in repayment rates. These
+results suggest that tax delinquency is less a function of awareness
+deficits or abstract normative commitments, as commonly theorized, and
+more a product of inefficient or poorly communicated tax enforcement information.
+
+\noindent KEYWORDS: Tax Compliance, Property Taxation, Field
+Experiment, Deterrence, Public Service Appeal, Appeal to Civic Duty.
+
+\end{abstract}
+
+\newpage
+
+\section{Introduction}
+
+The property tax plays a key role in how municipalities in the
+United States fund operations from personnel to infrastructure.
+Roughly 21 percent of all state and local governments’ revenues
+come from property taxes.  Importantly, taxes owed are computed
+by the state and local government directly from assessed market
+values, and thus, unlike most other taxes (e.g., income, sales,
+VAT, or profits), no taxpayer reporting is needed to compute tax
+obligations.  The only issue for tax compliance, therefore, is
+collecting a known tax obligation.  Since the tax obligation is
+known, we would expect very high rates of tax collection, and
+indeed, in most US jurisdictions this is the case.  The average
+rate of collection is close to 95 percent.  That said, there are
+still important US cities where the 10 year average rate of property
+tax collection is 90 percent or lower, and there is no obvious
+economic correlation to the observed rates of collection.  There
+are economically distressed cities with 10 year average collection
+rates below 90 percent (Cleveland, Detroit, Milwaukee, St. Louis)
+but equally disadvantaged cities with collection rates above 95
+percent (Birmingham, Buffalo, Memphis).   There are economically
+successful cities with collection rates near 100 percent (Atlanta,
+Boston, Denver, Minneapolis,  San Francisco) but then equally
+successful cities with 10 year collection rates at or below 90
+percent (New York City, Philadelphia, and Pittsburgh). For
+reasons of economic efficiency, tax fairness, and fiscal
+sustainability it is important to understand why some cities are
+successful in collecting their property taxes, and others not.  
+
+If the explanation for variation in tax collections is not likely
+to be found in the overall performance of the city’s economy,
+perhaps the answer lies in how tax collections are administered
+and how taxpayers react to such efforts. A range of theories
+have been suggested to explain taxpayer compliance behaviors. 
+First, perhaps taxpayers are honest but simply do not understand
+what their true obligations are. Tax forms can be complicated. 
+A recent study by Kosonen and Ropponen (2015) of Finnish small
+business owners who faced a well-publicized change in their VAT
+tax rate from 9 percent to 23 percent, found that explicitly
+mentioning the rate change as part of general questionnaire
+regarding tax administration for small businesses significantly
+increased tax compliance to the higher rate.  Second,
+true obligations are known to the taxpayer, but taxpayers may
+choose to cheat.  They can do so in two ways.  When taxes are
+self-assessed (e.g., income tax, VAT, profits), taxpayers can
+under report incomes or sales and over report costs and purchases. 
+Or they can simply not pay by working outside the formal economy. 
+Studying compliance behavior of Danish and Chilean taxpayers, 
+Kleven and his colleagues (2011) for Denmark and Pomeranz (2015)
+for Chile found that taxpayers’ reported incomes and value-added
+sales increased as the ability of the tax administration to
+independently assess those income and sales improved by outside
+reporting.   Reported taxable incomes by Minnesota residents were
+also found to increase when the probability of an official tax audit
+was increased (Blumenthal, et al., 2001).  
+
+When tax obligations are known to both the taxpayer and the tax
+authorities – as is the case for government assessed property
+taxation – citizens may still choose to cheat if the chances they
+will be detected, prosecuted, and fined are low.  From the economic
+model of tax compliance as first specified by Allingham and Sandmo (1972),
+taxpayers make their decision to comply by balancing the economic
+savings from non-payment against the uncertain costs they bear from
+being caught and fined.  In most studied instances of tax compliance,
+however, the probability of being caught and the associated fines are
+too low to rationally account for the observed high rates of tax
+compliance.    Nor can the answer be found in any plausible estimate
+of taxpayer risk aversion (Alm, McClelland, and Schulze 1992). 
+Efforts to understand taxpayer compliance needs to consider explanations
+beyond the narrow framework of individual utility maximization under uncertainty.  
+
+There are two extensions of the usual framework to consider. 
+The first re-specifies the taxpayer’s utility from income to allow for
+nonconvex reactions to equal gains and losses.  A recent study of 
+Swedish taxpayers by Engstr{\H o}m et. al. (2015) finds loss aversion 
+as defined by prospect theory can account for taxpayer compliance in 
+a way that classical utility maximizing behavior with risk aversion 
+cannot.  Taxpayers facing a loss from a \$1000 tax payment were
+significantly more likely to overstate allowed deductions than
+taxpayers facing a \$1000 refund for the same deductions.  
+The second approach retains the classic specification for the 
+taxpayer welfare from income, but then adds one or more additional 
+motives for payment, called “tax morale” by Luttmer and Singhal (2014).  
+They include reciprocity or payment for public goods received; 
+norm behavior or peer effects; and civic duty.   Reciprocity argues 
+that citizens understand that to not pay their taxes will mean less 
+public services.   In this case, government services along with 
+after-tax income determine taxpayer welfare.  One would expect this 
+motive to be strongest when tax payments are directly linked by the 
+taxpayer to services received, for example, local street repairs.   
+Peer effects may arise when citizens view non-payment as a violation 
+of a community norm of cooperative behavior and an individual’s 
+non-payment is observed by others in the community.  Here, how many 
+other taxpayers are paying their taxes matters to whether the citizen 
+also pays; see Posner (2000).   One might expect this motive to be 
+strongest when a citizen’s non-payments are publicized and the citizen 
+is actively involved in, or exposed to,  a community group that benefits 
+from those payments, for example, a neighborhood school association or 
+community oriented church group.  Finally, citizens may pay their full 
+tax obligation because it is the “right thing to do” as a citizen.  
+Here the act of payment has value on its own; there are no direct 
+benefits and no one else need know.  The citizen has accepted the 
+democratic contract and bears a presumptive obligation to fulfill 
+that contract; see Rawls (1971, 350–355).  
+
+Efforts to empirically identify the possible influence of these non-economic 
+motives have been mixed.   Blumenthal et. al. (2001) find no evidence that 
+these motives significantly influence truthful reporting of taxable income 
+for Minnesota taxpayers, but Hallsworth, et. al. (2014) do find a strong 
+beneficial impact on compliance from peer motives.  In a study closest to 
+our work here, Castro and Scartascini (2015) examine motives for property 
+tax payments in a municipality in Argentina.  They find that the economic 
+motives from fines and enforcement are most salient, but that the non-economic 
+motives do matter for selected subsamples of the population, in particular, 
+lower income residents.   Finally, in our earlier, pilot study of property tax 
+compliance in Philadelphia we did find evidence that motives driven by 
+reciprocity, peer effects, and civic duty can positively impact payment 
+probabilities. But our sample size was small and our framing of the 
+alternative motives was not as clear as we would have liked; see 
+Chirico, et. al. (2015).  We view our work here as chance to pursue all 
+these motives – deterrence, reciprocity, peer influence, and civic duty – 
+with a larger sample and with a sharper experimental design.     
+
+In conjunction with the City of Philadelphia, we conducted a multi-arm 
+notification field experiment testing each of these alternatives. The 
+results of this experiment demonstrate that problem of tax delinquency 
+can be improved by sending messages with more specific information on
+a) the consequences of non-payment, b) the implied likelihood of 
+consequences of continued non-payment, c) the certainty of eventual 
+payment. Furthermore, we show that there is minimal evidence to support 
+using social information, moral suasion, or other strategies. Finally, 
+we show that notification/reminder strategies are non-social welfare 
+improving as they merely accelerate payment. 
+
+% -- Charles --
+%Specific Findings
+%* Among first time property tax delinquents, we estimate that credible 
+%  deterrent letters increase tax compliance by high-single digits. 
+%*That this effect is social welfare improving rather than simply shifting.
+%*And that affected population is not liquidity constrained.
+%*Social norming, moral suasion, and feature engineering have no or minimal effects 
+
+We interpret these results as being consistent with recent research 
+on the importance of crafting salient and enforceable threats for 
+deterrence to be efficacious (Hawken and Kleiman 2009). And as indicating 
+that under circumstances under which continued delinquency is preferable 
+from the delinquent’s perspective and consequences of delinquency are 
+perceived to be minimal or absent, non-coercive nudges or appeals are 
+unlikely to shift behavior. 
+
+\section{Research Setting -- Property Tax in Philadelphia}
+
+The research setting for this experiment is the City of
+Philadelphia. In Philadelphia, where, in recent years, just under
+18\% of property owners were delinquent with the amount owed equal
+to 292.3 million in unpaid taxes and another 223.2 million in interest,
+fees and accumulated chargeS (PEW Charitable Trusts 2013).
+\footnote{
+	In Detroit, nearly half of all property owners were delinquent
+    on their property tax bills in 2011 (MacDonald and Wilkinson 2013).
+}
+Tax payments are due on January 1st of each year. If the full balance on a
+property tax account is not paid in full by March 31st, fees and interest
+begin accruing. The City’s Department of Revenue, along with outside
+collection agencies acting as co-counsel for the City, begin contacting
+unpaid accounts on April 1st. Normally, 2/3 of properties are sent to
+co-counsel and 1/3 are kept in house. If the outside firms are able to
+collect the outstanding tax from property owners by December 31st of the
+tax year, under their contract with the city, they are entitled to 6\% of
+the collected revenue. After this point, remaining delinquent properties
+are reassigned to different firms for collection.
+
+\section{Philadelphia Property Tax Notification Experiment}
+
+% -- Charles --
+%Various theories have been offered for why taxpayers would not pay these
+%well-reported tax debts. These include discontent with provided public
+%goods, low tax morale, missing social norms, or perceived unfairness of 
+%taxation (Erard and Feinstein 1994; Kirchler 2007; Torgler 2007). To see 
+%whether these perceived deficiencies in non-financial factors among 
+%non-taxpayers do in fact explain this form of non-hidden tax delinquency, 
+%most recent taxpayer field experiments focus on motivating improved tax 
+%compliance via appeals to these instrinsic motivations while contrasting 
+%their effects with those produced by more conventional extrinsic 
+%motivations (Blumenthal et al., 2001). In the literature, this distinction 
+%is also referred to as deterrence versus non-deterrence messaging 
+%(Hallsworth et al. 2014).
+%
+%Social norming or moral persuasion have been suggested as ways of achieving 
+%this goal since both involve messaging strategies targeted at possible 
+%motivational reasons for tax delinquency (Posner 2000; Traxler 2010; 
+%Wenzel 2005). Also, additional notifications and reminders have been proposed 
+%as well as manipulation of other non-economic communication factors, 
+%including shape, color, and other non-prose cues with the expectation that 
+%recipients will be more likely to see and respond to communications in 
+%these formats (Thaler and Sunstein 2003). Finally, the use of enhanced 
+%sanctions, threats, and even public shaming have been considered. However, 
+%with exception of Chirico et al. (2015) and Del Carpio (2014), little work 
+%has examined which motivations are at play in the case of non-hidden tax 
+%delinquency and consequently what the most effective intervention strategies 
+%would be to reduce it.
+
+Of the 579,828 properties in the city in 2015, roughly 100,000 were
+% -- Charles --
+%citation for 100k number:
+%http://www.phillymag.com/citified/2015/07/01/philadelphia-tax-delinquency-lien-sale/
+delinquent on their real estate tax bills in the Spring of 2015 when
+the tax experiment began. We included in our sample the universe 27,264
+of properties in Philadelphia still owing at least \$10 in Real Estate
+Taxes to the City as of May 15, 2015
+% -- Michael --
+%Couldn't find any specific date for the validity of the balances;
+%I'm going off an e-mail containing data we received May 15
+%(title “File is Ready!!!”)
+\footnote{
+	Given that taxes become start accruing penalties as of 
+	March 31st each year, this means these properties were 
+	nearing three months late by the onset of the 
+	experiment in mid-June.
+}
+and excluded chronic delinquents who additionally owed taxes for 
+prior years (see Chirico et al. 2015 for more on this population). 
+% -- Charles --
+% Add debt statistics for properties here.
+In coordination with officials at the Department of Revenue, we designed 
+seven letter templates probing a variety of tax compliance motivations. 
+%TO DO: Number appendices, if appropriate
+The templates are included in the Appendix; here we delineate the important 
+distinguishing features of each. First, we designed a Control template which 
+served simply as a minimalist reminder to taxpayers about their outstanding 
+balance, as well as providing contact information and a notice about 
+available help for English non-natives.
+
+Two more templates were designed with the aim of deterrence in mind, under 
+the belief that taxpayers can be convinced to pay by spelling out clearly 
+and in tangible terms the potential consequences of nonpayment. The first 
+of the deterrence letters, which we call the Sheriff treatment, emphasizes 
+the City's most stringent debt recovery mechanism, the Sheriff's Sale, 
+through which the City can auction delinquent properties to the public. 
+This treatment contains the following text: 
+
+\blockquote{
+	Failure to pay your Real Estate Taxes may result in the sale of 
+	your property by the City in order to collect back taxes. In the 
+	past year, we have sold $N$ properties in your neighborhood at 
+	Sheriff's Sale.	Included in these $N$ are the following properties 
+	near you: <three properties and their sale dates> 
+
+	Pay your taxes now to prevent the sale of your property. 
+	Our records indicate that you have a balance due of $balance$.”
+}
+
+$N$ is the number of properties sold in neighborhood between June 2014
+and May 2015.
+\footnote{\label{fn:neighborhoods}
+	Data retrieved from
+	\url{
+	http://www.officeofphiladelphiasheriff.com/real-estate/sheriffs-sale-webapp
+	}
+	and then geocoded by the authors; in total, there were 876 properties 
+	sold by the City during the year through May 2015. $neighborhood$ is defined 
+	in high-density neighorboods, where at least 8 Sheriff's sales took place,
+	as the Azavea neighborhood in which the property is located. The Azavea 
+	neighborhoods are a commonly-used partition of Philadelphia into 158 
+	colloquially-known (i.e., residents of a neighborhood generally refer to 
+	their own area similarly) regions, as specifically created and maintained 
+	by the GIS firm Azavea, Inc; see 
+	\url{
+	https://www.opendataphilly.org/dataset/philadelphia-neighborhoods
+	}
+	. Roughly half of properties were in high-density neighborhoods; for the rest, where 
+	there were few local Sheriff's sales to offer as warnings to recipients, 
+	$neighborhood$ is defined at a slightly higher level of aggregation, namely, 
+	the “Azavea quadrant,” as created by the authors to combine Azavea 
+	neighborhoods into a total of six larger meta-neighborhoods, namely, 
+	Northeast, North, Northwest, West, South, and Center City Philadelphia. 
+	See results for the exact composition of these “quadrants.”
+}
+To generate the listed properties, for each neighborhood
+in our sample, we selected three of the properties sold therein in the
+previous year at random, meaning residents in the same neighborhood
+saw the same set of three properties.
+\footnote{
+	Initial plans to mention the three nearest sales to each property, 
+	to choose three sales at random for each property (not neighborhood), 
+	and other variations of these approaches were met with concerns 
+	about privacy and abandoned.
+}
+
+The second deterrence treatment, which we call the Lien treatment, emphasizes 
+a more mild version of debt recovery punishment at the City's disposal, 
+namely, that the City can exact a lien on any delinquent property which 
+entitles the City to deduce the amount of the lien from any future arms-length 
+market transaction involving the property; the text included is as follows: 
+
+\blockquote{
+	Failure to pay your Real Estate Taxes will result in a tax lien on your 
+	property in an amount equal to your back taxes plus all penalties and 
+	interest. When your property is sold, those delinquent tax payments will 
+	be deducted from the sale price. By paying your taxes now, you can avoid 
+	these penalties and interest. Properties near you in $neighborhood$ that 
+	have had liens placed on them include: 
+	<three properties and their sale dates> 
+
+	Pay your taxes now to avoid a lien being placed on your property. 
+	Our records indicate that you have a balance due of $balance$.
+}
+
+
+
+The variables here are defined as they are in the Sheriff treatment; 
+in particular, the triplet of properties assigned to each neighborhood is 
+identical across these two treatments. 
+
+The next pair of templates target appeals to taxpayers' sense of citizenship. 
+The first of these, which we'll refer to herein as Peer, implicitly posits 
+that one's predilections for tax compliance arise from a desire for conformity, 
+and as such aim to highlight that the late payee is behaving abnormally with 
+respect to their peers. The specific text reads:
+
+\blockquote{
+	
+	You have not paid your Real Estate Taxes. Almost all of your neighbors 
+	pay their fair share—9 out of 10 Philadelphians do so. By failing to pay, 
+	you are abusing the good will of your Philadelphia neighbors.
+}
+ 
+We test an alternative manifestation of the idea that citizens pay their 
+taxes out of a sense of citizenship by formulating in our fourth treatment 
+letter, dubbed Duty, an appeal to the delinquent’s sense of duty, in whichever 
+abstract sense the the reader of the letter chooses to ascribe to the notion. 
+Specifically, we exhorted tax nonpayers in this treatment with the following:
+
+\blockquote{
+	For democracy to work, all citizens need to pay their fair share of taxes 
+	for community services. You have not yet paid your taxes. By failing to 
+	do so, you are not meeting your duty as a citizen of Philadelphia.
+}
+
+The final pair of letter templates were designed to elicit payment from 
+the out-of-hock by highlighting the \textit{quid pro quo} nature of
+public good provision – the City provides a bundle of goods and services
+in exchange for tax payments by residents, especially real estate taxes.
+The first such treatment, which we simply call Moral, targets an appeal 
+to public good provision writ large, and reads:
+
+\blockquote{
+	Your taxes pay for important services that make a city great. Your 
+	tax dollars are essential for ensuring all Philadelphia children 
+	receive a quality education and all Philadelphians feel safe in 
+	their neighborhoods. Please pay your taxes as soon as you can 
+	to help us pay for these important services. 
+}
+
+The final letter, which we call Amenities, took instead a more 
+localized approach to this appeal, taking the further step of mentioning 
+specific properties in the vicinity of the letter recipient's property 
+which are in part financed by property taxes. The wording for this treatment is:
+
+\blockquote{
+	We want to remind you that your taxes pay for essential public services 
+	in $neighborhood$, such as <two local amenities>, your local police officer, 
+	snow removal, street repairs, and trash collection. Please pay your taxes 
+	to help the city provide these services in your neighborhood.
+}
+
+The amenities were chosen at random for each property from a list of 
+City-supplied parks, recreation centers, libraries, etc.
+\footnote{
+	We again use a bifurcation of the definition of $neighborhood$ based on
+	the density of amenities in the Azavea neighborhood. Here, we only 
+	required that a neighborhood had four amenities supplied to us by the
+	City in order to be classified as high-density. Slightly less than 
+	half (48\%) of properties were in high-density neighborhoods; the 
+	remaining 52\% were assigned amenities at random from their quadrant, 
+	as discussed above in footnote ~\ref{fn:neighborhoods}. 
+}
+
+In addition to varying the content of the letters delivered to our sample,
+we undertook two additional interventions. The first intervention 
+investigated the effectiveness of another commonly-touted “nudge” to payment,
+namely, manipulation of the envelope itself. The hypothesis behind 
+intentionally tailoring the design of the envelope is that a non-negligible 
+portion of recipients simply discard the letter prior to opening it 
+(and in doing so can never be exposed to the notification treatments); 
+by capturing the attention of these casual disposers, the well-designed 
+envelope exposes them to the letter contents, thereafter translating into 
+higher compliance rates. We tested this hypothesis by delivering half of 
+the letters in a standard-sized windowed envelope
+(roughly $4\frac18$'' x $9\frac12$''), a treatment we refer to as Small. 
+The other half of our sample received full-sheet-sized envelopes (9'' x 12''), 
+the Big treatment. 
+\footnote{
+	The letters in small envelopes were stuffed and delivered by the 
+	Department of Revenue's in-house mail room. As they lack the 
+	infrastructure to stuff (at scale) large-format envelopes, the authors 
+	elected to contract the services of a printing shop, Lawler Direct, Inc., 
+	to handle stuffing and delivery of this treatment group. Some 
+	coordination issues led to the letters handled by the City being 
+	delivered roughly two weeks earlier than the Lawler sample. 
+}
+
+For the final intervention, we randomly removed 3,000 properties from 
+the possibility of receiving any letter altogether, placing these 
+properties in a holdout group. These properties were left entirely 
+% -- Michael --
+% Need to be careful about wording here, given GRB, etc.
+% -- Charles --
+% ?
+uncontacted during our treatment period. These properties serve to 
+elucidate, through comparison to our control condition, our 
+understanding of whether or not properties can be induced to act simply 
+through the receipt of any sort of correspondence from the City. 
+For more details and results of these additional experiments, see Appendix A.
+
+\section{Randomization Procedure}
+
+% -- Charles --
+%Experimental Setup
+%Blocked randomization
+%Timing of experiment, roll-out
+%Description
+%Randomization Tests
+%# properties & owners by letter
+%Log balance by treatment (box plots)
+
+Randomization took place in two stages. In the first stage, 3,000 
+properties of the 27,264 eligible properties were randomly assigned 
+to the Holdout group. Of the remaining 24,264 properties, 89\% were 
+owned by unique owners owning only one property in Philadelphia and 
+the remaining 11\% were owned by multiple property owners. To avoid 
+randomizing separate properties of non-unique property owners into 
+multiple treatments, we identified multiple property owners by 
+matching the legal name associated with each property. Average 
+owner-level debt was \$1810, well above the median of \$907 due to 
+upper-tail outliers. In the second randomization stage, owners were 
+assigned treatments in blocks – that is, any owner holding multiple 
+properties with unpaid real estate tax bills received the same letter 
+(and envelope) for each of those properties.
+\footnote{
+	Lacking an objective identifier of an individual, such as social 
+	security number, etc., we elected to group properties based on 
+	the owner's legal name. This undoubtedly led to distinct 
+	individuals with identical names being grouped together, but 
+	inspection by the authors found this to be rare; we consider this 
+	as random noise and ignore it henceforth.
+}
+The blocks were defined according to owner-level total debt, given 
+the high correlation between propensity to pay and total debt owed, 
+to help control variability in the sample and assure equality of 
+samples along this very important dimension.
+\footnote{
+	More specifically, all owners were ordered by total debt and assigned 
+	sequentially in groups of 14 to randomization blocks. Within each 
+	randomization block, a permutation of the 7x2 = 14 treatments described 
+	above was assigned to the properties. The final block, having only 13 
+	leftover properties, was assigned a random choice of 13 treatments.
+}
+In order to account for blocking in subsequent analysis, standard errors 
+were clustered at the block level (as randomized) for all regression equations. 
+
+Each of the seven letter templates described above was assigned at random 
+to envelopes of each size; in other words, each property was equally 
+likely to receive any one of fourteen possible envelope+letter combinations. 
+Balance tests for pre-randomization characteristics, 
+%TO DO: Should replace manual numbering with programmatic numbering via \ref
+% -- Charles --
+%Mike—Could you produce a balance table to match what I have as Table 3 of 
+%the first paper? Treatments are columns and property characteristics 
+%are rows? We’ll need a second one for the holdout comparison.
+reported in Table 1 and Figure 1, confirm that randomization was successful 
+with no discernable differences between any of our treatment groups.
+\footnote{For balance tests for the stage 1 holdout sample, see Appendix.}
+While large and multiple property owners introduced small variations 
+between groups, the randomization procedures worked as designed with 
+blocking serving to limit the influence of these small number of property 
+owners to the first two blocks. Excluding these produces perfect balance 
+on all variables for 99.9\% of all properties and remaining blocks.
+
+\section{Results}
+% -- Charles --
+%Mike—Can you clean up the references to the tables per Holger’s request.
+%Basically, numbering needs to align. Currently, I’ve just pasted things 
+%in based on numbering before we figured out order.
+
+%TO DO: Programmatic numbering
+Table 1 and Figure 1 report the main experimental intervention results 
+at one-month, three-month, and six-month intervals. At the one month mark, 
+several weeks after receiving the experimental or control notifications, 
+35\% of delinquents in the control condition have made at least some payments 
+towards their outstanding bill with 24\% of having paid the entire outstanding 
+bill. All intrinsic motivation notifications (i.e., amenity, civic responsibility, 
+moral, and peer) are within 1 percent of the control repayment rates and 
+statistically insignificant. By comparison, notifications emphasizing 
+extrinsic/consequentialist factors both show short-term differences of 
+4.9\% (lien) and 3.4\% (sheriff sale). Both are statistically significant. 
+Results from logit models using paid-in-full (including fees) instead of any 
+%TO DO: Actual number
+payment reported Table 2, reveal that the majority (\#\#\% of) of the estimated 
+short-term effect of payment comes from recipients paying off their entire balance.
+
+%TO DO: Programmatic numbering
+Three-month results, reported in columns Column 2 of Table 1, show a very 
+similar picture. As can be seen visually in Figure 1, baseline (control) 
+repayment rates have risen to 56\% (any payment) and 42\% (full payment). 
+However, instrinsic motivation treatments continue to have no discernable 
+effect on repayment rates while extrinsic notifications have produced a 
+4.8\% (lien) and 4.5\% (sheriff sale) response compared to control. This 
+results retain statistical significance and full repayment continue to 
+contribute to the majority of the observed effects.
+
+%TO DO: Programmatic numbering
+Six-month results, reported in Column 3 of Table 1, indicate that final 
+participation rates for first-time delinquents are 76\% within six months. 
+Nudge-like treatment notifications remain insignificant and barely 
+distinguishable from the control response. Consequentialist notifications 
+are 2.4\% (lien) and 1.9\% (sheriff) higher than control. The lien treatment 
+therefore is the only treatment to retain significance at conventional 
+levels through the end of the follow-up period. Comparing full payment 
+outcomes instead of all payments, reveals that the lien consequentialist 
+treatment is 4\% higher than the control mean of 63\% with no other 
+treatments having discernable or significant differences.
+
+To provide an estimate of the revenue increases resulting from experimental 
+treatments, we fit OLS models for amount paid regressed on treatment status 
+and randomization blocks. The results of these regressions are reported in 
+%TO DO: Programmatic numbering
+Table 3. Nonparametric tests with bootstrapped standard errors within 
+%TO DO: Programmatic numbering
+randomization blocks are reported visually in Figure 5. These results indicate 
+that the lien treatment was effective at boasting revenue collected within the 
+%TO DO: Replace with true number
+first month of the experiment. Lien recipients paid \$\#\#.\#\#, on average, 
+during this period. However, no statistically significant different in 
+repayment occurred over the longer period of 3 or 6 months.
+
+%possible insert sensitivity/heterogeneity results:
+%	Amount owed
+%	Owner occupied versus not
+\subsection{Intervention \#2: Mailer versus No-Mailer}
+
+%TO DO: Programmatic numbering
+Table 4 reports the comparison of sending a generic reminder letter 
+(control) versus sending no notification letter whatsoever. This 
+comparison is restricted to unique property owners owning just one 
+property within the City of Philadelphia. As can be seen visually in 
+%TO DO: Programmatic numbering
+Figure 4, a significant gap (4\%) in probability of any payment quickly 
+emerged after the letters were mailed. Until late August, corresponding
+to the time when still delinquent properties in the experiment were 
+released to tax collection agents, this gap of 4\% persisted. 
+After this time, hold-out property owners began paying at higher rates 
+leading to a convergence of trends—suggesting that while generic 
+notification does accelerate payment, that some combination of tardy 
+participants and other enforcement actions are likely to produce a 
+similar result eventually. 
+
+\subsection{Intervention \#3: Standard Envelope versus Larger Envelope}
+
+%TO DO: Programmatic numbering
+Table 5 and Figure 5 report the results of a third tested
+intervention—modified the size of the notification envelope.
+Previous research has hypothesized that increasing the visibility or visual 
+salience of a notification could increase uptake or response.
+However, the results of this particular version of increased visual salience 
+suggest that tax authorities sending tax bills are likely to receive little 
+benefit from the increased cost of mailing visually more eye-catching mailers. 
+At one, three and six months payment probabilities were similar and statistically indistinguishable. 
+
+\section{Fiscal Analysis}
+% -- Charles --
+%Mike—This is another thing for you to insert based on our emails post-briefing. 
+
+\section{Conclusions}
+
+In this paper, we report the results of a multi-arm field experiment 
+designed to test which lost-cost notification strategies increase tax 
+payment rates. In the context of this field experiment in municipal 
+tax collection, our results suggest that simple notification strategies, 
+much discussed in recent studies, can accelerate participation but are 
+ineffective at reducing tax delinquency. This finding covers a 
+wide-swath of theorized “nudges” including social norming, moral suasion, 
+and tax morale. In addition, simply notifying delinquents more often was 
+found to be an accelerator of payment while leaving long-term levels 
+unchanged. Finally, no effect of increased envelope size was observed. 
+Apparently, taxpayers open tax bills even if they don’t pay the enclosed 
+bills. These non-findings are contrasted with the single persistent effect 
+that delinquency levels can be lowered quickly and permanently using 
+credible threats regarding the foreseeable consequences of nonpayment. 
+
+For revenue collecting agencies, particularly those with revenue collection 
+problems, acceleration of payment can be understood to be a useful result 
+in of itself. Bills must be paid and debts must be serviced on regular 
+schedules. Relatedly, the longer that tax bills remain unpaid, the more 
+expensive it becomes to collect. Whether handled internally or externally 
+through debt collection firms, downstream collection practices leave 
+diminished revenues. For both these reasons, early collection, 
+\textit{ceteris paribus}, is better collection. This is not to say, 
+however, that early collection is social welfare improving. If tardy 
+but eventually compliant tax delinquents forestall early payment to 
+cover other expenses or invest in other assets which they eventually 
+use to repay their tax bill with interest, then the welfare of the tax 
+agency may not be synonymous with the welfare of society. This is 
+especially true if tax payments are made weeks rather than months late 
+such that monthly payments can still be made based on expected monthly 
+receipts. However, in the case of persistently delayed but consistently 
+paid payments, it is less obvious that accelerating eventual or inevitable 
+payment constitutes something of value. 
+
+For this reason, the fact that credible threat notifications increase 
+repayment rates and convert defiers into compliers, in the language of 
+Rubin causal framework, is particularly notable. It suggests that 
+increasing repayment at low-cost is possible and that more research is 
+needed on the reasons for different behavioral responses to 
+consequentialist and non-consequentialist messages. Perhaps, the difference 
+between treatments that merely accelerate payment and those that increase 
+payment lie in alternative theories of why tax delinquents exist in the 
+first place. Non-consequentialist theories of non-payment implicitly rest 
+on the assumption that non-compliers are non-liquidity constrained and 
+merely unaware of the collective consequences of non-payment. Under this 
+analysis, tax delinquency is due to discouragement, indifference, 
+lack of appreciation, or unawareness. Delinquents merely need to be 
+encouraged or reminded to participate. Our results, however, suggest 
+that this is an incomplete explanation for tax delinquency. 
+
+Tax delinquents are not simply discouraged. Providing them with 
+% -- Charles --
+%Could add sentence here about the envelope experiment.
+information about peer behavior, amenities, moral arguments, or civic 
+duties does nothing to increase the overall repayment rates. This may 
+reflect the fact that delinquents are indifferent to or already aware 
+of their peers’ positive and negative behavior. Likewise, the provision 
+of information on public goods assumes that recipients have not 
+incorporated consideration of public goods funded through tax dollars 
+into their payment behavior. If services are considered paid for by 
+other taxes or the quality of the public services are considered to be 
+sub-par, then the rationale for funding these initiatives may not be 
+particularly compelling.  Similarly, social contract theories of citizen 
+and state shared responsibilities, offer an idealized vision of civic 
+responsibilities that ignores the reality that both sides are chronically 
+dissatisfied with the performance of other parties.
+
+At the same time, our results suggest that if tax delinquents are not 
+simply discouraged, they are also seemingly unaware of the consequences 
+of nonpayment. Our provision of simple information about the collection 
+process had a clear impact on the likelihood of repayment. This result 
+echoes other recent findings that clear, consistent, and timely provision 
+of information on consequences, particularly in the context of compliance 
+monitoring, can lead to notable improvements in behavioral compliance 
+(Hawken and Kleiman 2009). Perhaps, then, the puzzle of high non-payment 
+rates despite perfect public information on noncompliance can be understood 
+as a case of under-enforcement. This possibility is reinforced by the fact 
+that conditional on any payment, converted defiers became near perfect 
+compliers, making full payments in almost all cases. This suggests that at 
+least for the margin affected, liquidity-constraints are not the primary 
+reason for initial non-payment.
+
+%TO DO: Automate this with bibTeX
+\section{References}
+Allingham, Micahel G., and Agnar Sandmo. 1972. “Income Tax Evasion: A Theoretical Analysis.” Journal of Public Economics 1: 323–38.
+
+Alm, James, Gary H. McClelland, and William D. Schulze. 1992. “Why Do People Pay Taxes?” Journal of Public Economics 48 (1): 21–38. doi:10.1016/0047-2727(92)90040-M.
+
+Blumenthal, Marsha, Charles Christian, Joel Slemrod, and Matthew G. Smith. 2001. “Do Normative Appeals Affect Tax Compliance? Evidence from a Controlled Experiment in Minnesota.” National Tax Journal 54 (1): 125–38.
+
+Castro, Lucio, and Carlos Scartascini. 2015. “Tax Compliance and Enforcement in the Pampas Evidence from a Field Experiment.” Journal of Economic Behavior \& Organization 116 (August): 65–82. doi:10.1016/j.jebo.2015.04.002.
+
+Chirico, Michael, Robert P. Inman, Charles Loeffler, John MacDonald, and Holger Sieg. 2015. “An Experimental Evaluation of Notification Strategies to Increase Property Tax Compliance: Free-Riding in the City of Brotherly Love.” In Tax Policy and the Economy, Volume 30. University of Chicago Press. \url{http://www.nber.org/chapters/c13690.pdf}.
+
+Del Carpio, Lucia. 2014. “Are the Neighbors Cheating? Evidence from a Social Norm Experiment on Property Taxes in Peru.” Work. Pap., INSEAD.
+
+Engstr{\H o}m, Per, Katarina Nordblom, Henry Ohlsson, and Annika Persson. 2015. “Tax Compliance and Loss Aversion.” American Economic Journal: Economic Policy 7 (4): 132–64.
+
+Erard, Brian, and Jonathan S. Feinstein. 1994. “Honesty and Evasion in the Tax Compliance Game.” The RAND Journal of Economics 25 (1): 1–19. doi:10.2307/2555850.
+
+Hallsworth, Michael, John List, Robert Metcalfe, and Ivo Vlaev. 2014. “The Behavioralist as Tax Collector: Using Natural Field Experiments to Enhance Tax Compliance.” National Bureau of Economic Research.
+
+Hawken, Angela, and Mark Kleiman. 2009. “Managing Drug Involved Probationers with Swift and Certain Sanctions: Evaluating Hawaii’s HOPE.” Washington, D.C.: National Institute of Justice. \url{https://www.ncjrs.gov/App/Publications/abstract.aspx?ID=251050}.
+
+Kirchler, Erich. 2007. The Economic Psychology of Tax Behaviour. Cambridge University Press.
+
+Kleven, Henrik Jacobsen, Martin B. Knudsen, Claus Thustrup Kreiner, Søren Pedersen, and Emmanuel Saez. 2011. “Unwilling or Unable to Cheat? Evidence From a Tax Audit Experiment in Denmark.” Econometrica 79 (3): 651–92. doi:10.3982/ECTA9113.
+
+Kosonen, Tuomas, and Olli Ropponen. 2015. “The Role of Information in Tax Compliance: Evidence from a Natural Field Experiment.” Economics Letters 129 (April): 18–21. doi:10.1016/j.econlet.2015.01.026.
+
+Luttmer, Erzo F. P., and Monica Singhal. 2014. “Tax Morale.” Journal of Economic Perspectives 28 (4): 149–68. doi:10.1257/jep.28.4.149.
+
+MacDonald, Christine, and Mike Wilkinson. 2013. “Half of Detroit Property Owners Don’t Pay Taxes.” Detroit News, The (MI), February 21, 2-dot edition.
+
+OECD. 2011. “Tax Administration in OECD and Selected Non-OECD Countries: Comparative Information Series (2010).” Organization for Economic Cooperation and Development, Center for Tax Policy and Administration.
+
+PEW Charitable Trusts. 2013. “Delinquent Property Tax in Philadelphia: Stark Challenges and Realistic Goals.” Philadelphia, PA: The Pew Charitable Trusts. \url{http://www.pewtrusts.org/~/media/legacy/uploadedfiles/wwwpewtrustsorg/reports/philadelphia_research_initiative/philadelphiapropertytaxdelinquencyreportpdf.pdf}.
+
+Pomeranz, Dina. 2015. “No Taxation without Information: Deterrence and Self-Enforcement in the Value Added Tax.” American Economic Review 105 (8): 2539–69. doi:10.1257/aer.20130393.
+
+Posner, Eric A. 2000. “Law and Social Norms: The Case of Tax Compliance.” Virginia Law Review 86 (8): 1781–1819. doi:10.2307/1073829.
+
+Rawls, John. 1971. A Theory of Justice. Cambridge, Mass.: Belknap Press of Harvard University Press.
+
+Slemrod, Joel. 2007. “Cheating Ourselves: The Economics of Tax Evasion.” The Journal of Economic Perspectives 21 (1): 25–48.
+
+Thaler, Richard H., and Cass R. Sunstein. 2003. “Libertarian Paternalism.” The American Economic Review 93 (2): 175–79.
+
+Torgler, Benno. 2007. Tax Compliance and Tax Morale: A Theoretical and Empirical Analysis. Edward Elgar Publishing.
+
+Traxler, Christian. 2010. “Social Norms and Conditional Cooperative Taxpayers.” European Journal of Political Economy 26 (1): 89–103. doi:10.1016/j.ejpoleco.2009.11.001.
+
+Wenzel, Michael. 2005. “Misperceptions of Social Norms about Tax Compliance: From Theory to Intervention.” Journal of Economic Psychology 26 (6): 862–83. doi:10.1016/j.joep.2005.02.002.
+
+\section{Tables and Figures}
+
+%Table 1:  Paid Full @ 1,3,6 months, main treatments vs. Control
+
+%Table 2: Total Paid @ 1,3,6 months, main treatments vs. Control
+
+%Figure 1: Box Plots of Initial Debt
+
+%Figure 2: Bar Plots of EP @ 1,3,6 months, main treatments vs. Control
+
+%Figure 3: Bar Plots of AP @ 1,3,6 months, main treatments vs. Control
+
+%Figure 4: Time Series, Control vs. Holdout
+
+%Figure 5: Bar Plots of EP @ 1,3,6 months, Big vs. Small
+
+\section{Appendix}
+
+%Table A1: Control vs. Holdout (Unique Property Owners)
+
+\end{document}

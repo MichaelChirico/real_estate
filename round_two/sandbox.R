@@ -573,7 +573,6 @@ cis[,arrows(bpx,unlist(.SD[1]),
 title("Proportion Paid in Full Across Time",outer=T)
 dev.off2()
 
-
 #### NOW FOR PAID FULL ####
 
 
@@ -911,8 +910,6 @@ dev.off()
 ownsmp<-properties[treat8=="Holdout",sample(unique(owner1),10)]
 ownsmp2<-properties[treat8=="Holdout",sample(unique(owner1),5)]
 
-
-
 ##Heterogeneity Analysis ####
 ###Percentage of Democrat Voters
 pdf2(wds["imga"]%+%"bar_plot_hetero_ever_paid_7_pct_democrat.pdf")
@@ -1057,3 +1054,100 @@ sapply(reg_all, function(V){
   perm_cis[ , c("tr", V %+% c("_low", "", "_high")), with = FALSE
             ][ , {in_ci <- between(get(V), get(V %+% "_low"), get(V %+% "_high"))
             out <- setNames(rep("", .N), tr); out[!in_ci] <- "**"; out}]})
+
+#Estimating returns to speed-up
+switch_date <- D("2015-08-15")
+
+delta <- 
+  owners[earliest_pmt_dec <= switch_date & 
+           treat8 %in% c("Control", "Holdout"),
+         .N, keyby = treat8
+         ][owners[ , .N, keyby = treat8], 
+           diff(N/i.N), on = "treat8", nomatch = 0L]
+
+lawyer_rate <- .06
+
+repaid_by_switch <- 
+  owners[earliest_pmt_dec <= switch_date &
+           treat8 == "Control"]
+
+dist_benefits <- 
+  sapply(integer(5000), function(...)
+    repaid_by_switch[sample(.N, round(delta * .N)), 
+                     lawyer_rate * sum(total_paid_jul)])
+
+median(dist_benefits)
+
+##for all 7 treatments
+delta <- 
+  owners[earliest_pmt_dec <= switch_date,
+         .N, keyby = treat8
+         ][owners[ , .N, keyby = treat8], 
+           .(treat8[-1], N[-1]/i.N[-1] - N[1]/i.N[1]), 
+           on = "treat8", nomatch = 0L]
+
+delta <- setNames(delta$V2, delta$V1)
+
+lawyer_rate <- .06
+
+repaid_by_switch <- 
+  owners[earliest_pmt_dec <= switch_date &
+           !treat8 == "Holdout"]
+
+setkey(repaid_by_switch, treat7)
+
+dist_benefits <- 
+  sapply(integer(5000), function(...)
+    sum(sapply(trt.nms, function(tr)
+      repaid_by_switch[.(tr)][sample(.N, round(delta[tr] * .N)), 
+                              lawyer_rate * sum(total_paid_jul)])))
+
+hist(dist_benefits)
+
+median(dist_benefits)
+
+# 2016 follow-up data first pass ####
+
+follow <- 
+  fread(wds["data"] %+% 
+          "Real Estate Current Year Delinquency as of 04-06-2016.txt",
+        sep = "|", colClasses=abbr_to_colClass("cnc","359"),
+        col.names=c("opa_no", "legal_name", "period",
+                    "principal", "interest", "penalty",
+                    "other_due", "total_due","address", 
+                    "city", "state", "zip5", "zip4",
+                    "bldg_code", "bldg_desc", 
+                    "bldg_grp1", "bldg_grp2"))
+
+properties[follow, total_due_2016 := i.total_due, on = "opa_no"]
+properties[is.na(total_due_2016), total_due_2016 := 0]
+
+properties[ , to.pct(mean(total_due_2016 == 0)), keyby = treat8
+            ][ , barplot(V1, names.arg = treat8, las = 1,
+                         main = "% Paid 2016 Debt in Full (Property Level)",
+                         col = get.col(treat8))]
+
+owners[properties[ , sum(total_due_2016) == 0 , by = owner1],
+       paid_full_2016 := i.V1, on = "owner1"]
+
+owners[ , to.pct(mean(paid_full_2016)), keyby = treat8
+        ][ , {
+          pdf("~/Desktop/2016_barplot_pf.pdf")
+          barplot(V1, names.arg = treat8, las = 2,
+                         main = "% Paid 2016 Debt in Full (Owner Level)",
+                         col = get.col(treat8))
+          dev.off()}]
+
+apply(sapply(integer(5000), function(...)
+  owners[sample(.N, rep = TRUE), 
+         to.pct(mean(paid_full_2016)),
+         keyby = treat8][ , V1[-1L] - V1[1L]]),
+  1L, quantile, c(.025, .975))
+
+setkey(owners, rand_id)
+rids <- owners[(!holdout), unique(rand_id)]
+apply(sapply(integer(5000), function(...)
+  owners[.(sample(rids, rep = TRUE)), 
+         to.pct(mean(paid_full_2016)),
+         keyby = treat7][ , V1[-1L] - V1[1L]]),
+  1L, quantile, c(.025, .975))
