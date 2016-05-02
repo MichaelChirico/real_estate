@@ -687,7 +687,7 @@ with(boot.cis$o7,
 dev.off2()
 
 ###Ever Paid, three cross-sections vs. Small
-pdf2(wds["imga"] %+% "bar_plot_aver_paid_julsepdec_2_own.pdf")
+pdf2(wds["imga"] %+% "bar_plot_ever_paid_julsepdec_2_own.pdf")
 with(boot.cis$o2,
      dt[order(treat2),
         {par(mfrow = c(1,3), oma = c(5.6, 5.1, 4.1, 2.1))
