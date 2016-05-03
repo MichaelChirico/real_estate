@@ -537,15 +537,10 @@ owners to the first two blocks. Excluding these produces perfect balance
 on all variables for the 99.9\% of all properties in the remaining blocks.
 
 \section{Results}
-% -- Charles --
-%Mike—Can you clean up the references to the tables per Holger’s request.
-%Basically, numbering needs to align. Currently, I’ve just pasted things 
-%in based on numbering before we figured out order.
 
 \subsection{Intervention \#1: Targeted Phrasing vs. Control}
 
-%TO DO: Programmatic numbering
-Table 1 and Figure \ref{fig:box_bal} report the main experimental intervention results 
+Table \ref{tbl:reg_ep} and Figure \ref{fig:box_bal} report the main experimental intervention results 
 at one-, three-, and six-month intervals. At the one month mark, 
 several weeks after receiving the experimental or control notifications, 
 35\% of delinquents in the control condition have made at least some payments 
@@ -558,12 +553,10 @@ extrinsic/consequentialist factors both show short-term differences of
 4.9\% (Lien) and 3.4\% (Sheriff's sale). Both are statistically significant. 
 Results from logit models using paid-in-full (including fees) instead of any 
 %TO DO: Actual number
-%TO DO: Programmatic numbering
-payment reported Table 2, reveal that the majority (\#\#\%) of the estimated 
+payment reported Table \ref{tbl:reg_pf}, reveal that the majority (\#\#\%) of the estimated 
 short-term effect of payment comes from recipients paying off their entire balance.
 
-%TO DO: Programmatic numbering
-Three-month results, reported in Column 2 of Table 1, show a very 
+Three-month results, reported in Column 2 of Table \ref{tbl:reg_pf}, show a very 
 similar picture. As can be seen visually in Figure 1, baseline (control) 
 repayment rates have risen to 56\% (any payment) and 42\% (full payment). 
 However, intrinsic motivation treatments continue to have no discernable 
@@ -572,8 +565,7 @@ effect on repayment rates, while extrinsic notifications have produced a
 results retain statistical significance and full repayment continues to 
 contribute to the majority of the observed effects.
 
-%TO DO: Programmatic numbering
-Six-month results, reported in Column 3 of Table 1, indicate that final 
+Six-month results, reported in Column 3 of Table \ref{tbl:reg_pf}, indicate that final 
 participation rates for first-time delinquents are 76\% within six months. 
 Nudge-like treatment notifications remain insignificant and barely 
 distinguishable from the control response. Consequentialist notifications 
@@ -592,8 +584,7 @@ treatments having discernable or significant differences.
 To provide an estimate of the revenue increases resulting from experimental 
 treatments, we fit OLS models for amount paid regressed on treatment status.
 The results of these regressions are reported in 
-%TO DO: Programmatic numbering
-Table 3. Nonparametric tests with bootstrapped standard errors within 
+Table \ref{tbl:reg_tp}. Nonparametric tests with bootstrapped standard errors within 
 randomization blocks are reported visually in Figure \ref{fig:tp_time_7_own}. 
 These results indicate that the lien treatment was effective at boasting 
 revenue collected within the first month of the experiment. Lien recipients 
@@ -782,9 +773,100 @@ Wenzel, Michael. 2005. “Misperceptions of Social Norms about Tax Compliance: F
 
 \section{Tables and Figures}
 
-%Table 1:  Paid Full @ 1,3,6 months, main treatments vs. Control
+%Table 1
+\begin{table}[htbp]
+\caption{Estimated Average Treatment Effects: Ever Paid}
+\begin{center}
+\begin{tabular}{l c c c }
+\hline
+               & One Month & Three Months & Six Months \\
+\hline
+Amenities      & $-0.04$      & $-0.03$      & $-0.09$     \\
+               & $(0.05)$     & $(0.05)$     & $(0.06)$    \\
+Moral          & $-0.02$      & $-0.06$      & $-0.02$     \\
+               & $(0.06)$     & $(0.05)$     & $(0.06)$    \\
+Duty           & $-0.05$      & $-0.01$      & $0.04$      \\
+               & $(0.05)$     & $(0.05)$     & $(0.06)$    \\
+Peer           & $0.02$       & $-0.03$      & $-0.02$     \\
+               & $(0.06)$     & $(0.05)$     & $(0.06)$    \\
+Lien           & $0.21^{***}$ & $0.20^{***}$ & $0.13^{**}$ \\
+               & $(0.05)$     & $(0.05)$     & $(0.06)$    \\
+Sheriff        & $0.15^{***}$ & $0.19^{***}$ & $0.11^{*}$  \\
+               & $(0.05)$     & $(0.05)$     & $(0.06)$    \\
+\hline
+AIC            & 25212.18     & 26392.21     & 21263.84    \\
+BIC            & 25267.27     & 26447.31     & 21318.94    \\
+Log Likelihood & -12599.09    & -13189.11    & -10624.92   \\
+Deviance       & 25198.18     & 26378.21     & 21249.84    \\
+Num. obs.      & 19361        & 19361        & 19361       \\
+\hline
+\multicolumn{4}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
+\end{tabular}
+\label{tbl:reg_ep}
+\end{center}
+\end{table}
 
-%Table 2: Total Paid @ 1,3,6 months, main treatments vs. Control
+%Table 2
+\begin{table}[htbp]
+\caption{Estimated Average Treatment Effects: Paid Full}
+\begin{center}
+\begin{tabular}{l c c c }
+\hline
+               & One Month & Three Months & Six Months \\
+\hline
+Amenities      & $-0.07$      & $-0.02$      & $-0.04$      \\
+               & $(0.06)$     & $(0.05)$     & $(0.05)$     \\
+Moral          & $-0.03$      & $-0.01$      & $-0.01$      \\
+               & $(0.06)$     & $(0.05)$     & $(0.05)$     \\
+Duty           & $-0.05$      & $-0.03$      & $-0.01$      \\
+               & $(0.06)$     & $(0.05)$     & $(0.05)$     \\
+Peer           & $0.03$       & $0.03$       & $0.05$       \\
+               & $(0.06)$     & $(0.05)$     & $(0.06)$     \\
+Lien           & $0.18^{***}$ & $0.16^{***}$ & $0.16^{***}$ \\
+               & $(0.06)$     & $(0.05)$     & $(0.06)$     \\
+Sheriff        & $0.12^{**}$  & $0.15^{***}$ & $0.05$       \\
+               & $(0.06)$     & $(0.05)$     & $(0.05)$     \\
+\hline
+AIC            & 21497.82     & 26426.34     & 25393.49     \\
+BIC            & 21552.92     & 26481.44     & 25448.58     \\
+Log Likelihood & -10741.91    & -13206.17    & -12689.74    \\
+Deviance       & 21483.82     & 26412.34     & 25379.49     \\
+Num. obs.      & 19361        & 19361        & 19361        \\
+\hline
+\multicolumn{4}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
+\end{tabular}
+\label{tbl:reg_pf}
+\end{center}
+\end{table}
+
+%Table 3
+\begin{table}[htbp]
+\caption{Estimated Average Treatment Effects: Total Paid}
+\begin{center}
+\begin{tabular}{l c c c }
+\hline
+          & One Month & Three Months & Six Months \\
+\hline
+Amenities & $23.34$      & $-43.30$   & $-15.64$   \\
+          & $(35.96)$    & $(47.14)$  & $(51.08)$  \\
+Moral     & $41.37$      & $53.50$    & $81.04$    \\
+          & $(59.99)$    & $(118.42)$ & $(119.26)$ \\
+Duty      & $4.66$       & $-18.82$   & $81.10$    \\
+          & $(34.97)$    & $(39.76)$  & $(61.55)$  \\
+Peer      & $124.26$     & $124.54$   & $113.29$   \\
+          & $(81.68)$    & $(132.89)$ & $(132.28)$ \\
+Lien      & $83.05^{**}$ & $64.47$    & $21.37$    \\
+          & $(41.41)$    & $(42.04)$  & $(47.82)$  \\
+Sheriff   & $14.81$      & $29.72$    & $-51.82$   \\
+          & $(28.74)$    & $(42.97)$  & $(48.61)$  \\
+\hline
+Num. obs. & 19361        & 19361      & 19361      \\
+\hline
+\multicolumn{4}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
+\end{tabular}
+\label{tbl:reg_tp}
+\end{center}
+\end{table}
 
 %Figure 1
 \begin{figure}[htpb]

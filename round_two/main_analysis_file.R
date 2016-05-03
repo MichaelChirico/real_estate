@@ -762,7 +762,7 @@ dev.off2()
 ##Regression Tables ####
 ## @knitr analysis_reg
 reg_vars <- c("ever_paid","paid_full","total_paid")
-reg_all <- levels(interaction(reg_vars, mos,sep="_"))
+reg_all <- levels(interaction(reg_vars, mos, sep="_"))
 
 reg_j <- 
   parse(text = 
@@ -787,57 +787,51 @@ coef_j =
                           "family=binomial())")), 
             "$coefficients"), 
             collapse = ","), ")"))
-           
-samp_i <- 
-  expression("Main Sample" = (!holdout),
-             "Non-Commercial" = (residential&!holdout),
-             "Unique Owner" = (unq_own&!holdout))
 
 BB <- 5000
 setkey(owners, rand_id)
 setindex(owners, holdout)
-system.time(
+DT <- owners[(!holdout)]
+regs <- owners[(!holdout), eval(reg_j)]
+starts <- 
+  lapply(reg_all[!grepl("total", reg_all)], 
+         function(rr) regs[[rr]][[1L]]$coefficients)
+RBs <- owners[(!holdout), unique(rand_id)]
+
+disp_rands <- runif(BB)
+
+tmp <- tempfile()
+progress <- txtProgressBar(1, BB, style = 3L)
+
+cl <- makeCluster(8L, outfile = "")
+invisible(clusterEvalQ(cl, library(data.table)))
+clusterExport(cl, c("DT", "RBs", "coef_j", "starts", 
+                    "disp_rands", "progress", "tmp"),
+              envir = environment())
+boot_dist <- rbindlist(parLapply(cl, 1:BB, function(bb){
+  cat("\n", file = tmp, append = TRUE)
+  setTxtProgressBar(
+    progress, as.integer(system(paste("wc -l <", tmp), intern = TRUE)))
+  DT[.(sample(RBs, rep = TRUE)), eval(coef_j)]}))
+stopCluster(cl); close(progress); unlink(tmp)
+
 reg_info <- 
-  rbindlist(lapply(samp_i, function(i_ev){
-    message("\n\n", i_ev, ":")
-    DT <- owners[eval(i_ev)]
-    
-    regs <- DT[ , eval(reg_j)]
-    
-    starts <- 
-      sapply(reg_all[!grepl("total", reg_all)], 
-             function(rr) 
-               regs[[rr]][[1]]$coefficients,
-             simplify = FALSE)
-    
-    RBs <- DT[ , unique(rand_id)]
-    
-    cl <- makeCluster(8L, outfile = "")
-    clusterEvalQ(cl, library(data.table))
-    clusterExport(cl, c("DT", "RBs", "coef_j","starts"),
-                  envir = environment())
-    boot_dist <- rbindlist(parLapply(cl, 1:BB, function(bb){
-      if (bb %% 625 == 0) cat("Replication", bb, "\n")
-      DT[.(sample(RBs, rep = TRUE)), eval(coef_j)]}))
-    stopCluster(cl)
-    
-    rbind(regs, boot_dist[ , lapply(.SD, function(x)
-      list(var(matrix(x, ncol = 7, byrow = TRUE))))]
-      )[ , lapply(.SD, function(x)
-        c(x, list(sqrt(diag(x[[2]])))))
-        ][ , lapply(.SD, function(x) 
-          c(x, list(coeftest(x[[1]], vcov = x[[2]])[ , 4])))]
-  }), idcol = "sample")
-)
+  rbind(regs, boot_dist[ , lapply(.SD, function(x)
+    list(var(matrix(x, ncol = 7, byrow = TRUE))))]
+    )[ , lapply(.SD, function(x)
+      c(x, list(sqrt(diag(x[[2]])))))
+      ][ , lapply(.SD, function(x) 
+        c(x, list(coeftest(x[[1]], vcov = x[[2]])[ , 4])))]
+
 
 ###Difference in Mean Tests
 rename_coef<-function(obj){
-  nms<-names(obj$coefficients)
-  idx<-!grepl("treat7",nms)
+  nms <- names(obj$coefficients)
+  idx <- !grepl("treat7", nms)
   #Add XXX to coefficients we'll exclude
-  nms[idx]<-nms[idx]%+%"XXX"
-  nms<-gsub("treat7","",nms)
-  names(obj$coefficients)<-nms
+  nms[idx] <- nms[idx] %+% "XXX"
+  nms <- gsub("treat7", "", nms)
+  names(obj$coefficients) <- nms
   obj
 }
 
