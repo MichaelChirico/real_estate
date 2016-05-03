@@ -838,24 +838,23 @@ rename_coef<-function(obj){
 proper <- c(ever_paid="Ever Paid",
             paid_full="Paid Full",
             total_paid="Total Paid")
-invisible(sapply(
-  transpose(expand.grid(reg_vars, names(samp_i))),
-  function(meta)
+abbr <- c(ever_paid="ep", paid_full="pf", total_paid="tp")
+invisible(sapply(reg_vars,
+  function(rr)
     print(texreg(
-      lapply(tp <- paste(rr <- meta[1],mos,sep="_"),function(mo)
-        rename_coef(reg_info[sample==meta[2]][[mo]][[1]])),
+      lapply(tp <- paste(rr, mos, sep="_"), function(mo)
+        rename_coef(reg_info[[mo]][[1]])),
       custom.model.names=
         c("One Month","Three Months","Six Months"),
-      caption="Estimated Average Treatment Effects: " %+% 
-        proper[rr] %+% ", " %+% meta[2],
-      override.se=lapply(tp,function(mo)
-        reg_info[sample==meta[2]][[mo]][[3]]),
-      override.pval=lapply(tp,function(mo)
-        reg_info[sample==meta[2]][[mo]][[4]]),
-      caption.above=TRUE,label="dif_mean",stars=c(.01,.05,.1),
-      include.rsquared=F,include.adjrs=F,include.rmse=F,
+      caption=
+        "Estimated Average Treatment Effects: " %+% proper[rr],
+      override.se=lapply(tp, function(mo) reg_info[[mo]][[3]]),
+      override.pval=lapply(tp, function(mo) reg_info[[mo]][[4]]),
+      caption.above=TRUE, stars=c(.01,.05,.1),
+      label="tbl:reg_" %+% abbr[rr], 
+      include.rsquared=FALSE, include.adjrs=FALSE, include.rmse=FALSE,
       #Exclude Intercept
-      omit.coef="XXX$",float.pos="htbp"))))
+      omit.coef="XXX$", float.pos="htbp"))))
 
 ##Financial Analysis ####
 sapply(
