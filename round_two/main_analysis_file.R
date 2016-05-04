@@ -1093,3 +1093,68 @@ owners[(!holdout),.(0,mean(paid_full_jul),mean(paid_full_sep)),
             axis(side=2,at=.5*(yl+yu),tick=F,las=1,
                  labels=treat7,pos=0)}]
 dev.off2()
+
+#Cost-Benefit: Estimating returns to speed-up ####
+## Parameters of estimate
+##  - Date when properties were distributed to co-council
+##  - Proportion of converted debt distributed to co-council
+params <- list(switch_date = D("2015-08-15"),
+               lawyer_rate = .06)
+delta <- 
+  #count those having paid by hand-off
+  owners[earliest_pmt_dec <= params$switch_date,
+         .N, keyby = treat8
+         ][owners[ , .N, keyby = treat8], 
+           #what's the difference in percentage
+           #  of owners ever paid in each 
+           #  treatment/control vs. holdout?
+           .(treat8[-1], N[-1]/i.N[-1] - N[1]/i.N[1]), 
+           on = "treat8"][ , setNames(V2, V1)]
+
+repaid_by_switch <- 
+  owners[earliest_pmt_dec <= params$switch_date &
+           !treat8 == "Holdout"]
+
+setkey(repaid_by_switch, treat7)
+
+dist_benefits <- 
+  sapply(integer(BB), function(...)
+    sum(sapply(trt.nms, function(tr)
+      #going treatment-by-treatment, pull out 
+      #  properties in quantity roughly equal to the 
+      #  difference in treatment effect vs. holdout 
+      #  by the switch date
+      repaid_by_switch[.(tr)][
+        sample(.N, round(delta[tr] * .N)), 
+        #find what would have been the lawyers'
+        #  take of the total amount paid by
+        #  these properties
+        params$lawyer_rate * 
+          sum(total_paid_jul)])))
+
+pdf2(wds["imga"] %+% "hist_benefit_acceleration.pdf")
+x <- hist(dist_benefits, breaks = 20, freq = FALSE,  
+          main = "Distribution of Simulated Benefits to Acceleration",
+          col = "lightblue", xlab = "$", yaxt = "n", ylab = "")
+abline(v = md <- median(dist_benefits), col = "red", lty = 2, lwd = 3)
+mtext(side = 2L, text = "Density")
+text(md, max(x$density), pos = 4,
+     labels = "Median Benefit: " %+% dol.form(md))
+dev.off2()
+
+##Regression-based approach
+setkey(owners, treat8)
+setindex(owners, treat8, assessed_mv)
+regs <- 
+  owners[assessed_mv > 0, 
+         .(list(reg=lm(total_paid_jul ~ log(assessed_mv) + 
+                         log(total_due) + residential + 
+                         phila_mailing + log(N)))), keyby = treat8]
+
+params$lawyer_rate * sum(sapply(trt.nms, function(tr)
+  sum((x <- owners[.(tr)][assessed_mv > 0])[ , total_paid_jul] - 
+        predict(regs[.("Holdout"), V1][[1]], x))))
+
+params$lawyer_rate * sum(sapply(trt.nms, function(tr)
+  sum(predict(regs[.(tr), V1][[1]], x <- owners[.(tr)][assessed_mv > 0]) - 
+        predict(regs[.("Holdout"), V1][[1]], x))))

@@ -630,8 +630,86 @@ At one, three and six months post-treatment, payment probabilities
 were similar and statistically indistinguishable. 
 
 \section{Fiscal Analysis}
-% -- Charles --
-%Mike—This is another thing for you to insert based on our emails post-briefing. 
+
+\textit{Prima facie}, mere acceleration of payment may seem like an
+economic null result for the City. However, the timing of payments received
+by the City can be important for a variety of reasons, the most salient of
+which is resorption of revenue lost to the law firms subcontracted by DoR.
+As mentioned, the City hands over enforcement rights of its properties to
+outside law firms who use their own means to collect late and delinquent
+tax balances in exchange for fees. For properties which are simply late
+(not delinquent), the City pays these firms by awarding 6\% of receipts on
+accounts less than a year late in payment.
+
+In the wake of our study, the City handed off the entirety of its late 
+property holdings on August 15th, 2015. As demonstrated above, in the
+absence of our treatments, the City would have been handing off more
+properties and more debt (\textit{i.e.}, potential revenue).
+
+We endeavor here to provide some estimates of the potential savings
+reaped by the City on account of our letter treatments. The simpler test
+entails comparing differential repayment rates in our Holdout group
+(who received no letter) with respect to each of the treatment groups 
+(including the Control letter). Specifically, we first get 
+treatment-by-treatment point estimates of a participation effect,
+$\Delta^T$ for each treatment group $T$, given by:
+
+\[
+\Delta^T = \frac{N^T_p}{N^T} - \frac{N^H_p}{N^H}
+\]
+
+where $N^t_p$ is the count of owners having paid by August 15th in
+treatment $T$, and $N^t$ is the total count of owners in $T$. Then,
+we repeatedly sample $\Delta^T * N^T$ owners for each treatment and find
+6\% of the total repayment by July 23rd (the nearest date to August
+15th for which we have accurate repayment totals).
+
+The distribution of revenue effects from these simulations is given
+in Figure \ref{fig:rev_prop}; the median revenue effect is about
+\$33,000. For comparison, the total bill of contracting a third party
+printing service to handle mailing of non-standard envelopes for 
+our letter-size experiment was around \$15,000.
+
+\subsection{Regression-based Approach}
+
+A more sophisticated approach is to estimate impacts at the invidual 
+level. The classic causal framework associates with each individual
+his potential outcomes $(Y_i(0), Y_i(1), \ldots, Y_i(k))$ in the
+holdout group and the $k$ treatment groups. The causal impact of
+treatment $\Delta_i$ is given by $Y_i(T_i) - Y_i(0)$, where $T_i$
+is the actually assigned treatment. Since $Y_i(0)$ is unobserved
+for all treated owners, we use the following model of outcomes
+in each treatment:
+
+\begin{eqnarray*}
+Y_i(0) & = & X'_i \beta^0 + \varepsilon_i^0\\
+Y_i(1) & = & X'_i \beta^1 + \varepsilon_i^1\\
+    & \vdots & \\
+Y_i(k) & = & X'_i \beta^k + \varepsilon_i^k\\
+\end{eqnarray*}
+
+Where the $X_i$ contain owner-level covariates: log assessed
+property value
+\footnote{
+	This is missing for 50 properties; these are excluded
+	given their rarity.
+}
+, log initial debt, log count of properties owned,
+and indicators for residential properties and Philadelphia 
+mailing addresses. 
+
+Given randomization, there is on selection into treatment groups,
+and we can use estimates of the regression for $Y_i(0)$,
+$\hat{\beta}^0$, to construct predicted counterfactuals for 
+treated owners, $X'_i \hat{\beta}^0$, leading to causal estimates
+
+\[
+\widehat{\Delta}_i = X'_i (\hat{\beta}^{T_i} - \hat{\beta}^0)
+\]
+
+The total effect of the experiment is then
+$\sum\limits_{\mbox{\fontsize{5}{5}\selectfont Treated} \, i} \widehat{\Delta}_i$, which we 
+estimate as roughly \$135,000.
 
 \section{Conclusions}
 
@@ -990,6 +1068,16 @@ Num. obs.      & 19361     & 19361     & 19361     \\
 \label{fig:ep_time_2_own}
 \bigskip
 \includegraphics[width=6in]{bar_plot_ever_paid_julsepdec_2_own}
+\end{center}
+\end{figure}
+
+%Figure 6
+\begin{figure}[htpb]
+\begin{center}
+\caption{Proportional Revenue Effect Histogram}
+\label{fig:rev_prop}
+\bigskip
+\includegraphics[width=6in]{hist_benefit_acceleration}
 \end{center}
 \end{figure}
 

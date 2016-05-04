@@ -1055,7 +1055,7 @@ sapply(reg_all, function(V){
             ][ , {in_ci <- between(get(V), get(V %+% "_low"), get(V %+% "_high"))
             out <- setNames(rep("", .N), tr); out[!in_ci] <- "**"; out}]})
 
-#Estimating returns to speed-up
+#Estimating returns to speed-up ####
 switch_date <- D("2015-08-15")
 
 delta <- 
