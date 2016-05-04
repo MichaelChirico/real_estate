@@ -798,15 +798,13 @@ starts <-
          function(rr) regs[[rr]][[1L]]$coefficients)
 RBs <- owners[(!holdout), unique(rand_id)]
 
-disp_rands <- runif(BB)
-
 tmp <- tempfile()
 progress <- txtProgressBar(1, BB, style = 3L)
 
 cl <- makeCluster(8L, outfile = "")
 invisible(clusterEvalQ(cl, library(data.table)))
 clusterExport(cl, c("DT", "RBs", "coef_j", "starts", 
-                    "disp_rands", "progress", "tmp"),
+                    "progress", "tmp"),
               envir = environment())
 boot_dist <- rbindlist(parLapply(cl, 1:BB, function(bb){
   cat("\n", file = tmp, append = TRUE)
@@ -851,10 +849,154 @@ invisible(sapply(reg_vars,
       override.se=lapply(tp, function(mo) reg_info[[mo]][[3]]),
       override.pval=lapply(tp, function(mo) reg_info[[mo]][[4]]),
       caption.above=TRUE, stars=c(.01,.05,.1),
-      label="tbl:reg_" %+% abbr[rr], 
+      label="tbl:reg7_" %+% abbr[rr], 
       include.rsquared=FALSE, include.adjrs=FALSE, include.rmse=FALSE,
       #Exclude Intercept
       omit.coef="XXX$", float.pos="htbp"))))
+
+#### Now for big v small
+reg_all <- "ever_paid_" %+% mos
+reg_j <- 
+  parse(text = 
+          paste0(".(", paste(paste0(
+            reg_all, "=list(glm(", reg_all,
+            "~ treat2, family = binomial))"), 
+            collapse = ","), ")"))
+
+coef_j = 
+  parse(text = 
+          paste0(".(", paste(paste0(
+            reg_all, "=", sapply(reg_all, function(x) 
+              paste0("glm.fit(model.matrix(", x, 
+                     " ~ treat2), ",x,
+                     ', start = starts[["',x,'"]],',
+                     "family=binomial())")), 
+            "$coefficients"), 
+            collapse = ","), ")"))
+regs <- owners[(!holdout), eval(reg_j)]
+starts <- 
+  lapply(reg_all, function(rr) regs[[rr]][[1L]]$coefficients)
+RBs <- owners[(!holdout), unique(rand_id)]
+
+tmp <- tempfile()
+progress <- txtProgressBar(1, BB, style = 3L)
+
+cl <- makeCluster(8L, outfile = "")
+invisible(clusterEvalQ(cl, library(data.table)))
+clusterExport(cl, c("DT", "RBs", "coef_j", "starts", 
+                    "progress", "tmp"),
+              envir = environment())
+boot_dist <- rbindlist(parLapply(cl, 1:BB, function(bb){
+  cat("\n", file = tmp, append = TRUE)
+  setTxtProgressBar(
+    progress, as.integer(system(paste("wc -l <", tmp), intern = TRUE)))
+  DT[.(sample(RBs, rep = TRUE)), eval(coef_j)]}))
+stopCluster(cl); close(progress); unlink(tmp)
+
+reg_info <- 
+  rbind(regs, boot_dist[ , lapply(.SD, function(x)
+    list(var(matrix(x, ncol = 2, byrow = TRUE))))]
+    )[ , lapply(.SD, function(x)
+      c(x, list(sqrt(diag(x[[2]])))))
+      ][ , lapply(.SD, function(x) 
+        c(x, list(coeftest(x[[1]], vcov = x[[2]])[ , 4])))]
+
+
+###Difference in Mean Tests
+rename_coef<-function(obj){
+  nms <- names(obj$coefficients)
+  idx <- !grepl("treat2", nms)
+  #Add XXX to coefficients we'll exclude
+  nms[idx] <- nms[idx] %+% "XXX"
+  nms <- gsub("treat2", "", nms)
+  names(obj$coefficients) <- nms
+  obj
+}
+
+print(texreg(
+  lapply(reg_all, function(mo)
+    rename_coef(reg_info[[mo]][[1]])),
+  custom.model.names=
+    c("One Month","Three Months","Six Months"),
+  caption=
+    "Estimated Average Treatment Effects: Ever Paid, Letter Size",
+  override.se=lapply(reg_all, function(mo) reg_info[[mo]][[3]]),
+  override.pval=lapply(reg_all, function(mo) reg_info[[mo]][[4]]),
+  caption.above=TRUE, stars=c(.01,.05,.1),label="tbl:reg2_ep", 
+  include.rsquared=FALSE, include.adjrs=FALSE, include.rmse=FALSE,
+  #Exclude Intercept
+  omit.coef="XXX$", float.pos="htbp"))
+
+#Now for main vs. holdout
+reg_all <- "ever_paid_" %+% mos
+reg_j <- 
+  parse(text = 
+          paste0(".(", paste(paste0(
+            reg_all, "=list(glm(", reg_all,
+            "~ treat8, family = binomial))"), 
+            collapse = ","), ")"))
+
+coef_j = 
+  parse(text = 
+          paste0(".(", paste(paste0(
+            reg_all, "=", sapply(reg_all, function(x) 
+              paste0("glm.fit(model.matrix(", x, 
+                     " ~ treat8), ",x,
+                     ', start = starts[["',x,'"]],',
+                     "family=binomial())")), 
+            "$coefficients"), 
+            collapse = ","), ")"))
+regs <- owners[ , eval(reg_j)]
+starts <- 
+  lapply(reg_all, function(rr) regs[[rr]][[1L]]$coefficients)
+
+tmp <- tempfile()
+progress <- txtProgressBar(1, BB, style = 3L)
+
+cl <- makeCluster(8L, outfile = "")
+invisible(clusterEvalQ(cl, library(data.table)))
+clusterExport(cl, c("owners", "coef_j", "starts", "progress", "tmp"),
+              envir = environment())
+boot_dist <- rbindlist(parLapply(cl, 1:BB, function(bb){
+  cat("\n", file = tmp, append = TRUE)
+  setTxtProgressBar(
+    progress, as.integer(system(paste("wc -l <", tmp), intern = TRUE)))
+  owners[sample(.N, rep = TRUE), eval(coef_j)]}))
+stopCluster(cl); close(progress); unlink(tmp)
+
+reg_info <- 
+  rbind(regs, boot_dist[ , lapply(.SD, function(x)
+    list(var(matrix(x, ncol = 8, byrow = TRUE))))]
+    )[ , lapply(.SD, function(x)
+      c(x, list(sqrt(diag(x[[2]])))))
+      ][ , lapply(.SD, function(x) 
+        c(x, list(coeftest(x[[1]], vcov = x[[2]])[ , 4])))]
+
+
+###Difference in Mean Tests
+rename_coef<-function(obj){
+  nms <- names(obj$coefficients)
+  idx <- !grepl("treat8", nms)
+  #Add XXX to coefficients we'll exclude
+  nms[idx] <- nms[idx] %+% "XXX"
+  nms <- gsub("treat8", "", nms)
+  names(obj$coefficients) <- nms
+  obj
+}
+
+print(texreg(
+  lapply(reg_all, function(mo)
+    rename_coef(reg_info[[mo]][[1]])),
+  custom.model.names=
+    c("One Month","Three Months","Six Months"),
+  caption=
+    "Estimated Average Treatment Effects: Ever Paid, vs. Holdout",
+  override.se=lapply(reg_all, function(mo) reg_info[[mo]][[3]]),
+  override.pval=lapply(reg_all, function(mo) reg_info[[mo]][[4]]),
+  caption.above=TRUE, stars=c(.01,.05,.1),label="tbl:reg8_ep", 
+  include.rsquared=FALSE, include.adjrs=FALSE, include.rmse=FALSE,
+  #Exclude Intercept
+  omit.coef="XXX$", float.pos="htbp"))
 
 ##Financial Analysis ####
 sapply(

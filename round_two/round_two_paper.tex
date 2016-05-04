@@ -597,7 +597,7 @@ significant different in repayment occurred over the longer period of 3 or 6 mon
 \subsection{Intervention \#2: Mailer versus No-Mailer}
 
 %TO DO: Programmatic numbering
-Table 4 reports the comparison of sending a generic reminder letter 
+Table \ref{tbl:reg8_ep} reports the comparison of sending a generic reminder letter 
 (control) versus sending no notification letter whatsoever. This 
 comparison is restricted to unique property owners.
 \footnote{
@@ -618,8 +618,8 @@ likely to produce a similar ultimate result.
 
 \subsection{Intervention \#3: Standard Envelope versus Larger Envelope}
 
-%TO DO: Programmatic numbering
-Table 5 and Figure \ref{fig:ep_time_2_own} report the results of a third tested
+Table \ref{tbl:reg2_ep} and Figure \ref{fig:ep_time_2_own} 
+report the results of a third tested
 intervention--modifying the size of the notification envelope.
 Previous research has hypothesized that increasing the visibility or visual 
 salience of a notification could increase uptake or response.
@@ -800,7 +800,7 @@ Num. obs.      & 19361        & 19361        & 19361       \\
 \hline
 \multicolumn{4}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
 \end{tabular}
-\label{tbl:reg_ep}
+\label{tbl:reg7_ep}
 \end{center}
 \end{table}
 
@@ -833,7 +833,7 @@ Num. obs.      & 19361        & 19361        & 19361        \\
 \hline
 \multicolumn{4}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
 \end{tabular}
-\label{tbl:reg_pf}
+\label{tbl:reg7_pf}
 \end{center}
 \end{table}
 
@@ -862,7 +862,65 @@ Num. obs. & 19361        & 19361      & 19361      \\
 \hline
 \multicolumn{4}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
 \end{tabular}
-\label{tbl:reg_tp}
+\label{tbl:reg7_tp}
+\end{center}
+\end{table}
+
+%Table 4
+\begin{table}[htbp]
+\caption{Estimated Average Treatment Effects: Ever Paid, vs. Holdout}
+\begin{center}
+\begin{tabular}{l c c c }
+\hline
+               & One Month & Three Months & Six Months \\
+\hline
+Control        & $0.19^{***}$ & $0.20^{***}$ & $0.13^{*}$   \\
+               & $(0.06)$     & $(0.06)$     & $(0.07)$     \\
+Amenities      & $0.15^{**}$  & $0.16^{***}$ & $0.04$       \\
+               & $(0.06)$     & $(0.06)$     & $(0.07)$     \\
+Moral          & $0.18^{***}$ & $0.14^{**}$  & $0.11$       \\
+               & $(0.06)$     & $(0.06)$     & $(0.07)$     \\
+Duty           & $0.14^{**}$  & $0.19^{***}$ & $0.16^{**}$  \\
+               & $(0.06)$     & $(0.06)$     & $(0.07)$     \\
+Peer           & $0.21^{***}$ & $0.17^{***}$ & $0.11$       \\
+               & $(0.06)$     & $(0.06)$     & $(0.07)$     \\
+Lien           & $0.40^{***}$ & $0.39^{***}$ & $0.26^{***}$ \\
+               & $(0.06)$     & $(0.06)$     & $(0.07)$     \\
+Sheriff        & $0.34^{***}$ & $0.38^{***}$ & $0.23^{***}$ \\
+               & $(0.06)$     & $(0.06)$     & $(0.07)$     \\
+\hline
+AIC            & 27809.84     & 29313.13     & 23707.85     \\
+BIC            & 27873.64     & 29376.93     & 23771.64     \\
+Log Likelihood & -13896.92    & -14648.57    & -11845.92    \\
+Deviance       & 27793.84     & 29297.13     & 23691.85     \\
+Num. obs.      & 21468        & 21468        & 21468        \\
+\hline
+\multicolumn{4}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
+\end{tabular}
+\label{tbl:reg8_ep}
+\end{center}
+\end{table}
+
+%Table 5
+\begin{table}[htbp]
+\caption{Estimated Average Treatment Effects: Ever Paid, Letter Size}
+\begin{center}
+\begin{tabular}{l c c c }
+\hline
+               & One Month & Three Months & Six Months \\
+\hline
+Big            & $-0.04$   & $-0.01$   & $0.00$    \\
+               & $(0.03)$  & $(0.03)$  & $(0.03)$  \\
+\hline
+AIC            & 25239.64  & 26428.52  & 21272.01  \\
+BIC            & 25255.38  & 26444.27  & 21287.75  \\
+Log Likelihood & -12617.82 & -13212.26 & -10634.01 \\
+Deviance       & 25235.64  & 26424.52  & 21268.01  \\
+Num. obs.      & 19361     & 19361     & 19361     \\
+\hline
+\multicolumn{4}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
+\end{tabular}
+\label{tbl:reg2_ep}
 \end{center}
 \end{table}
 
