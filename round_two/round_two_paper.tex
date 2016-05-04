@@ -12,6 +12,7 @@
 \usepackage{csquotes}
 \usepackage[pdfencoding=auto,unicode=true]{hyperref}
 \usepackage{graphicx}
+\usepackage{rotating}
 \graphicspath{{images/analysis/}{images/balance/}}
 
 \begin{document}
@@ -522,12 +523,12 @@ Each of the seven letter templates described above was assigned at random
 to envelopes of each size--in other words, each property was equally 
 likely to receive any one of fourteen possible envelope+letter combinations. 
 Balance tests for pre-randomization characteristics, 
-%TO DO: Should replace manual numbering with programmatic numbering via \ref
 % -- Charles --
 %Mike—Could you produce a balance table to match what I have as Table 3 of 
 %the first paper? Treatments are columns and property characteristics 
 %are rows? We’ll need a second one for the holdout comparison.
-reported in Table 1 and Figure \ref{fig:box_bal}, confirm that randomization was successful, 
+reported in Table \ref{tbl:balance} and Figure \ref{fig:box_bal}, 
+confirm that randomization was successful, 
 with no discernable differences between any of our treatment groups.
 \footnote{For balance tests for the stage 1 holdout sample, see Appendix.}
 While large and multiple property owners introduced small variations 
@@ -540,7 +541,7 @@ on all variables for the 99.9\% of all properties in the remaining blocks.
 
 \subsection{Intervention \#1: Targeted Phrasing vs. Control}
 
-Table \ref{tbl:reg_ep} and Figure \ref{fig:box_bal} report the main experimental intervention results 
+Table \ref{tbl:reg7_ep} and Figure \ref{fig:box_bal} report the main experimental intervention results 
 at one-, three-, and six-month intervals. At the one month mark, 
 several weeks after receiving the experimental or control notifications, 
 35\% of delinquents in the control condition have made at least some payments 
@@ -552,10 +553,10 @@ statistically insignificant. By comparison, notifications emphasizing
 extrinsic/consequentialist factors both show short-term differences of 
 4.9\% (Lien) and 3.4\% (Sheriff's sale). Both are statistically significant. 
 Results from logit models using paid-in-full (including fees) instead of any 
-payment, reported Table \ref{tbl:reg_pf}, reveal that the majority (69\%) of the estimated 
+payment, reported Table \ref{tbl:reg7_pf}, reveal that the majority (69\%) of the estimated 
 short-term effect of payment comes from recipients paying off their entire balance.
 
-Three-month results, reported in Column 2 of Table \ref{tbl:reg_pf}, show a very 
+Three-month results, reported in Column 2 of Table \ref{tbl:reg7_pf}, show a very 
 similar picture. As can be seen visually in Figure 1, baseline (control) 
 repayment rates have risen to 56\% (any payment) and 42\% (full payment). 
 However, intrinsic motivation treatments continue to have no discernable 
@@ -564,7 +565,7 @@ effect on repayment rates, while extrinsic notifications have produced a
 results retain statistical significance and full repayment continues to 
 contribute to the majority of the observed effects.
 
-Six-month results, reported in Column 3 of Table \ref{tbl:reg_pf}, indicate that final 
+Six-month results, reported in Column 3 of Table \ref{tbl:reg7_pf}, indicate that final 
 participation rates for first-time delinquents are 76\% within six months. 
 Nudge-like treatment notifications remain insignificant and barely 
 distinguishable from the control response. Consequentialist notifications 
@@ -583,7 +584,7 @@ treatments having discernable or significant differences.
 To provide an estimate of the revenue increases resulting from experimental 
 treatments, we fit OLS models for amount paid regressed on treatment status.
 The results of these regressions are reported in 
-Table \ref{tbl:reg_tp}. Nonparametric tests with bootstrapped standard errors within 
+Table \ref{tbl:reg7_tp}. Nonparametric tests with bootstrapped standard errors within 
 randomization blocks are reported visually in Figure \ref{fig:tp_time_7_own}. 
 These results indicate that the lien treatment was effective at boosting 
 revenue collected within the first month of the experiment. Lien recipients 
@@ -596,7 +597,6 @@ significant different in repayment occurred over the longer period of 3 or 6 mon
 
 \subsection{Intervention \#2: Mailer versus No-Mailer}
 
-%TO DO: Programmatic numbering
 Table \ref{tbl:reg8_ep} reports the comparison of sending a generic reminder letter 
 (control) versus sending no notification letter whatsoever. This 
 comparison is restricted to unique property owners.
@@ -772,6 +772,25 @@ Wenzel, Michael. 2005. “Misperceptions of Social Norms about Tax Compliance: F
 \section{Tables and Figures}
 
 %Table 1
+\begin{sidewaystable}[ht]
+\centering
+\begin{tabular}{|r|lllllll|l|}
+  \hline
+Variable & Control & Amenities & Moral & Duty & Peer & Lien & Sheriff & $p$-value \\ 
+   \hline
+Amount Due (June) & \$1,847 & \$2,209 & \$1,954 & \$1,700 & \$1,772 & \$1,735 & \$1,887 & 0.78 \\ 
+  Assessed Property Value & \$195,029 & \$224,412 & \$220,963 & \$191,199 & \$165,957 & \$173,690 & \$178,556 & 0.76 \\ 
+  \% with Unique Owner & 87.5 & 86.4 & 88.3 & 88.0 & 87.4 & 88.0 & 87.5 & 0.45 \\ 
+  \% Overlap with Holdout & 3.72 & 3.80 & 3.47 & 3.47 & 3.58 & 3.47 & 3.29 & 0.96 \\ 
+  \# Properties per Owner & 1.33 & 1.36 & 1.29 & 1.27 & 1.26 & 1.32 & 1.26 & 0.55 \\ 
+  \# Owners & 2,766 & 2,766 & 2,766 & 2,766 & 2,766 & 2,765 & 2,766 & 1 \\ 
+   \hline
+\end{tabular}
+\caption{Balance on Observables} 
+\label{tbl:balance}
+\end{sidewaystable}
+
+%Table 2
 \begin{table}[htbp]
 \caption{Estimated Average Treatment Effects: Ever Paid}
 \begin{center}
@@ -804,7 +823,7 @@ Num. obs.      & 19361        & 19361        & 19361       \\
 \end{center}
 \end{table}
 
-%Table 2
+%Table 3
 \begin{table}[htbp]
 \caption{Estimated Average Treatment Effects: Paid Full}
 \begin{center}
@@ -837,7 +856,7 @@ Num. obs.      & 19361        & 19361        & 19361        \\
 \end{center}
 \end{table}
 
-%Table 3
+%Table 4
 \begin{table}[htbp]
 \caption{Estimated Average Treatment Effects: Total Paid}
 \begin{center}
@@ -866,7 +885,7 @@ Num. obs. & 19361        & 19361      & 19361      \\
 \end{center}
 \end{table}
 
-%Table 4
+%Table 5
 \begin{table}[htbp]
 \caption{Estimated Average Treatment Effects: Ever Paid, vs. Holdout}
 \begin{center}
@@ -901,7 +920,7 @@ Num. obs.      & 21468        & 21468        & 21468        \\
 \end{center}
 \end{table}
 
-%Table 5
+%Table 6
 \begin{table}[htbp]
 \caption{Estimated Average Treatment Effects: Ever Paid, Letter Size}
 \begin{center}

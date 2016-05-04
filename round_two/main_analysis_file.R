@@ -526,29 +526,29 @@ lmfp<-function(formula){
   unname(pf(mdf[1L], mdf[2L], mdf[3L], lower.tail = FALSE))
 }
 
-pvs<-data.table(treat7="$p$-value",
-                rbind(sapply(c(
-                  `Amount Due (June)`="total_due",
-                  `Assessed Property Value`="assessed_mv",
-                  `% with Unique Owner`="unq_own",
-                  `% Overlap with Holdout`="flag_holdout_overlap",
-                  `# Properties per Owner`="N"),
-                  function(x)owners[(!holdout),lmfp(get(x)~treat7)])),
-                `# Owners`=
-                  owners[(!holdout),chisq.test(table(treat7))$p.value])
+pvs <- c(sapply(c(
+  `Amount Due (June)`="total_due",
+  `Assessed Property Value`="assessed_mv",
+  `\\% with Unique Owner`="unq_own",
+  `\\% Overlap with Holdout`="flag_holdout_overlap",
+  `\\# Properties per Owner`="N"),
+  function(x) owners[(!holdout), lmfp(get(x) ~ treat7)]),
+  `\\# Owners`=
+    owners[(!holdout), chisq.test(table(treat7))$p.value])
+pvs <- c("$p$-value", round(pvs, 2L))
 
-print.xtable(xtable(dcast(melt(rbind(
+print.xtable(xtable(cbind(gsub("$", "\\$", t(
   owners[(!holdout),
-         .(`Amount Due (June)`=mean(total_due),
-           `Assessed Property Value`=mean(assessed_mv,na.rm=T),
-           `% with Unique Owner`=to.pct(mean(unq_own)),
-           `% Overlap with Holdout`=to.pct(mean(flag_holdout_overlap)),
-           `# Properties per Owner`=mean(N),
-           `# Owners`=.N),keyby=treat7],pvs),
-  id.vars="treat7",variable.name="Variable"),Variable~treat7),
-  caption="Balance on Observables",label="table:balance",
-  digits=cbind(matrix(c(2,0,1,2,2,0),nrow=6,ncol=9),rep(2,6))),
-  include.rownames=F,sanitize.colnames.function=identity)
+         .(`Amount Due (June)`=dol.form(mean(total_due)),
+           `Assessed Property Value`=dol.form(mean(assessed_mv, na.rm=TRUE)),
+           `\\% with Unique Owner`=to.pct(mean(unq_own), 1L),
+           `\\% Overlap with Holdout`=to.pct(mean(flag_holdout_overlap), 2L),
+           `\\# Properties per Owner`=round(mean(N), 2L),
+           `\\# Owners`=prettyNum(.N, big.mark = ",")),
+         keyby=.(Variable=treat7)]), fixed = TRUE), pvs),
+  caption="Balance on Observables", label="tbl:balance", align = "|r|lllllll|l|"),
+  include.colnames=FALSE, comment=FALSE, sanitize.text.function=identity,
+  floating.environment="sidewaystable", floating=TRUE, hline.after=c(0, 1, 7))
 
 #Analysis ####
 ## @knitr analysis_bs
