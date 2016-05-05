@@ -1155,8 +1155,12 @@ apply(sapply(integer(5000), function(...)
 # Marginal effects tables
 marg_mat <- 
   sapply("ever_paid_" %+% mos, function(tt)
-    predict(reg_info[[tt]][[1]], 
-            data.table(treat7 = trt.nms), 
-            type = "response"))
+    100*predict(reg_info[[tt]][[1]], 
+                data.table(treat7 = trt.nms), 
+                type = "response"))
 dimnames(marg_mat) <- 
   list(trt.nms, c("One Month", "Three Months", "Six Months"))
+print.xtable(xtable(
+  marg_mat, digits = 1, label = "tbl:marg",
+  caption = "Marginal Effects on Participation by Treatment"), 
+  caption.placement = "top", comment = FALSE)
