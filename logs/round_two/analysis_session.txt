@@ -1,4 +1,4 @@
-Package info for code run on 2016-05-02 16:33:23:
+Package info for code run on 2016-05-04 23:53:39:
 R version 3.2.4 (2016-03-10)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Ubuntu 14.04.3 LTS
@@ -18,8 +18,8 @@ other attached packages:
  [1] lmtest_0.9-34       zoo_1.7-12          maptools_0.8-36     RgoogleMaps_1.2.0.7
  [5] doParallel_1.0.8    iterators_1.0.8     foreach_1.4.3       sp_1.1-1           
  [9] xlsx_0.5.7          xlsxjars_0.6.1      rJava_0.9-7         readxl_0.1.0.9000  
-[13] xtable_1.8-2        sandwich_2.3-4      texreg_1.35         funchir_0.1.2      
-[17] data.table_1.9.7   
+[13] xtable_1.8-2        sandwich_2.3-4      texreg_1.35         data.table_1.9.7   
+[17] funchir_0.1.2      
 
 loaded via a namespace (and not attached):
 [1] Rcpp_0.12.4        lattice_0.20-33    tools_3.2.4        grid_3.2.4        

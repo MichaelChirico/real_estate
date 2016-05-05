@@ -1151,3 +1151,12 @@ apply(sapply(integer(5000), function(...)
          to.pct(mean(paid_full_2016)),
          keyby = treat7][ , V1[-1L] - V1[1L]]),
   1L, quantile, c(.025, .975))
+
+# Marginal effects tables
+marg_mat <- 
+  sapply("ever_paid_" %+% mos, function(tt)
+    predict(reg_info[[tt]][[1]], 
+            data.table(treat7 = trt.nms), 
+            type = "response"))
+dimnames(marg_mat) <- 
+  list(trt.nms, c("One Month", "Three Months", "Six Months"))

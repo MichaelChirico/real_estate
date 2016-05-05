@@ -8,12 +8,14 @@
 \topmargin 0.25in
 \tolerance=11000
 
+\usepackage[pdfencoding=auto,unicode=true]{hyperref}
 \usepackage[utf8]{inputenc}
 \usepackage{csquotes}
-\usepackage[pdfencoding=auto,unicode=true]{hyperref}
 \usepackage{graphicx}
 \usepackage{rotating}
 \usepackage{natbib}
+%AER citations style file available here:
+%  http://tug.ctan.org/biblio/bibtex/contrib/economic/aer.bst
 \bibliographystyle{aer}
 \graphicspath{{images/analysis/}{images/balance/}}
 
@@ -287,25 +289,37 @@ In coordination with officials at the Department of Revenue, we designed
 seven letter templates probing a variety of tax compliance motivations. 
 %TO DO: Number appendices, if appropriate
 The templates are included in the Appendix; here we delineate the important 
-distinguishing features of each. First, we designed a Control template, which 
-served simply as a minimalist reminder to taxpayers about their outstanding 
-balance, as well as providing contact information and a notice about 
-available help for English non-natives.
+distinguishing features of each. First, we designed a 
+\hypertarget{control}{Control} template, which served simply as a minimalist 
+reminder to taxpayers about their outstanding balance, as well as 
+providing contact information and a notice about 
+available help for English non-natives. Specifically, we printed:
+
+\blockquote{
+	Dear $owner\_name$,
+
+	Our records indicate that you have a balance due of $balance$.
+
+	If you have already paid, thank you. If not, please pay now or contact us
+	to arrange a payment plan. The fastest and easiest way to pay is online at
+	\underline{www.phila.gov/pay}. Paying by E-check only costs 35c - 
+	less than the cost of a stamp!
+}
 
 Two more templates were designed with the aim of deterrence in mind, under 
 the belief that taxpayers can be convinced to pay by spelling out clearly 
 and in tangible terms the potential consequences of nonpayment. The first 
-of the deterrence letters, which we call the Sheriff treatment, emphasizes 
-the City's most stringent debt recovery mechanism, the Sheriff's Sale, 
-through which the City can auction delinquent properties to the public. 
-This treatment contains the following text: 
+of the deterrence letters, which we call the \hypertarget{sheriff}{Sheriff}
+treatment, emphasizes the City's most stringent debt recovery mechanism, 
+the Sheriff's Sale, through which the City can auction delinquent properties 
+to the public. This treatment contains the following text: 
 
 \blockquote{
 	Failure to pay your Real Estate Taxes may result in the sale of 
 	your property by the City in order to collect back taxes. In the 
 	past year, we have sold $N$ properties in your neighborhood at 
 	Sheriff's Sale.	Included in these $N$ are the following properties 
-	near you: <three properties and their sale dates> 
+	near you: $<$three properties and their sale dates$>$ 
 
 	Pay your taxes now to prevent the sale of your property. 
 	Our records indicate that you have a balance due of $balance$.”
@@ -349,8 +363,8 @@ saw the same set of three properties.
 	about privacy and abandoned.
 }
 
-The second deterrence treatment, which we call the Lien treatment, emphasizes 
-a more mild version of debt recovery punishment at the City's disposal, 
+The second deterrence treatment, which we call the \hypertarget{lien}{Lien} 
+treatment, emphasizes a more mild version of debt recovery punishment at the City's disposal, 
 namely, that the City can exact a lien on any delinquent property which 
 entitles the City to deduce the amount of the lien from any future arms-length 
 market transaction involving the property; the text included is as follows: 
@@ -362,7 +376,7 @@ market transaction involving the property; the text included is as follows:
 	be deducted from the sale price. By paying your taxes now, you can avoid 
 	these penalties and interest. Properties near you in $neighborhood$ that 
 	have had liens placed on them include: 
-	<three properties and their sale dates> 
+	$<$three properties and their sale dates$>$ 
 
 	Pay your taxes now to avoid a lien being placed on your property. 
 	Our records indicate that you have a balance due of $balance$.
@@ -375,10 +389,10 @@ In particular, the triplet of properties assigned to each neighborhood is
 identical across these two treatments. 
 
 The next pair of templates target appeals to taxpayers' sense of citizenship. 
-The first of these, which we'll refer to herein as Peer, implicitly posits 
-that one's predilections for tax compliance arise from a desire for conformity, 
-and as such aim to highlight that the late payee is behaving abnormally with 
-respect to their peers. The specific text reads:
+The first of these, which we'll refer to herein as \hypertarget{peer}{Peer},
+implicitly posits that one's predilections for tax compliance arise from a 
+desire for conformity, and as such aim to highlight that the late payee 
+is behaving abnormally with respect to their peers. The specific text reads:
 
 \blockquote{
 	
@@ -389,9 +403,10 @@ respect to their peers. The specific text reads:
  
 We test an alternative manifestation of the idea that citizens pay their 
 taxes out of a sense of citizenship by formulating in our fourth treatment 
-letter, dubbed Duty, an appeal to the delinquent’s sense of duty, in whichever 
-abstract sense the the reader of the letter chooses to ascribe to the notion. 
-Specifically, we exhorted tax nonpayers in this treatment with the following:
+letter, dubbed \hypertarget{duty}{Duty}, an appeal to the delinquent’s sense 
+of duty, in whichever abstract sense the the reader of the letter chooses 
+to ascribe to the notion. Specifically, we exhorted tax nonpayers in this 
+treatment with the following:
 
 \blockquote{
 	For democracy to work, all citizens need to pay their fair share of taxes 
@@ -403,8 +418,8 @@ The final pair of letter templates were designed to elicit payment from
 the out-of-hock by highlighting the \textit{quid pro quo} nature of
 public good provision – the City provides a bundle of goods and services
 in exchange for tax payments by residents, especially real estate taxes.
-The first such treatment, which we simply call Moral, targets an appeal 
-to public good provision writ large, and reads:
+The first such treatment, which we simply call \hypertarget{moral}{Moral},
+targets an appeal to public good provision writ large, and reads:
 
 \blockquote{
 	Your taxes pay for important services that make a city great. Your 
@@ -414,14 +429,15 @@ to public good provision writ large, and reads:
 	to help us pay for these important services. 
 }
 
-The final letter, which we call Amenities, took instead a more 
-localized approach to this appeal, taking the further step of mentioning 
-specific local public amenities in the vicinity of the letter recipient's property 
-which are in part financed by property taxes. The wording for this treatment is:
+The final letter, which we call \hypertarget{amenities}{Amenities},
+took instead a more localized approach to this appeal, taking the 
+further step of mentioning specific local public amenities in the 
+vicinity of the letter recipient's property which are in part financed 
+by property taxes. The wording for this treatment is:
 
 \blockquote{
 	We want to remind you that your taxes pay for essential public services 
-	in $neighborhood$, such as <two local amenities>, your local police officer, 
+	in $neighborhood$, such as $<$two local amenities$>$, your local police officer, 
 	snow removal, street repairs, and trash collection. Please pay your taxes 
 	to help the city provide these services in your neighborhood.
 }
@@ -525,10 +541,7 @@ Each of the seven letter templates described above was assigned at random
 to envelopes of each size--in other words, each property was equally 
 likely to receive any one of fourteen possible envelope+letter combinations. 
 Balance tests for pre-randomization characteristics, 
-% -- Charles --
-%Mike—Could you produce a balance table to match what I have as Table 3 of 
-%the first paper? Treatments are columns and property characteristics 
-%are rows? We’ll need a second one for the holdout comparison.
+%TO DO: Add balance table for holdout comparison
 reported in Table \ref{tbl:balance} and Figure \ref{fig:box_bal}, 
 confirm that randomization was successful, 
 with no discernable differences between any of our treatment groups.
@@ -543,19 +556,21 @@ on all variables for the 99.9\% of all properties in the remaining blocks.
 
 \subsection{Intervention \#1: Targeted Phrasing vs. Control}
 
-Table \ref{tbl:reg7_ep} and Figure \ref{fig:box_bal} report the main experimental intervention results 
-at one-, three-, and six-month intervals. At the one month mark, 
-several weeks after receiving the experimental or control notifications, 
-35\% of delinquents in the control condition have made at least some payments 
-towards their outstanding bill, with 24\% having paid the bill in its entirety.
-%TO DO: Make sure we're consistent with treatment names
-All intrinsic motivation notifications (\textit{i.e.}, Amenity, Civic Responsibility, 
-Moral, and Peer) are within 1 percent of the control repayment rate and 
+Table \ref{tbl:reg7_ep} and Figure \ref{fig:box_bal} report the main 
+experimental intervention results at one-, three-, and six-month 
+intervals. At the one month mark, several weeks after receiving the 
+experimental or control notifications, 35\% of delinquents in the 
+control condition have made at least some payments towards their 
+outstanding bill, with 24\% having paid the bill in its entirety. All 
+intrinsic motivation notifications (\textit{i.e.}, \hyperlink{amenities}{Amenity}, 
+\hyperlink{duty}{Duty}, \hyperlink{moral}{Moral}, and \hyperlink{peer}{Peer}) 
+are within 1 percent of the control repayment rate and 
 statistically insignificant. By comparison, notifications emphasizing 
 extrinsic/consequentialist factors both show short-term differences of 
-4.9\% (Lien) and 3.4\% (Sheriff's sale). Both are statistically significant. 
-Results from logit models using paid-in-full (including fees) instead of any 
-payment, reported Table \ref{tbl:reg7_pf}, reveal that the majority (69\%) of the estimated 
+4.9\% (\hyperlink{lien}{Lien}) and 3.4\% (\hyperlink{sheriff}{Sheriff's sale}). 
+Both are statistically significant. Results from logit models using 
+paid-in-full (including fees) instead of any payment, reported Table 
+\ref{tbl:reg7_pf}, reveal that the majority (69\%) of the estimated 
 short-term effect of payment comes from recipients paying off their entire balance.
 
 Three-month results, reported in Column 2 of Table \ref{tbl:reg7_pf}, show a very 
@@ -571,7 +586,7 @@ Six-month results, reported in Column 3 of Table \ref{tbl:reg7_pf}, indicate tha
 participation rates for first-time delinquents are 76\% within six months. 
 Nudge-like treatment notifications remain insignificant and barely 
 distinguishable from the control response. Consequentialist notifications 
-are 2.4\% (Lien) and 1.9\% (Sheriff's sale) higher than control. The lien treatment 
+are 2.4\% (Lien) and 1.9\% (Sheriff's sale) higher than Control. The Lien treatment 
 thereby is the only treatment to retain significance at conventional 
 levels through the end of the follow-up period.
 \footnote{
@@ -579,7 +594,7 @@ levels through the end of the follow-up period.
 	begin to muddy the interpretation of repayment and outstanding debt.
 }
 Comparing full payment 
-outcomes instead of all payments reveals that the lien consequentialist 
+outcomes instead of all payments reveals that the Lien consequentialist 
 treatment is 4\% higher than the control mean of 63\% with no other 
 treatments having discernable or significant differences.
 
