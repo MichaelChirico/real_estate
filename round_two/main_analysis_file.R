@@ -147,7 +147,7 @@ followupIV<-setDT(read_excel(
 
 ###In addition to the two from the three-month sample,
 ###  two more properties have updated OPAs.
-###  **INSERT E-MAIL META DATA FROM DOR CONFIRMATION**
+###  **TO DO: INSERT E-MAIL META DATA FROM DOR CONFIRMATION**
 update_opas<-
   data.table(old=c("151102600","884350465","882932475","213155700"),
              new=c("151102610","881577275","882932476","881081460"))
