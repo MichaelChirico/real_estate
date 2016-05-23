@@ -496,10 +496,10 @@ samples along this very important dimension.
 In order to account for blocking in subsequent analysis, standard errors 
 are clustered at the block level (as randomized) for all regression equations. 
 
-\begin{sidewaystable}[htbp]
+\begin{sidewaystable}[ht]
 \centering
 \begin{tabular}{|r|lllllll|l|}
-  \hline
+   \hline
 Variable & Control & Amenities & Moral & Duty & Peer & Lien & Sheriff & $p$-value \\ 
    \hline
 Amount Due (June) & \$1,847 & \$2,209 & \$1,954 & \$1,700 & \$1,772 & \$1,735 & \$1,887 & 0.78 \\ 
@@ -508,7 +508,8 @@ Amount Due (June) & \$1,847 & \$2,209 & \$1,954 & \$1,700 & \$1,772 & \$1,735 & 
   \% Overlap with Holdout & 3.72 & 3.80 & 3.47 & 3.47 & 3.58 & 3.47 & 3.29 & 0.96 \\ 
   \# Properties per Owner & 1.33 & 1.36 & 1.29 & 1.27 & 1.26 & 1.32 & 1.26 & 0.55 \\ 
   \# Owners & 2,766 & 2,766 & 2,766 & 2,766 & 2,766 & 2,765 & 2,766 & 1 \\ 
-   \hline
+   \hline 
+ \multicolumn{9}{l}{\scriptsize{$p$-values in rows 1-5 are $F$-test $p$-values from regressing each variable on treatment dummies. A $\chi^2$ test was used for the count of owners.}} \\ 
 \end{tabular}
 \caption{Balance on Observables} 
 \label{tbl:balance}

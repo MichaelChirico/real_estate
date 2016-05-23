@@ -110,6 +110,9 @@ holdoutII[update_opas,opa_no:=i.old,on=c("opa_no"="new")]
 ##Block III: Follow-up Sample (September 2015)
 followupIII<-setDT(read_excel(
   wds["data"]%+%"req20150709_PennLetterExperiment (September 2015 update) v2.xlsx",
+  ##** NOTE: I'm using my own branch of readxl here which
+  ##   supports multiple NA values; installed via
+  ##   devtools::install_github("MichaelChirico/readxl@multiple_na") **
   sheet="DETAILS",skip=7,na=c("NULL","-"),
   col_names=c("x","opa_no","x","x","latitude","longitude",
               rep("x",5),"paid_full","ever_paid","pmt_agr",
@@ -521,7 +524,7 @@ properties[(!holdout),
 
 lmfp<-function(formula){
   #extract F-statistic & DoF from LM call
-  mdf<-summary(do.call("lm",list(formula=formula)))$fstatistic
+  mdf <- summary(do.call("lm", list(formula=formula)))$fstatistic
   #copied (ported) from print.summary.lm
   unname(pf(mdf[1L], mdf[2L], mdf[3L], lower.tail = FALSE))
 }
@@ -546,16 +549,26 @@ print.xtable(xtable(cbind(gsub("$", "\\$", t(
            `\\# Properties per Owner`=round(mean(N), 2L),
            `\\# Owners`=prettyNum(.N, big.mark = ",")),
          keyby=.(Variable=treat7)]), fixed = TRUE), pvs),
-  caption="Balance on Observables", label="tbl:balance", align = "|r|lllllll|l|"),
-  include.colnames=FALSE, comment=FALSE, sanitize.text.function=identity,
-  floating.environment="sidewaystable", floating=TRUE, hline.after=c(0, 1, 7))
+  caption="Balance on Observables",
+  label="tbl:balance", align = "|r|lllllll|l|"),
+  include.colnames=FALSE, comment=FALSE, 
+  sanitize.text.function=identity,
+  floating.environment="sidewaystable", 
+  floating=TRUE, hline.after=c(0, 1),
+  add.to.row=
+    list(pos = list(7),
+         command = c("\\hline \n \\multicolumn{9}{l}" %+% 
+                       "{\\scriptsize{$p$-values in rows 1-5 are " %+% 
+                       "$F$-test $p$-values from regressing each " %+% 
+                       "variable on treatment dummies. A $\\chi^2$ " %+% 
+                       "test was used for the count of owners.}} \\\\ \n")))
 
 #Analysis ####
 ## @knitr analysis_bs
 ## Bootstrap simulations ####
 ###Number of repetitions for all bootstrap
 ###  exercises
-BB<-5000
+BB <- 5000
 
 ###Point Estimate CIs ####
 ###For the standard confidence intervals,
@@ -709,59 +722,56 @@ date.dt <-
   #  so we'll have to "fill-in-the-blanks" with this
   CJ(treat8 = c("Holdout","Control"), date = dt.rng,
      unique=TRUE, sorted = FALSE)
-owners[(unq_own), hold_cont := treat8%in%c("Holdout","Control")]
-cum_haz<-owners[(hold_cont),
-                #total entrants by day, treatment
-                sum(ever_paid_dec)+0., #convert to numeric
-                keyby=.(treat8,earliest_pmt_dec)
-                #running total of entrants; take care to eliminate NAs
-                ][,.(ep=cumsum(V1[idx<-!is.na(earliest_pmt_dec)]),
-                     date=earliest_pmt_dec[idx]),by=treat8
-                  #merge to get the denominator
-                  ][owners[(hold_cont),.N,treat8],
-                    ep:=ep/i.N,on="treat8"
-                    ][date.dt, on = c("treat8", "date"), roll = TRUE
-                      #express relative to holdout
-                      ][,.(ep=ep[idx<-treat8=="Control"]-ep[!idx]),by=date]
+owners[(unq_own), hold_cont := treat8 %in% c("Holdout","Control")]
+cum_haz <- 
+  owners[(hold_cont),
+         #total entrants by day, treatment
+         sum(ever_paid_dec) + 0., #convert to numeric
+         keyby=.(treat8, earliest_pmt_dec)
+         #running total of entrants; take care to eliminate NAs
+         ][ , .(ep=cumsum(V1[idx <- !is.na(earliest_pmt_dec)]),
+                date=earliest_pmt_dec[idx]), by=treat8
+            #merge to get the denominator
+            ][owners[(hold_cont), .N, treat8],
+              ep := ep/i.N, on="treat8"
+              ][date.dt, on = c("treat8", "date"), roll = TRUE
+                #express relative to holdout
+                ][ , .(ep=ep[idx <- treat8=="Control"] -
+                         ep[!idx]), by=date]
 
 BB <- 5000 #number of bootstrap simulations
 cis <- dcast(rbindlist(lapply(integer(BB), function(...){
-  dt <- owners[(hold_cont)][sample(.N,rep=T)]
-  dt[,sum(ever_paid_dec)+0.,keyby=.(treat8,earliest_pmt_dec)
-     ][,.(ep=cumsum(V1[idx<-!is.na(earliest_pmt_dec)]),
-          date=earliest_pmt_dec[idx]),by=treat8
-       ][dt[,.N,treat8],ep:=ep/i.N,on="treat8"
-         ][date.dt, on = c("treat8", "date"),roll = TRUE
-           ][,.(ep=ep[idx<-treat8=="Control"]-ep[!idx]),
-             by=date]}),idcol="bootID"
+  dt <- owners[(hold_cont)][sample(.N, rep = TRUE)]
+  dt[ , sum(ever_paid_dec) + 0., keyby=.(treat8, earliest_pmt_dec)
+     ][ , .(ep=cumsum(V1[idx <- !is.na(earliest_pmt_dec)]),
+          date=earliest_pmt_dec[idx]), by=treat8
+       ][dt[ , .N, treat8], ep := ep/i.N, on="treat8"
+         ][date.dt, on = c("treat8", "date"), roll = TRUE
+           ][ , .(ep=ep[idx <- treat8 == "Control"] - ep[!idx]),
+             by=date]}), idcol="bootID"
   #extract for 95% CI
-  )[,quantile(ep, c(.025, .975), na.rm=T), by = date],
-  date~c("low","high")[rowid(date)],value.var="V1")
+  )[ , quantile(ep, c(.05, .95), na.rm=T), by = date],
+  date ~ c("low", "high")[rowid(date)], value.var="V1")
 
 ## @knitr ignore
 ### plot
 pdf2(wds["imga"] %+% "cum_haz_ever_paid_control_holdout_own.pdf")
 cum_haz[
-  cis,on=c("date")
-  ][,{
-    matplot(date, do.call("cbind",mget(c("low","ep","high"))),
-            type="l",lty=c(2,1,2),col=get.col("Control"),
-            xaxt="n",lwd=3, las = 2,
+  cis, on=c("date")
+  ][ , {
+    matplot(date, do.call("cbind", mget(c("low", "ep", "high"))),
+            type="l", lty=c(2, 1, 2), col=get.col("Control"),
+            xaxt="n", lwd=3, las = 2,
             ylab="Probability Ever Paid vs. Holdout")
-    axis(side=1,at=dt.rng2,labels=format(dt.rng2,"%b %d"))
+    axis(side=1, at=dt.rng2, labels=format(dt.rng2, "%b %d"))
     abline(h = 0, col = "black", lwd = 2)
-    abline(v = ds <- unclass(D("2015-06-12", "2015-06-22")),
-           col = "black", lwd = 2, lty = 2)
-    text(ds, .07, pos = 4, labels = c("1", "2"), col = "red")
-    text(unclass(D("2015-10-21")), .07, col = "red", adj = c(0,0),
-         labels = "1: Small Envelopes\n2: Big Envelopes", pos = 4)
-    title("Cumulative Partial Participation"%+%
+    title("Cumulative Partial Participation" %+%
             "\nControl vs. Holdout (Unique Owners Only)")}]
 dev.off2()
 
 ##Regression Tables ####
 ## @knitr analysis_reg
-reg_vars <- c("ever_paid","paid_full","total_paid")
+reg_vars <- c("ever_paid", "paid_full", "total_paid")
 reg_all <- levels(interaction(reg_vars, mos, sep="_"))
 
 reg_j <- 
@@ -814,6 +824,36 @@ boot_dist <- rbindlist(parLapply(cl, 1:BB, function(bb){
 stopCluster(cl); close(progress); unlink(tmp)
 
 reg_info <- 
+  rbind(regs, boot_dist[ , lapply(.SD, function(x)
+    list(var(matrix(x, ncol = 7, byrow = TRUE))))]
+    )[ , lapply(.SD, function(x)
+      c(x, list(sqrt(diag(x[[2]])))))
+      ][ , lapply(.SD, function(x) 
+        c(x, list(coeftest(x[[1]], vcov = x[[2]])[ , 4])))]
+
+#now for single-owner samples
+##exclude total_paid for single owner analysis
+DT <- owners[(!holdout & unq_own)]
+regs <- owners[(!holdout & unq_own), eval(reg_j)]
+starts <- 
+  lapply(reg_all, function(rr) regs[[rr]][[1L]]$coefficients)
+RBs <- owners[(!holdout & unq_own), unique(rand_id)]
+
+tmp <- tempfile()
+progress <- txtProgressBar(1, BB, style = 3L)
+
+cl <- makeCluster(8L, outfile = "")
+invisible(clusterEvalQ(cl, library(data.table)))
+clusterExport(cl, c("DT", "RBs", "coef_j", "starts", "progress", "tmp"),
+              envir = environment())
+boot_dist <- rbindlist(parLapply(cl, 1:BB, function(bb){
+  cat("\n", file = tmp, append = TRUE)
+  setTxtProgressBar(
+    progress, as.integer(system(paste("wc -l <", tmp), intern = TRUE)))
+  DT[.(sample(RBs, rep = TRUE)), eval(coef_j)]}))
+stopCluster(cl); close(progress); unlink(tmp)
+
+reg_info_so <- 
   rbind(regs, boot_dist[ , lapply(.SD, function(x)
     list(var(matrix(x, ncol = 7, byrow = TRUE))))]
     )[ , lapply(.SD, function(x)
@@ -893,13 +933,14 @@ boot_dist <- rbindlist(parLapply(cl, 1:BB, function(bb){
   DT[.(sample(RBs, rep = TRUE)), eval(coef_j)]}))
 stopCluster(cl); close(progress); unlink(tmp)
 
-reg_info <- 
+reg_info_bs <- 
   rbind(regs, boot_dist[ , lapply(.SD, function(x)
     list(var(matrix(x, ncol = 2, byrow = TRUE))))]
     )[ , lapply(.SD, function(x)
       c(x, list(sqrt(diag(x[[2]])))))
       ][ , lapply(.SD, function(x) 
         c(x, list(coeftest(x[[1]], vcov = x[[2]])[ , 4])))]
+
 
 
 ###Difference in Mean Tests
@@ -928,12 +969,14 @@ print(texreg(
   omit.coef="XXX$", float.pos="htbp"))
 
 #Now for main vs. holdout
-reg_all <- "ever_paid_" %+% mos
+reg_all <- c("paid_full_", "ever_paid_") %+% 
+  rep(mos, each = 2)
+
 reg_j <- 
   parse(text = 
           paste0(".(", paste(paste0(
             reg_all, "=list(glm(", reg_all,
-            "~ treat8, family = binomial))"), 
+            " ~ treat8, family = binomial))"), 
             collapse = ","), ")"))
 
 coef_j = 
@@ -946,7 +989,9 @@ coef_j =
                      "family=binomial())")), 
             "$coefficients"), 
             collapse = ","), ")"))
-regs <- owners[ , eval(reg_j)]
+
+DT <- owners[(unq_own)]
+regs <- owners[(unq_own), eval(reg_j)]
 starts <- 
   lapply(reg_all, function(rr) regs[[rr]][[1L]]$coefficients)
 
@@ -955,16 +1000,16 @@ progress <- txtProgressBar(1, BB, style = 3L)
 
 cl <- makeCluster(8L, outfile = "")
 invisible(clusterEvalQ(cl, library(data.table)))
-clusterExport(cl, c("owners", "coef_j", "starts", "progress", "tmp"),
+clusterExport(cl, c("DT", "coef_j", "starts", "progress", "tmp"),
               envir = environment())
 boot_dist <- rbindlist(parLapply(cl, 1:BB, function(bb){
   cat("\n", file = tmp, append = TRUE)
   setTxtProgressBar(
     progress, as.integer(system(paste("wc -l <", tmp), intern = TRUE)))
-  owners[sample(.N, rep = TRUE), eval(coef_j)]}))
+  DT[sample(.N, rep = TRUE), eval(coef_j)]}))
 stopCluster(cl); close(progress); unlink(tmp)
 
-reg_info <- 
+reg_info_8 <- 
   rbind(regs, boot_dist[ , lapply(.SD, function(x)
     list(var(matrix(x, ncol = 8, byrow = TRUE))))]
     )[ , lapply(.SD, function(x)
@@ -984,15 +1029,16 @@ rename_coef<-function(obj){
   obj
 }
 
+ep <- reg_all[grepl("ever", reg_all)]
 print(texreg(
-  lapply(reg_all, function(mo)
-    rename_coef(reg_info[[mo]][[1]])),
+  lapply(ep, function(mo)
+    rename_coef(reg_info_8[[mo]][[1]])),
   custom.model.names=
     c("One Month","Three Months","Six Months"),
   caption=
     "Estimated Average Treatment Effects: Ever Paid, vs. Holdout",
-  override.se=lapply(reg_all, function(mo) reg_info[[mo]][[3]]),
-  override.pval=lapply(reg_all, function(mo) reg_info[[mo]][[4]]),
+  override.se=lapply(ep, function(mo) reg_info_8[[mo]][[3]]),
+  override.pval=lapply(ep, function(mo) reg_info_8[[mo]][[4]]),
   caption.above=TRUE, stars=c(.01,.05,.1),label="tbl:reg8_ep", 
   include.rsquared=FALSE, include.adjrs=FALSE, include.rmse=FALSE,
   #Exclude Intercept
