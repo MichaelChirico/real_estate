@@ -594,119 +594,31 @@ outn2 <- c("ep", "tp") %+% rep(c("j","s","d"), each = 2)
 
 bootlist<-{
   #By owner, big vs. small
-  list(o2=list(dt=owners[(!holdout)],tr="treat2",
+  list(o2=list(dt=owners[(!holdout)], tr="treat2",
                rI = owners[(!holdout), unique(rand_id)],
                ri = quote(.(sample(rI, rep = TRUE))),
-               exprs=outvar,nms=outn,fn="2_own",
-               tl="Big/Small",lv=owners[,levels(treat2)],
-               nx=.75,sp=3,yl=c(2,10),dn=quote(NULL)),
+               exprs=outvar, nms=outn, fn="2_own",
+               tl="Big/Small", lv=owners[ , levels(treat2)]),
        #By owner, main 7 treatments
-       o7=list(dt=owners[(!holdout)],tr="treat7",
+       o7=list(dt=owners[(!holdout)], tr="treat7",
                rI = owners[(!holdout), unique(rand_id)],
                ri = quote(.(sample(rI, rep = TRUE))),
                exprs=outvar2, nms=outn2,
-               fn="7_own",tl="Treatment",lv=trt.nms,nx=.75,
-               sp=NULL,yl=NULL,dn=quote(NULL)))}
+               fn="7_own", tl="Treatment", lv=trt.nms))}
 
-boot.cis<-{
-  lapply(bootlist,function(z){
-    cat(z$tl)
-    with(z,list("dt"=setnames(
+boot.cis <-
+  lapply(bootlist, function(z){
+    cat(z$tl, "\n")
+    with(z, list("dt"=setnames(
       #First, point estimates from raw data
       dt[ , eval(exprs), keyby = tr
-          ][dcast(rbindlist(lapply(integer(BB), function(...)
+          ][rbindlist(lapply(integer(BB), function(...)
             #calculate point estimate in re-sample
             dt[eval(ri), eval(exprs), keyby = tr])
-          )[ , lapply(.SD, quantile, c(.025, .975)), by = tr],
-          as.formula(paste0(tr, "~",  'c("low", "high")[rowid(', tr, ")]")),
-          value.var = "V" %+% 1:length(nms)), on = tr],
-      -1L, c(nms, rep(nms, each = 2)) %+% 
-        c(rep("", length(nms)), rep(c("_high","_low"), length(nms)))),
-      "fn"=fn,"tr"=tr,"tl"=tl,"rf"=lv[1L],
-      "nx"=nx,"sp"=sp,"yl"=yl,"dn"=dn))})}
-
-##Bar Plots ####
-## @knitr ignore
-###Ever Paid, three cross-sections, vs. Control
-pdf2(wds["imga"] %+% "bar_plot_ever_paid_julsepdec_7_own.pdf")
-with(boot.cis$o7,
-     dt[order(treat7),
-        {par(mfrow = c(1,3), oma = c(5.6, 5.1, 4.1, 2.1))
-          Mo <- c(j = "One Month", s = "Three Months", d = "Six Months")
-          yup <- nx.mlt(1.05*to.pct(max(epj_high,eps_high,epd_high)),5)
-          for (mo in c("j", "s", "d")){
-            par(mar=c(0,0,0,0))
-            vals<-lapply(mget("ep"%+%mo%+%c("","_low","_high")),to.pct)
-            ind<-which(treat7=="Control")
-            x<-barplot(vals[[1]],names.arg=treat7,xlim=yl,
-                       ylim=c(0, yup),las=2,yaxt="n",
-                       col=get.col(treat7),main="",
-                       space=sp, cex.names = 1.3)
-            title(Mo[mo], line = -1)
-            arrows(x,vals[[2]],x,vals[[3]],code=3,
-                   angle=90,length=.07,lwd=2)
-            abline(h=c(vals[[2]][ind],vals[[3]][ind]),lty=2)
-            tile.axes(match(mo, names(Mo)), 1L, 3L, 
-                      params = list(y = list(las = 2L, cex.axis = 1.3)),
-                      use.x = FALSE)
-            box()}
-          title("Percent Ever Paid (by Owner)", outer = TRUE, cex = 1.3)
-          mtext("Percent",side=2,outer=T,line=2.5)}])
-dev.off2()
-
-###Average Paid, three cross-sections, vs. Control
-pdf2(wds["imga"] %+% "bar_plot_aver_paid_julsepdec_7_own.pdf")
-with(boot.cis$o7,
-     dt[order(treat7),
-        {par(mfrow = c(1,3), oma = c(5.6, 5.1, 4.1, 2.1))
-          Mo <- c(j = "One Month", s = "Three Months", d = "Six Months")
-          yup <- nx.mlt(1.05*max(tpj_high,tps_high,tpd_high),10)
-          for (mo in c("j", "s", "d")){
-            par(mar=c(0,0,0,0))
-            vals<-mget("tp" %+% mo %+% c("","_low","_high"))
-            ind<-which(treat7=="Control")
-            x<-barplot(vals[[1]],names.arg=treat7,xlim=yl,
-                       ylim=c(0, yup),las=2,yaxt="n",
-                       col=get.col(treat7),main="",
-                       space=sp, cex.names = 1.3)
-            title(Mo[mo], line = -1)
-            arrows(x,vals[[2]],x,vals[[3]],code=3,
-                   angle=90,length=.07,lwd=2)
-            abline(h=c(vals[[2]][ind],vals[[3]][ind]),lty=2)
-            tile.axes(match(mo, names(Mo)), 1L, 3L, 
-                      params = list(y = list(las = 2L, cex.axis = 1.3)),
-                      use.x = FALSE)
-            box()}
-          title("Average Paid (by Owner)", outer = TRUE)
-          mtext("$",side=2,outer=T,line=2.5)}])
-dev.off2()
-
-###Ever Paid, three cross-sections vs. Small
-pdf2(wds["imga"] %+% "bar_plot_ever_paid_julsepdec_2_own.pdf")
-with(boot.cis$o2,
-     dt[order(treat2),
-        {par(mfrow = c(1,3), oma = c(5.6, 5.1, 4.1, 2.1))
-          Mo <- c(j = "One Month", s = "Three Months", d = "Six Months")
-          xup <- nx.mlt(1.05*to.pct(max(epj_high,eps_high,epd_high)),5)
-          for (mo in c("j", "s", "d")){
-            par(mar=c(0,0,0,0))
-            vals<-lapply(mget("ep"%+%mo%+%c("","_low","_high")),to.pct)
-            ind<-which(treat2=="Small")
-            x<-barplot(vals[[1]],names.arg=treat2,xlim=c(0, 5),
-                       ylim=c(0, xup),las=2,yaxt="n",
-                       col=get.col(treat2),main="", space = .5,
-                       cex.names = 1.3, width = 1.5)
-            title(Mo[mo], line = -1)
-            arrows(x,vals[[2]],x,vals[[3]],code=3,
-                   angle=90,length=.07,lwd=2)
-            abline(h=c(vals[[2]][ind],vals[[3]][ind]),lty=2)
-            tile.axes(match(mo, names(Mo)), 1L, 3L, 
-                      params = list(y = list(las = 2L, cex.axis = 1.3)),
-                      use.x = FALSE)
-            box()}
-          title("Percent Ever Paid (by Owner)", outer = TRUE)
-          mtext("Percent",side=2,outer=T,line=2.5)}])
-dev.off2()
+          )[ , lapply(.SD, sd), by = tr], on = tr],
+      -1L, nms %+% 
+        c(rep("", length(nms)), rep("_se", length(nms)))),
+      "fn"=fn,"tr"=tr,"tl"=tl))})
 
 ## Cumulative Partial Participation
 ## @knitr analysis_ch_ep
