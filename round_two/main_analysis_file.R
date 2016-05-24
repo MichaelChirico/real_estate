@@ -877,22 +877,41 @@ proper <- c(ever_paid="Ever Paid",
             paid_full="Paid Full",
             total_paid="Total Paid")
 abbr <- c(ever_paid="ep", paid_full="pf", total_paid="tp")
-invisible(sapply(reg_vars,
-  function(rr)
-    print(texreg(
-      lapply(tp <- paste(rr, mos, sep="_"), function(mo)
-        rename_coef(reg_info[[mo]][[1]])),
-      custom.model.names=
-        c("One Month","Three Months","Six Months"),
-      caption=
-        "Estimated Average Treatment Effects: " %+% proper[rr],
-      override.se=lapply(tp, function(mo) reg_info[[mo]][[3]]),
-      override.pval=lapply(tp, function(mo) reg_info[[mo]][[4]]),
-      caption.above=TRUE, stars=c(.01,.05,.1),
-      label="tbl:reg7_" %+% abbr[rr], 
-      include.rsquared=FALSE, include.adjrs=FALSE, include.rmse=FALSE,
-      #Exclude Intercept
-      omit.coef="XXX$", float.pos="htbp"))))
+invisible(lapply(reg_vars, function(rr){
+  cat("\n\n\n\n***********************\n", proper[rr])
+  x <- capture.output(texreg(c(lapply(
+    tp <- paste(rr, mos, sep="_"), function(mo)
+      rename_coef(reg_info[[mo]][[1]])),
+    lapply(tp, function(mo)
+      rename_coef(reg_info_so[[mo]][[1]]))),
+    custom.model.names=
+      rep(c("One Month","Three Months","Six Months"), 2),
+    caption=
+      "Estimated Average Treatment Effects: " %+% proper[rr],
+    override.se=
+      c(lapply(tp, function(mo) reg_info[[mo]][[3]]),
+        lapply(tp, function(mo) reg_info_so[[mo]][[3]])),
+    override.pval=
+      c(lapply(tp, function(mo) reg_info[[mo]][[4]]),
+        lapply(tp, function(mo) reg_info_so[[mo]][[4]])),
+    caption.above=TRUE, stars=c(.01,.05,.1),
+    label="tbl:reg7_" %+% abbr[rr], 
+    include.rsquared=FALSE, include.adjrs=FALSE, 
+    include.rmse=FALSE, include.aic=FALSE, 
+    include.bic=FALSE, include.deviance=FALSE,
+    #Exclude Intercept
+    omit.coef="XXX$", float.pos="htbp", 
+    sideways = TRUE, use.packages = FALSE))
+  
+  ## add vertical lines to separate populations
+  x[5] <- "\\begin{tabular}{|l| c c c| c c c| }"
+  
+  ## add multicolumn to distinguish populations
+  x[8] <- x[8] %+% "\n & \\multicolumn{3}{c}{All Owners} & " %+% 
+    "\\multicolumn{3}{|c|}{Single-Property Owners} \\\\"
+  
+  ## print again
+  cat(x, sep = "\n")}))
 
 #### Now for big v small
 reg_all <- "ever_paid_" %+% mos
