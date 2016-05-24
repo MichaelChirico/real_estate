@@ -579,46 +579,46 @@ BB <- 5000
 setkey(owners, rand_id)
 
 outvar <- parse(text = paste0(
-  ".(", paste(paste0("mean(ever_paid_", mos, ")"),
-              collapse = ","), ")"))
-
-outvar2 <- parse(text = paste0(
-  ".(", paste(paste0("mean(",
-                     c("ever_paid_", "total_paid_"),
+  ".(", paste(paste0("mean(100*",
+                     c("ever_paid_", "paid_full_"),
                      rep(mos, each = 2), ")"),
               collapse = ","), ")"))
 
-outn <- "ep" %+% c("j","s","d")
-
-outn2 <- c("ep", "tp") %+% rep(c("j","s","d"), each = 2)
-
-bootlist<-{
-  #By owner, big vs. small
-  list(o2=list(dt=owners[(!holdout)], tr="treat2",
-               rI = owners[(!holdout), unique(rand_id)],
-               ri = quote(.(sample(rI, rep = TRUE))),
-               exprs=outvar, nms=outn, fn="2_own",
-               tl="Big/Small", lv=owners[ , levels(treat2)]),
-       #By owner, main 7 treatments
-       o7=list(dt=owners[(!holdout)], tr="treat7",
-               rI = owners[(!holdout), unique(rand_id)],
-               ri = quote(.(sample(rI, rep = TRUE))),
-               exprs=outvar2, nms=outn2,
-               fn="7_own", tl="Treatment", lv=trt.nms))}
+outn <- c("ep", "pf") %+% rep(c("j","s","d"), each = 2)
 
 boot.cis <-
-  lapply(bootlist, function(z){
-    cat(z$tl, "\n")
-    with(z, list("dt"=setnames(
-      #First, point estimates from raw data
-      dt[ , eval(exprs), keyby = tr
-          ][rbindlist(lapply(integer(BB), function(...)
-            #calculate point estimate in re-sample
-            dt[eval(ri), eval(exprs), keyby = tr])
-          )[ , lapply(.SD, sd), by = tr], on = tr],
-      -1L, nms %+% 
-        c(rep("", length(nms)), rep("_se", length(nms)))),
-      "fn"=fn,"tr"=tr,"tl"=tl))})
+  with(list(dt=owners[(!holdout)], tr="treat7",
+            rI = owners[(!holdout), unique(rand_id)],
+            ri = quote(.(sample(rI, rep = TRUE))),
+            exprs=outvar, nms=outn), 
+       setnames(dt[ , eval(exprs), keyby = tr
+                    ][rbindlist(lapply(integer(BB), function(...)
+                      #calculate point estimate in re-sample
+                      dt[eval(ri), eval(exprs), keyby = tr])
+                      )[ , lapply(.SD, sd), by = tr], on = tr],
+                -1L, nms %+% rep(c("", "_se"), each = length(nms))))
+
+## formatting for tex output
+setnames(boot.cis, "treat7", "Treatment")
+rnd <- names(boot.cis)[-1]
+boot.cis[ , (rnd) := 
+            lapply(lapply(.SD, round, 1),
+                   as.character), .SDcols = rnd]
+paren <- grep("_se", rnd, value = TRUE)
+boot.cis[ , (paren) :=
+            lapply(.SD, function(x) paste0("(", x, ")")), 
+          .SDcols = paren]
+print(xtable(melt(boot.cis, id.vars = "Treatment", 
+            measure.vars = list(c("epj", "epj_se"),
+                                c("eps", "eps_se"),
+                                c("epd", "epd_se")),
+            value.name = c("One Month", "Three Months", "Six Months")
+            )[order(Treatment)][variable == 2, Treatment := ""
+                                ][ , !"variable", with = FALSE],
+            caption = "Participation Rates by Treatment over Time", 
+            align = "rrrrr", label = "tbl:marg"),
+      include.rownames = FALSE, comment = FALSE, 
+      caption.placement = "top")
 
 ## Cumulative Partial Participation
 ## @knitr analysis_ch_ep
