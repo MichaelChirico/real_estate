@@ -568,7 +568,7 @@ print.xtable(xtable(cbind(gsub("$", "\\$", t(
 pvs <- c(sapply(c(
   `Amount Due (June)`="total_due",
   `Assessed Property Value`="assessed_mv"),
-  function(x) owners[(!holdout), lmfp(get(x) ~ treat7)]),
+  function(x) owners[(!holdout & unq_own), lmfp(get(x) ~ treat7)]),
   `\\# Owners`=
     owners[(!holdout & unq_own), chisq.test(table(treat7))$p.value])
 pvs <- c("$p$-value", round(pvs, 2L))
