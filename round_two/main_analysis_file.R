@@ -53,6 +53,9 @@ trt.nms8 <- c("Holdout", trt.nms)
 
 mos <- c("jul", "sep", "dec")
 
+#number of bootstrap replications in all such exercises
+BB <- 5000
+
 #Convenient Functions 
 get.col<-function(st){
   cols<-c(Big="blue",Small="red",Control="blue",Amenities="yellow",
@@ -563,28 +566,19 @@ print.xtable(xtable(cbind(gsub("$", "\\$", t(
                        "variable on treatment dummies. A $\\chi^2$ " %+% 
                        "test was used for the count of owners.}} \\\\ \n")))
 
-#Analysis ####
-## @knitr analysis_bs
-## Bootstrap simulations ####
-###Number of repetitions for all bootstrap
-###  exercises
-BB <- 5000
-
-###Point Estimate CIs ####
-###For the standard confidence intervals,
-###  we can condense the process by storing
-###  the key changing parameters in this list;
-###  also store a bunch of plotting parameters
-###  since we'll use the result of this list for that
+#Point Estimate CIs ####
+# @knitr analysis_bs
+#For the standard confidence intervals,
+#  we can condense the process by storing
+#  the key changing parameters in this list;
+#  also store a bunch of plotting parameters
+#  since we'll use the result of this list for that
 setkey(owners, rand_id)
 
 outvar <- parse(text = paste0(
-  ".(", paste(paste0("mean(100*",
-                     c("ever_paid_", "paid_full_"),
-                     rep(mos, each = 2), ")"),
-              collapse = ","), ")"))
+  ".(", paste(paste0("mean(100*ever_paid_", mos, ")"), collapse = ","), ")"))
 
-outn <- c("ep", "pf") %+% rep(c("j","s","d"), each = 2)
+outn <- "ep" %+% c("j","s","d")
 
 boot.cis <-
   with(list(dt=owners[(!holdout)], tr="treat7",
@@ -608,6 +602,8 @@ paren <- grep("_se", rnd, value = TRUE)
 boot.cis[ , (paren) :=
             lapply(.SD, function(x) paste0("(", x, ")")), 
           .SDcols = paren]
+
+##Ever Paid ME
 print(xtable(melt(boot.cis, id.vars = "Treatment", 
             measure.vars = list(c("epj", "epj_se"),
                                 c("eps", "eps_se"),
@@ -616,73 +612,72 @@ print(xtable(melt(boot.cis, id.vars = "Treatment",
             )[order(Treatment)][variable == 2, Treatment := ""
                                 ][ , !"variable", with = FALSE],
             caption = "Participation Rates by Treatment over Time", 
-            align = "rrrrr", label = "tbl:marg"),
+            align = "rrrrr", label = "tbl:marg_ep"),
       include.rownames = FALSE, comment = FALSE, 
       caption.placement = "top")
 
 ## Cumulative Partial Participation
 ## @knitr analysis_ch_ep
 ### get range of dates for day-by-day averages
-dt.rng<-owners[(!holdout&unq_own),{
-  rng<-range(earliest_pmt_dec,na.rm=T)
-  seq(from=rng[1],to=rng[2],by="day")}]
+dt.rng <- owners[(!holdout & unq_own),{
+  rng <- range(earliest_pmt_dec, na.rm = TRUE)
+  seq(from = rng[1L], to = rng[2L], by = "day")}]
 #For pretty printing, get once/week subset
-dt.rng2<-dt.rng[seq(1,length(dt.rng),length.out=7)]
+dt.rng2 <- dt.rng[seq(1L, length(dt.rng), length.out = 7L)]
 
 date.dt <- 
   #not all treatments saw activity on each day,
   #  so we'll have to "fill-in-the-blanks" with this
   CJ(treat8 = c("Holdout","Control"), date = dt.rng,
-     unique=TRUE, sorted = FALSE)
+     unique = TRUE, sorted = FALSE)
 owners[(unq_own), hold_cont := treat8 %in% c("Holdout","Control")]
 cum_haz <- 
   owners[(hold_cont),
          #total entrants by day, treatment
          sum(ever_paid_dec) + 0., #convert to numeric
-         keyby=.(treat8, earliest_pmt_dec)
+         keyby = .(treat8, earliest_pmt_dec)
          #running total of entrants; take care to eliminate NAs
-         ][ , .(ep=cumsum(V1[idx <- !is.na(earliest_pmt_dec)]),
-                date=earliest_pmt_dec[idx]), by=treat8
+         ][ , .(ep = cumsum(V1[idx <- !is.na(earliest_pmt_dec)]),
+                date = earliest_pmt_dec[idx]), by=treat8
             #merge to get the denominator
             ][owners[(hold_cont), .N, treat8],
-              ep := ep/i.N, on="treat8"
+              ep := ep/i.N, on = "treat8"
               ][date.dt, on = c("treat8", "date"), roll = TRUE
                 #express relative to holdout
-                ][ , .(ep=ep[idx <- treat8=="Control"] -
-                         ep[!idx]), by=date]
+                ][ , .(ep = ep[idx <- treat8 == "Control"] -
+                         ep[!idx]), by = date]
 
-BB <- 5000 #number of bootstrap simulations
 cis <- dcast(rbindlist(lapply(integer(BB), function(...){
   dt <- owners[(hold_cont)][sample(.N, rep = TRUE)]
-  dt[ , sum(ever_paid_dec) + 0., keyby=.(treat8, earliest_pmt_dec)
-     ][ , .(ep=cumsum(V1[idx <- !is.na(earliest_pmt_dec)]),
-          date=earliest_pmt_dec[idx]), by=treat8
-       ][dt[ , .N, treat8], ep := ep/i.N, on="treat8"
+  dt[ , sum(ever_paid_dec) + 0., keyby = .(treat8, earliest_pmt_dec)
+     ][ , .(ep = cumsum(V1[idx <- !is.na(earliest_pmt_dec)]),
+          date = earliest_pmt_dec[idx]), by = treat8
+       ][dt[ , .N, treat8], ep := ep/i.N, on = "treat8"
          ][date.dt, on = c("treat8", "date"), roll = TRUE
-           ][ , .(ep=ep[idx <- treat8 == "Control"] - ep[!idx]),
-             by=date]}), idcol="bootID"
+           ][ , .(ep = ep[idx <- treat8 == "Control"] - ep[!idx]),
+             by = date]}), idcol = "bootID"
   #extract for 95% CI
-  )[ , quantile(ep, c(.05, .95), na.rm=T), by = date],
-  date ~ c("low", "high")[rowid(date)], value.var="V1")
+  )[ , quantile(ep, c(.025, .975), na.rm = TRUE), by = date],
+  date ~ c("low", "high")[rowid(date)], value.var = "V1")
 
 ## @knitr ignore
 ### plot
 pdf2(wds["imga"] %+% "cum_haz_ever_paid_control_holdout_own.pdf")
 cum_haz[
-  cis, on=c("date")
+  cis, on = c("date")
   ][ , {
     matplot(date, do.call("cbind", mget(c("low", "ep", "high"))),
-            type="l", lty=c(2, 1, 2), col=get.col("Control"),
-            xaxt="n", lwd=3, las = 2,
-            ylab="Probability Ever Paid vs. Holdout")
-    axis(side=1, at=dt.rng2, labels=format(dt.rng2, "%b %d"))
-    abline(h = 0, col = "black", lwd = 2)
-    title("Cumulative Partial Participation" %+%
-            "\nControl vs. Holdout (Unique Owners Only)")}]
+            type = "l", lty=c(2L, 1L, 2L), col = get.col("Control"),
+            xaxt = "n", lwd = 3L, las = 2L,
+            ylab = "Probability Ever Paid vs. Holdout")
+    axis(side = 1L, at = dt.rng2, labels = format(dt.rng2, "%b %d"))
+    abline(h = 0, col = "black", lwd = 2L)
+    title("Cumulative Partial Participation\n" %+%
+            "Control vs. Holdout (Unique Owners Only)")}]
 dev.off2()
 
-##Regression Tables ####
-## @knitr analysis_reg
+#Regression Tables ####
+# @knitr analysis_reg
 reg_vars <- c("ever_paid", "paid_full", "total_paid")
 reg_all <- levels(interaction(reg_vars, mos, sep="_"))
 
@@ -710,7 +705,6 @@ coef_j =
             "$coefficients"), 
             collapse = ","), ")"))
 
-BB <- 5000
 setkey(owners, rand_id)
 setindex(owners, holdout)
 DT <- owners[(!holdout)]
@@ -819,7 +813,7 @@ invisible(lapply(reg_vars, function(rr){
   x[5] <- "\\begin{tabular}{|l| c c c| c c c| }"
   
   ## add multicolumn to distinguish populations
-  x[8] <- x[8] %+% "\n & \\multicolumn{3}{c}{All Owners} & " %+% 
+  x[6] <- x[6] %+% "\n & \\multicolumn{3}{c}{All Owners} & " %+% 
     "\\multicolumn{3}{|c|}{Single-Property Owners} \\\\"
   
   ## print again
@@ -1135,3 +1129,6 @@ params$lawyer_rate * sum(sapply(trt.nms, function(tr)
 params$lawyer_rate * sum(sapply(trt.nms, function(tr)
   sum(predict(regs[.(tr), V1][[1]], x <- owners[.(tr)][assessed_mv > 0]) - 
         predict(regs[.("Holdout"), V1][[1]], x))))
+
+# Inefficiency of Co-Council
+
