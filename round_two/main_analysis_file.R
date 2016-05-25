@@ -573,48 +573,52 @@ print.xtable(xtable(cbind(gsub("$", "\\$", t(
 #  the key changing parameters in this list;
 #  also store a bunch of plotting parameters
 #  since we'll use the result of this list for that
-setkey(owners, rand_id)
-
 outvar <- parse(text = paste0(
-  ".(", paste(paste0("mean(100*ever_paid_", mos, ")"), collapse = ","), ")"))
+  "setNames(list(", 
+  paste(paste0("mean(100*ever_paid_", mos, ")"), 
+        collapse = ","), "), outn)"))
 
-outn <- "ep" %+% c("j","s","d")
+delq <- quote(c(Treatment = list(treat8[-1L]),
+                lapply(.SD, function(x) x[-1L] - x[1L])))
 
-boot.cis <-
-  with(list(dt=owners[(!holdout)], tr="treat7",
-            rI = owners[(!holdout), unique(rand_id)],
-            ri = quote(.(sample(rI, rep = TRUE))),
-            exprs=outvar, nms=outn), 
-       setnames(dt[ , eval(exprs), keyby = tr
-                    ][rbindlist(lapply(integer(BB), function(...)
-                      #calculate point estimate in re-sample
-                      dt[eval(ri), eval(exprs), keyby = tr])
-                      )[ , lapply(.SD, sd), by = tr], on = tr],
-                -1L, nms %+% rep(c("", "_se"), each = length(nms))))
+outn <- c("One Month", "Three Months", "Six Months")
 
-## formatting for tex output
-setnames(boot.cis, "treat7", "Treatment")
-rnd <- names(boot.cis)[-1]
-boot.cis[ , (rnd) := 
-            lapply(lapply(.SD, round, 1),
-                   as.character), .SDcols = rnd]
-paren <- grep("_se", rnd, value = TRUE)
-boot.cis[ , (paren) :=
-            lapply(.SD, function(x) paste0("(", x, ")")), 
-          .SDcols = paren]
+dt <- owners[(unq_own)]
 
-##Ever Paid ME
-print(xtable(melt(boot.cis, id.vars = "Treatment", 
-            measure.vars = list(c("epj", "epj_se"),
-                                c("eps", "eps_se"),
-                                c("epd", "epd_se")),
-            value.name = c("One Month", "Three Months", "Six Months")
-            )[order(Treatment)][variable == 2, Treatment := ""
-                                ][ , !"variable", with = FALSE],
-            caption = "Participation Rates by Treatment over Time", 
-            align = "rrrrr", label = "tbl:marg_ep"),
-      include.rownames = FALSE, comment = FALSE, 
-      caption.placement = "top")
+boot <- 
+  rbindlist(lapply(integer(BB), function(...)
+            #calculate point estimate in re-sample
+            dt[sample(.N, rep = TRUE), eval(outvar),
+               keyby = treat8][ , eval(delq), .SDcols = outn]))
+
+star <- function(x){
+  q1.5.10 <- quantile(x, c(.005, .025, .05, .95, .975, .995))
+  if (!0 %between% q1.5.10[c(1, 6)]) return("***")
+  if (!0 %between% q1.5.10[c(2, 5)]) return("**")
+  if (!0 %between% q1.5.10[c(3, 4)]) return("*")
+  return("")
+}
+
+print(xtable(rbind(
+  dt[ , eval(outvar), keyby = treat8
+      ][ , c(Treatment = list(treat8), lapply(.SD, function(x) 
+        round(c(x[1L], x[-1L] - x[1L]), 1) %+% "")), .SDcols = outn
+        ][boot[ , lapply(.SD, star), by = Treatment, .SDcols = outn],
+          (outn) := lapply(outn, function(jj) 
+            get(jj) %+% get("i." %+% jj)), on = "Treatment"],
+  boot[ , lapply(.SD, function(x) round(sd(x), 1)), by = Treatment], 
+  idcol = "type")[type == 2, (outn) := lapply(.SD, function(x)
+    paste0("(", x, ")")), .SDcols = outn
+    ][order(Treatment)][type == 2, Treatment := ""
+                        ][ , !"type", with = FALSE],
+  caption = "Participation Rates by Treatment over Time, " %+% 
+    "Unique Owners vs. Holdout", align = "rrlll", label = "tbl:marg_ep"),
+  include.rownames = FALSE, comment = FALSE, hline.after = c(-1, 1),
+      caption.placement = "top", 
+  add.to.row = list(pos = list(15), 
+                    command = "\n \\hline \n \\multicolumn{4}{l}" %+% 
+                      "{\\scriptsize{Holdout values are in levels; " %+% 
+                      "remaining figures are relative to Holdout}} \\\\ \n"))
 
 ## Cumulative Partial Participation
 ## @knitr analysis_ch_ep
