@@ -515,6 +515,22 @@ Amount Due (June) & \$1,847 & \$2,209 & \$1,954 & \$1,700 & \$1,772 & \$1,735 & 
 \label{tbl:balance}
 \end{sidewaystable}
 
+\begin{sidewaystable}[ht]
+\centering
+\begin{tabular}{|r|lllllll|l|}
+   \hline
+Variable & Control & Amenities & Moral & Duty & Peer & Lien & Sheriff & $p$-value \\ 
+   \hline
+Amount Due (June) & \$1,383 & \$1,950 & \$1,290 & \$1,316 & \$1,338 & \$1,389 & \$1,613 & 0.78 \\ 
+  Assessed Property Value & \$163,084 & \$206,214 & \$130,265 & \$166,791 & \$130,936 & \$147,573 & \$155,597 & 0.76 \\ 
+  \# Owners & 2,420 & 2,389 & 2,441 & 2,433 & 2,417 & 2,432 & 2,419 & 0.99 \\ 
+   \hline 
+ \multicolumn{9}{l}{\scriptsize{$p$-values in rows 1-5 are $F$-test $p$-values from regressing each variable on treatment dummies. A $\chi^2$ test was used for the count of owners.}} \\ 
+\end{tabular}
+\caption{Balance on Observables (Unique Owners)} 
+\label{tbl:balance_unq_own}
+\end{sidewaystable}
+
 \begin{figure}[htpb]
 \begin{center}
 \caption{Sample Balance on Initial Debt across Main Treatments}
@@ -584,6 +600,37 @@ Num. obs.      & 19361        & 19361        & 19361       & 16951        & 1695
 \multicolumn{7}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
 \end{tabular}
 \label{tbl:reg7_ep}
+\end{center}
+\end{sidewaystable}
+
+\begin{sidewaystable}[htbp]
+\caption{Estimated Average Treatment Effects (Excluding top 28 Owners): Ever Paid}
+\begin{center}
+\begin{tabular}{|l| c c c| c c c| }
+\hline
+ & \multicolumn{3}{c}{All Owners} & \multicolumn{3}{|c|}{Single-Property Owners} \\
+ & \multicolumn{3}{c}{All Owners} & \multicolumn{3}{|c|}{Single-Property Owners} \\
+               & One Month & Three Months & Six Months & One Month & Three Months & Six Months \\
+\hline
+Amenities      & $-0.05$      & $-0.03$      & $-0.09$     & $-0.09$      & $-0.05$      & $-0.08$     \\
+               & $(0.05)$     & $(0.05)$     & $(0.06)$    & $(0.06)$     & $(0.06)$     & $(0.07)$    \\
+Moral          & $-0.02$      & $-0.06$      & $-0.03$     & $0.00$       & $-0.04$      & $-0.02$     \\
+               & $(0.06)$     & $(0.05)$     & $(0.06)$    & $(0.06)$     & $(0.06)$     & $(0.07)$    \\
+Duty           & $-0.06$      & $-0.01$      & $0.03$      & $-0.06$      & $-0.01$      & $0.04$      \\
+               & $(0.05)$     & $(0.05)$     & $(0.06)$    & $(0.06)$     & $(0.06)$     & $(0.07)$    \\
+Peer           & $0.01$       & $-0.03$      & $-0.03$     & $0.01$       & $-0.02$      & $0.00$      \\
+               & $(0.06)$     & $(0.05)$     & $(0.06)$    & $(0.06)$     & $(0.06)$     & $(0.07)$    \\
+Lien           & $0.21^{***}$ & $0.20^{***}$ & $0.13^{**}$ & $0.23^{***}$ & $0.22^{***}$ & $0.14^{**}$ \\
+               & $(0.05)$     & $(0.05)$     & $(0.06)$    & $(0.06)$     & $(0.06)$     & $(0.06)$    \\
+Sheriff        & $0.15^{***}$ & $0.19^{***}$ & $0.11^{*}$  & $0.16^{***}$ & $0.20^{***}$ & $0.14^{**}$ \\
+               & $(0.05)$     & $(0.05)$     & $(0.06)$    & $(0.06)$     & $(0.06)$     & $(0.07)$    \\
+\hline
+Log Likelihood & -12582.62    & -13167.95    & -10601.90   & -10954.22    & -11580.00    & -9483.18    \\
+Num. obs.      & 19333        & 19333        & 19333       & 16940        & 16940        & 16940       \\
+\hline
+\multicolumn{7}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
+\end{tabular}
+\label{tbl:reg7_ep_x28}
 \end{center}
 \end{sidewaystable}
 
@@ -741,26 +788,60 @@ comparison is restricted to unique property owners.
 \hline
                & One Month & Three Months & Six Months \\
 \hline
-Control        & $0.19^{***}$ & $0.20^{***}$ & $0.13^{*}$   \\
+Control        & $0.17^{***}$ & $0.16^{**}$  & $0.07$       \\
                & $(0.06)$     & $(0.06)$     & $(0.07)$     \\
-Amenities      & $0.15^{**}$  & $0.16^{***}$ & $0.04$       \\
+Amenities      & $0.08$       & $0.11^{*}$   & $-0.01$      \\
                & $(0.06)$     & $(0.06)$     & $(0.07)$     \\
-Moral          & $0.18^{***}$ & $0.14^{**}$  & $0.11$       \\
+Moral          & $0.17^{***}$ & $0.11^{*}$   & $0.04$       \\
                & $(0.06)$     & $(0.06)$     & $(0.07)$     \\
-Duty           & $0.14^{**}$  & $0.19^{***}$ & $0.16^{**}$  \\
+Duty           & $0.11^{*}$   & $0.14^{**}$  & $0.11$       \\
                & $(0.06)$     & $(0.06)$     & $(0.07)$     \\
-Peer           & $0.21^{***}$ & $0.17^{***}$ & $0.11$       \\
+Peer           & $0.18^{***}$ & $0.14^{**}$  & $0.07$       \\
                & $(0.06)$     & $(0.06)$     & $(0.07)$     \\
-Lien           & $0.40^{***}$ & $0.39^{***}$ & $0.26^{***}$ \\
+Lien           & $0.40^{***}$ & $0.37^{***}$ & $0.20^{***}$ \\
                & $(0.06)$     & $(0.06)$     & $(0.07)$     \\
-Sheriff        & $0.34^{***}$ & $0.38^{***}$ & $0.23^{***}$ \\
+Sheriff        & $0.33^{***}$ & $0.36^{***}$ & $0.20^{***}$ \\
                & $(0.06)$     & $(0.06)$     & $(0.07)$     \\
 \hline
-AIC            & 27809.84     & 29313.13     & 23707.85     \\
-BIC            & 27873.64     & 29376.93     & 23771.64     \\
-Log Likelihood & -13896.92    & -14648.57    & -11845.92    \\
-Deviance       & 27793.84     & 29297.13     & 23691.85     \\
-Num. obs.      & 21468        & 21468        & 21468        \\
+AIC            & 24503.88     & 26086.64     & 21428.89     \\
+BIC            & 24566.71     & 26149.47     & 21491.72     \\
+Log Likelihood & -12243.94    & -13035.32    & -10706.44    \\
+Deviance       & 24487.88     & 26070.64     & 21412.89     \\
+Num. obs.      & 19039        & 19039        & 19039        \\
+\hline
+\multicolumn{4}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
+\end{tabular}
+\label{tbl:reg8_ep}
+\end{center}
+\end{table}
+
+\begin{table}[htbp]
+\caption{Estimated Average Treatment Effects: Ever Paid, vs. Holdout}
+\begin{center}
+\begin{tabular}{l c c c }
+\hline
+               & One Month & Three Months & Six Months \\
+\hline
+Control        & $0.12^{*}$   & $0.12^{**}$  & $0.07$       \\
+               & $(0.07)$     & $(0.06)$     & $(0.06)$     \\
+Amenities      & $-0.01$      & $0.06$       & $-0.00$      \\
+               & $(0.07)$     & $(0.06)$     & $(0.06)$     \\
+Moral          & $0.07$       & $0.10^{*}$   & $0.05$       \\
+               & $(0.07)$     & $(0.06)$     & $(0.06)$     \\
+Duty           & $0.04$       & $0.09$       & $0.04$       \\
+               & $(0.07)$     & $(0.06)$     & $(0.06)$     \\
+Peer           & $0.10$       & $0.14^{**}$  & $0.10$       \\
+               & $(0.07)$     & $(0.06)$     & $(0.06)$     \\
+Lien           & $0.29^{***}$ & $0.30^{***}$ & $0.21^{***}$ \\
+               & $(0.07)$     & $(0.06)$     & $(0.06)$     \\
+Sheriff        & $0.24^{***}$ & $0.27^{***}$ & $0.13^{**}$  \\
+               & $(0.07)$     & $(0.06)$     & $(0.06)$     \\
+\hline
+AIC            & 21618.11     & 26109.62     & 24671.52     \\
+BIC            & 21680.95     & 26172.45     & 24734.36     \\
+Log Likelihood & -10801.06    & -13046.81    & -12327.76    \\
+Deviance       & 21602.11     & 26093.62     & 24655.52     \\
+Num. obs.      & 19039        & 19039        & 19039        \\
 \hline
 \multicolumn{4}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
 \end{tabular}
@@ -965,6 +1046,46 @@ This suggests that at least for the margin affected, liquidity-constraints are n
 reason for initial non-payment of property taxes and that clear and credible threats matter.
 
 \newpage
+
+\begin{table}[ht]
+\centering
+\caption{Estimated Revenue Impacts (Ever Paid: Unique Owners vs. Holdout)} 
+\label{rev_ep}
+\begin{tabular}{rrr}
+  \hline
+Treatment & Impact Per Letter & Total Impact \\ 
+  \hline
+Control & \$10.49 & \$25,397 \\ 
+  Amenities & -\$1.98 & -\$4,740 \\ 
+  Moral & \$7.21 & \$17,588 \\ 
+  Duty & \$17.43 & \$42,405 \\ 
+  Peer & \$11.26 & \$27,225 \\ 
+  Lien & \$31.01 & \$75,420 \\ 
+  Sheriff & \$30.67 & \$74,201 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\centering
+\caption{Estimated Revenue Impacts (Paid Full: Unique Owners vs. Holdout)} 
+\label{rev_pf}
+\begin{tabular}{rrr}
+  \hline
+Treatment & Impact Per Letter & Total Impact \\ 
+  \hline
+Control & \$12.13 & \$29,365 \\ 
+  Amenities & -\$0.05 & -\$116 \\ 
+  Moral & \$8.63 & \$21,055 \\ 
+  Duty & \$8.01 & \$19,479 \\ 
+  Peer & \$18.81 & \$45,471 \\ 
+  Lien & \$39.18 & \$95,277 \\ 
+  Sheriff & \$23.73 & \$57,401 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+
 
 \bibliography{references}
 

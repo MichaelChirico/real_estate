@@ -356,7 +356,7 @@ properties[,treat3:=factor(treat3, c("Holdout","Small","Big"))]
 properties[,treat2:=factor(treat2, c("Small","Big"))]
 
 rm(list=ls()%\%c("owners","properties","trt.nms",
-                 "trt.nms8","wds","get.col","mos"))
+                 "trt.nms8","wds","get.col","mos","BB"))
 
 ###Get owner-level version of data, keeping only key analysis variables
 owners<-{
@@ -535,9 +535,6 @@ lmfp<-function(formula){
 pvs <- c(sapply(c(
   `Amount Due (June)`="total_due",
   `Assessed Property Value`="assessed_mv",
-  `\\% with Unique Owner`="unq_own",
-  `\\% Overlap with Holdout`="flag_holdout_overlap",
-  `\\# Properties per Owner`="N"),
   function(x) owners[(!holdout), lmfp(get(x) ~ treat7)]),
   `\\# Owners`=
     owners[(!holdout), chisq.test(table(treat7))$p.value])
@@ -560,6 +557,36 @@ print.xtable(xtable(cbind(gsub("$", "\\$", t(
   floating=TRUE, hline.after=c(0, 1),
   add.to.row=
     list(pos = list(7),
+         command = c("\\hline \n \\multicolumn{9}{l}" %+% 
+                       "{\\scriptsize{$p$-values in rows 1-5 are " %+% 
+                       "$F$-test $p$-values from regressing each " %+% 
+                       "variable on treatment dummies. A $\\chi^2$ " %+% 
+                       "test was used for the count of owners.}} \\\\ \n")))
+
+#Only among unique owners
+
+pvs <- c(sapply(c(
+  `Amount Due (June)`="total_due",
+  `Assessed Property Value`="assessed_mv"),
+  function(x) owners[(!holdout), lmfp(get(x) ~ treat7)]),
+  `\\# Owners`=
+    owners[(!holdout & unq_own), chisq.test(table(treat7))$p.value])
+pvs <- c("$p$-value", round(pvs, 2L))
+
+print.xtable(xtable(cbind(gsub("$", "\\$", t(
+  owners[(!holdout & unq_own),
+         .(`Amount Due (June)`=dol.form(mean(total_due)),
+           `Assessed Property Value`=dol.form(mean(assessed_mv, na.rm=TRUE)),
+           `\\# Owners`=prettyNum(.N, big.mark = ",")),
+         keyby=.(Variable=treat7)]), fixed = TRUE), pvs),
+  caption="Balance on Observables (Unique Owners)",
+  label="tbl:balance_unq_own", align = "|r|lllllll|l|"),
+  include.colnames=FALSE, comment=FALSE, 
+  sanitize.text.function=identity,
+  floating.environment="sidewaystable", 
+  floating=TRUE, hline.after=c(0, 1),
+  add.to.row=
+    list(pos = list(4),
          command = c("\\hline \n \\multicolumn{9}{l}" %+% 
                        "{\\scriptsize{$p$-values in rows 1-5 are " %+% 
                        "$F$-test $p$-values from regressing each " %+% 
@@ -1049,6 +1076,21 @@ print(texreg(
   #Exclude Intercept
   omit.coef="XXX$", float.pos="htbp"))
 
+pf <- reg_all[grepl("full", reg_all)]
+print(texreg(
+  lapply(pf, function(mo)
+    rename_coef(reg_info_8[[mo]][[1]])),
+  custom.model.names=
+    c("One Month","Three Months","Six Months"),
+  caption=
+    "Estimated Average Treatment Effects: Ever Paid, vs. Holdout",
+  override.se=lapply(pf, function(mo) reg_info_8[[mo]][[3]]),
+  override.pval=lapply(pf, function(mo) reg_info_8[[mo]][[4]]),
+  caption.above=TRUE, stars=c(.01,.05,.1),label="tbl:reg8_ep", 
+  include.rsquared=FALSE, include.adjrs=FALSE, include.rmse=FALSE,
+  #Exclude Intercept
+  omit.coef="XXX$", float.pos="htbp"))
+
 #Cost-Benefit: Estimating returns to speed-up ####
 ## Parameters of estimate
 ##  - Date when properties were distributed to co-council
@@ -1116,3 +1158,26 @@ params$lawyer_rate * sum(sapply(trt.nms, function(tr)
 
 ##Back-of-the-envelope approach
 
+print(xtable(
+  owners[(unq_own), .(.N, mean(ever_paid_dec)), keyby = treat8
+         ][ , .(Treatment = treat8[-1], 
+                `Impact Per Letter` = 
+                  dol.form(x <-  (V2[-1] - V2[1]) * 
+                             owners[(unq_own & total_paid_dec > 0), 
+                                    median(total_paid_dec)],  dig = 2L), 
+                `Total Impact` = dol.form(N[-1] * x))],
+  caption = "Estimated Revenue Impacts (Ever Paid: Unique Owners vs. Holdout)",
+  label = "rev_ep", align = "rrrr"),
+  include.rownames = FALSE, comment = FALSE, caption.placement = "top")
+
+print(xtable(
+  owners[(unq_own), .(.N, mean(paid_full_dec)), keyby = treat8
+         ][ , .(Treatment = treat8[-1], 
+                `Impact Per Letter` = 
+                  dol.form(x <-  (V2[-1] - V2[1]) * 
+                             owners[(unq_own & paid_full_dec), 
+                                    median(total_paid_dec)],  dig = 2L), 
+                `Total Impact` = dol.form(N[-1] * x))],
+  caption = "Estimated Revenue Impacts (Paid Full: Unique Owners vs. Holdout)",
+  label = "rev_pf", align = "rrrr"),
+  include.rownames = FALSE, comment = FALSE, caption.placement = "top")
