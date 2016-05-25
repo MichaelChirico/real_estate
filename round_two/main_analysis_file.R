@@ -615,10 +615,13 @@ print(xtable(rbind(
     "Unique Owners vs. Holdout", align = "rrlll", label = "tbl:marg_ep"),
   include.rownames = FALSE, comment = FALSE, hline.after = c(-1, 1),
       caption.placement = "top", 
-  add.to.row = list(pos = list(15), 
-                    command = "\n \\hline \n \\multicolumn{4}{l}" %+% 
-                      "{\\scriptsize{Holdout values are in levels; " %+% 
-                      "remaining figures are relative to Holdout}} \\\\ \n"))
+  add.to.row = 
+    list(pos = list(15), 
+         command = 
+           "\n \\hline \n \\multicolumn{4}{l}{\\scriptsize{" %+% 
+           "$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$; " %+% 
+           "Holdout values are in levels; " %+% 
+           "remaining figures are relative to Holdout}} \\\\ \n"))
 
 ## Cumulative Partial Participation
 ## @knitr analysis_ch_ep
@@ -823,29 +826,47 @@ invisible(lapply(reg_vars, function(rr){
   ## print again
   cat(x, sep = "\n")}))
 
-#### Now for big v small
-reg_all <- "ever_paid_" %+% mos
+
+
+
+
+
+
+#*************REPEATING FOR JUST EXCLUDING TOP 2 BLOCKS***************
+reg_vars <- "ever_paid"
+reg_all <- reg_vars %+% "_" %+% mos
+
 reg_j <- 
   parse(text = 
           paste0(".(", paste(paste0(
-            reg_all, "=list(glm(", reg_all,
-            "~ treat2, family = binomial))"), 
-            collapse = ","), ")"))
+            reg_all, "=list(", sapply(reg_all, function(x) 
+    if (grepl("total", x)) 
+      paste0("lm(", x," ~ treat7)")
+    else paste0("glm(", x, " ~ treat7, ",
+                "family = binomial)")), ")"), 
+    collapse = ","), ")"))
 
 coef_j = 
   parse(text = 
           paste0(".(", paste(paste0(
             reg_all, "=", sapply(reg_all, function(x) 
-              paste0("glm.fit(model.matrix(", x, 
-                     " ~ treat2), ",x,
-                     ', start = starts[["',x,'"]],',
-                     "family=binomial())")), 
+              if (grepl("total", x)) 
+                paste0("lm.fit(model.matrix(", x,
+                       " ~ treat7), ",x,")")
+              else paste0("glm.fit(model.matrix(", x, 
+                          " ~ treat7), ",x,
+                          ', start = starts[["',x,'"]],',
+                          "family=binomial())")), 
             "$coefficients"), 
             collapse = ","), ")"))
-regs <- owners[(!holdout), eval(reg_j)]
+
+setkey(owners, rand_id)
+setindex(owners, holdout)
+DT <- owners[(!holdout & rand_id > 2)]
+regs <- owners[(!holdout & rand_id > 2), eval(reg_j)]
 starts <- 
   lapply(reg_all, function(rr) regs[[rr]][[1L]]$coefficients)
-RBs <- owners[(!holdout), unique(rand_id)]
+RBs <- owners[(!holdout & rand_id > 2), unique(rand_id)]
 
 tmp <- tempfile()
 progress <- txtProgressBar(1, BB, style = 3L)
@@ -862,40 +883,95 @@ boot_dist <- rbindlist(parLapply(cl, 1:BB, function(bb){
   DT[.(sample(RBs, rep = TRUE)), eval(coef_j)]}))
 stopCluster(cl); close(progress); unlink(tmp)
 
-reg_info_bs <- 
+reg_info_x28 <- 
   rbind(regs, boot_dist[ , lapply(.SD, function(x)
-    list(var(matrix(x, ncol = 2, byrow = TRUE))))]
+    list(var(matrix(x, ncol = 7, byrow = TRUE))))]
+    )[ , lapply(.SD, function(x)
+      c(x, list(sqrt(diag(x[[2]])))))
+      ][ , lapply(.SD, function(x) 
+        c(x, list(coeftest(x[[1]], vcov = x[[2]])[ , 4])))]
+
+#now for single-owner samples
+##exclude total_paid for single owner analysis
+DT <- owners[(!holdout & unq_own & rand_id > 2)]
+regs <- owners[(!holdout & unq_own & rand_id > 2), eval(reg_j)]
+starts <- 
+  lapply(reg_all, function(rr) regs[[rr]][[1L]]$coefficients)
+RBs <- owners[(!holdout & unq_own & rand_id > 2), unique(rand_id)]
+
+tmp <- tempfile()
+progress <- txtProgressBar(1, BB, style = 3L)
+
+cl <- makeCluster(8L, outfile = "")
+invisible(clusterEvalQ(cl, library(data.table)))
+clusterExport(cl, c("DT", "RBs", "coef_j", "starts", "progress", "tmp"),
+              envir = environment())
+boot_dist <- rbindlist(parLapply(cl, 1:BB, function(bb){
+  cat("\n", file = tmp, append = TRUE)
+  setTxtProgressBar(
+    progress, as.integer(system(paste("wc -l <", tmp), intern = TRUE)))
+  DT[.(sample(RBs, rep = TRUE)), eval(coef_j)]}))
+stopCluster(cl); close(progress); unlink(tmp)
+
+reg_info_so_x28 <- 
+  rbind(regs, boot_dist[ , lapply(.SD, function(x)
+    list(var(matrix(x, ncol = 7, byrow = TRUE))))]
     )[ , lapply(.SD, function(x)
       c(x, list(sqrt(diag(x[[2]])))))
       ][ , lapply(.SD, function(x) 
         c(x, list(coeftest(x[[1]], vcov = x[[2]])[ , 4])))]
 
 
-
 ###Difference in Mean Tests
 rename_coef<-function(obj){
   nms <- names(obj$coefficients)
-  idx <- !grepl("treat2", nms)
+  idx <- !grepl("treat7", nms)
   #Add XXX to coefficients we'll exclude
   nms[idx] <- nms[idx] %+% "XXX"
-  nms <- gsub("treat2", "", nms)
+  nms <- gsub("treat7", "", nms)
   names(obj$coefficients) <- nms
   obj
 }
 
-print(texreg(
-  lapply(reg_all, function(mo)
-    rename_coef(reg_info[[mo]][[1]])),
+x <- capture.output(texreg(c(lapply(
+  tp <- reg_all, function(mo)
+    rename_coef(reg_info_x28[[mo]][[1]])),
+  lapply(tp, function(mo)
+    rename_coef(reg_info_so_x28[[mo]][[1]]))),
   custom.model.names=
-    c("One Month","Three Months","Six Months"),
+    rep(c("One Month","Three Months","Six Months"), 2),
   caption=
-    "Estimated Average Treatment Effects: Ever Paid, Letter Size",
-  override.se=lapply(reg_all, function(mo) reg_info[[mo]][[3]]),
-  override.pval=lapply(reg_all, function(mo) reg_info[[mo]][[4]]),
-  caption.above=TRUE, stars=c(.01,.05,.1),label="tbl:reg2_ep", 
-  include.rsquared=FALSE, include.adjrs=FALSE, include.rmse=FALSE,
+    "Estimated Average Treatment Effects " %+% 
+    "(Excluding top 28 Owners): Ever Paid",
+  override.se=
+    c(lapply(tp, function(mo) reg_info_x28[[mo]][[3]]),
+      lapply(tp, function(mo) reg_info_so_x28[[mo]][[3]])),
+  override.pval=
+    c(lapply(tp, function(mo) reg_info_x28[[mo]][[4]]),
+      lapply(tp, function(mo) reg_info_so_x28[[mo]][[4]])),
+  caption.above=TRUE, stars=c(.01,.05,.1),
+  label="tbl:reg7_ep_x28", 
+  include.rsquared=FALSE, include.adjrs=FALSE, 
+  include.rmse=FALSE, include.aic=FALSE, 
+  include.bic=FALSE, include.deviance=FALSE,
   #Exclude Intercept
-  omit.coef="XXX$", float.pos="htbp"))
+  omit.coef="XXX$", float.pos="htbp", 
+  sideways = TRUE, use.packages = FALSE))
+
+## add vertical lines to separate populations
+x[5] <- "\\begin{tabular}{|l| c c c| c c c| }"
+
+## add multicolumn to distinguish populations
+x[6] <- x[6] %+% "\n & \\multicolumn{3}{c}{All Owners} & " %+% 
+  "\\multicolumn{3}{|c|}{Single-Property Owners} \\\\"
+
+## print again
+cat(x, sep = "\n")
+
+
+
+
+
 
 #Now for main vs. holdout
 reg_all <- c("paid_full_", "ever_paid_") %+% 
@@ -973,102 +1049,6 @@ print(texreg(
   #Exclude Intercept
   omit.coef="XXX$", float.pos="htbp"))
 
-##Time Series Analysis ####
-sapply(list(list(dt=owners[(!holdout)],vr="ever_paid",
-                 mn="jul",Mn=" (July)",Vr="Ever Paid",
-                 tl="Partial Participation"),
-            list(dt=owners[(!holdout)],vr="ever_paid",
-                 mn="sep",Mn=" (Sep.)",Vr="Ever Paid",
-                 tl="Partial Participation"),
-            list(dt=owners[(!holdout)],vr="ever_paid",
-                 mn="dec",Mn=" (Dec.)",Vr="Ever Paid",
-                 tl="Partial Participation"),
-            list(dt=owners[(!holdout)],vr="paid_full",
-                 mn="jul",Mn=" (July)",Vr="Paid Full",
-                 tl="Full Participation"),
-            list(dt=owners[(!holdout)],vr="paid_full",
-                 mn="sep",Mn=" (Sep.)",Vr="Paid Full",
-                 tl="Full Participation"),
-            list(dt=owners[(!holdout)],vr="paid_full",
-                 mn="dec",Mn=" (Dec.)",Vr="Paid Full",
-                 tl="Full Participation")),
-       function(x){
-         with(x,{
-           #Get range of data
-           dt.rng<-dt[,{rng<-range(get("earliest_pmt_"%+%mn),na.rm=T)
-           seq(from=rng[1],to=rng[2],by="day")}]
-           #For pretty printing, get once/week subset
-           dt.rng2<-dt.rng[seq(1,length(dt.rng),by=7)]
-           pdf2(paste0(wds["imga"],"cum_haz_",vr,"_",mn,"_7_own.pdf"))
-           matplot(dt.rng,t(sapply(
-             dt.rng,function(tt){
-               dt[,{var<-get(vr%+%"_"%+%mn)
-               dts<-get("earliest_pmt_"%+%mn)
-               #Total ever paid (at least once) by tt
-               #  divided by total in group (.N)
-               to.pct(sum(var[dts<=tt],na.rm=T)/.N)},
-               keyby=treat7][,{x<-V1[treat7!="Control"]
-               x-V1[treat7=="Control"]}]})),
-             type="l",lty=1,lwd=3,col=get.col(trt.nms[-1]),
-             main=paste0("Cumulative ",tl," by Treatment",
-                         Mn,"\nRelative to Control"),
-             xaxt="n",xlab="",ylab="Percent "%+%Vr%+%" vs. Control",las=1)
-           axis(side=1,at=dt.rng2,labels=format(dt.rng2,"%B %d"),
-                las=1,cex.axis=.75)
-           legend("topleft",legend=trt.nms[-1],
-                  col=get.col(trt.nms[-1]),
-                  lwd=3,y.intersp=.5,bty="n")
-           dev.off2()})})
-
-dt.rng<-
-  owners[(!holdout),{rng<-range(pmt_agr_start,na.rm=T)
-  seq(from=rng[1],to=rng[2],by="day")}]
-dt.rng2<-dt.rng[seq(1,length(dt.rng),by=7)]
-pdf2(wds["imga"]%+%"cum_haz_pmt_agr_7_own.pdf")
-matplot(dt.rng,t(sapply(
-  dt.rng,function(tt){
-    owners[(!holdout),
-               to.pct(sum(pmt_agr_start<=tt,na.rm=T)/.N),
-               keyby=treat7]$V1})),
-  type="l",lty=1,lwd=3,col=get.col(trt.nms),
-  main="Cumulative Entrance to Payment Agreements\nby Treatment",
-  xaxt="n",xlab="",ylab="Percent in P.A.",las=1)
-axis(side=1,at=dt.rng2,labels=format(dt.rng2,"%B %d"),
-     las=1,cex.axis=.75)
-legend("topleft",legend=trt.nms,col=get.col(trt.nms),
-       lwd=3,y.intersp=.5,bty="n")
-dev.off2()
-
-pdf2(wds["imga"]%+%"bar_plot_ever_paid_followup_7_own.pdf")
-owners[(!holdout),.(0,mean(ever_paid_jul),mean(ever_paid_sep)),
-       keyby=treat7
-       ][,{xmx<-nx.mlt(max(V3),.1)
-       plot(0,xaxt="n",yaxt="n",bty="n",pch="",ylab="",
-            xlab="",xlim=c(0,xmx),ylim=c(0,8),
-            main="3-Month Follow-Up Ever Paid Rates")
-       yl<-1:.N; yu<-yl+.8
-       rect(V1,yl,V2,yu,col=get.col(treat7))
-       rect(V2,yl,V3,yu,col=get.col(treat7),density=50)
-       axis(side=1,at=seq(0,xmx,by=.1),pos=.8)
-       axis(side=2,at=.5*(yl+yu),tick=F,las=1,
-            labels=treat7,pos=0)}]
-dev.off2()
-
-pdf2(wds["imga"]%+%"bar_plot_paid_full_followup_7_own.pdf")
-owners[(!holdout),.(0,mean(paid_full_jul),mean(paid_full_sep)),
-       keyby=treat7
-            ][,{xmx<-nx.mlt(max(V3),.1)
-            plot(0,xaxt="n",yaxt="n",bty="n",pch="",ylab="",
-                 xlab="",xlim=c(0,xmx),ylim=c(0,8),
-                 main="3-Month Follow-Up Paid Full Rates")
-            yl<-1:.N; yu<-yl+.8
-            rect(V1,yl,V2,yu,col=get.col(treat7))
-            rect(V2,yl,V3,yu,col=get.col(treat7),density=85)
-            axis(side=1,at=seq(0,xmx,by=.1),pos=.8)
-            axis(side=2,at=.5*(yl+yu),tick=F,las=1,
-                 labels=treat7,pos=0)}]
-dev.off2()
-
 #Cost-Benefit: Estimating returns to speed-up ####
 ## Parameters of estimate
 ##  - Date when properties were distributed to co-council
@@ -1134,5 +1114,5 @@ params$lawyer_rate * sum(sapply(trt.nms, function(tr)
   sum(predict(regs[.(tr), V1][[1]], x <- owners[.(tr)][assessed_mv > 0]) - 
         predict(regs[.("Holdout"), V1][[1]], x))))
 
-# Inefficiency of Co-Council
+##Back-of-the-envelope approach
 
