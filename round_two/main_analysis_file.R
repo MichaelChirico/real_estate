@@ -26,7 +26,10 @@ gc()
 #  install via devtools::install_github("MichaelChirico/funchir")
 library(funchir)
 library(data.table)
+library(parallel)
+library(lmtest)
 library(xtable)
+library(texreg)
 setwd(mn <- "~/real_estate/")
 wds<-c(proj = mn %+% "round_two/", log = mn %+% "logs/round_two/",
        imga = mn %+% "round_two/images/analysis/",
@@ -42,6 +45,9 @@ mos <- c("jul", "sep", "dec")
 
 #number of bootstrap replications in all such exercises
 BB <- 5000
+
+#how many clusters does this machine have?
+n_clust <- detectCores()
 
 #Convenient Functions 
 get.col<-function(st){
@@ -285,8 +291,8 @@ cis <- dcast(rbindlist(lapply(integer(BB), function(...){
              ][ , .(ep = ep[idx <- treat8 == "Control"] - ep[!idx]),
                 by = date]}), idcol = "bootID"
   #extract for 95% CI
-)[ , quantile(ep, c(.025, .975), na.rm = TRUE), by = date],
-date ~ c("low", "high")[rowid(date)], value.var = "V1")
+  )[ , quantile(ep, c(.025, .975), na.rm = TRUE), by = date],
+  date ~ c("low", "high")[rowid(date)], value.var = "V1")
 
 #Regression Tables ####
 # @knitr analysis_reg
@@ -329,7 +335,7 @@ RBs <- owners[(!holdout), unique(rand_id)]
 tmp <- tempfile()
 progress <- txtProgressBar(1, BB, style = 3L)
 
-cl <- makeCluster(8L, outfile = "")
+cl <- makeCluster(n_clust, outfile = "")
 invisible(clusterEvalQ(cl, library(data.table)))
 clusterExport(cl, c("DT", "RBs", "coef_j", "starts", 
                     "progress", "tmp"),
@@ -360,7 +366,7 @@ RBs <- owners[(!holdout & unq_own), unique(rand_id)]
 tmp <- tempfile()
 progress <- txtProgressBar(1, BB, style = 3L)
 
-cl <- makeCluster(8L, outfile = "")
+cl <- makeCluster(n_clust, outfile = "")
 invisible(clusterEvalQ(cl, library(data.table)))
 clusterExport(cl, c("DT", "RBs", "coef_j", "starts", "progress", "tmp"),
               envir = environment())
@@ -431,153 +437,6 @@ invisible(lapply(reg_vars, function(rr){
   ## print again
   cat(x, sep = "\n")}))
 
-
-
-
-
-
-
-#*************REPEATING FOR JUST EXCLUDING TOP 2 BLOCKS***************
-reg_vars <- "ever_paid"
-reg_all <- reg_vars %+% "_" %+% mos
-
-reg_j <- 
-  parse(text = 
-          paste0(".(", paste(paste0(
-            reg_all, "=list(", sapply(reg_all, function(x) 
-              if (grepl("total", x)) 
-                paste0("lm(", x," ~ treat7)")
-              else paste0("glm(", x, " ~ treat7, ",
-                          "family = binomial)")), ")"), 
-            collapse = ","), ")"))
-
-coef_j = 
-  parse(text = 
-          paste0(".(", paste(paste0(
-            reg_all, "=", sapply(reg_all, function(x) 
-              if (grepl("total", x)) 
-                paste0("lm.fit(model.matrix(", x,
-                       " ~ treat7), ",x,")")
-              else paste0("glm.fit(model.matrix(", x, 
-                          " ~ treat7), ",x,
-                          ', start = starts[["',x,'"]],',
-                          "family=binomial())")), 
-            "$coefficients"), 
-            collapse = ","), ")"))
-
-setkey(owners, rand_id)
-setindex(owners, holdout)
-DT <- owners[(!holdout & rand_id > 2)]
-regs <- owners[(!holdout & rand_id > 2), eval(reg_j)]
-starts <- 
-  lapply(reg_all, function(rr) regs[[rr]][[1L]]$coefficients)
-RBs <- owners[(!holdout & rand_id > 2), unique(rand_id)]
-
-tmp <- tempfile()
-progress <- txtProgressBar(1, BB, style = 3L)
-
-cl <- makeCluster(8L, outfile = "")
-invisible(clusterEvalQ(cl, library(data.table)))
-clusterExport(cl, c("DT", "RBs", "coef_j", "starts", 
-                    "progress", "tmp"),
-              envir = environment())
-boot_dist <- rbindlist(parLapply(cl, 1:BB, function(bb){
-  cat("\n", file = tmp, append = TRUE)
-  setTxtProgressBar(
-    progress, as.integer(system(paste("wc -l <", tmp), intern = TRUE)))
-  DT[.(sample(RBs, rep = TRUE)), eval(coef_j)]}))
-stopCluster(cl); close(progress); unlink(tmp)
-
-reg_info_x28 <- 
-  rbind(regs, boot_dist[ , lapply(.SD, function(x)
-    list(var(matrix(x, ncol = 7, byrow = TRUE))))]
-  )[ , lapply(.SD, function(x)
-    c(x, list(sqrt(diag(x[[2]])))))
-    ][ , lapply(.SD, function(x) 
-      c(x, list(coeftest(x[[1]], vcov = x[[2]])[ , 4])))]
-
-#now for single-owner samples
-##exclude total_paid for single owner analysis
-DT <- owners[(!holdout & unq_own & rand_id > 2)]
-regs <- owners[(!holdout & unq_own & rand_id > 2), eval(reg_j)]
-starts <- 
-  lapply(reg_all, function(rr) regs[[rr]][[1L]]$coefficients)
-RBs <- owners[(!holdout & unq_own & rand_id > 2), unique(rand_id)]
-
-tmp <- tempfile()
-progress <- txtProgressBar(1, BB, style = 3L)
-
-cl <- makeCluster(8L, outfile = "")
-invisible(clusterEvalQ(cl, library(data.table)))
-clusterExport(cl, c("DT", "RBs", "coef_j", "starts", "progress", "tmp"),
-              envir = environment())
-boot_dist <- rbindlist(parLapply(cl, 1:BB, function(bb){
-  cat("\n", file = tmp, append = TRUE)
-  setTxtProgressBar(
-    progress, as.integer(system(paste("wc -l <", tmp), intern = TRUE)))
-  DT[.(sample(RBs, rep = TRUE)), eval(coef_j)]}))
-stopCluster(cl); close(progress); unlink(tmp)
-
-reg_info_so_x28 <- 
-  rbind(regs, boot_dist[ , lapply(.SD, function(x)
-    list(var(matrix(x, ncol = 7, byrow = TRUE))))]
-  )[ , lapply(.SD, function(x)
-    c(x, list(sqrt(diag(x[[2]])))))
-    ][ , lapply(.SD, function(x) 
-      c(x, list(coeftest(x[[1]], vcov = x[[2]])[ , 4])))]
-
-
-###Difference in Mean Tests
-rename_coef<-function(obj){
-  nms <- names(obj$coefficients)
-  idx <- !grepl("treat7", nms)
-  #Add XXX to coefficients we'll exclude
-  nms[idx] <- nms[idx] %+% "XXX"
-  nms <- gsub("treat7", "", nms)
-  names(obj$coefficients) <- nms
-  obj
-}
-
-x <- capture.output(texreg(c(lapply(
-  tp <- reg_all, function(mo)
-    rename_coef(reg_info_x28[[mo]][[1]])),
-  lapply(tp, function(mo)
-    rename_coef(reg_info_so_x28[[mo]][[1]]))),
-  custom.model.names=
-    rep(c("One Month","Three Months","Six Months"), 2),
-  caption=
-    "Estimated Average Treatment Effects " %+% 
-    "(Excluding top 28 Owners): Ever Paid",
-  override.se=
-    c(lapply(tp, function(mo) reg_info_x28[[mo]][[3]]),
-      lapply(tp, function(mo) reg_info_so_x28[[mo]][[3]])),
-  override.pval=
-    c(lapply(tp, function(mo) reg_info_x28[[mo]][[4]]),
-      lapply(tp, function(mo) reg_info_so_x28[[mo]][[4]])),
-  caption.above=TRUE, stars=c(.01,.05,.1),
-  label="tbl:reg7_ep_x28", 
-  include.rsquared=FALSE, include.adjrs=FALSE, 
-  include.rmse=FALSE, include.aic=FALSE, 
-  include.bic=FALSE, include.deviance=FALSE,
-  #Exclude Intercept
-  omit.coef="XXX$", float.pos="htbp", 
-  sideways = TRUE, use.packages = FALSE))
-
-## add vertical lines to separate populations
-x[5] <- "\\begin{tabular}{|l| c c c| c c c| }"
-
-## add multicolumn to distinguish populations
-x[6] <- x[6] %+% "\n & \\multicolumn{3}{c}{All Owners} & " %+% 
-  "\\multicolumn{3}{|c|}{Single-Property Owners} \\\\"
-
-## print again
-cat(x, sep = "\n")
-
-
-
-
-
-
 #Now for main vs. holdout
 reg_all <- c("paid_full_", "ever_paid_") %+% 
   rep(mos, each = 2)
@@ -608,7 +467,7 @@ starts <-
 tmp <- tempfile()
 progress <- txtProgressBar(1, BB, style = 3L)
 
-cl <- makeCluster(8L, outfile = "")
+cl <- makeCluster(n_clust, outfile = "")
 invisible(clusterEvalQ(cl, library(data.table)))
 clusterExport(cl, c("DT", "coef_j", "starts", "progress", "tmp"),
               envir = environment())
@@ -736,6 +595,20 @@ params$lawyer_rate * sum(sapply(trt.nms, function(tr)
 
 ##Back-of-the-envelope approach
 
+### @ 3 months
+print(xtable(
+  owners[(unq_own), .(.N, mean(ever_paid_sep)), keyby = treat8
+         ][ , .(Treatment = treat8[-1], 
+                `Impact Per Letter` = 
+                  dol.form(x <-  (V2[-1] - V2[1]) * 
+                             owners[(unq_own & total_paid_dec > 0), 
+                                    median(total_paid_dec)],  dig = 2L), 
+                `Total Impact` = dol.form(N[-1] * x))],
+  caption = "Estimated Impact on Revenue: 6 Months",
+  label = "rev_ep", align = "rrrr"),
+  include.rownames = FALSE, comment = FALSE, caption.placement = "top")
+
+### @ 6 months
 print(xtable(
   owners[(unq_own), .(.N, mean(ever_paid_dec)), keyby = treat8
          ][ , .(Treatment = treat8[-1], 
@@ -744,18 +617,6 @@ print(xtable(
                              owners[(unq_own & total_paid_dec > 0), 
                                     median(total_paid_dec)],  dig = 2L), 
                 `Total Impact` = dol.form(N[-1] * x))],
-  caption = "Estimated Revenue Impacts (Ever Paid: Unique Owners vs. Holdout)",
+  caption = "Estimated Impact on Revenue: 3 Months",
   label = "rev_ep", align = "rrrr"),
-  include.rownames = FALSE, comment = FALSE, caption.placement = "top")
-
-print(xtable(
-  owners[(unq_own), .(.N, mean(paid_full_dec)), keyby = treat8
-         ][ , .(Treatment = treat8[-1], 
-                `Impact Per Letter` = 
-                  dol.form(x <-  (V2[-1] - V2[1]) * 
-                             owners[(unq_own & paid_full_dec), 
-                                    median(total_paid_dec)],  dig = 2L), 
-                `Total Impact` = dol.form(N[-1] * x))],
-  caption = "Estimated Revenue Impacts (Paid Full: Unique Owners vs. Holdout)",
-  label = "rev_pf", align = "rrrr"),
   include.rownames = FALSE, comment = FALSE, caption.placement = "top")

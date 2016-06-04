@@ -464,7 +464,7 @@ taxes are due.\footnote{We tested one more intervention that has been
   usual envelopes (4 1/8" by 9 ?") were often ignored, while reminders
   mailed in larger envelopes (9" by 12") resulted in greater payments.
   The total number of properties in this additional treatment was
-  X,XXX randomized over the seven treatment letters.  We found no
+  12,193 randomized over the seven treatment letters.  We found no
   statistically significant effect of letter size on compliance
   behavior or size of payment.  These results are available upon
   request.}
@@ -544,6 +544,24 @@ Amount Due (June) & \$1,383 & \$1,950 & \$1,290 & \$1,316 & \$1,338 & \$1,389 & 
 
 \end{sidewaystable}
 
+\begin{table}[ht]
+\centering
+\caption{Balance between Holdout and Treated Samples} 
+\label{tbl:bal_hold}
+\begin{tabular}{|r|rrr|rrr|}
+   \hline
+ & \multicolumn{3}{c|}{Full Sample} & \multicolumn{3}{c|}{Unique Owners} \\
+\hline
+Variable & Treated & Holdout & $p$-value & Treated & Holdout & $p$-value \\ 
+  Amount Due (June) & \$1,872 & \$1,241 & 0.02 & \$1,467 & \$1,233 & 0.34 \\ 
+  Assessed Property Value & \$192,832 & \$142,973 & 0.15 & \$157,094 & \$142,630 & 0.57 \\ 
+  \% with Unique Owner & 87.6 & 99.1 & 0 &  &  &  \\ 
+  \# Properties per Owner & 1.30 & 1.01 & 0 &  &  &  \\ 
+  \# Owners & 19,361 & 2,107 &  & 16,951 & 2,088 &  \\ 
+   \hline
+\end{tabular}
+\end{table}
+
 \newpage
 
 \section{Empirical Results}
@@ -565,32 +583,32 @@ with city governance.  The ever-paid outcome does not differentiate between
 taxpayers that made full payment and those who made only a partial
 contribution.  Full compliance is defined as making a full payment. 
 
-\begin{table}[htbp]
+\begin{table}[ht]
 \centering
-\caption{Linear Probability Model Estimates} \label{pc_rates_s}
-\bigskip
-\begin{tabular}{l c c c c}
-\hline
-& \multicolumn{2}{c}{Ever Paid} & \multicolumn{2}{c}{Paid in full} \\
-\hline
-               & One Month & Three Months & One Month & Three Months \\
-\hline
- Holdout & 30.5 & 51.4  & & \\ 
+\caption{Linear Probability Model Estimates} 
+\label{tbl:marg_3mo}
+\begin{tabular}{lllll}
+  \hline
+   & \multicolumn{2}{c}{Ever Paid} & 
+             \multicolumn{2}{c}{Paid in Full} \\
+ & One Month & Three Months & One Month & Three Months \\
+Holdout & 30.5 & 51.4 & 23.5 & 40.8 \\ 
    \hline
-Control & 3.7*** & 3.9*** & &  \\ 
-   & (1.4) & (1.5)  & & \\ 
-  Amenities & 1.7 & 2.6* & &  \\ 
-   & (1.4) & (1.5)  & & \\ 
-  Community & 3.8*** & 2.8*  & & \\ 
-   & (1.4) & (1.5) & & \\ 
-  Duty & 2.4* & 3.6** & &  \\ 
-   & (1.4) & (1.5) & & \\ 
-  Peer & 3.9*** & 3.5** & &  \\ 
-   & (1.4) & (1.5)  & & \\ 
-  Lien & 9*** & 9.2*** & &   \\ 
-   & (1.4) & (1.5) ) & &  \\ 
-  Sheriff & 7.3*** & 8.8*** & &  \\ 
-   & (1.4) & (1.5) & &  \\ 
+Control & 3.7*** & 3.9** & 2.2* & 3** \\ 
+   & (1.4) & (1.5) & (1.3) & (1.5) \\ 
+  Amenities & 1.7 & 2.6* & -0.2 & 1.6 \\ 
+   & (1.4) & (1.5) & (1.3) & (1.5) \\ 
+  Moral & 3.8*** & 2.8* & 1.3 & 2.5* \\ 
+   & (1.4) & (1.5) & (1.3) & (1.4) \\ 
+  Duty & 2.4* & 3.6** & 0.7 & 2.3 \\ 
+   & (1.4) & (1.5) & (1.3) & (1.5) \\ 
+  Peer & 3.9*** & 3.5** & 1.8 & 3.4** \\ 
+   & (1.4) & (1.5) & (1.3) & (1.5) \\ 
+  Lien & 9*** & 9.2*** & 5.7*** & 7.3*** \\ 
+   & (1.4) & (1.5) & (1.3) & (1.5) \\ 
+  Sheriff & 7.3*** & 8.8*** & 4.5*** & 6.7*** \\ 
+   & (1.4) & (1.5) & (1.3) & (1.5) \\ 
+   
  \hline 
  \multicolumn{5}{l}{\scriptsize{Holdout values are in levels; remaining figures are relative to Holdout}} \\ 
 \end{tabular}
@@ -608,34 +626,35 @@ at the one month and three month date. Almost all of these increases in complian
 significant at standard levels of significance. We also find that only the lien and the sheriff's sale letter have positive and significant impact after six months.
 
 \begin{table}[htbp]
-\caption{LOGIT Estimates}\label{pc_logit_s}
+\caption{Logistic Model Estimates}
 \begin{center}
-\begin{tabular}{l c c c c}
+\begin{tabular}{l c c c c }
 \hline
-& \multicolumn{2}{c}{Ever Paid} & \multicolumn{2}{c}{Paid in full} \\
+ & \multicolumn{2}{c}{Ever Paid} & \multicolumn{2}{c}{Paid Full} \\
 \hline
-               & One Month & Three Months & One Month & Three Months \\
+ & One Month & Three Months & One Month & Three Months \\
 \hline
-Control        & $0.12^{*}$   & $0.12^{**}$     &&  \\
-               & $(0.07)$     & $(0.06)$        &&   \\
-Amenities      & $-0.01$      & $0.06$    & &       \\
-               & $(0.07)$     & $(0.06)$   & &      \\
-Community          & $0.07$       & $0.10^{*}$      & &     \\
-               & $(0.07)$     & $(0.06)$   & &       \\
-Duty           & $0.04$       & $0.09$   & &        \\
-               & $(0.07)$     & $(0.06)$    & &    \\
-Peer           & $0.10$       & $0.14^{**}$    & &     \\
-               & $(0.07)$     & $(0.06)$   & &    \\
-Lien           & $0.29^{***}$ & $0.30^{***}$  & & \\
-               & $(0.07)$     & $(0.06)$   & &   \\
-Sheriff        & $0.24^{***}$ & $0.27^{***}$  & & \\
-               & $(0.07)$     & $(0.06)$    & &     \\
+Control        & $0.17^{***}$ & $0.16^{***}$ & $0.12^{*}$   & $0.12^{**}$  \\
+               & $(0.06)$     & $(0.06)$     & $(0.07)$     & $(0.06)$     \\
+Amenities      & $0.08$       & $0.11^{*}$   & $-0.01$      & $0.06$       \\
+               & $(0.06)$     & $(0.06)$     & $(0.07)$     & $(0.06)$     \\
+Moral          & $0.17^{***}$ & $0.11^{*}$   & $0.07$       & $0.10^{*}$   \\
+               & $(0.06)$     & $(0.06)$     & $(0.07)$     & $(0.06)$     \\
+Duty           & $0.11^{*}$   & $0.14^{**}$  & $0.04$       & $0.09$       \\
+               & $(0.06)$     & $(0.06)$     & $(0.07)$     & $(0.06)$     \\
+Peer           & $0.18^{***}$ & $0.14^{**}$  & $0.10$       & $0.14^{**}$  \\
+               & $(0.06)$     & $(0.06)$     & $(0.07)$     & $(0.06)$     \\
+Lien           & $0.40^{***}$ & $0.37^{***}$ & $0.29^{***}$ & $0.30^{***}$ \\
+               & $(0.06)$     & $(0.06)$     & $(0.07)$     & $(0.06)$     \\
+Sheriff        & $0.33^{***}$ & $0.36^{***}$ & $0.24^{***}$ & $0.27^{***}$ \\
+               & $(0.06)$     & $(0.06)$     & $(0.07)$     & $(0.06)$     \\
 \hline
-Log Likelihood & -10801.06    & -13046.81 & &      \\
-Num. obs.      & 19039        & 19039         & 19039        & 19039      \\
+Log Likelihood & -12243.94    & -13035.32    & -10801.06    & -13046.81    \\
+Num. obs.      & 19039        & 19039        & 19039        & 19039        \\
 \hline
-\multicolumn{3}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
+\multicolumn{5}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
 \end{tabular}
+\label{tbl:reg8_3mo}
 \end{center}
 \end{table}
 
@@ -652,21 +671,22 @@ However the main findings are qualitatively and quantitatively the same.
 \noindent COMMENT: THE ONE AND THREE MONTHS IN TABLES 2 AND 3 SEEMS TO BE INCONSISTENT. WE NEED TO RESOLVE THIS ISSUE. I SUGGEST WE RUN LINEAR PROBABILITY MODELS AND SEE WHAT WE GET WHEN WE COMPUTE ROBUST STD ERRORS. IF WE SWITCH TO LIN PROB, THAT WOULD SAVE US A TABLE AND MAKES THE COEFFICIENTS MUCH EASIER TO INTERPRET!
 
 
-\begin{table}[htbp]
+\begin{table}[ht]
 \centering
-\caption{Estimated Impact on Revenue: 3 Months} \label{pc_rev_s}
+\caption{Estimated Impact on Revenue: 3 Months} 
+\label{rev_ep}
 \begin{tabular}{rrr}
- \hline
+  \hline
 Treatment & Impact Per Letter & Total Impact \\ 
-\hline
-Control & &  \\
-Amenities &  &  \\
-Community &  &  \\
-Duty &  &  \\
-Peer &  &  \\
-Lien &  &  \\
-Sheriff &  &  \\
-\hline
+  \hline
+Control & \$32.35 & \$78,298 \\ 
+  Amenities & \$21.97 & \$52,494 \\ 
+  Moral & \$23.63 & \$57,690 \\ 
+  Duty & \$29.9 & \$72,742 \\ 
+  Peer & \$29.14 & \$70,440 \\ 
+  Lien & \$76.21 & \$185,345 \\ 
+  Sheriff & \$72.73 & \$175,945 \\ 
+   \hline
 \end{tabular}
 \end{table}
 
@@ -722,29 +742,30 @@ all tardy tax payers were assigned to a collection agency at the end of August 2
 thus received another "treatment." This may explain why we see a convergence in the 
 estimates of the treatment effects.
 
-\begin{table}[htbp]
+\begin{table}[ht]
 \centering
-\caption{Linear Probability Model: 6 Months} \label{pc_rates_6}
-\begin{tabular}{l c c}
+\caption{Linear Probability Model Estimates: 6 Months} 
+\label{tbl:marg_6mo}
+\begin{tabular}{lll}
   \hline
-  & Ever Paid & Paid in Full \\
-Treatment & Six Months & Six Months \\ 
- Holdout & 73.3 & \\ 
+   & Ever Paid & Paid in Full \\
+Holdout & 73.3 & 63.2 \\ 
    \hline
-Control & 1.3 & \\ 
-   & (1.3) &  \\ 
-  Amenities & -0.2 & \\ 
-   & (1.3) \\ 
-  Community & 0.9 &  \\ 
-   & (1.3) & \\ 
-  Duty & 2.1* &  \\ 
-   & (1.3) & \\ 
-  Peer & 1.4 & \\ 
-   & (1.3) &  \\ 
-  Lien & 3.7*** & \\ 
-   & (1.3) & \\ 
-  Sheriff & 3.7*** & \\ 
-   & (1.3) & \\ 
+Control & 1.3 & 1.5 \\ 
+   & (1.3) & (1.5) \\ 
+  Amenities & -0.2 & 0 \\ 
+   & (1.3) & (1.5) \\ 
+  Moral & 0.9 & 1.1 \\ 
+   & (1.3) & (1.4) \\ 
+  Duty & 2.1 & 1 \\ 
+   & (1.3) & (1.5) \\ 
+  Peer & 1.4 & 2.3 \\ 
+   & (1.3) & (1.5) \\ 
+  Lien & 3.7*** & 4.8*** \\ 
+   & (1.3) & (1.4) \\ 
+  Sheriff & 3.7*** & 2.9** \\ 
+   & (1.3) & (1.4) \\ 
+   
  \hline 
  \multicolumn{3}{l}{\scriptsize{Holdout values are in levels; remaining figures are relative to Holdout}} \\ 
 \end{tabular}
