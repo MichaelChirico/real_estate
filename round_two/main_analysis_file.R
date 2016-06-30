@@ -23,7 +23,7 @@ set.seed(4746966)
 rm(list=ls(all=T))
 gc()
 #Michael Chirico's function of convenience packages;
-#  install via devtools::install_github("MichaelChirico/funchir")
+#  Available on GitHub @ MichaelChirico/funchir
 library(funchir)
 library(data.table)
 library(parallel)
@@ -51,9 +51,10 @@ n_clust <- detectCores()
 
 #Convenient Functions 
 get.col<-function(st){
-  cols <- c(Big="blue", Small="red", Control = "blue", Amenities = "yellow",
-            Moral = "cyan", Duty = "darkgreen", Lien = "red", Sheriff = "orchid",
-            Peer = "orange", Holdout = "darkgray")
+  cols <- 
+    c(Big="blue", Small="red", Control = "blue", Amenities = "yellow",
+      Moral = "cyan", Duty = "darkgreen", Lien = "red", Sheriff = "orchid",
+      Peer = "orange", Holdout = "darkgray")
   cols[gsub("\\s.*", "", as.character(st))]
 }
 
@@ -66,6 +67,62 @@ owners <- fread("~/Desktop/round_two_analysis_owners.csv")
 #set factor levels
 owners[ , treat8 := factor(treat8, trt.nms8)]
 owners[ , treat7 := factor(treat7, trt.nms)]
+
+properties <- setDT(readxl::read_excel(
+  "~/Desktop/req20150709_PennLetterExperiment (September 2015 update).xlsx",
+  ##** NOTE: I'm using my own branch of readxl here which
+  ##   supports multiple NA values; installed via
+  ##   devtools::install_github("MichaelChirico/readxl@multiple_na") **
+  sheet = "DETAILS", skip = 7L, na = c("NULL", "-"),
+  col_names = c("account", "opa_no", rep("x", 22)),
+  col_types = rep("text", 24))
+  )[ , account := gsub("\\s", "", account)
+     ][-.N, !"x", with = FALSE]
+
+opa_map <- fread("~/Desktop/opa_owner_map.csv",
+               colClasses = "character")
+
+properties[opa_map, owner1 := i.owner1, on = "opa_no"]
+properties[opa_no == "151102610",
+           owner1 := "1502-1504 GREEN STREET LLC"]
+properties[opa_no == "881577275",
+           owner1 := "SKYLIGHT HOLDINGS LP"]
+
+## Payments data
+payments <- setDT(readxl::read_excel(
+  "~/Desktop/" %+%
+    "req20150709_PennLetterExperiment " %+%
+    "(December 2015 update).xlsx",
+  sheet = "PAYMENT DETAILS", skip = 1L,
+  col_names = c("account","period","valid","past_due",
+                "principal","total_paid"),
+  col_types = abbr_to_colClass("tn", "15"))
+  )[ , c("period","valid") :=
+      lapply(.(period,valid), as.Date,
+             origin = as.Date("1899-12-30"))
+    ][format(as.Date(valid) - past_due, "%Y") == 2015
+      ][ , account := gsub("\\s*", "", account)
+         ][properties, owner1 := i.owner1, on = "account"
+           ][ , .(period = max(period),
+                  past_due = min(past_due),
+                  principal = sum(principal),
+                  total_paid = sum(total_paid)),
+              by = .(owner1, valid)
+              ][is.na(valid), c("valid","total_paid") :=
+                  .(as.Date("2015-06-01"), 0L)
+                ][owners, treat8 := i.treat8, on = "owner1"]
+
+follow <- 
+  fread("~/Desktop/Real Estate Current Year Delinquency as of 04-06-2016.txt",
+        sep = "|", colClasses=abbr_to_colClass("cnc","359"),
+        col.names=c("opa_no", "legal_name", "period",
+                    "principal", "interest", "penalty",
+                    "other_due", "total_due","address", 
+                    "city", "state", "zip5", "zip4",
+                    "bldg_code", "bldg_desc", 
+                    "bldg_grp1", "bldg_grp2")
+        )[properties, owner1 := i.owner1, on = "opa_no"
+          ][!is.na(owner1)][owners, treat8 := i.treat8, on = "owner1"]
 
 #Balance on Observables ####
 ## Full Sample
@@ -202,20 +259,21 @@ print(xtable(hold_bal, caption = "Balance between Holdout and Treated Samples",
 #  since we'll use the result of this list for that
 outvar <- parse(text = paste0(
   "setNames(list(", 
-  paste(paste0("mean(100*ever_paid_", mos, ")"), 
+  paste(paste0("mean(100*", c("ever_paid_", "paid_full_"), 
+               rep(mos, each = 2L), ")"), 
         collapse = ","), "), outn)"))
 
 delq <- quote(c(Treatment = list(treat8[-1L]),
                 lapply(.SD, function(x) x[-1L] - x[1L])))
 
-outn <- c("One Month", "Three Months", "Six Months")
+outn <- c("ep", "pf") %+% c(1, 1, 3, 3, 6, 6)
 
-dt <- owners[(unq_own)]
+DT <- owners[(unq_own)]
 
 boot <- 
   rbindlist(lapply(integer(BB), function(...)
     #calculate point estimate in re-sample
-    dt[sample(.N, rep = TRUE), eval(outvar),
+    DT[sample(.N, rep = TRUE), eval(outvar),
        keyby = treat8][ , eval(delq), .SDcols = outn]))
 
 star <- function(x){
@@ -226,31 +284,52 @@ star <- function(x){
   return("")
 }
 
-print(xtable(rbind(
-  dt[ , eval(outvar), keyby = treat8
-      ][ , c(Treatment = list(treat8), lapply(.SD, function(x) 
-        round(c(x[1L], x[-1L] - x[1L]), 1) %+% "")), .SDcols = outn
-        ][boot[ , lapply(.SD, star), by = Treatment, .SDcols = outn],
-          (outn) := lapply(outn, function(jj) 
-            get(jj) %+% get("i." %+% jj)), on = "Treatment"],
-  boot[ , lapply(.SD, function(x) round(sd(x), 1)), by = Treatment], 
-  idcol = "type")[type == 2, (outn) := lapply(.SD, function(x)
-    paste0("(", x, ")")), .SDcols = outn
-    ][order(Treatment)][type == 2, Treatment := ""
-                        ][ , !"type", with = FALSE],
-  caption = "Participation Rates by Treatment over Time, " %+% 
-    "Unique Owners vs. Holdout", align = "rrlll", label = "tbl:marg_ep"),
-  include.rownames = FALSE, comment = FALSE, hline.after = c(-1, 1),
-  caption.placement = "top", 
-  add.to.row = 
-    list(pos = list(15), 
-         command = 
-           "\n \\hline \n \\multicolumn{4}{l}{\\scriptsize{" %+% 
-           "$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$; " %+% 
-           "Holdout values are in levels; " %+% 
-           "remaining figures are relative to Holdout}} \\\\ \n"))
+tbl_info <- 
+  rbind(
+    DT[ , eval(outvar), keyby = treat8
+        ][ , c(Treatment = list(treat8), lapply(.SD, function(x) 
+          round(c(x[1L], x[-1L] - x[1L]), 1) %+% "")), .SDcols = outn
+          ][boot[ , lapply(.SD, star), by = Treatment, .SDcols = outn],
+            (outn) := lapply(outn, function(jj) 
+              get(jj) %+% get("i." %+% jj)), on = "Treatment"],
+    boot[ , lapply(.SD, function(x) round(sd(x), 1)), by = Treatment], 
+    idcol = "type")[type == 2, (outn) := lapply(.SD, function(x)
+      paste0("(", x, ")")), .SDcols = outn
+      ][order(Treatment)][type == 2, Treatment := ""
+                          ][ , !"type", with = FALSE]
 
-## Cumulative Partial Participation
+print(xtable(
+  tbl_info[ , c("Treatment", sort(grep("1|3", names(tbl_info), value = TRUE))),
+            with = FALSE], caption = "Linear Probability Model Estimates",
+  align = "llllll", label = "tbl:marg_3mo"),
+  include.rownames = FALSE, include.colnames = FALSE,
+  comment = FALSE, hline.after = c(-1, 1), caption.placement = "top", 
+  add.to.row = 
+    list(pos = list(0, 15), 
+         command = 
+           c(" & \\multicolumn{2}{c}{Ever Paid} & " %+% "
+             \\multicolumn{2}{c}{Paid in Full} \\\\\n" %+% 
+               " & One Month & Three Months & One Month & Three Months \\\\\n",
+             "\n \\hline \n \\multicolumn{5}{l}{\\scriptsize{" %+% 
+               "Holdout values are in levels; " %+% 
+               "remaining figures are relative to Holdout}} \\\\ \n")))
+
+print(xtable(
+  tbl_info[ , c("Treatment", "ep6", "pf6"), with = FALSE], 
+  caption = "Linear Probability Model Estimates: 6 Months",
+  align = "llll", label = "tbl:marg_6mo"),
+  include.rownames = FALSE, include.colnames = FALSE,
+  comment = FALSE, hline.after = c(-1, 1), caption.placement = "top", 
+  add.to.row = 
+    list(pos = list(0, 15), 
+         command = 
+           c(" & Ever Paid & Paid in Full \\\\\n",
+             "\n \\hline \n \\multicolumn{3}{l}{\\scriptsize{" %+% 
+               "Holdout values are in levels; " %+% 
+               "remaining figures are relative to Holdout}} \\\\ \n")))
+  
+
+## Cumulative Partial Participation ####
 ## @knitr analysis_ch_ep
 ### get range of dates for day-by-day averages
 dt.rng <- owners[(!holdout & unq_own),{
@@ -498,35 +577,51 @@ rename_coef<-function(obj){
   obj
 }
 
-ep <- reg_all[grepl("ever", reg_all)]
-print(texreg(
-  lapply(ep, function(mo)
+three_months <- sort(grep("jul|sep", reg_all, value = TRUE))
+x <- capture.output(print(texreg(
+  lapply(three_months, function(mo)
     rename_coef(reg_info_8[[mo]][[1]])),
   custom.model.names=
-    c("One Month","Three Months","Six Months"),
-  caption=
-    "Estimated Average Treatment Effects: Ever Paid, vs. Holdout",
-  override.se=lapply(ep, function(mo) reg_info_8[[mo]][[3]]),
-  override.pval=lapply(ep, function(mo) reg_info_8[[mo]][[4]]),
-  caption.above=TRUE, stars=c(.01,.05,.1),label="tbl:reg8_ep", 
-  include.rsquared=FALSE, include.adjrs=FALSE, include.rmse=FALSE,
+    rep(c("One Month", "Three Months"), 2L),
+  caption = "Logistic Model Estimates",
+  override.se = lapply(three_months, function(mo) reg_info_8[[mo]][[3]]),
+  override.pval = lapply(three_months, function(mo) reg_info_8[[mo]][[4]]),
+  caption.above = TRUE, stars = c(.01, .05, .1), label = "tbl:reg8_3mo", 
+  include.rsquared = FALSE, include.adjrs = FALSE, include.rmse = FALSE,
+  include.aic = FALSE, include.bic = FALSE, include.deviance = FALSE,
   #Exclude Intercept
-  omit.coef="XXX$", float.pos="htbp"))
+  omit.coef = "XXX$", float.pos="htbp")))
 
-pf <- reg_all[grepl("full", reg_all)]
-print(texreg(
-  lapply(pf, function(mo)
-    rename_coef(reg_info_8[[mo]][[1]])),
-  custom.model.names=
-    c("One Month","Three Months","Six Months"),
-  caption=
-    "Estimated Average Treatment Effects: Ever Paid, vs. Holdout",
-  override.se=lapply(pf, function(mo) reg_info_8[[mo]][[3]]),
-  override.pval=lapply(pf, function(mo) reg_info_8[[mo]][[4]]),
-  caption.above=TRUE, stars=c(.01,.05,.1),label="tbl:reg8_ep", 
-  include.rsquared=FALSE, include.adjrs=FALSE, include.rmse=FALSE,
-  #Exclude Intercept
-  omit.coef="XXX$", float.pos="htbp"))
+cat(x[1:5], "\\hline", 
+    " & \\multicolumn{2}{c}{Ever Paid} & \\multicolumn{2}{c}{Paid Full} \\\\",
+    x[6:length(x)], sep = "\n")
+
+x <- capture.output(texreg(lapply(expression(
+  total_paid_jul, total_paid_sep),
+  function(mo) { x <- owners[(unq_own), lm(eval(mo) ~ treat8)]
+    names(x$coefficients) <- 
+      gsub("treat8", "", names(x$coefficients))
+    names(x$coefficients)[1L] <- "Holdout"; x}),
+  custom.model.names = c("One Month", "Three Months"),
+  include.rsquared = FALSE, include.adjrs = FALSE,
+  include.rmse = FALSE, caption = "Revenue Regressions",
+  float.pos = "htbp", stars = c(.01, .05, .1), 
+  label = "tbl:rev_reg_3mo", caption.above = TRUE))
+
+cat(x[1:10], "\\hline", x[11:length(x)], sep = "\n")
+
+x <- capture.output(texreg({ 
+  x <- owners[(unq_own), lm(total_paid_dec ~ treat8)]
+  names(x$coefficients) <- 
+    gsub("treat8", "", names(x$coefficients))
+  names(x$coefficients)[1L] <- "Holdout"; x},
+  custom.model.names = "Six Months",
+  include.rsquared = FALSE, include.adjrs = FALSE,
+  include.rmse = FALSE, caption = "Revenue Regression (Six Months)",
+  float.pos = "htbp", stars = c(.01, .05, .1), 
+  label = "tbl:rev_reg_6mo", caption.above = TRUE))
+
+cat(x[1:10], "\\hline", x[11:length(x)], sep = "\n")
 
 #Cost-Benefit: Estimating returns to speed-up ####
 ## Parameters of estimate
@@ -604,7 +699,7 @@ print(xtable(
                              owners[(unq_own & total_paid_dec > 0), 
                                     median(total_paid_dec)],  dig = 2L), 
                 `Total Impact` = dol.form(N[-1] * x))],
-  caption = "Estimated Impact on Revenue: 6 Months",
+  caption = "Estimated Impact on Revenue: 3 Months",
   label = "rev_ep", align = "rrrr"),
   include.rownames = FALSE, comment = FALSE, caption.placement = "top")
 
@@ -617,6 +712,47 @@ print(xtable(
                              owners[(unq_own & total_paid_dec > 0), 
                                     median(total_paid_dec)],  dig = 2L), 
                 `Total Impact` = dol.form(N[-1] * x))],
-  caption = "Estimated Impact on Revenue: 3 Months",
+  caption = "Estimated Impact on Revenue: 6 Months",
   label = "rev_ep", align = "rrrr"),
   include.rownames = FALSE, comment = FALSE, caption.placement = "top")
+
+# Alternative Ever Paid: @ August 10th ####
+
+
+         
+texreg(lapply(D("2015-07-22", "2015-08-10", "2015-09-24"),
+              function(dd){
+                #will throw a warning on the first
+                #  pass of the lapply loop
+                owners[ , ever_paid_temp := NULL]
+                owners[payments[valid <= dd, sum(total_paid), 
+                                by = owner1],
+                       ever_paid_temp := i.V1 > 0, on = "owner1"]
+                owners[is.na(ever_paid_temp), ever_paid_temp := FALSE]
+                x <- owners[(unq_own), lm(ever_paid_temp ~ treat8)]
+                names(x$coefficients) <- 
+                  gsub("treat8", "", names(x$coefficients))
+                names(x$coefficients)[1L] <- "Holdout"; x}),
+  custom.model.names = c("One Month", "Aug 10", "Three Months"),
+  caption.above = TRUE, float.pos = "htbp",
+  caption = "Ever Paid, Using Payments File",
+  include.rsquared = FALSE, include.adjrs = FALSE,
+  include.rmse = FALSE, stars = c(.01, .05, .1),
+  label = "reg:ep_pmts")
+
+# 2016 Follow-Up
+owners[follow, total_due_2016 := i.total_due, on = "owner1"]
+owners[ , paid_full_2016 := is.na(total_due_2016) | 
+          total_due_2016 < .1]
+
+texreg(lapply(expression((unq_own), (unq_own & ever_paid_dec)),
+              function(y){
+                x <- owners[eval(y), lm(paid_full_2016 ~ treat8)]
+                names(x$coefficients) <- 
+                  gsub("treat8", "", names(x$coefficients))
+                names(x$coefficients)[1L] <- "Holdout"; x}),
+       include.rsquared = FALSE, include.rmse = FALSE,
+       include.adjrs = FALSE, float.pos = "htbp",
+       custom.model.names = c("Full Sample", "Among 2015 Ever-Paid"),
+       stars = c(.01, .05, .1), caption.above = TRUE,
+       caption = "Effects on 2016 Full Payment", label = "reg:2016_pf")
