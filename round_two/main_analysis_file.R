@@ -62,7 +62,7 @@ get.col<-function(st){
 ## Importing directly from cleaned analysis files
 ##   created with data_cleaning.R.
 
-owners <- fread("~/Desktop/round_two_analysis_owners.csv")
+owners <- fread("~/Desktop/round_two_analysis_owners.csv")[(holdout | rand_id > 2)]
 
 #set factor levels
 owners[ , treat8 := factor(treat8, trt.nms8)]
@@ -700,7 +700,7 @@ print(xtable(
                                     median(total_paid_dec)],  dig = 2L), 
                 `Total Impact` = dol.form(N[-1] * x))],
   caption = "Estimated Impact on Revenue: 3 Months",
-  label = "rev_ep", align = "rrrr"),
+  label = "rev_ep3", align = "rrrr"),
   include.rownames = FALSE, comment = FALSE, caption.placement = "top")
 
 ### @ 6 months
@@ -713,7 +713,7 @@ print(xtable(
                                     median(total_paid_dec)],  dig = 2L), 
                 `Total Impact` = dol.form(N[-1] * x))],
   caption = "Estimated Impact on Revenue: 6 Months",
-  label = "rev_ep", align = "rrrr"),
+  label = "rev_ep6", align = "rrrr"),
   include.rownames = FALSE, comment = FALSE, caption.placement = "top")
 
 # Alternative Ever Paid: @ August 10th ####
