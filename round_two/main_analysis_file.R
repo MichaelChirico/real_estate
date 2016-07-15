@@ -20,7 +20,7 @@
 set.seed(4746966)
 
 ##Packages
-rm(list=ls(all=T))
+rm(list = ls(all = TRUE))
 gc()
 #Michael Chirico's function of convenience packages;
 #  Available on GitHub @ MichaelChirico/funchir
@@ -30,10 +30,11 @@ library(parallel)
 library(lmtest)
 library(xtable)
 library(texreg)
-setwd(mn <- "~/real_estate/")
-wds<-c(proj = mn %+% "round_two/", log = mn %+% "logs/round_two/",
-       imga = mn %+% "round_two/images/analysis/",
-       imgb = mn %+% "round_two/images/balance/")
+setwd(mn <- "~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
+wds <- c(proj = mn %+% "round_two/", log = mn %+% "logs/round_two/",
+         imga = mn %+% "round_two/images/analysis/",
+         imgb = mn %+% "round_two/images/balance/",
+         data = "/media/data_drive/real_estate/")
 write.packages(wds["log"] %+% "analysis_session.txt")
 
 #"metavariables"
@@ -62,37 +63,18 @@ get.col<-function(st){
 ## Importing directly from cleaned analysis files
 ##   created with data_cleaning.R.
 
-owners <- fread("~/Desktop/round_two_analysis_owners.csv")[(holdout | rand_id > 2)]
+owners <- fread(wds["data"] %+% "round_two_analysis_owners.csv")[(holdout | rand_id > 2)]
 
 #set factor levels
 owners[ , treat8 := factor(treat8, trt.nms8)]
 owners[ , treat7 := factor(treat7, trt.nms)]
 
-properties <- setDT(readxl::read_excel(
-  "~/Desktop/req20150709_PennLetterExperiment (September 2015 update).xlsx",
-  ##** NOTE: I'm using my own branch of readxl here which
-  ##   supports multiple NA values; installed via
-  ##   devtools::install_github("MichaelChirico/readxl@multiple_na") **
-  sheet = "DETAILS", skip = 7L, na = c("NULL", "-"),
-  col_names = c("account", "opa_no", rep("x", 22)),
-  col_types = rep("text", 24))
-  )[ , account := gsub("\\s", "", account)
-     ][-.N, !"x", with = FALSE]
-
-opa_map <- fread("~/Desktop/opa_owner_map.csv",
-               colClasses = "character")
-
-properties[opa_map, owner1 := i.owner1, on = "opa_no"]
-properties[opa_no == "151102610",
-           owner1 := "1502-1504 GREEN STREET LLC"]
-properties[opa_no == "881577275",
-           owner1 := "SKYLIGHT HOLDINGS LP"]
+properties <- fread(wds["data"] %+% "round_two_analysis_properties.csv")
 
 ## Payments data
 payments <- setDT(readxl::read_excel(
-  "~/Desktop/" %+%
-    "req20150709_PennLetterExperiment " %+%
-    "(December 2015 update).xlsx",
+  wds["data"] %+% 
+    "req20150709_PennLetterExperiment (December 2015 update) v2.xlsx",
   sheet = "PAYMENT DETAILS", skip = 1L,
   col_names = c("account","period","valid","past_due",
                 "principal","total_paid"),
@@ -113,7 +95,10 @@ payments <- setDT(readxl::read_excel(
                 ][owners, treat8 := i.treat8, on = "owner1"]
 
 follow <- 
-  fread("~/Desktop/Real Estate Current Year Delinquency as of 04-06-2016.txt",
+  fread("head -n -3 " %+% 
+          shQuote(wds["data"] %+%
+                    paste("Real Estate Current Year",
+                          "Delinquency as of 04-06-2016.txt")),
         sep = "|", colClasses=abbr_to_colClass("cnc","359"),
         col.names=c("opa_no", "legal_name", "period",
                     "principal", "interest", "penalty",
