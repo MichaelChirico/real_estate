@@ -22,18 +22,16 @@ set.seed(4746966)
 ##Packages
 rm(list = ls(all = TRUE))
 gc()
-#Michael Chirico's function of convenience packages;
+#Michael Chirico's package of convenience functions;
 #  Available on GitHub @ MichaelChirico/funchir
 library(funchir)
-library(data.table)
-library(parallel)
-library(lmtest)
-library(xtable)
-library(texreg)
+library(data.table) #for everything
+library(parallel) #for bootstrap
+library(lmtest) #for standard errors
+library(xtable) #for table output
+library(texreg) #for regression output
 setwd(mn <- "~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
-wds <- c(proj = mn %+% "round_two/", log = mn %+% "logs/round_two/",
-         imga = mn %+% "round_two/images/analysis/",
-         imgb = mn %+% "round_two/images/balance/",
+wds <- c(log = mn %+% "logs/round_two/",
          data = "/media/data_drive/real_estate/")
 write.packages(wds["log"] %+% "analysis_session.txt")
 
@@ -44,26 +42,18 @@ trt.nms8 <- c("Holdout", trt.nms)
 
 mos <- c("jul", "sep", "dec")
 
-#number of bootstrap replications in all such exercises
+##number of bootstrap replications in all such exercises
 BB <- 5000
 
-#how many clusters does this machine have?
+##how many clusters does this machine have?
 n_clust <- detectCores()
 
-#Convenient Functions 
-get.col<-function(st){
-  cols <- 
-    c(Big="blue", Small="red", Control = "blue", Amenities = "yellow",
-      Moral = "cyan", Duty = "darkgreen", Lien = "red", Sheriff = "orchid",
-      Peer = "orange", Holdout = "darkgray")
-  cols[gsub("\\s.*", "", as.character(st))]
-}
-
 #Data import
-## Importing directly from cleaned analysis files
-##   created with data_cleaning.R.
+#  Importing directly from cleaned analysis files created with data_cleaning.R.
 
-owners <- fread(wds["data"] %+% "round_two_analysis_owners.csv")[(holdout | rand_id > 2)]
+owners <- fread(wds["data"] %+% "round_two_analysis_owners.csv"
+                #exclude top 28 owners
+                )[(holdout | rand_id > 2)]
 
 #set factor levels
 owners[ , treat8 := factor(treat8, trt.nms8)]
@@ -99,19 +89,40 @@ follow <-
           shQuote(wds["data"] %+%
                     paste("Real Estate Current Year",
                           "Delinquency as of 04-06-2016.txt")),
-        sep = "|", colClasses=abbr_to_colClass("cnc","359"),
-        col.names=c("opa_no", "legal_name", "period",
-                    "principal", "interest", "penalty",
-                    "other_due", "total_due","address", 
-                    "city", "state", "zip5", "zip4",
-                    "bldg_code", "bldg_desc", 
-                    "bldg_grp1", "bldg_grp2")
+        sep = "|", colClasses = abbr_to_colClass("cnc","359"),
+        col.names = c("opa_no", "legal_name", "period",
+                      "principal", "interest", "penalty",
+                      "other_due", "total_due","address", 
+                      "city", "state", "zip5", "zip4",
+                      "bldg_code", "bldg_desc", 
+                      "bldg_grp1", "bldg_grp2")
         )[properties, owner1 := i.owner1, on = "opa_no"
           ][!is.na(owner1)][owners, treat8 := i.treat8, on = "owner1"]
 
 #Balance on Observables ####
-## Full Sample
+## TABLE 1: Treated vs. Holdout Comparison (Unique Owners)
+hold_bal <- 
+  cbind(gsub("$", "\\$", t(
+    owners[(unq_own), 
+           .(`Amount Due (June)` = dol.form(mean(total_due)),
+             `Assessed Property Value` = 
+               dol.form(mean(assessed_mv, na.rm = TRUE)),
+             `\\# Owners` = prettyNum(.N, big.mark = ",")),
+           by = .(Variable = c("Treated", "Holdout"
+                               )[holdout + 1L])]), fixed = TRUE),
+    c("$p$-value", 
+      `Amount Due (June)` = 
+        owners[(unq_own), round(lmfp(total_due ~ holdout), 2L)],
+      `Assessed Property Value` = 
+        owners[(unq_own), round(lmfp(assessed_mv ~ holdout), 2L)],
+      `\\# Owners` = ""))
 
+print(xtable(hold_bal, caption = "Balance between Holdout and Treated Samples",
+             label = "bal_hold", align = c("lrrc")),
+      caption.placement = "top", comment = FALSE, include.colnames = FALSE, 
+      sanitize.text.function = identity, hline.after = c(0L, 4L))
+
+## Full Sample
 lmfp <- function(formula){
   #extract F-statistic & DoF from LM call
   mdf <- summary(do.call("lm", list(formula = formula)))$fstatistic
@@ -119,121 +130,67 @@ lmfp <- function(formula){
   unname(pf(mdf[1L], mdf[2L], mdf[3L], lower.tail = FALSE))
 }
 
-pvs <- c(sapply(c(
-  `Amount Due (June)` = "total_due",
-  `Assessed Property Value` = "assessed_mv",
-  `\\% with Unique Owner` = "unq_own",
-  `\\% Overlap with Holdout` = "flag_holdout_overlap",
-  `\\# Properties per Owner` = "N"),
-  function(x) owners[(!holdout), lmfp(get(x) ~ treat7)]),
-  `\\# Owners` =
-    owners[(!holdout), chisq.test(table(treat7))$p.value])
-pvs <- c("$p$-value", round(pvs, 2L))
+p_tex <- function(x) c("$p$-value", round(x, 2L))
 
-print.xtable(xtable(cbind(gsub("$", "\\$", t(
-  owners[(!holdout),
-         .(`Amount Due (June)` = dol.form(mean(total_due)),
+{cat("\\begin{sidewaystable}[ht]",
+    "\\centering", 
+    "\\caption{Balance on Observables}",
+    "\\label{balance}",
+    "\\begin{tabular}{lrrrrrrrc}", 
+    "\\hline",
+    "\\multicolumn{9}{c}{Unique Owners} \\\\", sep = "\n")
+
+print.xtable(xtable(cbind(t(
+  owners[(!holdout & unq_own),
+         .(`Amount Due (June)` = dol.form(mean(total_due), tex = TRUE),
            `Assessed Property Value` = 
-             dol.form(mean(assessed_mv, na.rm = TRUE)),
+             dol.form(mean(assessed_mv, na.rm = TRUE), tex = TRUE),
+           `\\# Owners` = prettyNum(.N, big.mark = ",")),
+         keyby = .(Variable = treat7)]), 
+  p_tex(c(sapply(c(
+    `Amount Due (June)` = "total_due",
+    `Assessed Property Value` = "assessed_mv"),
+    function(x) owners[(!holdout & unq_own), lmfp(get(x) ~ treat7)]),
+    `\\# Owners` =
+      owners[(!holdout & unq_own), chisq.test(table(treat7))$p.value])))),
+  include.colnames = FALSE, comment = FALSE, 
+  sanitize.text.function = identity, only.contents = TRUE,
+  floating = TRUE, hline.after = c(0L, 1L))
+
+cat("\\hline",
+    "\\multicolumn{9}{c}{Unique and Multiple Owners} \\\\", sep = "\n")
+
+print.xtable(xtable(cbind(t(
+  owners[(!holdout),
+         .(`Amount Due (June)` = dol.form(mean(total_due), tex = TRUE),
+           `Assessed Property Value` = 
+             dol.form(mean(assessed_mv, na.rm = TRUE), tex = TRUE),
            `\\% with Unique Owner` = to.pct(mean(unq_own), 1L),
            `\\% Overlap with Holdout` = to.pct(mean(flag_holdout_overlap), 2L),
            `\\# Properties per Owner` = round(mean(N), 2L),
            `\\# Owners` = prettyNum(.N, big.mark = ",")),
-         keyby = .(Variable = treat7)]), fixed = TRUE), pvs),
-  caption = "Balance on Observables",
-  label = "tbl:balance", align = "|r|lllllll|l|"),
+         keyby = .(Variable = treat7)]), 
+  p_tex(c(sapply(c(
+    `Amount Due (June)` = "total_due",
+    `Assessed Property Value` = "assessed_mv",
+    `\\% with Unique Owner` = "unq_own",
+    `\\% Overlap with Holdout` = "flag_holdout_overlap",
+    `\\# Properties per Owner` = "N"),
+    function(x) owners[(!holdout), lmfp(get(x) ~ treat7)]),
+    `\\# Owners` =
+      owners[(!holdout), chisq.test(table(treat7))$p.value])))),
   include.colnames = FALSE, comment = FALSE, 
-  sanitize.text.function = identity,
-  floating.environment = "sidewaystable", 
-  floating = TRUE, hline.after = c(0L, 1L),
-  add.to.row =
-    list(pos = list(7L),
-         command = c("\\hline \n \\multicolumn{9}{l}" %+% 
-                       "{\\scriptsize{$p$-values in rows 1-5 are " %+% 
-                       "$F$-test $p$-values from regressing each " %+% 
-                       "variable on treatment dummies. A $\\chi^2$ " %+% 
-                       "test was used for the count of owners.}} \\\\ \n")))
+  sanitize.text.function = identity, 
+  only.contents = TRUE, hline.after = c(0L, 1L))
 
-## Unique owner sample
-pvs <- c(sapply(c(
-  `Amount Due (June)` = "total_due",
-  `Assessed Property Value` = "assessed_mv"),
-  function(x) owners[(!holdout & unq_own), lmfp(get(x) ~ treat7)]),
-  `\\# Owners` =
-    owners[(!holdout & unq_own), chisq.test(table(treat7))$p.value])
-pvs <- c("$p$-value", round(pvs, 2L))
-
-print.xtable(xtable(cbind(gsub("$", "\\$", t(
-  owners[(!holdout & unq_own),
-         .(`Amount Due (June)` = dol.form(mean(total_due)),
-           `Assessed Property Value` = 
-             dol.form(mean(assessed_mv, na.rm = TRUE)),
-           `\\# Owners` = prettyNum(.N, big.mark = ",")),
-         keyby = .(Variable = treat7)]), fixed = TRUE), pvs),
-  caption = "Balance on Observables (Unique Owners)",
-  label = "tbl:balance_unq_own", align = "|r|lllllll|l|"),
-  include.colnames = FALSE, comment = FALSE, 
-  sanitize.text.function = identity,
-  floating.environment = "sidewaystable", 
-  floating = TRUE, hline.after = c(0L, 1L),
-  add.to.row =
-    list(pos = list(4L),
-         command = c("\\hline \n \\multicolumn{9}{l}" %+% 
-                       "{\\scriptsize{$p$-values in rows 1-5 are " %+% 
-                       "$F$-test $p$-values from regressing each " %+% 
-                       "variable on treatment dummies. A $\\chi^2$ " %+% 
-                       "test was used for the count of owners.}} \\\\ \n")))
-
-## Treated vs. Holdout Comparison
-
-pvs_full <- c("$p$-value", sapply(c(
-  `Amount Due (June)` = "total_due",
-  `Assessed Property Value` = "assessed_mv",
-  `\\% with Unique Owner` = "unq_own",
-  `\\# Properties per Owner` = "N"),
-  function(x) owners[ , round(lmfp(get(x) ~ holdout), 2L)]),
-  `\\# Owners` = "")
-
-pvs_unq <- 
-  c("$p$-value", 
-    `Amount Due (June)` = 
-      owners[(unq_own), round(lmfp(total_due ~ holdout), 2L)],
-    `Assessed Property Value` = 
-      owners[(unq_own), round(lmfp(assessed_mv ~ holdout), 2L)],
-    `\\% with Unique Owner` = "",
-    `\\# Properties per Owner` =  "",
-    `\\# Owners` = "")
-
-hold_bal <- 
-  cbind(gsub("$", "\\$", t(
-    owners[ , .(`Amount Due (June)` = dol.form(mean(total_due)),
-                `Assessed Property Value` = 
-                  dol.form(mean(assessed_mv, na.rm = TRUE)),
-                `\\% with Unique Owner` = to.pct(mean(unq_own), 1L),
-                `\\# Properties per Owner` = round(mean(N), 2L),
-                `\\# Owners` = prettyNum(.N, big.mark = ",")),
-            by = .(Variable = c("Treated", "Holdout")[holdout + 1L])]),
-    fixed = TRUE), pvs_full,
-    gsub("$", "\\$", t(
-      owners[(unq_own), 
-             .(`Amount Due (June)` = dol.form(mean(total_due)),
-               `Assessed Property Value` = 
-                 dol.form(mean(assessed_mv, na.rm = TRUE)),
-               `\\% with Unique Owner` = "",
-               `\\# Properties per Owner` = "",
-               `\\# Owners` = prettyNum(.N, big.mark = ",")),
-             by = .(Variable = c("Treated", "Holdout")[holdout + 1L])]),
-      fixed = TRUE), pvs_unq)
-
-print(xtable(hold_bal, caption = "Balance between Holdout and Treated Samples",
-             label = "tbl:bal_hold", align = c("|r|rrr|rrr|")),
-      caption.placement = "top", comment = FALSE, include.colnames = FALSE, 
-      sanitize.text.function = identity, hline.after = 6,
-      add.to.row = list(pos = list(0),
-                        command = "\\hline\n & " %+% 
-                          "\\multicolumn{3}{c|}{Full Sample} & " %+% 
-                          "\\multicolumn{3}{c|}{Unique Owners} " %+% 
-                          "\\\\\n\\hline\n")) 
+cat("\\hline",
+    "\\multicolumn{9}{l}" %+% 
+      "{\\scriptsize{$p$-values in rows 1-5 are " %+% 
+      "$F$-test $p$-values from regressing each " %+% 
+      "variable on treatment dummies. A $\\chi^2$ " %+% 
+      "test was used for the count of owners.}} \\\\",
+    "\\end{tabular}",
+    "\\end{sidewaystable}", sep = "\n")}
 
 #Point Estimate CIs ####
 # @knitr analysis_bs
