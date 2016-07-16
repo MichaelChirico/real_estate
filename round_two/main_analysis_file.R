@@ -11,6 +11,8 @@
 #  for confirmation that June 23 is the postage date for
 #  the large envelopes sent by Lawler Direct.
 
+#TEST
+
 #Setup: Random Seed, Packages,
 #  Working Directory, Convenient Functions ####
 ##Random Seed
