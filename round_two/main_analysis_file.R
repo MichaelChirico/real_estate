@@ -313,51 +313,6 @@ print(xtable(
                "Holdout values are in levels; " %+% 
                "remaining figures are relative to Holdout}} \\\\ \n")))
   
-
-## Cumulative Partial Participation ####
-## @knitr analysis_ch_ep
-### get range of dates for day-by-day averages
-dt.rng <- owners[(!holdout & unq_own),{
-  rng <- range(earliest_pmt_dec, na.rm = TRUE)
-  seq(from = rng[1L], to = rng[2L], by = "day")}]
-#For pretty printing, get once/week subset
-dt.rng2 <- dt.rng[seq(1L, length(dt.rng), length.out = 7L)]
-
-date.dt <- 
-  #not all treatments saw activity on each day,
-  #  so we'll have to "fill-in-the-blanks" with this
-  CJ(treat8 = c("Holdout","Control"), date = dt.rng,
-     unique = TRUE, sorted = FALSE)
-owners[(unq_own), hold_cont := treat8 %in% c("Holdout","Control")]
-cum_haz <- 
-  owners[(hold_cont),
-         #total entrants by day, treatment
-         sum(ever_paid_dec) + 0., #convert to numeric
-         keyby = .(treat8, earliest_pmt_dec)
-         #running total of entrants; take care to eliminate NAs
-         ][ , .(ep = cumsum(V1[idx <- !is.na(earliest_pmt_dec)]),
-                date = earliest_pmt_dec[idx]), by=treat8
-            #merge to get the denominator
-            ][owners[(hold_cont), .N, treat8],
-              ep := ep/i.N, on = "treat8"
-              ][date.dt, on = c("treat8", "date"), roll = TRUE
-                #express relative to holdout
-                ][ , .(ep = ep[idx <- treat8 == "Control"] -
-                         ep[!idx]), by = date]
-
-cis <- dcast(rbindlist(lapply(integer(BB), function(...){
-  dt <- owners[(hold_cont)][sample(.N, rep = TRUE)]
-  dt[ , sum(ever_paid_dec) + 0., keyby = .(treat8, earliest_pmt_dec)
-      ][ , .(ep = cumsum(V1[idx <- !is.na(earliest_pmt_dec)]),
-             date = earliest_pmt_dec[idx]), by = treat8
-         ][dt[ , .N, treat8], ep := ep/i.N, on = "treat8"
-           ][date.dt, on = c("treat8", "date"), roll = TRUE
-             ][ , .(ep = ep[idx <- treat8 == "Control"] - ep[!idx]),
-                by = date]}), idcol = "bootID"
-  #extract for 95% CI
-  )[ , quantile(ep, c(.025, .975), na.rm = TRUE), by = date],
-  date ~ c("low", "high")[rowid(date)], value.var = "V1")
-
 #Regression Tables ####
 # @knitr analysis_reg
 reg_vars <- c("ever_paid", "paid_full", "total_paid")

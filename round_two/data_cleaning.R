@@ -37,25 +37,27 @@ mos <- c("jul", "sep", "dec")
 ###   and July 22, 2015
 mainI <- read.xlsx3(
   wds["data"] %+% "Payments and Balance Penn Letter Experiment_150727.xlsx",
-  colIndex = c(2L, 5L, 8L, 9L, 13L:15L),
+  colIndex = c(2L, 5L, 8L, 9L, 15L),
   sheetName = "DETAILS", header = TRUE, startRow = 9L,
-  stringsAsFactors = FALSE, colClasses = abbr_to_colClass("cnDn", "4111"))
+  stringsAsFactors = FALSE, colClasses = abbr_to_colClass("cn", "41"))
 
-setnames(setDT(mainI),
-         c("opa_no", "treat15", "paid_full_jul", "ever_paid_jul",
-           "current_balance_jul", "earliest_pmt_jul", "total_paid_jul"))
+setDT(mainI)
+
+setnames(mainI, c("opa_no", "treat15", "paid_full_jul", 
+                  "ever_paid_jul", "total_paid_jul"))
 
 ##Block II: Holdout Sample
 holdoutII <- read.xlsx3(
   wds["data"] %+% "req20150709_PennLetterExperiment_"%+%
     "v2_Commissioners Control Details.xlsx",
-  colIndex = c(2L, 8L, 9L, 12L:14L),
+  colIndex = c(2L, 8L, 9L, 14L),
   sheetName = "DETAILS", header = TRUE, startRow = 9L,
-  stringsAsFactors = FALSE, colClasses = abbr_to_colClass("cnDn", "3111"))
+  stringsAsFactors = FALSE, colClasses = abbr_to_colClass("cn", "31"))
 
-setnames(setDT(holdoutII),
-         c("opa_no", "paid_full_jul", "ever_paid_jul",
-           "current_balance_jul", "earliest_pmt_jul", "total_paid_jul"))
+setDT(holdoutII)
+
+setnames(holdoutII, 
+         c("opa_no", "paid_full_jul", "ever_paid_jul", "total_paid_jul"))
 
 holdoutII[ , treat15 := "Holdout"]
 
@@ -76,15 +78,12 @@ followupIII <- read_excel(
   ##   supports multiple NA values; installed via
   ##   devtools::install_github("MichaelChirico/readxl@multiple_na") **
   sheet = "DETAILS", skip = 7L, na = c("NULL", "-"),
-  col_names = c("x", "opa_no", "x", "x", "latitude", "longitude",
-              rep("x", 5L), "paid_full_sep", "ever_paid_sep", "pmt_agr_sep",
-              rep("x", 3L), "current_balance_sep", "earliest_pmt_sep",
-              "total_paid_sep", rep("x", 5L)),
-  col_types = abbr_to_colClass("btbnbtbndnb", "11225331115"))
+  col_names = c("x", "opa_no", rep("x", 9L),
+                "paid_full_sep", "ever_paid_sep", rep("x", 6L),
+                "total_paid_sep", rep("x", 5L)),
+  col_types = abbr_to_colClass("btbtbnb", "1192615"))
 
 setDT(followupIII)
-
-followupIII[ , earliest_pmt_sep := as.Date(earliest_pmt_sep)]
 
 ###The following accounts changed OPA #s between samples,
 ###  See correspondence with Darryl Watson dated:
@@ -100,15 +99,11 @@ followupIV <- read_excel(
   #See above about length-2 NA
   sheet = "DETAILS", skip = 7L, na = c("NULL", "-"),
   col_names = c("account", "opa_no" , rep("x", 9L),
-              "paid_full_dec", "ever_paid_dec", "pmt_agr_dec",
-              rep("x", 3L), "current_balance_dec", "earliest_pmt_dec",
-              "total_paid_dec", rep("x", 5L)),
-  col_types = abbr_to_colClass("tbtbnb", "293335"))
+              "paid_full_dec", "ever_paid_dec", 
+              rep("x", 6L), "total_paid_dec", rep("x", 5L)),
+  col_types = abbr_to_colClass("tbtbnb", "292615"))
 
 setDT(followupIV)
-
-followupIV[ , earliest_pmt_dec :=
-              as.Date(earliest_pmt_dec, origin = D("1899-12-30"))]
 
 ###In addition to the two from the three-month sample,
 ###  two more properties have updated OPAs.
@@ -119,22 +114,24 @@ update_opas <-
 followupIV[update_opas, opa_no := i.old, on = c("opa_no" = "new")]
 
 ##Block V: Main Sample Background Data
-mainBGV <- fread(wds["proj"] %+% "round_2_full_data.csv", drop = "treatment")
+mainBGV <- fread(wds["proj"] %+% "round_2_full_data.csv", 
+                 select = c("opa_no", "owner1", "total_due", "rand_id"))
 
 ##Block VI: Holdout Sample Background Data
-holdBGVI <- fread(wds["proj"] %+% "holdout_sample.csv")
+holdBGVI <- fread(wds["proj"] %+% "holdout_sample.csv",
+                  select = c("opa_no", "owner1", "total_due"))
 
 ###Block VII: Other Background Data
 ###  From OPA-issued Property Data CD
 ###  (certified for 2015, received May 2014)
-opabgVII <- fread(wds["data"] %+% "prop2015.txt", select=c("PARCEL", "MV"))
-setnames(opabgVII, c("opa_no","assessed_mv"))
+opabgVII <- fread(wds["data"] %+% "prop2015.txt", select = c("PARCEL", "MV"))
+setnames(opabgVII, c("opa_no", "assessed_mv"))
 
 ##Quilting time!
 ### Framework:
 ###  I  III IV V  VII
 ###  II III IV VI VII
-bgvars <- names(mainBGV) %\% "opa_no"
+bgvars <- c("opa_no", "owner1", "total_due", "rand_id")
 
 properties <-
   rbind(mainI, holdoutII
@@ -171,16 +168,13 @@ properties[ , flag_holdout_overlap := any(treat15 == "Holdout") &&
 properties[(!holdout), treat14 := gsub("\\sE.*", "", gsub("_", " ", treat15))]
 properties[ , treat14 := 
               factor(treat14, 
-                     paste(rep(trt.nms, each = 2L), c("Small","Big")))]
+                     paste(rep(trt.nms, each = 2L), c("Small", "Big")))]
 
 properties[ , treat8 := factor(gsub("_.*", "", treat15), trt.nms8)]
 properties[(!holdout), treat7 := factor(treat8)]
 
 ###Get owner-level version of data, keeping only key analysis variables
-
-minDate <- function(x) if (all(is.na(x))) as.Date(NA) else min(x)
-
-owners<-{
+owners <- 
   properties[order(treat14),
              .(treat7 = treat7[1L],
                treat8 = treat8[1L],
@@ -195,14 +189,11 @@ owners<-{
                total_paid_jul = sum(total_paid_jul),
                total_paid_sep = sum(total_paid_sep),
                total_paid_dec = sum(total_paid_dec),
-               earliest_pmt_jul = minDate(earliest_pmt_jul),
-               earliest_pmt_sep = minDate(earliest_pmt_sep),
-               earliest_pmt_dec = minDate(earliest_pmt_dec),
                total_due = sum(total_due),
                assessed_mv = sum(assessed_mv),
                flag_holdout_overlap =
                  flag_holdout_overlap[1L], .N),
-             by = owner1]}
+             by = owner1]
 
 ###  Subsample Flags
 owners[ , unq_own := N == 1]
