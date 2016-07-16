@@ -13,7 +13,6 @@
 
 #Setup: Random Seed, Packages,
 #  Working Directory, Convenient Functions ####
-## @knitr setup
 ##Random Seed
 ###Alternating digits (1,3,...) of
 ###  my CVS Extra Care card number
@@ -122,7 +121,7 @@ print(xtable(hold_bal, caption = "Balance between Holdout and Treated Samples",
       caption.placement = "top", comment = FALSE, include.colnames = FALSE, 
       sanitize.text.function = identity, hline.after = c(0L, 4L))
 
-## Full Sample
+##TABLE 2: Balance by Treatment, Full & Unique Owner Sample
 lmfp <- function(formula){
   #extract F-statistic & DoF from LM call
   mdf <- summary(do.call("lm", list(formula = formula)))$fstatistic
@@ -192,86 +191,39 @@ cat("\\hline",
     "\\end{tabular}",
     "\\end{sidewaystable}", sep = "\n")}
 
-#Point Estimate CIs ####
-# @knitr analysis_bs
-#For the standard confidence intervals,
-#  we can condense the process by storing
-#  the key changing parameters in this list;
-#  also store a bunch of plotting parameters
-#  since we'll use the result of this list for that
-outvar <- parse(text = paste0(
-  "setNames(list(", 
-  paste(paste0("mean(100*", c("ever_paid_", "paid_full_"), 
-               rep(mos, each = 2L), ")"), 
-        collapse = ","), "), outn)"))
-
-delq <- quote(c(Treatment = list(treat8[-1L]),
-                lapply(.SD, function(x) x[-1L] - x[1L])))
-
-outn <- c("ep", "pf") %+% c(1, 1, 3, 3, 6, 6)
-
-DT <- owners[(unq_own)]
-
-boot <- 
-  rbindlist(lapply(integer(BB), function(...)
-    #calculate point estimate in re-sample
-    DT[sample(.N, rep = TRUE), eval(outvar),
-       keyby = treat8][ , eval(delq), .SDcols = outn]))
-
-star <- function(x){
-  q1.5.10 <- quantile(x, c(.005, .025, .05, .95, .975, .995))
-  if (!0 %between% q1.5.10[c(1, 6)]) return("***")
-  if (!0 %between% q1.5.10[c(2, 5)]) return("**")
-  if (!0 %between% q1.5.10[c(3, 4)]) return("*")
-  return("")
+#Regression Estimates ####
+## TABLE 3: Ever Paid/Paid Full @ 1 & 3 Months, LPM
+rename_coef<-function(obj){
+  nms <- names(obj$coefficients)
+  nms[nms == "(Intercept)"] <- "Holdout"
+  nms <- gsub("treat8", "", nms)
+  names(obj$coefficients) <- nms
+  obj
 }
 
-tbl_info <- 
-  rbind(
-    DT[ , eval(outvar), keyby = treat8
-        ][ , c(Treatment = list(treat8), lapply(.SD, function(x) 
-          round(c(x[1L], x[-1L] - x[1L]), 1) %+% "")), .SDcols = outn
-          ][boot[ , lapply(.SD, star), by = Treatment, .SDcols = outn],
-            (outn) := lapply(outn, function(jj) 
-              get(jj) %+% get("i." %+% jj)), on = "Treatment"],
-    boot[ , lapply(.SD, function(x) round(sd(x), 1)), by = Treatment], 
-    idcol = "type")[type == 2, (outn) := lapply(.SD, function(x)
-      paste0("(", x, ")")), .SDcols = outn
-      ][order(Treatment)][type == 2, Treatment := ""
-                          ][ , !"type", with = FALSE]
+tbl <- capture.output(texreg(lapply(lapply(expression(
+  `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
+  `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
+  function(x) owners[(unq_own), lm(I(100 * eval(x)) ~ treat8)]), rename_coef),
+  stars = c(.01, .05, .1), include.rsquared = FALSE, caption.above = TRUE,
+  include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, label = "pc_lin",
+  caption = "Short Term Linear Probability Model Estimates",
+  custom.note = "%stars. Holdout values in levels; " %+% 
+    "remaining figures relative to this"))
 
-print(xtable(
-  tbl_info[ , c("Treatment", sort(grep("1|3", names(tbl_info), value = TRUE))),
-            with = FALSE], caption = "Linear Probability Model Estimates",
-  align = "llllll", label = "tbl:marg_3mo"),
-  include.rownames = FALSE, include.colnames = FALSE,
-  comment = FALSE, hline.after = c(-1, 1), caption.placement = "top", 
-  add.to.row = 
-    list(pos = list(0, 15), 
-         command = 
-           c(" & \\multicolumn{2}{c}{Ever Paid} & " %+% "
-             \\multicolumn{2}{c}{Paid in Full} \\\\\n" %+% 
-               " & One Month & Three Months & One Month & Three Months \\\\\n",
-             "\n \\hline \n \\multicolumn{5}{l}{\\scriptsize{" %+% 
-               "Holdout values are in levels; " %+% 
-               "remaining figures are relative to Holdout}} \\\\ \n")))
+### Replace Holdout SEs with horizontal rule, add 
+idx <- grep("^Holdout", tbl)
 
-print(xtable(
-  tbl_info[ , c("Treatment", "ep6", "pf6"), with = FALSE], 
-  caption = "Linear Probability Model Estimates: 6 Months",
-  align = "llll", label = "tbl:marg_6mo"),
-  include.rownames = FALSE, include.colnames = FALSE,
-  comment = FALSE, hline.after = c(-1, 1), caption.placement = "top", 
-  add.to.row = 
-    list(pos = list(0, 15), 
-         command = 
-           c(" & Ever Paid & Paid in Full \\\\\n",
-             "\n \\hline \n \\multicolumn{3}{l}{\\scriptsize{" %+% 
-               "Holdout values are in levels; " %+% 
-               "remaining figures are relative to Holdout}} \\\\ \n")))
-  
-#Regression Tables ####
-# @knitr analysis_reg
+tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
+
+tbl <- c(tbl[1L:(idx - 3L)],
+         " & \\multicolumn{2}{c}{Ever Paid} & " %+% 
+           "\\multicolumn{2}{c}{Paid in Full} \\\\",
+         tbl[c(idx - 2L, idx)],
+         "\\hline", tbl[(idx + 1L):length(tbl)])
+
+cat(tbl, sep = "\n")
+
 reg_vars <- c("ever_paid", "paid_full", "total_paid")
 reg_all <- levels(interaction(reg_vars, mos, sep="_"))
 
