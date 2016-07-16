@@ -3,62 +3,38 @@
 #  Round 2
 #Michael Chirico
 
-#Note: See e-mail "now we're in a hurry" from cloef@sas.upenn.edu
-#  for confirmation that June 12 is the day small envelope
-#  versions were sent to the DoR Mail Room.
-#   See e-mail "Status" from rmcfadden@lawlerdirect.com
-#  or "Next steps?" (from same) on June 22
-#  for confirmation that June 23 is the postage date for
-#  the large envelopes sent by Lawler Direct.
-
-#TEST
-
-#Setup: Random Seed, Packages,
-#  Working Directory, Convenient Functions ####
-##Random Seed
-###Alternating digits (1,3,...) of
-###  my CVS Extra Care card number
-set.seed(4746966)
+#Setup: Packages, Directories, Data Import ####
 
 ##Packages
 rm(list = ls(all = TRUE))
 gc()
-#Michael Chirico's package of convenience functions;
-#  Available on GitHub @ MichaelChirico/funchir
+###Michael Chirico's package of convenience functions;
+###  Available on GitHub @ MichaelChirico/funchir
 library(funchir)
 library(data.table) #for everything
 library(parallel) #for bootstrap
 library(lmtest) #for standard errors
 library(xtable) #for table output
 library(texreg) #for regression output
+
+##Directories
 setwd(mn <- "~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 wds <- c(log = mn %+% "logs/round_two/",
          data = "/media/data_drive/real_estate/")
 write.packages(wds["log"] %+% "analysis_session.txt")
 
-#"metavariables"
-trt.nms <- c("Control", "Amenities", "Moral", 
-             "Duty", "Peer", "Lien", "Sheriff")
-trt.nms8 <- c("Holdout", trt.nms)
-
-mos <- c("jul", "sep", "dec")
-
-##number of bootstrap replications in all such exercises
-BB <- 5000
-
-##how many clusters does this machine have?
-n_clust <- detectCores()
-
 #Data import
 #  Importing directly from cleaned analysis files created with data_cleaning.R.
 
 owners <- fread(wds["data"] %+% "round_two_analysis_owners.csv"
-                #exclude top 28 owners
+                #exclude top 2 randomization blocks
                 )[(holdout | rand_id > 2)]
 
-#set factor levels
-owners[ , treat8 := factor(treat8, trt.nms8)]
-owners[ , treat7 := factor(treat7, trt.nms)]
+##set factor levels (thereby, reference group)
+owners[ , treat8 := factor(treat8, c("Holdout", "Control", "Amenities", "Moral", 
+                                     "Duty", "Peer", "Lien", "Sheriff"))]
+owners[ , treat7 := factor(treat7, c("Control", "Amenities", "Moral", 
+                                     "Duty", "Peer", "Lien", "Sheriff"))]
 
 properties <- fread(wds["data"] %+% "round_two_analysis_properties.csv")
 
@@ -85,6 +61,7 @@ payments <- setDT(readxl::read_excel(
                   .(as.Date("2015-06-01"), 0L)
                 ][owners, treat8 := i.treat8, on = "owner1"]
 
+## 2016 Follow-Up Data (@ March)
 follow <- 
   fread("head -n -3 " %+% 
           shQuote(wds["data"] %+%
@@ -100,8 +77,7 @@ follow <-
         )[properties, owner1 := i.owner1, on = "opa_no"
           ][!is.na(owner1)][owners, treat8 := i.treat8, on = "owner1"]
 
-#Balance on Observables ####
-## TABLE 1: Treated vs. Holdout Comparison (Unique Owners)
+# TABLE 1: Balance - Treated vs. Holdout Comparison (Unique Owners) ####
 hold_bal <- 
   cbind(gsub("$", "\\$", t(
     owners[(unq_own), 
@@ -123,7 +99,7 @@ print(xtable(hold_bal, caption = "Balance between Holdout and Treated Samples",
       caption.placement = "top", comment = FALSE, include.colnames = FALSE, 
       sanitize.text.function = identity, hline.after = c(0L, 4L))
 
-##TABLE 2: Balance by Treatment, Full & Unique Owner Sample
+# TABLE 2: Balance  - Comparison by Treatment, Full & Unique Owner Sample ####
 lmfp <- function(formula){
   #extract F-statistic & DoF from LM call
   mdf <- summary(do.call("lm", list(formula = formula)))$fstatistic
@@ -193,9 +169,8 @@ cat("\\hline",
     "\\end{tabular}",
     "\\end{sidewaystable}", sep = "\n")}
 
-#Regression Estimates ####
-## TABLE 3: Ever Paid/Paid Full @ 1 & 3 Months, LPM
-rename_coef<-function(obj){
+# TABLE 3: Regression - Ever Paid/Paid Full @ 1 & 3 Months, LPM ####
+rename_coef <- function(obj){
   nms <- names(obj$coefficients)
   nms[nms == "(Intercept)"] <- "Holdout"
   nms <- gsub("treat8", "", nms)
@@ -213,7 +188,7 @@ tbl <- capture.output(texreg(lapply(lapply(expression(
   custom.note = "%stars. Holdout values in levels; " %+% 
     "remaining figures relative to this"))
 
-### Replace Holdout SEs with horizontal rule, add 
+## Replace Holdout SEs with horizontal rule, add header for EP vs. PF
 idx <- grep("^Holdout", tbl)
 
 tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
@@ -226,351 +201,121 @@ tbl <- c(tbl[1L:(idx - 3L)],
 
 cat(tbl, sep = "\n")
 
-reg_vars <- c("ever_paid", "paid_full", "total_paid")
-reg_all <- levels(interaction(reg_vars, mos, sep="_"))
+# TABLE 4: Regression - Ever Paid/Paid Full @ 1 & 3 Months, Logistic ####
+tbl <- capture.output(texreg(lapply(lapply(expression(
+  `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
+  `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
+  function(x) 
+    owners[(unq_own), glm(eval(x) ~ treat8, family = binomial)]), rename_coef),
+  stars = c(.01, .05, .1), include.rsquared = FALSE, caption.above = TRUE,
+  include.aic = FALSE, include.bic = FALSE, include.deviance = FALSE,
+  omit.coef = "Holdout", digits = 2L, label = "sh_logit",
+  caption = "Short Term Logistic Model Estimates"))
 
-reg_j <- 
-  parse(text = 
-          paste0(".(", paste(paste0(
-            reg_all, "=list(", sapply(reg_all, function(x) 
-              if (grepl("total", x)) 
-                paste0("lm(", x," ~ treat7)")
-              else paste0("glm(", x, " ~ treat7, ",
-                          "family = binomial)")), ")"), 
-            collapse = ","), ")"))
+idx <- grep("^\\\\begin\\{tabular\\}", tbl)
 
-coef_j = 
-  parse(text = 
-          paste0(".(", paste(paste0(
-            reg_all, "=", sapply(reg_all, function(x) 
-              if (grepl("total", x)) 
-                paste0("lm.fit(model.matrix(", x,
-                       " ~ treat7), ",x,")")
-              else paste0("glm.fit(model.matrix(", x, 
-                          " ~ treat7), ",x,
-                          ', start = starts[["',x,'"]],',
-                          "family=binomial())")), 
-            "$coefficients"), 
-            collapse = ","), ")"))
+tbl <- c(tbl[1L:(idx + 1L)], 
+         " & \\multicolumn{2}{c}{Ever Paid} & " %+% 
+           "\\multicolumn{2}{c}{Paid in Full} \\\\",
+         tbl[(idx + 2L):length(tbl)])
 
-setkey(owners, rand_id)
-setindex(owners, holdout)
-DT <- owners[(!holdout)]
-regs <- owners[(!holdout), eval(reg_j)]
-starts <- 
-  lapply(reg_all[!grepl("total", reg_all)], 
-         function(rr) regs[[rr]][[1L]]$coefficients)
-RBs <- owners[(!holdout), unique(rand_id)]
+cat(tbl, sep = "\n")
 
-tmp <- tempfile()
-progress <- txtProgressBar(1, BB, style = 3L)
+# TABLE 5: Revenue - Per-Letter Impact @ 3 Months ####
+print(xtable(
+  owners[(unq_own), .(.N, mean(ever_paid_sep)), keyby = treat8
+         ][ , .(Treatment = treat8[-1L], 
+                `Impact Per Letter` = 
+                  dol.form(x <-  (V2[-1L] - V2[1L]) * 
+                             owners[(unq_own & total_paid_dec > 0), 
+                                    median(total_paid_dec)],  dig = 2L), 
+                `Total Impact` = dol.form(N[-1L] * x))],
+  caption = "Estimated Short Term Impact on Revenue (3 Months)",
+  label = "sh_rev", align = "rlcc"),
+  include.rownames = FALSE, comment = FALSE, caption.placement = "top")
 
-cl <- makeCluster(n_clust, outfile = "")
-invisible(clusterEvalQ(cl, library(data.table)))
-clusterExport(cl, c("DT", "RBs", "coef_j", "starts", 
-                    "progress", "tmp"),
-              envir = environment())
-boot_dist <- rbindlist(parLapply(cl, 1:BB, function(bb){
-  cat("\n", file = tmp, append = TRUE)
-  setTxtProgressBar(
-    progress, as.integer(system(paste("wc -l <", tmp), intern = TRUE)))
-  DT[.(sample(RBs, rep = TRUE)), eval(coef_j)]}))
-stopCluster(cl); close(progress); unlink(tmp)
-
-reg_info <- 
-  rbind(regs, boot_dist[ , lapply(.SD, function(x)
-    list(var(matrix(x, ncol = 7, byrow = TRUE))))]
-  )[ , lapply(.SD, function(x)
-    c(x, list(sqrt(diag(x[[2]])))))
-    ][ , lapply(.SD, function(x) 
-      c(x, list(coeftest(x[[1]], vcov = x[[2]])[ , 4])))]
-
-#now for single-owner samples
-##exclude total_paid for single owner analysis
-DT <- owners[(!holdout & unq_own)]
-regs <- owners[(!holdout & unq_own), eval(reg_j)]
-starts <- 
-  lapply(reg_all, function(rr) regs[[rr]][[1L]]$coefficients)
-RBs <- owners[(!holdout & unq_own), unique(rand_id)]
-
-tmp <- tempfile()
-progress <- txtProgressBar(1, BB, style = 3L)
-
-cl <- makeCluster(n_clust, outfile = "")
-invisible(clusterEvalQ(cl, library(data.table)))
-clusterExport(cl, c("DT", "RBs", "coef_j", "starts", "progress", "tmp"),
-              envir = environment())
-boot_dist <- rbindlist(parLapply(cl, 1:BB, function(bb){
-  cat("\n", file = tmp, append = TRUE)
-  setTxtProgressBar(
-    progress, as.integer(system(paste("wc -l <", tmp), intern = TRUE)))
-  DT[.(sample(RBs, rep = TRUE)), eval(coef_j)]}))
-stopCluster(cl); close(progress); unlink(tmp)
-
-reg_info_so <- 
-  rbind(regs, boot_dist[ , lapply(.SD, function(x)
-    list(var(matrix(x, ncol = 7, byrow = TRUE))))]
-  )[ , lapply(.SD, function(x)
-    c(x, list(sqrt(diag(x[[2]])))))
-    ][ , lapply(.SD, function(x) 
-      c(x, list(coeftest(x[[1]], vcov = x[[2]])[ , 4])))]
-
-
-###Difference in Mean Tests
-rename_coef<-function(obj){
+# TABLE 6: Regression - Ever Paid @ 1 & 3 Months, Logistic, vs. Control ####
+rename_coef <- function(obj){
   nms <- names(obj$coefficients)
-  idx <- !grepl("treat7", nms)
-  #Add XXX to coefficients we'll exclude
-  nms[idx] <- nms[idx] %+% "XXX"
+  nms[nms == "(Intercept)"] <- "Control"
   nms <- gsub("treat7", "", nms)
   names(obj$coefficients) <- nms
   obj
 }
 
-proper <- c(ever_paid="Ever Paid",
-            paid_full="Paid Full",
-            total_paid="Total Paid")
-abbr <- c(ever_paid="ep", paid_full="pf", total_paid="tp")
-invisible(lapply(reg_vars, function(rr){
-  cat("\n\n\n\n***********************\n", proper[rr])
-  x <- capture.output(texreg(c(lapply(
-    tp <- paste(rr, mos, sep="_"), function(mo)
-      rename_coef(reg_info[[mo]][[1]])),
-    lapply(tp, function(mo)
-      rename_coef(reg_info_so[[mo]][[1]]))),
-    custom.model.names=
-      rep(c("One Month","Three Months","Six Months"), 2),
-    caption=
-      "Estimated Average Treatment Effects: " %+% proper[rr],
-    override.se=
-      c(lapply(tp, function(mo) reg_info[[mo]][[3]]),
-        lapply(tp, function(mo) reg_info_so[[mo]][[3]])),
-    override.pval=
-      c(lapply(tp, function(mo) reg_info[[mo]][[4]]),
-        lapply(tp, function(mo) reg_info_so[[mo]][[4]])),
-    caption.above=TRUE, stars=c(.01,.05,.1),
-    label="tbl:reg7_" %+% abbr[rr], 
-    include.rsquared=FALSE, include.adjrs=FALSE, 
-    include.rmse=FALSE, include.aic=FALSE, 
-    include.bic=FALSE, include.deviance=FALSE,
-    #Exclude Intercept
-    omit.coef="XXX$", float.pos="htbp", 
-    sideways = TRUE, use.packages = FALSE))
-  
-  ## add vertical lines to separate populations
-  x[5] <- "\\begin{tabular}{|l| c c c| c c c| }"
-  
-  ## add multicolumn to distinguish populations
-  x[6] <- x[6] %+% "\n & \\multicolumn{3}{c}{All Owners} & " %+% 
-    "\\multicolumn{3}{|c|}{Single-Property Owners} \\\\"
-  
-  ## print again
-  cat(x, sep = "\n")}))
+tbl <- capture.output(texreg(lapply(c(lapply(expression(
+  `One Month` = ever_paid_jul,
+  `Three Months` = ever_paid_sep),
+  function(x) 
+    owners[(!holdout), glm(eval(x) ~ treat7, family = binomial)]),
+  lapply(expression(`One Month` = ever_paid_jul,
+                    `Three Months` = ever_paid_sep),
+         function(x) 
+           owners[(!holdout & unq_own), 
+                  glm(eval(x) ~ treat7, family = binomial)])), rename_coef),
+  omit.coef = "Control", include.aic = FALSE, include.bic = FALSE,
+  include.deviance = FALSE, stars = c(.001, .05, .1),
+  caption = "Robustness Analysis: Multiple Owners",
+  label = "sh_logit_rob", caption.above = TRUE))
 
-#Now for main vs. holdout
-reg_all <- c("paid_full_", "ever_paid_") %+% 
-  rep(mos, each = 2)
+idx <- grep("^\\\\begin\\{tabular\\}", tbl)
 
-reg_j <- 
-  parse(text = 
-          paste0(".(", paste(paste0(
-            reg_all, "=list(glm(", reg_all,
-            " ~ treat8, family = binomial))"), 
-            collapse = ","), ")"))
+tbl <- c(tbl[1L:(idx + 1L)], 
+         " & \\multicolumn{2}{c}{All Owners} & " %+% 
+           "\\multicolumn{2}{c}{Single-Property Owners} \\\\",
+         tbl[(idx + 2L):length(tbl)])
 
-coef_j = 
-  parse(text = 
-          paste0(".(", paste(paste0(
-            reg_all, "=", sapply(reg_all, function(x) 
-              paste0("glm.fit(model.matrix(", x, 
-                     " ~ treat8), ",x,
-                     ', start = starts[["',x,'"]],',
-                     "family=binomial())")), 
-            "$coefficients"), 
-            collapse = ","), ")"))
+cat(tbl, sep = "\n")
 
-DT <- owners[(unq_own)]
-regs <- owners[(unq_own), eval(reg_j)]
-starts <- 
-  lapply(reg_all, function(rr) regs[[rr]][[1L]]$coefficients)
-
-tmp <- tempfile()
-progress <- txtProgressBar(1, BB, style = 3L)
-
-cl <- makeCluster(n_clust, outfile = "")
-invisible(clusterEvalQ(cl, library(data.table)))
-clusterExport(cl, c("DT", "coef_j", "starts", "progress", "tmp"),
-              envir = environment())
-boot_dist <- rbindlist(parLapply(cl, 1:BB, function(bb){
-  cat("\n", file = tmp, append = TRUE)
-  setTxtProgressBar(
-    progress, as.integer(system(paste("wc -l <", tmp), intern = TRUE)))
-  DT[sample(.N, rep = TRUE), eval(coef_j)]}))
-stopCluster(cl); close(progress); unlink(tmp)
-
-reg_info_8 <- 
-  rbind(regs, boot_dist[ , lapply(.SD, function(x)
-    list(var(matrix(x, ncol = 8, byrow = TRUE))))]
-  )[ , lapply(.SD, function(x)
-    c(x, list(sqrt(diag(x[[2]])))))
-    ][ , lapply(.SD, function(x) 
-      c(x, list(coeftest(x[[1]], vcov = x[[2]])[ , 4])))]
-
-
-###Difference in Mean Tests
-rename_coef<-function(obj){
+# TABLE 7: Regression - Ever Paid/Paid Full @ 6 Months, LPM ####
+rename_coef <- function(obj){
   nms <- names(obj$coefficients)
-  idx <- !grepl("treat8", nms)
-  #Add XXX to coefficients we'll exclude
-  nms[idx] <- nms[idx] %+% "XXX"
+  nms[nms == "(Intercept)"] <- "Holdout"
   nms <- gsub("treat8", "", nms)
   names(obj$coefficients) <- nms
   obj
 }
 
-three_months <- sort(grep("jul|sep", reg_all, value = TRUE))
-x <- capture.output(print(texreg(
-  lapply(three_months, function(mo)
-    rename_coef(reg_info_8[[mo]][[1]])),
-  custom.model.names=
-    rep(c("One Month", "Three Months"), 2L),
-  caption = "Logistic Model Estimates",
-  override.se = lapply(three_months, function(mo) reg_info_8[[mo]][[3]]),
-  override.pval = lapply(three_months, function(mo) reg_info_8[[mo]][[4]]),
-  caption.above = TRUE, stars = c(.01, .05, .1), label = "tbl:reg8_3mo", 
-  include.rsquared = FALSE, include.adjrs = FALSE, include.rmse = FALSE,
-  include.aic = FALSE, include.bic = FALSE, include.deviance = FALSE,
-  #Exclude Intercept
-  omit.coef = "XXX$", float.pos="htbp")))
+tbl <- capture.output(texreg(lapply(lapply(expression(
+  `Ever Paid` = ever_paid_dec, `Paid in Full` = paid_full_dec),
+  function(x) owners[(unq_own), lm(I(100 * eval(x)) ~ treat8)]), rename_coef),
+  stars = c(.01, .05, .1), include.rsquared = FALSE, caption.above = TRUE,
+  include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, label = "lg_pc_lin",
+  caption = "Long Term Linear Probability Model Estimates"))
 
-cat(x[1:5], "\\hline", 
-    " & \\multicolumn{2}{c}{Ever Paid} & \\multicolumn{2}{c}{Paid Full} \\\\",
-    x[6:length(x)], sep = "\n")
+idx <- grep("^Holdout", tbl)
 
-x <- capture.output(texreg(lapply(expression(
-  total_paid_jul, total_paid_sep),
-  function(mo) { x <- owners[(unq_own), lm(eval(mo) ~ treat8)]
-    names(x$coefficients) <- 
-      gsub("treat8", "", names(x$coefficients))
-    names(x$coefficients)[1L] <- "Holdout"; x}),
-  custom.model.names = c("One Month", "Three Months"),
-  include.rsquared = FALSE, include.adjrs = FALSE,
-  include.rmse = FALSE, caption = "Revenue Regressions",
-  float.pos = "htbp", stars = c(.01, .05, .1), 
-  label = "tbl:rev_reg_3mo", caption.above = TRUE))
+tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
 
-cat(x[1:10], "\\hline", x[11:length(x)], sep = "\n")
+tbl[c(idx - 1L, idx)] <- tbl[c(idx, idx - 1L)]
 
-x <- capture.output(texreg({ 
-  x <- owners[(unq_own), lm(total_paid_dec ~ treat8)]
-  names(x$coefficients) <- 
-    gsub("treat8", "", names(x$coefficients))
-  names(x$coefficients)[1L] <- "Holdout"; x},
-  custom.model.names = "Six Months",
-  include.rsquared = FALSE, include.adjrs = FALSE,
-  include.rmse = FALSE, caption = "Revenue Regression (Six Months)",
-  float.pos = "htbp", stars = c(.01, .05, .1), 
-  label = "tbl:rev_reg_6mo", caption.above = TRUE))
+idx <- grep("^\\\\end\\{tabular\\}", tbl)
 
-cat(x[1:10], "\\hline", x[11:length(x)], sep = "\n")
+tbl[idx - 1L] <- tbl[idx - 1L] %+% " \\\\"
 
-#Cost-Benefit: Estimating returns to speed-up ####
-## Parameters of estimate
-##  - Date when properties were distributed to co-council
-##  - Proportion of converted debt distributed to co-council
-params <- list(switch_date = D("2015-08-15"),
-               lawyer_rate = .06)
-delta <- 
-  #count those having paid by hand-off
-  owners[earliest_pmt_dec <= params$switch_date,
-         .N, keyby = treat8
-         ][owners[ , .N, keyby = treat8], 
-           #what's the difference in percentage
-           #  of owners ever paid in each 
-           #  treatment/control vs. holdout?
-           .(treat8[-1], N[-1]/i.N[-1] - N[1]/i.N[1]), 
-           on = "treat8"][ , setNames(V2, V1)]
+tbl <- c(tbl[1L:(idx - 1L)],
+         "\\multicolumn{3}{l}{\\scriptsize{" %+% 
+           "Holdout values in levels; remaining figures relative to this}}",
+         tbl[idx:length(tbl)])
 
-repaid_by_switch <- 
-  owners[earliest_pmt_dec <= params$switch_date &
-           !treat8 == "Holdout"]
+cat(tbl, sep = "\n")
 
-setkey(repaid_by_switch, treat7)
-
-dist_benefits <- 
-  sapply(integer(BB), function(...)
-    sum(sapply(trt.nms, function(tr)
-      #going treatment-by-treatment, pull out 
-      #  properties in quantity roughly equal to the 
-      #  difference in treatment effect vs. holdout 
-      #  by the switch date
-      repaid_by_switch[.(tr)][
-        sample(.N, round(delta[tr] * .N)), 
-        #find what would have been the lawyers'
-        #  take of the total amount paid by
-        #  these properties
-        params$lawyer_rate * 
-          sum(total_paid_jul)])))
-
-pdf2(wds["imga"] %+% "hist_benefit_acceleration.pdf")
-x <- hist(dist_benefits, breaks = 20, freq = FALSE,  
-          main = "Distribution of Simulated Benefits to Acceleration",
-          col = "lightblue", xlab = "$", yaxt = "n", ylab = "")
-abline(v = md <- median(dist_benefits), col = "red", lty = 2, lwd = 3)
-mtext(side = 2L, text = "Density")
-text(md, max(x$density), pos = 4,
-     labels = "Median Benefit: " %+% dol.form(md))
-dev.off2()
-
-##Regression-based approach
-setkey(owners, treat8)
-setindex(owners, treat8, assessed_mv)
-regs <- 
-  owners[assessed_mv > 0, 
-         .(list(reg=lm(total_paid_jul ~ log(assessed_mv) + 
-                         log(total_due) + residential + 
-                         phila_mailing + log(N)))), keyby = treat8]
-
-params$lawyer_rate * sum(sapply(trt.nms, function(tr)
-  sum((x <- owners[.(tr)][assessed_mv > 0])[ , total_paid_jul] - 
-        predict(regs[.("Holdout"), V1][[1]], x))))
-
-params$lawyer_rate * sum(sapply(trt.nms, function(tr)
-  sum(predict(regs[.(tr), V1][[1]], x <- owners[.(tr)][assessed_mv > 0]) - 
-        predict(regs[.("Holdout"), V1][[1]], x))))
-
-##Back-of-the-envelope approach
-
-### @ 3 months
-print(xtable(
-  owners[(unq_own), .(.N, mean(ever_paid_sep)), keyby = treat8
-         ][ , .(Treatment = treat8[-1], 
-                `Impact Per Letter` = 
-                  dol.form(x <-  (V2[-1] - V2[1]) * 
-                             owners[(unq_own & total_paid_dec > 0), 
-                                    median(total_paid_dec)],  dig = 2L), 
-                `Total Impact` = dol.form(N[-1] * x))],
-  caption = "Estimated Impact on Revenue: 3 Months",
-  label = "rev_ep3", align = "rrrr"),
-  include.rownames = FALSE, comment = FALSE, caption.placement = "top")
-
-### @ 6 months
+# TABLE 8: Revenue - Per-Letter Impact @ 6 Months ####
 print(xtable(
   owners[(unq_own), .(.N, mean(ever_paid_dec)), keyby = treat8
-         ][ , .(Treatment = treat8[-1], 
+         ][ , .(Treatment = treat8[-1L], 
                 `Impact Per Letter` = 
-                  dol.form(x <-  (V2[-1] - V2[1]) * 
+                  dol.form(x <-  (V2[-1L] - V2[1L]) * 
                              owners[(unq_own & total_paid_dec > 0), 
                                     median(total_paid_dec)],  dig = 2L), 
-                `Total Impact` = dol.form(N[-1] * x))],
-  caption = "Estimated Impact on Revenue: 6 Months",
-  label = "rev_ep6", align = "rrrr"),
+                `Total Impact` = dol.form(N[-1L] * x))],
+  caption = "Estimated Long Term Impact on Revenue",
+  label = "lg_rev", align = "rlcc"),
   include.rownames = FALSE, comment = FALSE, caption.placement = "top")
 
-# Alternative Ever Paid: @ August 10th ####
+# Further analysis ####
 
-
-         
+## Alternative Ever Paid: @ August 10th
 texreg(lapply(D("2015-07-22", "2015-08-10", "2015-09-24"),
               function(dd){
                 #will throw a warning on the first
@@ -591,7 +336,7 @@ texreg(lapply(D("2015-07-22", "2015-08-10", "2015-09-24"),
   include.rmse = FALSE, stars = c(.01, .05, .1),
   label = "reg:ep_pmts")
 
-# 2016 Follow-Up
+## 2016 Follow-Up (@ March)
 owners[follow, total_due_2016 := i.total_due, on = "owner1"]
 owners[ , paid_full_2016 := is.na(total_due_2016) | 
           total_due_2016 < .1]
