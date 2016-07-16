@@ -14,7 +14,7 @@
 \usepackage{pstricks-add}
 \usepackage{rotating}
 \usepackage{threeparttable}
- \usepackage{array,multirow}
+\usepackage{array,multirow}
 \usepackage{pdflscape}
 \usepackage{float,lscape}
 \usepackage{csquotes}
@@ -26,7 +26,7 @@
 \oddsidemargin=-.05in 
 \topmargin=-0.05in
 \textwidth=6.5in 
-\textheight=8.5in
+\textheight=8in
 
 \newtheorem{fact}{Stylized Fact}
 \newtheorem{theorem}{Theorem}
@@ -44,13 +44,13 @@
 \title{Deterring Delinquency: A Field Experiment in Improving Tax Compliance Behavior}
 
 \author{Michael Chirico, Robert Inman, Charles Loeffler, \\ John
-  MacDonald, and Holger Sieg\thanks{We would like to thank Rob Dubow
-    (Director of Finance), Clarena Tolson (Revenue Commissioner), and
-    Marisa Waxman (Deputy Commissioner for Assessment of Properties)
-    in the Department of Revenue of the City of Philadelphia for their
-    help and support, and the Wharton Initiative for Public Policy for
-    funding this experiment. We would also like to thank Jeff Brown,
-    Chris Sanchirico, Wolfgang Sch\"on, Reed Shuldiner and
+  MacDonald, and Holger Sieg\thanks{We would like to thank Rob Dubow, 
+  Clarena Tolson, and  Marisa Waxman  in the Department of Revenue 
+  of the City of Philadelphia for their help and support. We thank Kent 
+  Smettters and  the Wharton Initiative for Public Policy for
+    funding this field experiment. We would also like to thank Jeff Brown, Kai Konrad, 
+    Robert Moffitt, 
+    Jim Poterba, Chris Sanchirico, Wolfgang Sch\"on, Reed Shuldiner and
     participants of numerous seminars for comments and
     suggestions. The views expressed here are those of the authors and
     do not necessarily represent or reflect the views of the City of
@@ -64,8 +64,23 @@
 
 \begin{abstract}
 
-Property taxation plays a central role in the financing of municipal government services. Local taxing authorities commonly confront problems of property tax collection even when the tax base is known.  Using a multi-arm RCT conducted with the City of Philadelphia, we compare the responses of taxpayers to seven different notifications
-reflecting a wide variety of theorized motivations for tax compliance. We find that  all our nudge strategies significantly outperform the ``do nothing'' alternative both in the rate of taxpayer compliance and in the level of payments.  Among the seven nudges, the most effective in encouraging tax payment are the two economic strategies that threaten large financial (``lien'') or financial and psychic (``sheriff's sale") penalties.  Overall, the rate of return on these nudge strategies are large. After six month, that letter induced \$31 more in payment per letter than doing nothing and \$21 more than the control letter.
+Property taxation plays a central role in the financing of municipal
+government services. Local taxing authorities commonly confront
+problems of property tax collection even when the tax base is known.
+Using a multi-arm RCT conducted with the City of Philadelphia, we
+compare the responses of delinquent taxpayers to seven different notifications
+reflecting a wide variety of theorized motivations for tax
+compliance. We find that all our nudge strategies significantly
+outperform the ``do nothing'' alternative both in the rate of taxpayer
+compliance and in the level of payments.  Among the seven nudges, the
+most effective in encouraging tax payment are the two economic
+strategies that threaten large financial penalties such as
+taking out a lien on the property or threatening to foreclose by
+sheriff's sale.  Overall, the rate of return on these nudge strategies
+are large. After six month, that letter induced \$31 more in payment
+per letter than doing nothing and \$21 more than the control letter.
+
+\bigskip
 
 \noindent KEYWORDS: Tax Compliance, Property Taxation, Field
 Experiment, Deterrence, Public Service Appeal, Appeal to Civic Duty.
@@ -78,7 +93,10 @@ Experiment, Deterrence, Public Service Appeal, Appeal to Civic Duty.
 \section{Introduction}
 
 Property taxation plays a central role in the financing of municipal
-government services in the United States.  The potential economic
+government services in the United States. As a matter of practical local government
+finance, it is the mainstay of city and school district budgets.  In
+2013, over 72 percent of all local government tax revenues and nearly
+50 percent of all own revenues came from property taxation. The potential economic
 advantages and disadvantages of a local property tax are well known.
 With mobile households and local zoning the tax approximates a benefit
 tax for the financing of local services.  In large cities, where these
@@ -88,30 +106,7 @@ approximates a land tax in its incentive effects in declining or
 stable cities with modest new construction \cite{Aaron-75}.  As a tax
 on value, the property tax is a proportional tax on wealth and thus
 attractive from the perspective of lifetime equity
-\cite{Mieszkowski-72}.  As a matter of practical local government
-finance, it is the mainstay of city and school district budgets.  In
-2013, over 72 percent of all local government tax revenues and nearly
-50 percent of all own revenues came from property taxation.
-
-For all these virtues to be realized, it is essential that the
-property tax be collected, both efficiently and fairly.  Among large
-US cities, this is not assured.  Because of the importance of the tax
-to city budgets, even small differences in collection rates can
-significantly affect the provision of local public services. While the
-average rate of tax collection among a sample of large U.S. cities is
-95 percent within the year of tax assessments, many cities collect
-only 90 percent of taxes due, and several cities do far worse.  Among
-the poorest performers are Cleveland (84\%), Detroit (68\%), Flint
-(64\%), Milwaukee (86\%), and Pittsburgh (85\%). While the poorest
-performers are all high poverty cities, there are many high poverty
-cities that in fact collect most all of their property taxes; for
-example, Baltimore (96\%), Birmingham (98\%), Dallas (98\%), Houston
-(98\%), Minneapolis (98\%), and even New Orleans (95\%)
-\cite{CILMS-16}.  It is not the city's underlying economy that fully
-explains the rate of property tax compliance.  This paper suggests
-that tax collection strategies will matter and examines the efficacy
-of seven ``nudges" for improved property tax collection in one major
-US city, Philadelphia.
+\cite{Mieszkowski-72}.  
 
 The collection of property taxes has one very important administrative
 advantage over the collection of other taxes: the legal tax obligation
@@ -120,17 +115,37 @@ of tax bases, as required for income, profits, sales, and VAT
 taxation, is not needed for the property tax. Each taxpayer has an
 assigned tax base, the value of property, against which a common tax
 rate is assessed.  This avoids problems of misreporting tax bases or
-working outside the formal (i.e., taxable) economy.\footnote{See
+working outside the formal or  taxable economy.\footnote{See
   \citeA{Blumenthal-01}, \citeA{Kleven-11}, and \citeA{Pomeranz-15}.}
-The administrative issue for the property tax is simple: Did the
+
+
+For all these virtues to be realized, it is essential that the
+property tax be collected, both efficiently and fairly.  Among large
+U.S. cities, this is not assured.  Because of the importance of the tax
+to city budgets, even small differences in collection rates can
+significantly affect the provision of local public services. While the
+average rate of tax collection among a sample of large U.S. cities is
+95 percent within the year of tax assessments, many cities collect
+only 90 percent of taxes due, and several cities do far worse.  Among
+the poorest performers are Cleveland (84\%), Detroit (68\%), Flint
+(64\%), Milwaukee (86\%), and Pittsburgh (85\%). While the poorest
+performers are all high poverty cities, poverty alone is an inadequate explanation 
+for their performance. There are many high poverty
+cities that in fact collect most all of their property taxes; for
+example, Baltimore (96\%), Birmingham (98\%), Dallas (98\%), Houston
+(98\%), Minneapolis (98\%), and even New Orleans (95\%)
+\cite{CILMS-16}.  These high poverty high tax compliance cities suggest
+that other factors are likely at work.  This paper explores one of these factors: 
+tax collection strategies. While the administrative issue for the property tax is simple: Did the
 taxpayer pay the tax on time or not?  If not, then what can the tax
-administrator do to enforce compliance?  Seven ``nudge" strategies are
-evaluated here for their ability to improve compliance; each appeals
-to a different motive for delinquent behaviors.
+administrator do to enforce compliance?  there is considerable disagreement on
+how to ensure compliance. In this paper we explore the efficacy
+of seven ``nudges" for improved property tax collection in one major
+U.S. city, Philadelphia. 
 
 Our first nudge strategy is a simple reminder letter to the taxpayer
 that their taxes are due; the letter is identical in content to the
-initial tax bill listing the tax due and (now) any penalties for late
+initial tax bill listing the tax due and  any penalties for late
 payments.  The reminder letter will be our ``control nudge" and is
 meant to address non-payment due to forgetfulness or oversight.
 
@@ -143,7 +158,7 @@ gains of not paying exceed the expected economic costs of being caught
 and fined \cite{Allingham-Sandmo-72}.  In most real world tax
 settings, however, the probability of being caught and the size of the
 likely sanction are both too low to rationally account for most
-observed levels of taxpayer noncompliance \cite{Alm-92}. \footnote{An
+observed levels of taxpayer noncompliance \cite{Alm-92}.\footnote{An
   alternative specification for taxpayer utility that allows for loss
   aversion has done a better job in explaining taxpayer compliance
   among Swedish taxpayers than did the classical expected utility
@@ -178,62 +193,92 @@ A final set of nudges appeals to a possibly deeper motive for tax
 compliance, fulfilling one's obligations to a self-identified
 community of peers \cite{Posner-00} or to an abstract community of
 citizens \cite{Rawls-71}.  The first of these community strategies we
-call the ``peer" nudge.  The second we call the ``civic duty" nudge.
-  
- \noindent COMMENT: NEED TO UPDATE DISCUSSION OF RESULTS AND DIFFERENTIATE BETWEEN SHORT AND LONG TERM RESULTS
-  
+call the ``peer" nudge.  The second we call the ``civic duty" nudge.  
 The seven nudge strategies for increased taxpayer compliance are first
 compared to the alternative of doing nothing beyond sending the first
 tax bill.  We then compare the seven nudge strategies among themselves
 to see which are most effective in encouraging taxpayer compliance.
-We find, first, that  most of our nudge strategies significantly
-outperform the ``do nothing'' alternative both in the rate of
-taxpayer compliance and in the level of payments, conditional on
-compliance.  Second, among the seven nudges, the most effective in
+
+Our experiment started in the beginning of June 2015. No other enforcement
+activities were undertaken by the City until the middle of August
+2015. It is, therefore, useful to distinguish between short-term and
+long-term impact of our intervention. Short term outcomes are those
+that measure compliance up to three months into the experiment. These
+outcomes are clean measures of the impact of the intervention since no
+other enforcement activities took place during that time period.  In
+the short term, we find that most of our nudge strategies
+significantly outperform the ``do nothing'' alternative both in the
+rate of taxpayer compliance and in the level of payments, conditional
+on compliance.  Second, among the seven nudges, the most effective in
 encouraging tax payment are the two economic strategies that threaten
-large financial (``lien'') or financial and psychic (sheriff's
-sale) penalties.  Third, the level of taxpayer compliance improved
-over time, with no further reminders.  After one month, approximately
-36 percent of all taxpayers receiving a letter had made some
-contribution towards their tax liabilities (39 percent for the lien
-and sheriff sale letters); 55 percent had made some contribution after
-three months (61 percent for the lien and sheriff sale letters); and
-75 percent had made some contribution after six months (78 percent for
-lien and sheriff sale letters) In contrast, the rate for some
-compliance for those receiving no reminder letter at all was 30
-percent after one month, 51 percent after three months, and 73 percent
-after six months.  Receiving a reminder letter improved both the rate
-and timing of taxpayer compliance, with the lien and sheriff sale
-letters the most effective.
-  
-Reminder letters also improved the level of tax payments, given that
-the taxpayer complied. After six months, the average payment from those
-receiving a reminder, and paying, was higher than those without a
-letter.  Among the seven reminders letters, the letter that induced
-the greatest payment, given that a payment was made, was the lien
-letter.  After six month, that letter induced \$31 more in payment per letter
-than doing nothing and \$21 more than the control letter.
-  
-The total cost of the seven reminder
-letters mailed to the owners of the 24,264 delinquent properties in
-our experiment was \$16,000.  Our of the envelop calculations suggest that our experiment 
-generated approximately \$257,496. We estimate that if extended to the whole of our sample of delinquent
-taxpayers, the two most effective nudges -- the lien or sheriff
-sales reminders -- have the potential to increase collected revenues
-during each tax year by as much as 2 million dollars. 
+large financial (``lien'') or financial and psychic (sheriff's sale)
+penalties.
 
-The rest of the paper is organized as follows. Section 2 contains a brief literature review and discusses
-how our paper is related to the existing literature. Section 3 discusses details of our field experiment including a detailed description of the treatments and the randomization procedure. Section 4 reports the main empirical findings. Section 5 offers some conclusions.
-  
+After one month, approximately 30 percent of all taxpayers in the
+hold-out sample had made some contribution towards their tax
+liabilities. In contrast 40 percent of taxpayers that received the
+lien letter and 37 percent that received the sheriff sale letters had
+made payments. The results are similar after three months of the
+intervention.  51 percent of all households in the hold-out sample had
+made some contribution after three months (61 percent for the lien and
+60 percent for the sheriff sale letters) Reminder letters also
+improved the level of tax payments, given that the taxpayer
+complied. The three-month impact of these two letters was
+approximately \$75 per letter. We thus conclude that receiving a
+reminder letter improved taxpayer compliance int he short run, with
+the lien and sheriff sale letters the most effective.
 
-  
+Longer term outcomes are those measure compliance after a three month
+horizon. While our experimental design is still valid for these
+outcomes, it is harder to interpret the findings since other
+treatments occurred during that time period such as enforcement
+activities by collection agencies. Our findings with respect to longer
+run outcomes indicate that there was at least some convergence in the
+effectiveness of the nudge strategies. After 6 months, 73 percent of
+households in the hold-out sample made some payments to the City. The
+only letters that significantly improve the compliance above that rate
+were the lien and sheriff letters, which increased compliance by 3 to
+4 percentage points. The six-month impact of these two letters was
+approximately \$31 per letter relative to the hold-out sample and
+\$21relative to the control letter. 
 
-\section{Literature Review (NEEDS TO BE UPDATED)}
+We conclude that the impact of our six letters relative to the
+hold-out or control group is much reduced after six month. This
+finding is consistent with the view that the enforcement activities of
+the collection agencies are probably more closely aligned with our
+deterrence letters than with the other five letter that we
+explored. As a consequence it is not surprising that we find some
+strong convergence in the effectiveness of all treatments after six
+months.
 
-Our study is related to different branches of the empirical literature on 
-tax compliance. Early
-empirical studies focused the effectiveness of penalties and fines. They found little impact of such penalties on aggregate
-tax compliance \citeA{Slemrod-07}.  But more recent, nuanced
+Finally, we investigated whether our experiment had any spill-over effects
+into the following tax year. Looking a compliance rates by March 31,
+2016 we find no significant impact of our letters on compliance in the
+following year
+
+Ignoring the opportunity costs of time, the cost of our experiment was
+\$23,000.  Our of-the-envelop calculations suggest that our experiment
+generated approximately \$690,000 after three months. We estimate that
+if extended to the whole of our sample of delinquent taxpayers, the
+two most effective nudges -- the lien or sheriff sales reminders --
+have the potential to increase collected revenues during each tax year
+by as much as 3 to 4 million dollars.
+
+The rest of the paper is organized as follows. Section 2 contains a
+brief literature review. Section 3 discusses details of our field
+experiment including a detailed description of the treatments and the
+randomization procedure. Section 4 reports the main empirical
+findings. Section 5 discusses the policy impact of our experiment and
+discussions on enforcement activities in the City of
+Philadelphia. Section 6 offers some conclusions.
+    
+
+\section{Literature Review (TAKEN LARGELY FROM OUR PREVIOUS PAPER)}
+
+Our study is related to different branches of the empirical literature
+on tax compliance. Early empirical studies focused the effectiveness
+of penalties and fines and found little impact of such penalties on
+aggregate tax compliance \cite{Slemrod-07}.  More recent, nuanced
 studies, have found an impact of fines on both the level and speed of
 tax payments.  \citeA{Fellner-13} find that a reminder letter for
 payment of the Austrian TV license fee that explicitly threatens legal
@@ -244,8 +289,8 @@ forms.  \citeA{Wenzel-Taylor-04} find that including a letter
 reminding taxpayers that their statement of rental income can be
 audited and that faulty reporting may lead to fines significantly
 reduced deductions when compared to forms submitted by taxpayers who
-did not receive the threatening letter.  \citeA{Hallsworth-14}
-find the speed with which taxpayers pay their liabilities can also be
+did not receive the threatening letter.  \citeA{Hallsworth-14} find
+the speed with which taxpayers pay their liabilities can also be
 improved with increased fines.
 
 But fines only work if taxpayers believe they will be enforced.  Large
@@ -315,7 +360,7 @@ Notices of property tax payments are sent each year on January 1, and
 the full balance of taxes are due by March 31.  If payment has not
 been received by that date, or the taxpayer has not entered into a
 taxpaying plan with the City, fines and interest penalties begin to
-accrue.  On April 1, the Department of Revenue begins contacting
+accrue.  On April 1, the Department of Revenue (DoR) begins contacting
 unpaid accounts informing taxpayers of taxes due and the accumulation
 of fines and penalties for late payment.  Normally, two-thirds of the
 delinquent accounts are sent to outside collection agencies acting as
@@ -334,8 +379,12 @@ properties remaining with the Revenue Department and still owing at
 least \$10 in property taxes as on May 15, 2015.  Our sample includes
 only new delinquent taxpayers; it excludes all chronically delinquent
 taxpayers who owe taxes from prior years.  Our experiment began in
-mid-June, 2015 and continued until December 31, 2015. 
-  
+mid-June, 2015 and continued until December 31, 2015.  To make sure
+that our experiment as not contaminated by other treatments, the DoR
+agreed to postpone other enforcement activity until August 15. In
+particular, no other collection agencies contacted the households in
+the sample until approximately the beginning of September.
+
 Our seven reminder letters were designed in coordination with
 officials of the Department of Revenue.  Each letter was vetted by the
 Department to ensure that it could be understood by a taxpayer with at
@@ -346,38 +395,38 @@ included in an Appendix.  Here we present the important distinguishing
 feature of each letter.  Our control letter provides a generic
 reminder to the taxpayer. Specifically:
  
-{\it Treatment Letter 1: Control } \\ {\bf Our records indicate that you have a balance due of $balance$.
-	If you have already paid, thank you. If not, please pay now or contact us
-	to arrange a payment plan. The fastest and easiest way to pay is online at
-	\underline{www.phila.gov/pay}. Paying by E-check only costs 35c - 
-	less than the cost of a stamp!"}
+{\it Treatment Letter 1: Control } \\ {\bf Our records indicate that
+  you have a balance due of $balance$.  If you have already paid,
+  thank you. If not, please pay now or contact us to arrange a payment
+  plan. The fastest and easiest way to pay is online at
+  \underline{www.phila.gov/pay}. Paying by E-check only costs 35c -
+  less than the cost of a stamp!"}
 
-Two letters were mailed to test the efficacy of either of our
-  two economic penalties.  The first imposes an economic penalty
-        only and is called the lien letter.  The lien letter notes
-        that the City will impose a lien on the delinquent property
-        which entitles the City to deduct the amount of the lien from
-        any future arms-length market sale of the property.  
+Two letters were mailed to test the efficacy of either of our two
+economic penalties.  The first imposes an economic penalty only and is
+called the lien letter.  The lien letter notes that the City will
+impose a lien on the delinquent property which entitles the City to
+deduct the amount of the lien from any future arms-length market sale
+of the property.
         
-{\it Treatment Letter 2: Lien } \\  {\bf  Failure to pay your Real Estate Taxes may result in the sale of 
-	your property by the City in order to collect back taxes. In the 
-	past year, we have sold $N$ properties in your neighborhood at 
-	Sheriff's Sale.	Included in these $N$ are the following properties 
-	near you: $<$three properties and their sale dates$>$ 
+{\it Treatment Letter 2: Lien } \\ {\bf Failure to pay your Real
+  Estate Taxes may result in the sale of your property by the City in
+  order to collect back taxes. In the past year, we have sold $N$
+  properties in your neighborhood at Sheriff's Sale. Included in these
+  $N$ are the following properties near you: $<$three properties and
+  their sale dates$>$
 
-	Pay your taxes now to prevent the sale of your property. 
-	Our records indicate that you have a balance due of $balance$.}
+  Pay your taxes now to prevent the sale of your property.  Our
+  records indicate that you have a balance due of $balance$.}
 
 $N$ is the number of properties sold in neighborhood between June 2014
-and May 2015.
-
-The three listed properties in the taxpayer's neighborhood were
-randomly selected from a list of properties that had been recently
-sold and included tax liens on the sale.  All delinquent taxpayers
-receiving the lien letter and in the same neighborhood saw the same
-list of three properties.\footnote{An initial plan to select the three
-  lien sale properties nearest each delinquent property met with
-  privacy concerns and was therefore not pursued.}
+and May 2015. The three listed properties in the taxpayer's
+neighborhood were randomly selected from a list of properties that had
+been recently sold and included tax liens on the sale.  All delinquent
+taxpayers receiving the lien letter and in the same neighborhood saw
+the same list of three properties.\footnote{An initial plan to select
+  the three lien sale properties nearest each delinquent property met
+  with privacy concerns and was therefore not pursued.}
 
 The second letter including an explicit mention of an economic penalty
 was the sheriff's sale letter.  We view this treatment letter as the
@@ -386,18 +435,19 @@ penalty of taxes plus fines plus interest at the time of sale, but it
 forces the sale of the taxpayer's property.  The inconvenience and,
 perhaps more importantly, the psychic costs of moving may be
 significant.  
-	
-{\it Treatment Letter 3: Sheriff's Sale} \\ {\bf Failure to pay your Real Estate Taxes will result in a tax
-  lien on your property in an amount equal to your back taxes plus all
-  penalties and interest. When your property is sold, those delinquent
-  tax payments will be deducted from the sale price. By paying your
-  taxes now, you can avoid these penalties and interest. Properties
-  near you in $neighborhood$ that have had liens placed on them
-  include: $<$three properties and their sale dates$>$
+  
+{\it Treatment Letter 3: Sheriff's Sale} \\ {\bf Failure to pay your
+  Real Estate Taxes will result in a tax lien on your property in an
+  amount equal to your back taxes plus all penalties and
+  interest. When your property is sold, those delinquent tax payments
+  will be deducted from the sale price. By paying your taxes now, you
+  can avoid these penalties and interest. Properties near you in
+  $neighborhood$ that have had liens placed on them include: $<$three
+  properties and their sale dates$>$
 
   Pay your taxes now to avoid a lien being placed on your property.
   Our records indicate that you have a balance due of $balance$.}
-	
+  
 N is the number of properties sold by sheriff's sale in each
 neighborhood between June, 2014 and May, 2015.  The three listed
 properties in the taxpayer's neighborhood were randomly selected from
@@ -412,11 +462,11 @@ might see their gain from non-payment largely in terms of their
 private benefits from neighborhood services, what we call the
 neighborhood letter.  
 
-{\it Treatment Letter 4: Amenity } \\ {\bf We want to remind you that your taxes pay for essential
-  public services in $neighborhood$, such as $<$two local
-  amenities$>$, your local police officer, snow removal, street
-  repairs, and trash collection. Please pay your taxes to help the
-  city provide these services in your neighborhood.}
+{\it Treatment Letter 4: Amenity } \\ {\bf We want to remind you that
+  your taxes pay for essential public services in $neighborhood$, such
+  as $<$two local amenities$>$, your local police officer, snow
+  removal, street repairs, and trash collection. Please pay your taxes
+  to help the city provide these services in your neighborhood.}
 
 The neighborhood amenities were chosen at random for each property
 from a list of City provided parks, recreation centers, and libraries
@@ -425,11 +475,12 @@ letter appeals for payment from those who see their gain from
 non-payment in terms of their public benefits from Philadelphia-wide
 services, what we call the community letter.  This letter reads:
 
-{\it Treatment Letter 5: Community} {\bf Your taxes pay for important services that make a city
-  great. Your tax dollars are essential for ensuring all Philadelphia
-  children receive a quality education and all Philadelphians feel
-  safe in their neighborhoods. Please pay your taxes as soon as you
-  can to help us pay for these important services.}
+{\it Treatment Letter 5: Community} {\bf Your taxes pay for important
+  services that make a city great. Your tax dollars are essential for
+  ensuring all Philadelphia children receive a quality education and
+  all Philadelphians feel safe in their neighborhoods. Please pay your
+  taxes as soon as you can to help us pay for these important
+  services.}
 
 The final two reminder letters appeal to a taxpayer's sense of
 community more generally.  The first asks the delinquent taxpayer to
@@ -437,19 +488,19 @@ recognize that he is not a contributing member of his (personally
 defined) community of peer taxpayers, a letter we call the peer
 letter.  
 
-{\it Treatment Letter 6: Peer } {\bf  You have not paid your Real Estate Taxes. Almost all of
-  your neighbors pay their fair share: 9 out of 10 Philadelphians do
-  so. By failing to pay, you are abusing the good will of your
-  Philadelphia neighbors.}
+{\it Treatment Letter 6: Peer } {\bf You have not paid your Real
+  Estate Taxes. Almost all of your neighbors pay their fair share: 9
+  out of 10 Philadelphians do so. By failing to pay, you are abusing
+  the good will of your Philadelphia neighbors.}
 
 The second letter stresses that non-payment will violate a wider
 community norm of honest and responsible tax compliance needed for a
 functioning democracy, a letter we call the civic duty letter. 
 
-{\it Treatment Letter 7: Duty } {\bf For democracy to work, all citizens need to pay their fair
-  share of taxes for community services. You have not yet paid your
-  taxes. By failing to do so, you are not meeting your duty as a
-  citizen of Philadelphia.}
+{\it Treatment Letter 7: Duty } {\bf For democracy to work, all
+  citizens need to pay their fair share of taxes for community
+  services. You have not yet paid your taxes. By failing to do so, you
+  are not meeting your duty as a citizen of Philadelphia.}
 
 
 As a baseline control, we randomly removed 3,000 delinquent taxpayers
@@ -468,17 +519,51 @@ taxes are due.\footnote{We tested one more intervention that has been
   statistically significant effect of letter size on compliance
   behavior or size of payment.  These results are available upon
   request.}
-	
-	
-	
+  
 \subsection{Randomization Procedure}
 
-Randomization took place in two stages.  First, 3,000 of the 27,264
-eligible properties were randomly assigned to the Holdout Sample.  Of
-the remaining 24,264 properties, 89 percent were owned by unique
-owners, owning only one property in Philadelphia, The remaining 11
-percent were held by owners with multiple holdings in our sample.
-Since we are interested in taxpayer compliance and not property
+Randomization took place in two stages.  First a number of eligible
+properties were randomly assigned to the Holdout Sample.  Our main
+interest in this study is on unique owners, i.e. households that only
+own one property in the city. Once we restrict attention to this
+sample than we have 16,951 observations in the treatment group and
+2,088 observations in the hold-out sample.  The total sample size is
+19,039.  Table \ref{bal_hold} checks whether the treatment and control
+group are balanced based on the two most important variables, amount
+due and assessed property value.
+
+\begin{table}[ht]
+\centering
+\caption{Balance between Holdout and Treated Samples}\label{bal_hold}
+\bigskip
+\begin{tabular}{l  c c c}
+\hline
+Variable & Treated & Holdout & $p$-value \\ 
+Amount Due (June) & \$1,467 & \$1,233 & 0.34 \\ 
+Assessed Property Value  & \$157,094 & \$142,630 & 0.57 \\ 
+\# Owners  & 16,951 & 2,088 &  \\ 
+\hline
+\multicolumn{4}{l}{This is the sample of unique owners} \\
+\hline
+\end{tabular}
+\end{table}
+
+Table \ref{bal_hold} shows that randomization was successful in the
+unique owner sample.  The average debt owed by each owner was \$1,467
+in the treatment group and \$1,233 in the hold-out sample. the average
+assessed property value is \$157,094 in the treatment group and
+\$142,630 in the control group.
+
+Next we test whether randomization was successful among the seven
+treatment groups. Table \ref{balance} shows the results for the unique
+owner sample in the top panel of the table. Overall, we find no
+evidence that would suggest any problems with randomization.
+
+While the vast majority of properties in the city of Philadelphia are
+owned by unique owners, approximately 10 percent of the properties are
+owned by individuals or firms that own multiple properties. There is
+some interest in including these multiple owners in the analysis as
+well. Since we are interested in taxpayer compliance and not property
 compliance, we identified owners of multiple delinquent properties by
 their legal name and sent those owners one treatment letter.  We
 identified multiple property owners by matching the legal name
@@ -488,31 +573,6 @@ associated with each property.\footnote{We lacked an objective
   different owners might have the same name, but inspection by the
   authors found this to be very rare.  We consider this random noise
   to the experiment.}
-	
-The average debt owed by each owner was \$1,810 and the median debt
-owed was \$907, suggesting a significant upper tail to the
-distribution of delinquent taxes owed.
-	
-Second, having identified owners, we then randomly assigned each owner
-to a treatment group.  Any delinquent taxpayer holding multiple
-properties within each treatment group received the same letter for
-each of those properties.  Given the high correlation between the
-propensity to pay taxes and total debt-owed , the treatment groups
-were defined according to owner-level total debt to assure uniformity
-of samples along the dimension of debt owed.  Standard errors in our
-analysis are clustered by the treatment group as randomized.  Each
-property assigned to receive a reminder letter was equally likely to
-receive one of the seven treatments.  Balance tests for
-pre-randomization characteristics are reported in Table \ref{balance} .  Results
-confirm that randomization was successful.  There are no significant
-differences across reminder letters.\footnote{While multiple property
-  owners introduced small variations between treatment groups, the
-  randomization procedures worked as designed; see Table 1.  Excluding
-  multiple property owners from the sample produced near perfect
-  balance on all measured characteristics of the properties.  Result
-  available upon request.}
-	      
-\noindent COMMENT: We need to report randomization checks for the unique owner sample that includes the Hold-out Sample	        
 
 \begin{sidewaystable}[htbp]
 \caption{Balance on Observables} \label{balance}
@@ -520,114 +580,130 @@ differences across reminder letters.\footnote{While multiple property
 \centering
 \begin{tabular}{l c c c c c c c c c c}
 \hline
-\multicolumn{9}{c}{Full Sample} \\
-   \hline
-Variable & Control & Amenities & Community & Duty & Peer & Lien & Sheriff & $p$-value \\ 
-   \hline
-Amount Due (June) & \$1,847 & \$2,209 & \$1,954 & \$1,700 & \$1,772 & \$1,735 & \$1,887 & 0.78 \\ 
-  Assessed Property Value & \$195,029 & \$224,412 & \$220,963 & \$191,199 & \$165,957 & \$173,690 & \$178,556 & 0.76 \\ 
-  \% with Unique Owner & 87.5 & 86.4 & 88.3 & 88.0 & 87.4 & 88.0 & 87.5 & 0.45 \\ 
-  \% Overlap with Holdout & 3.72 & 3.80 & 3.47 & 3.47 & 3.58 & 3.47 & 3.29 & 0.96 \\ 
-  \# Properties per Owner & 1.33 & 1.36 & 1.29 & 1.27 & 1.26 & 1.32 & 1.26 & 0.55 \\ 
-  \# Owners & 2,766 & 2,766 & 2,766 & 2,766 & 2,766 & 2,765 & 2,766 & 1 \\ 
-   \hline 
 \multicolumn{9}{c}{Unique Owners} \\
-   \hline
+\hline
 Variable & Control & Amenities & Community & Duty & Peer & Lien & Sheriff & $p$-value \\ 
-   \hline
+\hline
 Amount Due (June) & \$1,383 & \$1,950 & \$1,290 & \$1,316 & \$1,338 & \$1,389 & \$1,613 & 0.38 \\ 
-  Assessed Property Value & \$163,084 & \$206,214 & \$130,265 & \$166,791 & \$130,936 & \$147,573 & \$155,597 & 0.28 \\ 
-  \# Owners & 2,420 & 2,389 & 2,441 & 2,433 & 2,417 & 2,432 & 2,419 & 0.99 \\ 
-   \hline 
- \multicolumn{9}{l}{\scriptsize{$p$-values in rows 1-5 are $F$-test $p$-values from regressing each variable on treatment dummies. A $\chi^2$ test was used for the count of owners.}} \\ 
+Assessed Property Value & \$163,084 & \$206,214 & \$130,265 & \$166,791 & \$130,936 & \$147,573 & \$155,597 & 0.28 \\ 
+\# Owners & 2,420 & 2,389 & 2,441 & 2,433 & 2,417 & 2,432 & 2,419 & 0.99 \\ 
+\hline 
+\multicolumn{9}{c}{Unique and Multiple Owners} \\
+\hline
+Variable & Control & Amenities & Community & Duty & Peer & Lien & Sheriff & $p$-value \\ 
+\hline
+Amount Due (June) & \$1,847 & \$2,209 & \$1,954 & \$1,700 & \$1,772 & \$1,735 & \$1,887 & 0.78 \\ 
+Assessed Property Value & \$195,029 & \$224,412 & \$220,963 & \$191,199 & \$165,957 & \$173,690 & \$178,556 & 0.76 \\ 
+\% with Unique Owner & 87.5 & 86.4 & 88.3 & 88.0 & 87.4 & 88.0 & 87.5 & 0.45 \\ 
+\% Overlap with Holdout & 3.72 & 3.80 & 3.47 & 3.47 & 3.58 & 3.47 & 3.29 & 0.96 \\ 
+\# Properties per Owner & 1.33 & 1.36 & 1.29 & 1.27 & 1.26 & 1.32 & 1.26 & 0.55 \\ 
+\# Owners & 2,766 & 2,766 & 2,766 & 2,766 & 2,766 & 2,765 & 2,766 & 1 \\ 
+\hline 
+\multicolumn{9}{l}{\scriptsize{$p$-values in rows 1-5 are $F$-test $p$-values from regressing each variable on treatment dummies. A $\chi^2$ test was used for the count of owners.}} \\ 
 \end{tabular}
-
 \end{sidewaystable}
 
-\begin{table}[ht]
-\centering
-\caption{Balance between Holdout and Treated Samples} 
-\label{tbl:bal_hold}
-\begin{tabular}{|r|rrr|rrr|}
-   \hline
- & \multicolumn{3}{c|}{Full Sample} & \multicolumn{3}{c|}{Unique Owners} \\
-\hline
-Variable & Treated & Holdout & $p$-value & Treated & Holdout & $p$-value \\ 
-  Amount Due (June) & \$1,872 & \$1,241 & 0.02 & \$1,467 & \$1,233 & 0.34 \\ 
-  Assessed Property Value & \$192,832 & \$142,973 & 0.15 & \$157,094 & \$142,630 & 0.57 \\ 
-  \% with Unique Owner & 87.6 & 99.1 & 0 &  &  &  \\ 
-  \# Properties per Owner & 1.30 & 1.01 & 0 &  &  &  \\ 
-  \# Owners & 19,361 & 2,107 &  & 16,951 & 2,088 &  \\ 
-   \hline
-\end{tabular}
-\end{table}
+Having identified owners, we then randomly assigned each owner to a
+treatment group.  Any delinquent taxpayer holding multiple properties
+within each treatment group received the same letter for each of those
+properties.  Given the high correlation between the propensity to pay
+taxes and total debt-owed, the treatment groups were defined according
+to owner-level total debt to assure uniformity of samples along the
+dimension of debt owed.  Standard errors in our analysis are clustered
+by the treatment group as randomized.  Each property assigned to
+receive a reminder letter was equally likely to receive one of the
+seven treatments.
 
-\newpage
+Excluding the hold-out sample, but including multiple owners gives us
+a sample size of 19362 observations.\footnote{Unfortunately, we were
+  not able to include the hold-out sample in the block-randomization
+  procedure. As a consequence, we can only include the hold-out sample
+  into our analysis if we condition on unique ownership.} Balance
+tests for pre-randomization characteristics are reported in Table
+\ref{balance}.  Results confirm that randomization was also successful
+in this larger sample that included multiple property owners.  There
+are no significant differences across reminder letters.
 
 \section{Empirical Results}
 
 \subsection{Short Term Impact}
 
-In this section we focus on the short term impact of our intervention. We define the
-short term as the first three months after our intervention. During this time period
-tardy tax payers were only exposed to our intervention. As a consequence, our estimates
-of the treatment effects are not contaminated by other interventions.
+In this section we focus on the short term impact of our
+intervention. We define the short term as the first three months after
+our intervention. During this time period tardy tax payers were only
+exposed to our intervention. As a consequence, our estimates of the
+treatment effects are not contaminated by other interventions.
 
-To gain insight into the nature of tax compliance in Philadelphia, 
-we consider two discrete measures of tax compliance. We define partial compliance if the
- the tardy taxpayer makes any payment at all  and zero.  
-Partial Compliance is of interest because even small 
-additional payments help, but perhaps more importantly, a tax 
-contribution represents a willingness by the taxpayer to be engaged 
-with city governance.  The ever-paid outcome does not differentiate between
+To gain insight into the nature of tax compliance in Philadelphia, we
+consider two discrete measures of tax compliance. We define partial
+compliance if the the tardy taxpayer makes any payment at all and
+zero.  Partial Compliance is of interest because even small additional
+payments help, but perhaps more importantly, a tax contribution
+represents a willingness by the taxpayer to be engaged with city
+governance.  The ever-paid outcome does not differentiate between
 taxpayers that made full payment and those who made only a partial
-contribution.  Full compliance is defined as making a full payment. 
+contribution.  Full compliance is defined as making a full payment.
 
 \begin{table}[ht]
 \centering
-\caption{Linear Probability Model Estimates} 
-\label{tbl:marg_3mo}
-\begin{tabular}{lllll}
-  \hline
-   & \multicolumn{2}{c}{Ever Paid} & 
-             \multicolumn{2}{c}{Paid in Full} \\
- & One Month & Three Months & One Month & Three Months \\
+\caption{Short Term Linear Probability Model Estimates} \label{pc_lin}
+\begin{tabular}{l c c c c}
+\hline
+& \multicolumn{2}{c}{Ever Paid} & \multicolumn{2}{c}{Paid in Full} \\
+& One Month & Three Months & One Month & Three Months \\
 Holdout & 30.5 & 51.4 & 23.5 & 40.8 \\ 
-   \hline
+\hline
 Control & 3.7*** & 3.9** & 2.2* & 3** \\ 
    & (1.4) & (1.5) & (1.3) & (1.5) \\ 
-  Amenities & 1.7 & 2.6* & -0.2 & 1.6 \\ 
+Amenities & 1.7 & 2.6* & -0.2 & 1.6 \\ 
    & (1.4) & (1.5) & (1.3) & (1.5) \\ 
-  Moral & 3.8*** & 2.8* & 1.3 & 2.5* \\ 
+Community & 3.8*** & 2.8* & 1.3 & 2.5* \\ 
    & (1.4) & (1.5) & (1.3) & (1.4) \\ 
-  Duty & 2.4* & 3.6** & 0.7 & 2.3 \\ 
+Duty & 2.4* & 3.6** & 0.7 & 2.3 \\ 
    & (1.4) & (1.5) & (1.3) & (1.5) \\ 
-  Peer & 3.9*** & 3.5** & 1.8 & 3.4** \\ 
+Peer & 3.9*** & 3.5** & 1.8 & 3.4** \\ 
    & (1.4) & (1.5) & (1.3) & (1.5) \\ 
-  Lien & 9*** & 9.2*** & 5.7*** & 7.3*** \\ 
+Lien & 9*** & 9.2*** & 5.7*** & 7.3*** \\ 
    & (1.4) & (1.5) & (1.3) & (1.5) \\ 
-  Sheriff & 7.3*** & 8.8*** & 4.5*** & 6.7*** \\ 
-   & (1.4) & (1.5) & (1.3) & (1.5) \\ 
-   
+Sheriff & 7.3*** & 8.8*** & 4.5*** & 6.7*** \\ 
+   & (1.4) & (1.5) & (1.3) & (1.5) \\  
  \hline 
- \multicolumn{5}{l}{\scriptsize{Holdout values are in levels; remaining figures are relative to Holdout}} \\ 
+\multicolumn{5}{l}{\scriptsize{Holdout values are in levels; remaining
+    figures are relative to Holdout}} \\
 \end{tabular}
 \end{table}
 
-COMMENT: ADD ``Paid in Full" AND REPORT ESTIMATES BASED ON LINEAR REGRESSIONS. SEE COMMENT BELOW.
+We start and consider the partial compliance results that pertain to
+the sample in which we exclude owners of multiple properties.  Table
+\ref{pc_lin} reports the estimated participation rates in the hold out
+sample as well as the differences in the participation in the seven
+treatment samples. Robust standard errors are reported in
+parentheses. We find that all seven treatment increased partial
+compliance at the one month and three month date. Almost all of these
+increases in compliance behavior are statistically significant at
+standard levels of significance.
 
+After one month, approximately 30 percent of all taxpayers in the
+hold-out sample had made some contribution towards their tax
+liabilities. In contrast 40 percent of taxpayers that received the
+lien letter and 37 percent that received the sheriff sale letters had
+made payments. The results are similar after three months of the
+intervention.  51 percent of all households in the hold-out sample had
+made some contribution after three months. In contrast 61 percent of
+households that received the Lien letter and 60 percent of households
+that received the Sheriff Sale letter made some payments after three
+months.
 
-We start and consider the partial compliance results that pertain to the sample in which we exclude owners of multiple properties. This exclusion is done for the following two reasons. First, the number of multiple owners is small. Second the group of multiple owners is rather heterogenous and divers.
-
-Table \ref{pc_rates_s} lists the participation rates
-in the hold out sample as the difference in the participation in the seven treatment samples. Robust 
-standard errors are reported in parentheses. We find that all seven treatment increased partial compliance
-at the one month and three month date. Almost all of these increases in compliance behavior are statistically 
-significant at standard levels of significance. We also find that only the lien and the sheriff's sale letter have positive and significant impact after six months.
+As shown in Table \ref{pc_lin} the results are qualitatively and
+quantitatively the same if we use ``paid in full" as our compliance
+outcome. The main difference is that the Amenity, Community and Duty
+letters do lead to a significant increase in compliance relative to
+the hold-out group. All other findings are similar.
 
 \begin{table}[htbp]
-\caption{Logistic Model Estimates}
-\begin{center}
+\caption{Short Term Logistic Model Estimates}\label{sh_logit}
+\bigskip
+\centering
 \begin{tabular}{l c c c c }
 \hline
  & \multicolumn{2}{c}{Ever Paid} & \multicolumn{2}{c}{Paid Full} \\
@@ -638,7 +714,7 @@ Control        & $0.17^{***}$ & $0.16^{***}$ & $0.12^{*}$   & $0.12^{**}$  \\
                & $(0.06)$     & $(0.06)$     & $(0.07)$     & $(0.06)$     \\
 Amenities      & $0.08$       & $0.11^{*}$   & $-0.01$      & $0.06$       \\
                & $(0.06)$     & $(0.06)$     & $(0.07)$     & $(0.06)$     \\
-Moral          & $0.17^{***}$ & $0.11^{*}$   & $0.07$       & $0.10^{*}$   \\
+Community          & $0.17^{***}$ & $0.11^{*}$   & $0.07$       & $0.10^{*}$   \\
                & $(0.06)$     & $(0.06)$     & $(0.07)$     & $(0.06)$     \\
 Duty           & $0.11^{*}$   & $0.14^{**}$  & $0.04$       & $0.09$       \\
                & $(0.06)$     & $(0.06)$     & $(0.07)$     & $(0.06)$     \\
@@ -654,62 +730,70 @@ Num. obs.      & 19039        & 19039        & 19039        & 19039        \\
 \hline
 \multicolumn{5}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
 \end{tabular}
-\label{tbl:reg8_3mo}
-\end{center}
 \end{table}
 
-COMMENT: Add Paid in Full to Table
+As a robustness check we also estimated Logit models. Table
+\ref{sh_logit} summarizes the estimates and the estimated standard
+errors for the three samples that we considered above. We report
+robust standard errors that are clustered at the treatment level. The main
+findings are qualitatively and quantitatively the same.
 
+Next we conduct some simple of the envelop calculations to assess the
+impact of these estimates on revenues. Here focus on the results after
+six month. We take the median payment in each subsample and multiply
+the median payment with the increase in the compliance probability
+reported in Table \ref{pc_lin}. This product can be interpreted as the
+impact of each treatment on revenue per letter. To obtain the total
+estimated impact we then multiply the impact per letter with the total
+number of individuals in the sample. The results are reported in Table
+\ref{sh_rev}.  Overall, we find that six of the seven treatments
+generated positive revenues for the city.  The three-month impact of
+these letters ranged between \$21 for the Amenity letter to
+approximately \$76 per the Lien letter. We thus conclude that
+receiving a reminder letter improved taxpayer compliance int he short
+run, with the lien and sheriff sale letters the most effective.
 
-To formalize this procedure we also estimated logit models. Table 
-\ref{pc_logit} summarizes the estimates and the estimated
-standard errors for the three samples that we considered above. We
-report robust standard errors that are clustered at the treatment level. The main difference
-here is that our approach to computing standard errors  is more conservative than in the previous table.
-However the main findings are qualitatively and quantitatively the same.
-
-\noindent COMMENT: THE ONE AND THREE MONTHS IN TABLES 2 AND 3 SEEMS TO BE INCONSISTENT. WE NEED TO RESOLVE THIS ISSUE. I SUGGEST WE RUN LINEAR PROBABILITY MODELS AND SEE WHAT WE GET WHEN WE COMPUTE ROBUST STD ERRORS. IF WE SWITCH TO LIN PROB, THAT WOULD SAVE US A TABLE AND MAKES THE COEFFICIENTS MUCH EASIER TO INTERPRET!
-
-
-\begin{table}[ht]
+\begin{table}[htbp]
+\caption{Estimated Short Term Impact on Revenue}\label{sh_rev}
+\bigskip
 \centering
-\caption{Estimated Impact on Revenue: 3 Months} 
-\label{rev_ep}
-\begin{tabular}{rrr}
-  \hline
+\begin{tabular}{l c c}
+\hline
 Treatment & Impact Per Letter & Total Impact \\ 
-  \hline
+\hline
 Control & \$32.35 & \$78,298 \\ 
-  Amenities & \$21.97 & \$52,494 \\ 
-  Moral & \$23.63 & \$57,690 \\ 
-  Duty & \$29.9 & \$72,742 \\ 
-  Peer & \$29.14 & \$70,440 \\ 
-  Lien & \$76.21 & \$185,345 \\ 
-  Sheriff & \$72.73 & \$175,945 \\ 
-   \hline
+Amenities & \$21.97 & \$52,494 \\ 
+Community & \$23.63 & \$57,690 \\ 
+Duty & \$29.9 & \$72,742 \\ 
+Peer & \$29.14 & \$70,440 \\ 
+Lien & \$76.21 & \$185,345 \\ 
+Sheriff & \$72.73 & \$175,945 \\ 
+\hline
 \end{tabular}
 \end{table}
 
+We also conducted a number of robustness checks. Recall that we randomized
+the seven treatments at the ownership level. In Table \ref{sh_logit_rob}
+we replicate the analysis done above excluding the hold-out sample. We
+then estimate the model using the larger sample that also includes
+owners of multiple properties. Overall, we find the results are
+similar to the ones reported in Table \ref{sh_logit}. If anything,
+the treatment effects are stronger in the single owner sample. We thus
+conclude that owners of multiple properties are less likely to respond
+the kind of nudge strategies explored in this paper.
 
-Next we conduct some simple of the envelop calculations to assess the impact of these estimates on revenues. Here focus on the results after six month. We take the median payment in each subsample and multiply the median payment with the increase in the compliance probability reported in Table \ref{pc_rates_s}. This product can be interpreted as the impact of each treatment on revenue per letter. To obtain the total estimated impact we then multiply the impact per letter with the total number of individuals in the sample. The results are reported in Table \ref{pc_rev_s}.
-Overall, we find that six of the seven treatments generated positive revenues for the city. Our estimates per letter range between \$ X and \$ XX dollars.
+\bigskip
 
-\noindent COMMENT: WE SHOULD REPORT THE REVENUE REGRESSION FOR THIS SAMPLE HERE. 
+\noindent ARE THERE ANY OTHER ROBUSTNESS CHECKS WE WANT TO REPORT?
 
-Regressions of total amount paid and treatment variables produce somewhat noisy estimates of the treatment effect
-The estimate of the treatment effect of the lien relative to the control letter after three (one) months was XX (XX). Similar  revenue estimates are obtained for the sheriff's sale letter.  We thus conclude that  the estimates reported in Table \ref{pc_rev_s} are, if anything, conservative estimates of the impact of the lien treatment on revenues.
-
-We conducted a number of robustness checks. Recall that we randomized the seven treatments at the ownership level. In Table \ref{pc_rob_s} we replicate the analysis done above excluding the hold-out sample. We then estimate the model using the larger sample that also includes owners of multiple properties. Overall, we find the results
-are similar to the ones reported in Table \ref{pc_logit_s}. If anything, the treatment effects are stronger in the single owner sample. We thus conclude that owners of multiple properties are less likely to respond the kind of nudge strategies explored in this paper.
-
-\begin{sidewaystable}[htbp]
-\caption{Robustness Analysis: Multiple Owners}\label{pc_rob_s}
+\begin{table}[htbp]
+\caption{Robustness Analysis: Multiple Owners}\label{sh_logit_rob}
 \begin{center}
-\begin{tabular}{|l| c c | c c | }
+\begin{tabular}{l c c c c }
 \hline
                & One Month & Three Months  & One Month & Three Months  \\
 \hline
- & \multicolumn{2}{c}{All Owners} & \multicolumn{2}{|c|}{Single-Property Owners} \\
+ & \multicolumn{2}{c}{All Owners} & \multicolumn{2}{c}{Single-Property Owners} \\
 Amenities      & $-0.04$      & $-0.03$         & $-0.09$      & $-0.05$          \\
                & $(0.06)$     & $(0.05)$         & $(0.06)$     & $(0.06)$        \\
 Community          & $-0.02$      & $-0.06$          & $0.00$       & $-0.04$        \\
@@ -729,85 +813,116 @@ Num. obs.      & 19361        & 19361              & 16951        & 16951       
 \multicolumn{5}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$}}
 \end{tabular}
 \end{center}
-\end{sidewaystable}
-
-COMMENT: Add Paid in Full to Table
+\end{table}
 
 \newpage
 
-\subsection{Long Term Returns}
+\subsection{Long Term Impact}
 
-COMMENT: Here we want to focus on the six month results. We need to explain that
-all tardy tax payers were assigned to a collection agency at the end of August 2015 and
-thus received another "treatment." This may explain why we see a convergence in the 
-estimates of the treatment effects.
+Next we focus on the six month results. Recall that all tardy tax
+payers were assigned to a collection agency at the end of August 2015
+and thus received another "treatment." AS the consequence the six
+months results not only reflect our own enforcement activity, but also
+the enforcement activity of collection agencies hired by the City.
 
-\begin{table}[ht]
+
+\begin{table}[htbp]
+\caption{Long Term Linear Probability Model Estimates}\label{lg_pc_lin}
+\bigskip
 \centering
-\caption{Linear Probability Model Estimates: 6 Months} 
-\label{tbl:marg_6mo}
-\begin{tabular}{lll}
+\begin{tabular}{l c c }
   \hline
    & Ever Paid & Paid in Full \\
 Holdout & 73.3 & 63.2 \\ 
    \hline
 Control & 1.3 & 1.5 \\ 
    & (1.3) & (1.5) \\ 
-  Amenities & -0.2 & 0 \\ 
+Amenities & -0.2 & 0 \\ 
    & (1.3) & (1.5) \\ 
-  Moral & 0.9 & 1.1 \\ 
+Community & 0.9 & 1.1 \\ 
    & (1.3) & (1.4) \\ 
-  Duty & 2.1 & 1 \\ 
+Duty & 2.1 & 1 \\ 
    & (1.3) & (1.5) \\ 
-  Peer & 1.4 & 2.3 \\ 
+Peer & 1.4 & 2.3 \\ 
    & (1.3) & (1.5) \\ 
-  Lien & 3.7*** & 4.8*** \\ 
+Lien & 3.7*** & 4.8*** \\ 
    & (1.3) & (1.4) \\ 
-  Sheriff & 3.7*** & 2.9** \\ 
+Sheriff & 3.7*** & 2.9** \\ 
    & (1.3) & (1.4) \\ 
-   
- \hline 
- \multicolumn{3}{l}{\scriptsize{Holdout values are in levels; remaining figures are relative to Holdout}} \\ 
+    \hline 
+ \multicolumn{3}{l}{\scriptsize{Holdout values are in levels; remaining
+    figures are relative to Holdout}} \\
 \end{tabular}
 \end{table}
+
+
+We start by analyzing the unique owner sample.  Table \ref{lg_pc_lin}
+reports the estimated participation rates in the hold out sample as
+well as the differences in the participation in the seven treatment
+samples after six month of the intervention. Robust standard errors
+are reported in parentheses. We find that only two of the treatment
+increased partial compliance at the six month date.  We find that 73
+percent of households in the hold-out sample made some payments to the
+City. The only letters that significantly improve the compliance about
+that rate were the lien and sheriff letters, which increased
+compliance by 3 to 4 percentage points. The findings are similar using
+paid in full as the outcome measure.
 
 
 \begin{table}[htbp]
+\caption{Estimated Long Term Impact on Revenue} \label{lg_rev}
+\bigskip
 \centering
-\caption{Estimated Impact on Revenue: 6 Months} \label{pc_rev_6}
-\begin{tabular}{rrr}
-  \hline
+\begin{tabular}{l c c}
+\hline
 Treatment & Impact Per Letter & Total Impact \\ 
-  \hline
+\hline
 Control & \$10.49 & \$25,397 \\ 
-  Amenities & -\$1.98 & -\$4,740 \\ 
-  Community & \$7.21 & \$17,588 \\ 
-  Duty & \$17.43 & \$42,405 \\ 
-  Peer & \$11.26 & \$27,225 \\ 
-  Lien & \$31.01 & \$75,420 \\ 
-  Sheriff & \$30.67 & \$74,201 \\ 
-   \hline
+Amenities & -\$1.98 & -\$4,740 \\ 
+Community & \$7.21 & \$17,588 \\ 
+Duty & \$17.43 & \$42,405 \\ 
+Peer & \$11.26 & \$27,225 \\ 
+Lien & \$31.01 & \$75,420 \\ 
+Sheriff & \$30.67 & \$74,201 \\ 
+\hline
 \end{tabular}
 \end{table}
 
+To translate participation rates into revenue, we take again the
+median payment in each subsample and multiply the median payment with
+the increase in the compliance probability reported in Table
+\ref{lg_pc_lin}.  The results are reported in Table \ref{lg_rev}. We
+find that the six-month impact of these two letters was approximately
+\$31 per letter relative to the hold-out sample and \$21relative to
+the control letter.
 
-Next we conduct some simple of the envelop calculations to assess the impact of these estimates on revenues. Here focus on the results after six month. We take the median payment in each subsample and multiply the median payment with the increase in the compliance probability reported in Table \ref{pc_rates_6}. This product can be interpreted as the impact of each treatment on revenue per letter. To obtain the total estimated impact we then multiply the impact per letter with the total number of individuals in the sample. The results are reported in Table \ref{pc_rev_6}.
-Overall, we find that six of the seven treatments generated positive revenues for the city. Our estimates per letter range between \$7 and \$31 dollars.
+Summarizing, we find that the impact of our six letters relative to
+the hold-out or control group is much reduced after six month. This
+finding is consistent with the view that the enforcement activities of
+the collection agencies are probably more closely aligned with our
+deterrence letters than with the other five letter that we
+explored. As a consequence it is not surprising that we find some
+strong convergence in the effectiveness of all treatments after six
+months.
 
-\noindent COMMENT: WE SHOULD REPORT THE REVENUE REGRESSION FOR THIS SAMPLE HERE. 
+\subsection{Spill-overs Effects into the Next Tax Year}
 
-Regressions of total amount paid and treatment variables produce somewhat noisy estimates of the treatment effect
-The estimate of the treatment effect of the lien relative to the control letter after the first month was 80 (42), after three month 107 (46) and 66 (44) after six month. Similar 
-revenue estimates are obtained for the sheriff's sale letter.  We thus conclude that  the estimates reported in Table \ref{pc_rev} are, if anything, conservative estimates of the impact of the lien treatment on revenues.
+\noindent COMMENT: WE SHOULD DISCUSS THAT THERE ARE NO EFFECTS IN THE
+FOLLOWING YEAR. PRODUCE A TABLE.
 
-\subsection{Spill-overs to the Next Year}
+\section{Policy Impact}
 
-\noindent COMMENT: WE SHOULD DISCUSS THAT THERE ARE NO EFFECTS IN THE FOLLOWING YEAR. PRODUCE A TABLE.
+\noindent COMMENT: NEED TO DISCUSS FULL IMPLEMENTATION BY CITY IN 2016
 
-\noindent COMMENT: NEED TO DISCUSS FULL IMPLEMENTATION BY DoR in 2016
+\noindent COMMENT: MAY ALSO WANT TO DISCUSS ACTIVITIES BY CITY IN 2015
 
 
-\section{Conclusions}
+\section{Conclusions (NEEDS TO BE UPDATED)}
+
+\noindent AGAIN WE NEED TO DISTINGUISH BETWEEN SHORT AND LONG-TERM
+IMPACT. MOREOVER CONVERGENCE IN EFFECTIVENESS IS LIKELY DUE TO THE
+FACT THAT ALL REMAINING HOUSEHOLDS OBTAIN ``THREAT" LETTERS FROM
+COLLECTION AGENCIES AFTER AUGUST 15.
 
 In this paper, we report the results of a multi-arm field experiment 
 designed to test which low-cost notification strategies increase tax 
