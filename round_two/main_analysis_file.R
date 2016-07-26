@@ -3,7 +3,7 @@
 #  Round 2
 #Michael Chirico
 
-#Setup: Packages, Directories, Data Import ####
+# Setup: Packages, Directories, Data Import ####
 
 ##Packages
 rm(list = ls(all = TRUE))
@@ -77,7 +77,33 @@ follow <-
         )[properties, owner1 := i.owner1, on = "opa_no"
           ][!is.na(owner1)][owners, treat8 := i.treat8, on = "owner1"]
 
+library(readxl)
+follow_jul <- read_excel(
+  wds["data"] %+%
+    "req20150709_PennLetterExperiment (July 2016 update).xlsx",
+  ##** NOTE: I'm using my own branch of readxl here which
+  ##   supports multiple NA values; installed via
+  ##   devtools::install_github("MichaelChirico/readxl@multiple_na") **
+  sheet = "DETAILS", skip = 1L, na = c("NULL", "-"),
+  col_names = c("x", "opa_no", rep("x", 7L),
+                "paid_full_jul16", "ever_paid_jul16", rep("x", 4L),
+                "total_due_jul16", "x", "total_paid_sep", rep("x", 5L)),
+  col_types = abbr_to_colClass("btbtbnbnb", "117241115"))
+
+setDT(follow_jul)
+
+properties[follow_jul, total_due_jul16 := i.total_due_jul16, on = "opa_no"]
+
+owners[properties, total_due_jul16 := sum(i.total_due_jul16), on = "owner1", by = .EACHI]
+
 # TABLE 1: Balance - Treated vs. Holdout Comparison (Unique Owners) ####
+lmfp <- function(formula){
+  #extract F-statistic & DoF from LM call
+  mdf <- summary(do.call("lm", list(formula = formula)))$fstatistic
+  #copied (ported) from print.summary.lm
+  unname(pf(mdf[1L], mdf[2L], mdf[3L], lower.tail = FALSE))
+}
+
 hold_bal <- 
   cbind(gsub("$", "\\$", t(
     owners[(unq_own), 
@@ -100,13 +126,6 @@ print(xtable(hold_bal, caption = "Balance between Holdout and Treated Samples",
       sanitize.text.function = identity, hline.after = c(0L, 4L))
 
 # TABLE 2: Balance  - Comparison by Treatment, Full & Unique Owner Sample ####
-lmfp <- function(formula){
-  #extract F-statistic & DoF from LM call
-  mdf <- summary(do.call("lm", list(formula = formula)))$fstatistic
-  #copied (ported) from print.summary.lm
-  unname(pf(mdf[1L], mdf[2L], mdf[3L], lower.tail = FALSE))
-}
-
 p_tex <- function(x) c("$p$-value", round(x, 2L))
 
 {cat("\\begin{sidewaystable}[ht]",
