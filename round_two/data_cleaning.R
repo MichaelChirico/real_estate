@@ -81,7 +81,7 @@ setDT(full_sep)
 ###  **TO DO: INSERT E-MAIL META DATA FROM DOR CONFIRMATION**
 update_opas <- data.table(old = c("151102600", "884350465"),
                           new = c("151102610", "881577275"))
-full_sep[update_opas, opa_no := i.old, on = c("opa_no" = "new")]
+full_sep[update_opas, opa_no := i.old, on = c(opa_no = "new")]
 
 ##Block IV: Full Sample, December Cross-Section
 full_dec <- read_excel(
@@ -99,7 +99,7 @@ setDT(full_dec)
 update_opas <-
   data.table(old = c("151102600", "884350465", "882932475", "213155700"),
              new = c("151102610", "881577275", "882932476", "881081460"))
-full_dec[update_opas, opa_no := i.old, on = c("opa_no" = "new")]
+full_dec[update_opas, opa_no := i.old, on = c(opa_no = "new")]
 
 ##Block V: Main Sample Background Data
 ## * total_due is pre-study balance
@@ -116,6 +116,21 @@ holdout_bg <- fread(wds["proj"] %+% "holdout_sample.csv",
 opa_bg <- fread(wds["data"] %+% "prop2015.txt", select = c("PARCEL", "MV"))
 setnames(opa_bg, c("opa_no", "assessed_mv"))
 
+###Block VIII: One-Year Follow-Up Data
+
+followup <- read_excel(
+  wds["data"] %+%
+    "req20150709_PennLetterExperiment (July 2016 update with 2016 " %+% 
+    "delinquency, payments, and agreements).xlsx",
+  sheet = "DETAILS", skip = 1L, na = c("NULL", "-"),
+  col_names = c("account", rep("x", 6L), 
+                "total_bill_2016", "x", "x",
+                "ever_paid_jul16", rep("x", 13L)),
+  col_types = abbr_to_colClass("tbtbtbb",
+                               "1612194"))
+
+setDT(followup)
+
 ##Quilting time!
 ### Framework:
 ###  I  III IV V  VII
@@ -123,7 +138,8 @@ setnames(opa_bg, c("opa_no", "assessed_mv"))
 ### (blocks stacked vertically will be stitched/appended,
 ###  and each column involves a merge to the previous column)
 bgvars <- c("opa_no", "owner1", "total_due", "rand_id")
-properties <-
+
+properties <- 
   rbind(main_jul, holdout_jul
         )[full_sep, on = "opa_no"
           ][full_dec, on = "opa_no"
@@ -135,6 +151,10 @@ properties <-
               ][!is.na(treat15)]
 
 properties[opa_bg, assessed_mv := as.numeric(i.assessed_mv), on = "opa_no"]
+
+#7 properties were dissolved between 2015 & 2016; exclude those
+properties[followup[total_bill_2016 != "Consolidation/Subdivision"], 
+           ever_paid_jul16 := i.ever_paid_jul16 == "Y", on = "account"]
 
 ##Data Clean-up
 ###Account ID with extra whitespace
@@ -172,6 +192,7 @@ owners <-
                ever_paid_jul = any(ever_paid_jul),
                ever_paid_sep = any(ever_paid_sep),
                ever_paid_dec = any(ever_paid_dec),
+               ever_paid_jul16 = any(ever_paid_jul16),
                paid_full_jul = all(paid_full_jul),
                paid_full_sep = all(paid_full_sep),
                paid_full_dec = all(paid_full_dec),

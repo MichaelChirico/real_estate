@@ -36,66 +36,6 @@ owners[ , treat8 := factor(treat8, c("Holdout", "Control", "Amenities", "Moral",
 owners[ , treat7 := factor(treat7, c("Control", "Amenities", "Moral", 
                                      "Duty", "Peer", "Lien", "Sheriff"))]
 
-properties <- fread(wds["data"] %+% "round_two_analysis_properties.csv")
-
-## Payments data
-payments <- setDT(readxl::read_excel(
-  wds["data"] %+% 
-    "req20150709_PennLetterExperiment (December 2015 update) v2.xlsx",
-  sheet = "PAYMENT DETAILS", skip = 1L,
-  col_names = c("account","period","valid","past_due",
-                "principal","total_paid"),
-  col_types = abbr_to_colClass("tn", "15"))
-  )[ , c("period","valid") :=
-      lapply(.(period,valid), as.Date,
-             origin = as.Date("1899-12-30"))
-    ][format(as.Date(valid) - past_due, "%Y") == 2015
-      ][ , account := gsub("\\s*", "", account)
-         ][properties, owner1 := i.owner1, on = "account"
-           ][ , .(period = max(period),
-                  past_due = min(past_due),
-                  principal = sum(principal),
-                  total_paid = sum(total_paid)),
-              by = .(owner1, valid)
-              ][is.na(valid), c("valid","total_paid") :=
-                  .(as.Date("2015-06-01"), 0L)
-                ][owners, treat8 := i.treat8, on = "owner1"]
-
-## 2016 Follow-Up Data (@ March)
-follow <- 
-  fread("head -n -3 " %+% 
-          shQuote(wds["data"] %+%
-                    paste("Real Estate Current Year",
-                          "Delinquency as of 04-06-2016.txt")),
-        sep = "|", colClasses = abbr_to_colClass("cnc","359"),
-        col.names = c("opa_no", "legal_name", "period",
-                      "principal", "interest", "penalty",
-                      "other_due", "total_due","address", 
-                      "city", "state", "zip5", "zip4",
-                      "bldg_code", "bldg_desc", 
-                      "bldg_grp1", "bldg_grp2")
-        )[properties, owner1 := i.owner1, on = "opa_no"
-          ][!is.na(owner1)][owners, treat8 := i.treat8, on = "owner1"]
-
-library(readxl)
-follow_jul <- read_excel(
-  wds["data"] %+%
-    "req20150709_PennLetterExperiment (July 2016 update).xlsx",
-  ##** NOTE: I'm using my own branch of readxl here which
-  ##   supports multiple NA values; installed via
-  ##   devtools::install_github("MichaelChirico/readxl@multiple_na") **
-  sheet = "DETAILS", skip = 1L, na = c("NULL", "-"),
-  col_names = c("x", "opa_no", rep("x", 7L),
-                "paid_full_jul16", "ever_paid_jul16", rep("x", 4L),
-                "total_due_jul16", "x", "total_paid_sep", rep("x", 5L)),
-  col_types = abbr_to_colClass("btbtbnbnb", "117241115"))
-
-setDT(follow_jul)
-
-properties[follow_jul, total_due_jul16 := i.total_due_jul16, on = "opa_no"]
-
-owners[properties, total_due_jul16 := sum(i.total_due_jul16), on = "owner1", by = .EACHI]
-
 # TABLE 1: Balance - Treated vs. Holdout Comparison (Unique Owners) ####
 lmfp <- function(formula){
   #extract F-statistic & DoF from LM call
@@ -331,6 +271,50 @@ print(xtable(
   caption = "Estimated Long Term Impact on Revenue",
   label = "lg_rev", align = "rlcc"),
   include.rownames = FALSE, comment = FALSE, caption.placement = "top")
+
+# TOTAL PAID @ 1 & 3 Months ####
+rename_coef <- function(obj){
+  nms <- names(obj$coefficients)
+  nms[nms == "(Intercept)"] <- "Holdout"
+  nms <- gsub("treat8", "", nms)
+  names(obj$coefficients) <- nms
+  obj
+}
+
+tbl <- capture.output(texreg(lapply(lapply(expression(
+  `One Month` = total_paid_jul, `Three Months` = total_paid_sep),
+  function(x) owners[(unq_own), lm(eval(x) ~ treat8)]), rename_coef),
+  stars = c(.01, .05, .1), include.rsquared = FALSE, caption.above = TRUE,
+  include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, label = "rev_short",
+  caption = "Short Term Linear Probability Model Estimates: Revenue",
+  custom.note = "%stars. Holdout values in levels; " %+% 
+    "remaining figures relative to this"))
+
+## Replace Holdout SEs with horizontal rule
+idx <- grep("^Holdout", tbl)
+
+tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
+
+tbl <- c(tbl[1L:idx], "\\hline", tbl[(idx + 2L):length(tbl)])
+
+cat(tbl, sep = "\n")
+
+# TOTAL PAID @ 6 Months ####
+tbl <- capture.output(texreg(lapply(lapply(
+  expression(`Total Paid` = total_paid_dec),
+  function(x) owners[(unq_own), lm(eval(x) ~ treat8)]), rename_coef),
+  stars = c(.01, .05, .1), include.rsquared = FALSE, caption.above = TRUE,
+  include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, label = "rev_long",
+  caption = "Long Term Linear Probability Model Estimates: Revenue"))
+
+idx <- grep("^Holdout", tbl)
+
+tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
+
+tbl[idx + 1L] <- "\\hline"
+
+cat(tbl, sep = "\n")
+
 
 # Further analysis ####
 
