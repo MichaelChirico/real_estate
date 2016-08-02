@@ -226,7 +226,7 @@ tbl <- c(tbl[1L:(idx + 1L)],
 
 cat(tbl, sep = "\n")
 
-# TABLE 7: Regression - Ever Paid/Paid Full @ 6 Months, LPM ####
+# TABLE 7: Regression - Ever Paid/Paid Full @ 6 & 12 Months, LPM ####
 rename_coef <- function(obj){
   nms <- names(obj$coefficients)
   nms[nms == "(Intercept)"] <- "Holdout"
@@ -236,26 +236,25 @@ rename_coef <- function(obj){
 }
 
 tbl <- capture.output(texreg(lapply(lapply(expression(
-  `Ever Paid` = ever_paid_dec, `Paid in Full` = paid_full_dec),
+  `Six Months` = ever_paid_dec, `Twelve Months` = ever_paid_jul16,
+  `Six Months` = paid_full_dec, `Twelve Months` = paid_full_jul16),
   function(x) owners[(unq_own), lm(I(100 * eval(x)) ~ treat8)]), rename_coef),
   stars = c(.01, .05, .1), include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, label = "lg_pc_lin",
-  caption = "Long Term Linear Probability Model Estimates"))
+  caption = "Long Term Linear Probability Model Estimates",
+  custom.note = "%stars. Holdout values in levels; " %+% 
+    "remaining figures relative to this"))
 
+## Replace Holdout SEs with horizontal rule, add header for EP vs. PF
 idx <- grep("^Holdout", tbl)
 
 tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
 
-tbl[c(idx - 1L, idx)] <- tbl[c(idx, idx - 1L)]
-
-idx <- grep("^\\\\end\\{tabular\\}", tbl)
-
-tbl[idx - 1L] <- tbl[idx - 1L] %+% " \\\\"
-
-tbl <- c(tbl[1L:(idx - 1L)],
-         "\\multicolumn{3}{l}{\\scriptsize{" %+% 
-           "Holdout values in levels; remaining figures relative to this}}",
-         tbl[idx:length(tbl)])
+tbl <- c(tbl[1L:(idx - 3L)],
+         " & \\multicolumn{2}{c}{Ever Paid} & " %+% 
+           "\\multicolumn{2}{c}{Paid in Full} \\\\",
+         tbl[c(idx - 2L, idx)],
+         "\\hline", tbl[(idx + 1L):length(tbl)])
 
 cat(tbl, sep = "\n")
 
@@ -271,87 +270,3 @@ print(xtable(
   caption = "Estimated Long Term Impact on Revenue",
   label = "lg_rev", align = "rlcc"),
   include.rownames = FALSE, comment = FALSE, caption.placement = "top")
-
-# TOTAL PAID @ 1 & 3 Months ####
-rename_coef <- function(obj){
-  nms <- names(obj$coefficients)
-  nms[nms == "(Intercept)"] <- "Holdout"
-  nms <- gsub("treat8", "", nms)
-  names(obj$coefficients) <- nms
-  obj
-}
-
-tbl <- capture.output(texreg(lapply(lapply(expression(
-  `One Month` = total_paid_jul, `Three Months` = total_paid_sep),
-  function(x) owners[(unq_own), lm(eval(x) ~ treat8)]), rename_coef),
-  stars = c(.01, .05, .1), include.rsquared = FALSE, caption.above = TRUE,
-  include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, label = "rev_short",
-  caption = "Short Term Linear Probability Model Estimates: Revenue",
-  custom.note = "%stars. Holdout values in levels; " %+% 
-    "remaining figures relative to this"))
-
-## Replace Holdout SEs with horizontal rule
-idx <- grep("^Holdout", tbl)
-
-tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
-
-tbl <- c(tbl[1L:idx], "\\hline", tbl[(idx + 2L):length(tbl)])
-
-cat(tbl, sep = "\n")
-
-# TOTAL PAID @ 6 Months ####
-tbl <- capture.output(texreg(lapply(lapply(
-  expression(`Total Paid` = total_paid_dec),
-  function(x) owners[(unq_own), lm(eval(x) ~ treat8)]), rename_coef),
-  stars = c(.01, .05, .1), include.rsquared = FALSE, caption.above = TRUE,
-  include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, label = "rev_long",
-  caption = "Long Term Linear Probability Model Estimates: Revenue"))
-
-idx <- grep("^Holdout", tbl)
-
-tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
-
-tbl[idx + 1L] <- "\\hline"
-
-cat(tbl, sep = "\n")
-
-
-# Further analysis ####
-
-## Alternative Ever Paid: @ August 10th
-texreg(lapply(D("2015-07-22", "2015-08-10", "2015-09-24"),
-              function(dd){
-                #will throw a warning on the first
-                #  pass of the lapply loop
-                owners[ , ever_paid_temp := NULL]
-                owners[payments[valid <= dd, sum(total_paid), 
-                                by = owner1],
-                       ever_paid_temp := i.V1 > 0, on = "owner1"]
-                owners[is.na(ever_paid_temp), ever_paid_temp := FALSE]
-                x <- owners[(unq_own), lm(ever_paid_temp ~ treat8)]
-                names(x$coefficients) <- 
-                  gsub("treat8", "", names(x$coefficients))
-                names(x$coefficients)[1L] <- "Holdout"; x}),
-  custom.model.names = c("One Month", "Aug 10", "Three Months"),
-  caption.above = TRUE, float.pos = "htbp",
-  caption = "Ever Paid, Using Payments File",
-  include.rsquared = FALSE, include.adjrs = FALSE,
-  include.rmse = FALSE, stars = c(.01, .05, .1),
-  label = "reg:ep_pmts")
-
-## 2016 Follow-Up (@ March)
-owners[follow, total_due_2016 := i.total_due, on = "owner1"]
-owners[ , paid_full_2016 := is.na(total_due_2016) | 
-          total_due_2016 < .1]
-
-texreg(lapply(expression((unq_own), (unq_own & ever_paid_dec)),
-              function(y){
-                x <- owners[eval(y), lm(paid_full_2016 ~ treat8)]
-                names(x$coefficients) <- 
-                  gsub("treat8", "", names(x$coefficients))
-                names(x$coefficients)[1L] <- "Holdout"; x}),
-       include.rsquared = FALSE, include.rmse = FALSE,
-       include.adjrs = FALSE, float.pos = "htbp",
-       custom.model.names = c("Full Sample", "Among 2015 Ever-Paid"),
-       stars = c(.01, .05, .1), caption.above = TRUE,
-       caption = "Effects on 2016 Full Payment", label = "reg:2016_pf")

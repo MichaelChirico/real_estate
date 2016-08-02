@@ -1,4 +1,4 @@
-Package info for code run on 2016-08-02 10:44:24:
+Package info for code run on 2016-08-02 11:25:45:
 R version 3.2.4 (2016-03-10)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Ubuntu 14.04.3 LTS
@@ -12,12 +12,15 @@ locale:
 [11] LC_MEASUREMENT=en_US.UTF-8    LC_IDENTIFICATION=en_US.UTF-8
 
 attached base packages:
-[1] stats     graphics  grDevices utils     datasets  methods  
-[7] base     
+[1] parallel  stats     graphics  grDevices utils     datasets 
+[7] methods   base     
 
 other attached packages:
-[1] xlsx_0.5.7        xlsxjars_0.6.1    rJava_0.9-7      
-[4] readxl_0.1.0.9000 data.table_1.9.7  funchir_0.1.2    
+ [1] texreg_1.35       xtable_1.8-2      lmtest_0.9-34    
+ [4] zoo_1.7-12        xlsx_0.5.7        xlsxjars_0.6.1   
+ [7] rJava_0.9-7       readxl_0.1.0.9000 data.table_1.9.7 
+[10] funchir_0.1.2    
 
 loaded via a namespace (and not attached):
 [1] rsconnect_0.4.1.11 tools_3.2.4        Rcpp_0.12.5       
+[4] grid_3.2.4         lattice_0.20-33   

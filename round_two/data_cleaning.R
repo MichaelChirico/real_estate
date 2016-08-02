@@ -124,10 +124,10 @@ followup <- read_excel(
     "delinquency, payments, and agreements).xlsx",
   sheet = "DETAILS", skip = 1L, na = c("NULL", "-"),
   col_names = c("account", rep("x", 6L), 
-                "total_bill_2016", "x", "x",
+                "total_bill_2016", "x", "paid_full_jul16",
                 "ever_paid_jul16", rep("x", 13L)),
   col_types = abbr_to_colClass("tbtbtbb",
-                               "1612194"))
+                               "1611294"))
 
 setDT(followup)
 
@@ -154,20 +154,19 @@ properties[opa_bg, assessed_mv := as.numeric(i.assessed_mv), on = "opa_no"]
 
 #7 properties were dissolved between 2015 & 2016; exclude those
 properties[followup[total_bill_2016 != "Consolidation/Subdivision"], 
-           ever_paid_jul16 := i.ever_paid_jul16 == "Y", on = "account"]
+           `:=`(ever_paid_jul16 = i.ever_paid_jul16,
+                paid_full_jul16 = i.paid_full_jul16), on = "account"]
 
 ##Data Clean-up
 ###Account ID with extra whitespace
 properties[ , account := gsub("\\s", "", account)]
 ###Re-set indicators as T/F instead of Y/N
-inds <- c("paid_full_jul", "ever_paid_jul",
-          "paid_full_sep", "ever_paid_sep",
-          "paid_full_dec", "ever_paid_dec")
-properties[ , (inds) := lapply(.SD, function(x) x == "Y"), .SDcols = inds]
+ep <- "ever_paid_" %+% c("jul", "sep", "dec", "jul16")
+properties[ , (ep) := lapply(.SD, `==`, "Y"), .SDcols = ep]
 ###Paid Full actually stored opposite because 
-###  question in data is: "Does property have a balance?"
-pf <- "paid_full_" %+% c("jul", "sep", "dec")
-properties[ , (pf) := lapply(.SD, `!`), .SDcols = pf]
+###  question in data is: "Does this property have a balance?"
+pf <- "paid_full_" %+% c("jul", "sep", "dec", "jul16")
+properties[ , (pf) := lapply(.SD, `==`, "N"), .SDcols = pf]
 
 ##Define some flags
 ### Is this a holdout property?
@@ -196,6 +195,7 @@ owners <-
                paid_full_jul = all(paid_full_jul),
                paid_full_sep = all(paid_full_sep),
                paid_full_dec = all(paid_full_dec),
+               paid_full_jul16 = all(paid_full_jul16),
                total_paid_jul = sum(total_paid_jul),
                total_paid_sep = sum(total_paid_sep),
                total_paid_dec = sum(total_paid_dec),
