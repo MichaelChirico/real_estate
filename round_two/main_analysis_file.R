@@ -12,47 +12,66 @@ gc()
 ###  Available on GitHub @ MichaelChirico/funchir
 library(funchir)
 library(data.table) #for everything
-library(parallel) #for bootstrap
-library(lmtest) #for standard errors
 library(xtable) #for table output
 library(texreg) #for regression output
 
 ##Directories
 setwd(mn <- "~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 wds <- c(log = mn %+% "logs/round_two/",
-         data = "/media/data_drive/real_estate/")
+         data = "/media/data_drive/real_estate/"); rm(mn)
 write.packages(wds["log"] %+% "analysis_session.txt")
+
+##Specialized Functions
+###Get the p-value on the full-regression F-test of an OLS call
+lmfp <- function(formula){rename_coef <- function(obj){
+  nms <- names(obj$coefficients)
+  nms[nms == "(Intercept)"] <- "Control"
+  nms <- gsub("treat7", "", nms)
+  names(obj$coefficients) <- nms
+  obj
+}
+  #extract F-statistic & Degrees of Freedom from LM call
+  mdf <- summary.lm(do.call("lm", list(formula = formula)))$fstatistic
+  #copied (ported) from print.summary.lm
+  unname(pf(mdf[1L], df1 = mdf[2L], df2 = mdf[3L], lower.tail = FALSE))
+}
+
+###Round a p-value to two digits (we only use two-digit rounding
+###  in this paper), append with a TeX-marked-up label
+p_tex <- function(x) c("$p$-value", round(x, 2L))
+
+###Specially tailor the lm object for pretty printing
+rename_coef <- function(obj, nn){
+  nms <- names(obj$coefficients)
+  nms[nms == "(Intercept)"] <- if (nn == 7) "Control" else "Holdout"
+  #treatment dummies take the form treat8Control, etc -- 
+  #  eliminate the treat8 part for digestibility
+  nms <- gsub("treat" %+% nn, "", nms)
+  names(obj$coefficients) <- nms
+  obj
+}
 
 #Data import
 #  Importing directly from cleaned analysis files created with data_cleaning.R.
-
 owners <- fread(wds["data"] %+% "round_two_analysis_owners.csv"
                 #exclude top 2 randomization blocks
                 )[(holdout | rand_id > 2)]
 
-##set factor levels (thereby, reference group)
+##set factor levels (and, thereby, the reference group)
 owners[ , treat8 := factor(treat8, c("Holdout", "Control", "Amenities", "Moral", 
                                      "Duty", "Peer", "Lien", "Sheriff"))]
 owners[ , treat7 := factor(treat7, c("Control", "Amenities", "Moral", 
                                      "Duty", "Peer", "Lien", "Sheriff"))]
 
 # TABLE 1: Balance - Treated vs. Holdout Comparison (Unique Owners) ####
-lmfp <- function(formula){
-  #extract F-statistic & DoF from LM call
-  mdf <- summary(do.call("lm", list(formula = formula)))$fstatistic
-  #copied (ported) from print.summary.lm
-  unname(pf(mdf[1L], mdf[2L], mdf[3L], lower.tail = FALSE))
-}
-
 hold_bal <- 
-  cbind(gsub("$", "\\$", t(
+  cbind(t(
     owners[(unq_own), 
-           .(`Amount Due (June)` = dol.form(mean(total_due)),
+           .(`Amount Due (June)` = dol.form(mean(total_due), tex = TRUE),
              `Assessed Property Value` = 
                dol.form(mean(assessed_mv, na.rm = TRUE)),
              `\\# Owners` = prettyNum(.N, big.mark = ",")),
-           by = .(Variable = c("Treated", "Holdout"
-                               )[holdout + 1L])]), fixed = TRUE),
+           by = .(Variable = c("Treated", "Holdout")[holdout + 1L])]),
     c("$p$-value", 
       `Amount Due (June)` = 
         owners[(unq_own), round(lmfp(total_due ~ holdout), 2L)],
@@ -66,8 +85,8 @@ print(xtable(hold_bal, caption = "Balance between Holdout and Treated Samples",
       sanitize.text.function = identity, hline.after = c(0L, 4L))
 
 # TABLE 2: Balance  - Comparison by Treatment, Full & Unique Owner Sample ####
-p_tex <- function(x) c("$p$-value", round(x, 2L))
-
+##Print Table Header
+### *surround with {} so the table all prints together*
 {cat("\\begin{sidewaystable}[ht]",
     "\\centering", 
     "\\caption{Balance on Observables}",
@@ -76,6 +95,7 @@ p_tex <- function(x) c("$p$-value", round(x, 2L))
     "\\hline",
     "\\multicolumn{9}{c}{Unique Owners} \\\\", sep = "\n")
 
+##Top Section: Unique Owners Only
 print.xtable(xtable(cbind(t(
   owners[(!holdout & unq_own),
          .(`Amount Due (June)` = dol.form(mean(total_due), tex = TRUE),
@@ -90,9 +110,14 @@ print.xtable(xtable(cbind(t(
     `\\# Owners` =
       owners[(!holdout & unq_own), chisq.test(table(treat7))$p.value])))),
   include.colnames = FALSE, comment = FALSE, 
+  #exclude table header since we're combining two tables;
+  #  setting sanitize.text.function prevents xtable from
+  #  commenting out the math markup (especially $). This
+  #  is also why we use tex = TRUE for dol.form.
   sanitize.text.function = identity, only.contents = TRUE,
   floating = TRUE, hline.after = c(0L, 1L))
 
+##Bottom Section: Exclude Holdout Only
 cat("\\hline",
     "\\multicolumn{9}{c}{Unique and Multiple Owners} \\\\", sep = "\n")
 
@@ -129,25 +154,21 @@ cat("\\hline",
     "\\end{sidewaystable}", sep = "\n")}
 
 # TABLE 3: Regression - Ever Paid/Paid Full @ 1 & 3 Months, LPM ####
-rename_coef <- function(obj){
-  nms <- names(obj$coefficients)
-  nms[nms == "(Intercept)"] <- "Holdout"
-  nms <- gsub("treat8", "", nms)
-  names(obj$coefficients) <- nms
-  obj
-}
-
 tbl <- capture.output(texreg(lapply(lapply(expression(
   `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
   `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
-  function(x) owners[(unq_own), lm(I(100 * eval(x)) ~ treat8)]), rename_coef),
-  stars = c(.01, .05, .1), include.rsquared = FALSE, caption.above = TRUE,
+  #Multiply indicator by 100 so the units are in %ages already
+  function(x) owners[(unq_own), lm(I(100 * eval(x)) ~ treat8)]), 
+  rename_coef, nn = 8), stars = c(.01, .05, .1), 
+  include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, label = "pc_lin",
   caption = "Short Term Linear Probability Model Estimates",
   custom.note = "%stars. Holdout values in levels; " %+% 
     "remaining figures relative to this"))
 
-## Replace Holdout SEs with horizontal rule, add header for EP vs. PF
+## Replace Holdout SEs with horizontal rule, 
+##   eliminate significance for intercept,
+##   add header for Ever Paid vs. Paid in Full
 idx <- grep("^Holdout", tbl)
 
 tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
@@ -165,8 +186,10 @@ tbl <- capture.output(texreg(lapply(lapply(expression(
   `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
   `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
   function(x) 
-    owners[(unq_own), glm(eval(x) ~ treat8, family = binomial)]), rename_coef),
-  stars = c(.01, .05, .1), include.rsquared = FALSE, caption.above = TRUE,
+    #default value of the link function for binomial is logistic
+    owners[(unq_own), glm(eval(x) ~ treat8, family = binomial)]), 
+  rename_coef, nn = 8), stars = c(.01, .05, .1),
+  include.rsquared = FALSE, caption.above = TRUE,
   include.aic = FALSE, include.bic = FALSE, include.deviance = FALSE,
   omit.coef = "Holdout", digits = 2L, label = "sh_logit",
   caption = "Short Term Logistic Model Estimates"))
@@ -182,10 +205,13 @@ cat(tbl, sep = "\n")
 
 # TABLE 5: Revenue - Per-Letter Impact @ 3 Months ####
 print(xtable(
+  #Use keyby to make sure the output is sorted and Holdout comes first
   owners[(unq_own), .(.N, mean(ever_paid_sep)), keyby = treat8
+         #Express relative to Holdout
          ][ , .(Treatment = treat8[-1L], 
                 `Impact Per Letter` = 
                   dol.form(x <-  (V2[-1L] - V2[1L]) * 
+                             #Get median positive payment by December
                              owners[(unq_own & total_paid_dec > 0), 
                                     median(total_paid_dec)],  dig = 2L), 
                 `Total Impact` = dol.form(N[-1L] * x))],
@@ -194,14 +220,6 @@ print(xtable(
   include.rownames = FALSE, comment = FALSE, caption.placement = "top")
 
 # TABLE 6: Regression - Ever Paid @ 1 & 3 Months, Logistic, vs. Control ####
-rename_coef <- function(obj){
-  nms <- names(obj$coefficients)
-  nms[nms == "(Intercept)"] <- "Control"
-  nms <- gsub("treat7", "", nms)
-  names(obj$coefficients) <- nms
-  obj
-}
-
 tbl <- capture.output(texreg(lapply(c(lapply(expression(
   `One Month` = ever_paid_jul,
   `Three Months` = ever_paid_sep),
@@ -211,8 +229,9 @@ tbl <- capture.output(texreg(lapply(c(lapply(expression(
                     `Three Months` = ever_paid_sep),
          function(x) 
            owners[(!holdout & unq_own), 
-                  glm(eval(x) ~ treat7, family = binomial)])), rename_coef),
-  omit.coef = "Control", include.aic = FALSE, include.bic = FALSE,
+                  glm(eval(x) ~ treat7, family = binomial)])),
+  rename_coef, nn = 7), omit.coef = "Control", 
+  include.aic = FALSE, include.bic = FALSE,
   include.deviance = FALSE, stars = c(.001, .05, .1),
   caption = "Robustness Analysis: Multiple Owners",
   label = "sh_logit_rob", caption.above = TRUE))
@@ -227,19 +246,12 @@ tbl <- c(tbl[1L:(idx + 1L)],
 cat(tbl, sep = "\n")
 
 # TABLE 7: Regression - Ever Paid/Paid Full @ 6 & 12 Months, LPM ####
-rename_coef <- function(obj){
-  nms <- names(obj$coefficients)
-  nms[nms == "(Intercept)"] <- "Holdout"
-  nms <- gsub("treat8", "", nms)
-  names(obj$coefficients) <- nms
-  obj
-}
-
 tbl <- capture.output(texreg(lapply(lapply(expression(
   `Six Months` = ever_paid_dec, `Twelve Months` = ever_paid_jul16,
   `Six Months` = paid_full_dec, `Twelve Months` = paid_full_jul16),
-  function(x) owners[(unq_own), lm(I(100 * eval(x)) ~ treat8)]), rename_coef),
-  stars = c(.01, .05, .1), include.rsquared = FALSE, caption.above = TRUE,
+  function(x) owners[(unq_own), lm(I(100 * eval(x)) ~ treat8)]),
+  rename_coef, nn = 8), stars = c(.01, .05, .1), 
+  include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, label = "lg_pc_lin",
   caption = "Long Term Linear Probability Model Estimates",
   custom.note = "%stars. Holdout values in levels; " %+% 

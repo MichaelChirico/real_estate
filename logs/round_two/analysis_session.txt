@@ -1,4 +1,4 @@
-Package info for code run on 2016-08-02 11:26:06:
+Package info for code run on 2016-08-02 14:22:54:
 R version 3.2.4 (2016-03-10)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Ubuntu 14.04.3 LTS
@@ -22,5 +22,8 @@ other attached packages:
 [10] funchir_0.1.2    
 
 loaded via a namespace (and not attached):
-[1] rsconnect_0.4.1.11 tools_3.2.4        Rcpp_0.12.5       
-[4] grid_3.2.4         lattice_0.20-33   
+ [1] Rcpp_0.12.5        lattice_0.20-33    digest_0.6.9      
+ [4] R6_2.1.2           grid_3.2.4         git2r_0.10.1      
+ [7] httr_1.1.0         curl_0.9.7         xml2_0.1.2        
+[10] devtools_1.8.0     tools_3.2.4        rsconnect_0.4.1.11
+[13] rversions_1.0.1    memoise_1.0.0     

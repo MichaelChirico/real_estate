@@ -30,27 +30,25 @@ trt.nms8 <- c("Holdout", trt.nms)
 ## * total_paid is the accrual between June 1, 2015 and July 22, 2015
 main_jul <- read.xlsx3(
   wds["data"] %+% "Payments and Balance Penn Letter Experiment_150727.xlsx",
-  colIndex = c(2L, 5L, 8L, 9L, 15L),
-  sheetName = "DETAILS", header = TRUE, startRow = 9L,
-  stringsAsFactors = FALSE, colClasses = abbr_to_colClass("cn", "41"))
+  colIndex = c(2L, 5L, 8L, 9L), sheetName = "DETAILS", 
+  header = TRUE, startRow = 9L, stringsAsFactors = FALSE, 
+  colClasses = "character")
 
 setDT(main_jul)
 
-setnames(main_jul, c("opa_no", "treat15", "paid_full_jul", 
-                     "ever_paid_jul", "total_paid_jul"))
+setnames(main_jul, c("opa_no", "treat15", "paid_full_jul", "ever_paid_jul"))
 
 ##Block II: Holdout Sample, July Cross-Section
 holdout_jul <- read.xlsx3(
   wds["data"] %+% "req20150709_PennLetterExperiment_"%+%
     "v2_Commissioners Control Details.xlsx",
-  colIndex = c(2L, 8L, 9L, 14L),
-  sheetName = "DETAILS", header = TRUE, startRow = 9L,
-  stringsAsFactors = FALSE, colClasses = abbr_to_colClass("cn", "31"))
+  colIndex = c(2L, 8L, 9L), sheetName = "DETAILS",
+  header = TRUE, startRow = 9L, stringsAsFactors = FALSE, 
+  colClasses = "character")
 
 setDT(holdout_jul)
 
-setnames(holdout_jul, 
-         c("opa_no", "paid_full_jul", "ever_paid_jul", "total_paid_jul"))
+setnames(holdout_jul, c("opa_no", "paid_full_jul", "ever_paid_jul"))
 
 holdout_jul[ , treat15 := "Holdout"]
 
@@ -71,10 +69,9 @@ full_sep <- read_excel(
   ##   supports multiple NA values; installed via
   ##   devtools::install_github("MichaelChirico/readxl@multiple_na") **
   sheet = "DETAILS", skip = 7L, na = c("NULL", "-"),
-  col_names = c("x", "opa_no", rep("x", 9L),
-                "paid_full_sep", "ever_paid_sep", rep("x", 6L),
-                "total_paid_sep", rep("x", 5L)),
-  col_types = abbr_to_colClass("btbtbnb", "1192615"))
+  col_names = c("x", "opa_no", rep("x", 9L), "paid_full_sep",
+                "ever_paid_sep", rep("x", 12L)),
+  col_types = abbr_to_colClass("btbtbb", "119293"))
 
 setDT(full_sep)
 
@@ -117,7 +114,6 @@ opa_bg <- fread(wds["data"] %+% "prop2015.txt", select = c("PARCEL", "MV"))
 setnames(opa_bg, c("opa_no", "assessed_mv"))
 
 ###Block VIII: One-Year Follow-Up Data
-
 followup <- read_excel(
   wds["data"] %+%
     "req20150709_PennLetterExperiment (July 2016 update with 2016 " %+% 
@@ -196,8 +192,6 @@ owners <-
                paid_full_sep = all(paid_full_sep),
                paid_full_dec = all(paid_full_dec),
                paid_full_jul16 = all(paid_full_jul16),
-               total_paid_jul = sum(total_paid_jul),
-               total_paid_sep = sum(total_paid_sep),
                total_paid_dec = sum(total_paid_dec),
                total_due = sum(total_due),
                assessed_mv = sum(assessed_mv),
@@ -210,4 +204,3 @@ owners[ , unq_own := N == 1]
 
 ### Write output
 fwrite(owners, wds["data"] %+% "round_two_analysis_owners.csv", quote = TRUE)
-fwrite(properties, wds["data"] %+% "round_two_analysis_properties.csv", quote = TRUE)
