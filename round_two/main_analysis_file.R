@@ -222,8 +222,8 @@ cat(tbl, sep = "\n")
 
 # TABLE 6: Regression - Ever Paid/Paid Full @ 6 & 12 Months, LPM ####
 tbl <- capture.output(texreg(lapply(lapply(expression(
-  `Six Months` = ever_paid_dec, `Twelve Months` = ever_paid_jul16,
-  `Six Months` = paid_full_dec, `Twelve Months` = paid_full_jul16),
+  `Six Months` = ever_paid_dec, `Tax Year 2016` = ever_paid_jul16,
+  `Six Months` = paid_full_dec, `Tax Year 2016` = paid_full_jul16),
   function(x) owners[(unq_own), lm(I(100 * eval(x)) ~ treat8)]),
   rename_coef, nn = 8), stars = c(.01, .05, .1), 
   include.rsquared = FALSE, caption.above = TRUE,
@@ -254,6 +254,6 @@ print(xtable(
                              owners[(unq_own & total_paid_dec > 0), 
                                     median(total_paid_dec)],  dig = 2L), 
                 `Total Impact` = dol.form(N[-1L] * x))],
-  caption = "Estimated Long Term Impact on Revenue",
+  caption = "Estimated Six-Month Impact on Revenue",
   label = "lg_rev", align = "rlcc"),
   include.rownames = FALSE, comment = FALSE, caption.placement = "top")
