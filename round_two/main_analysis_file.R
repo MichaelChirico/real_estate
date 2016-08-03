@@ -181,29 +181,7 @@ tbl <- c(tbl[1L:(idx - 3L)],
 
 cat(tbl, sep = "\n")
 
-# TABLE 4: Regression - Ever Paid/Paid Full @ 1 & 3 Months, Logistic ####
-tbl <- capture.output(texreg(lapply(lapply(expression(
-  `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
-  `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
-  function(x) 
-    #default value of the link function for binomial is logistic
-    owners[(unq_own), glm(eval(x) ~ treat8, family = binomial)]), 
-  rename_coef, nn = 8), stars = c(.01, .05, .1),
-  include.rsquared = FALSE, caption.above = TRUE,
-  include.aic = FALSE, include.bic = FALSE, include.deviance = FALSE,
-  omit.coef = "Holdout", digits = 2L, label = "sh_logit",
-  caption = "Short Term Logistic Model Estimates"))
-
-idx <- grep("^\\\\begin\\{tabular\\}", tbl)
-
-tbl <- c(tbl[1L:(idx + 1L)], 
-         " & \\multicolumn{2}{c}{Ever Paid} & " %+% 
-           "\\multicolumn{2}{c}{Paid in Full} \\\\",
-         tbl[(idx + 2L):length(tbl)])
-
-cat(tbl, sep = "\n")
-
-# TABLE 5: Revenue - Per-Letter Impact @ 3 Months ####
+# TABLE 4: Revenue - Per-Letter Impact @ 3 Months ####
 print(xtable(
   #Use keyby to make sure the output is sorted and Holdout comes first
   owners[(unq_own), .(.N, mean(ever_paid_sep)), keyby = treat8
@@ -219,22 +197,19 @@ print(xtable(
   label = "sh_rev", align = "rlcc"),
   include.rownames = FALSE, comment = FALSE, caption.placement = "top")
 
-# TABLE 6: Regression - Ever Paid @ 1 & 3 Months, Logistic, vs. Control ####
+# TABLE 5: Regression - Ever Paid @ 1 & 3 Months, LPM, vs. Control ####
 tbl <- capture.output(texreg(lapply(c(lapply(expression(
-  `One Month` = ever_paid_jul,
+  `One Month` = ever_paid_jul, 
   `Three Months` = ever_paid_sep),
-  function(x) 
-    owners[(!holdout), glm(eval(x) ~ treat7, family = binomial)]),
-  lapply(expression(`One Month` = ever_paid_jul,
+  function(x) owners[(!holdout), lm(eval(x) ~ treat7)]),
+  lapply(expression(`One Month` = ever_paid_jul, 
                     `Three Months` = ever_paid_sep),
-         function(x) 
-           owners[(!holdout & unq_own), 
-                  glm(eval(x) ~ treat7, family = binomial)])),
+         function(x) owners[(!holdout & unq_own), lm(eval(x) ~ treat7)])),
   rename_coef, nn = 7), omit.coef = "Control", 
-  include.aic = FALSE, include.bic = FALSE,
-  include.deviance = FALSE, stars = c(.001, .05, .1),
+  include.rsquared = FALSE, include.rmse = FALSE,
+  include.adjrs = FALSE, stars = c(.001, .05, .1),
   caption = "Robustness Analysis: Multiple Owners",
-  label = "sh_logit_rob", caption.above = TRUE))
+  label = "sh_lpm_rob", caption.above = TRUE))
 
 idx <- grep("^\\\\begin\\{tabular\\}", tbl)
 
@@ -245,7 +220,7 @@ tbl <- c(tbl[1L:(idx + 1L)],
 
 cat(tbl, sep = "\n")
 
-# TABLE 7: Regression - Ever Paid/Paid Full @ 6 & 12 Months, LPM ####
+# TABLE 6: Regression - Ever Paid/Paid Full @ 6 & 12 Months, LPM ####
 tbl <- capture.output(texreg(lapply(lapply(expression(
   `Six Months` = ever_paid_dec, `Twelve Months` = ever_paid_jul16,
   `Six Months` = paid_full_dec, `Twelve Months` = paid_full_jul16),
@@ -270,7 +245,7 @@ tbl <- c(tbl[1L:(idx - 3L)],
 
 cat(tbl, sep = "\n")
 
-# TABLE 8: Revenue - Per-Letter Impact @ 6 Months ####
+# TABLE 7: Revenue - Per-Letter Impact @ 6 Months ####
 print(xtable(
   owners[(unq_own), .(.N, mean(ever_paid_dec)), keyby = treat8
          ][ , .(Treatment = treat8[-1L], 
