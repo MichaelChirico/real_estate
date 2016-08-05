@@ -257,3 +257,63 @@ print(xtable(
   caption = "Estimated Six-Month Impact on Revenue",
   label = "lg_rev", align = "rlcc"),
   include.rownames = FALSE, comment = FALSE, caption.placement = "top")
+
+####ADDENDUM
+## Cumulative Partial Participation
+### get range of dates for day-by-day averages
+dt.rng <- owners[(!holdout & unq_own), {
+  rng <- range(earliest_pmt_jul16, na.rm = TRUE)
+  seq(from = rng[1L], to = rng[2L], by = "day")}]
+#For pretty printing, get once/week subset
+dt.rng2 <- dt.rng[seq(1L, length(dt.rng), length.out = 7L)]
+
+date.dt <- 
+  #not all treatments saw activity on each day,
+  #  so we'll have to "fill-in-the-blanks" with this
+  CJ(treat8 = owners[ , levels(treat8)], date = dt.rng,
+     unique = TRUE, sorted = FALSE)
+cum_haz <- 
+  owners[(unq_own),
+         #total entrants by day, treatment
+         sum(ever_paid_jul16) + 0., #convert to numeric
+         keyby = .(treat8, earliest_pmt_jul16)
+         #running total of entrants; take care to eliminate NAs
+         ][ , .(ep = cumsum(V1[idx <- !is.na(earliest_pmt_jul16)]),
+                date = earliest_pmt_jul16[idx]), by = treat8
+            #merge to get the denominator
+            ][owners[(unq_own), .N, treat8],
+              ep := ep/i.N, on = "treat8"
+              ][date.dt, on = c("treat8", "date"), roll = TRUE
+                #express relative to holdout
+                ][is.na(ep), ep := 0
+                  ][ , .(treat8 = treat8[idx <- treat8 != "Holdout"],
+                         ep = ep[idx] - ep[!idx]), by = date]
+
+### plot
+get.col <- function(st){
+  cols <- c(Big = "blue", Small = "red", Control = "blue", 
+            Amenities = "yellow", Moral = "cyan", 
+            Duty = "darkgreen", Lien = "red", Sheriff = "orchid",
+            Peer = "orange", Holdout = "darkgray")
+  cols[gsub("\\s.*", "", as.character(st))]
+}
+dcast(cum_haz, date ~ treat8, value.var = "ep")[ , {
+  matplot(date, do.call("cbind", 
+                        mget(nms <- 
+                               owners[(!holdout), levels(factor(treat8))])),
+          type = "l", lty = 1L, col = get.col(nms),
+          xaxt = "n", lwd = 3L, las = 2L,
+          ylab = "Probability Ever Paid vs. Holdout")
+    axis(side = 1L, at = dt.rng2, labels = format(dt.rng2, "%b %d"))
+    abline(h = 0, col = "black", lwd = 2L)
+    title("Cumulative Partial Participation\n" %+%
+            "vs. Holdout (Unique Owners Only)")}]
+
+owners[(unq_own), .N, keyby = earliest_pmt_jul16
+       ][-1L][ , .(earliest_pmt_jul16, cumsum(N))
+               ][ , plot(earliest_pmt_jul16, V2, type = "l", lty = 1L,
+                         lwd = 3L, xlab = "Date", ylab = "# Participants",
+                         main = "Partial Participation for the 2016 Tax Year",
+                         xaxt = "n")]
+axis(side = 1L, at = dt.rng2, labels = as.character(dt.rng2))
+abline(v = D("2016-03-01"), lty = 2L, col = "red", lwd = 3L)

@@ -121,11 +121,15 @@ followup <- read_excel(
   sheet = "DETAILS", skip = 1L, na = c("NULL", "-"),
   col_names = c("account", rep("x", 6L), 
                 "total_bill_2016", "x", "paid_full_jul16",
-                "ever_paid_jul16", rep("x", 13L)),
-  col_types = abbr_to_colClass("tbtbtbb",
-                               "1611294"))
+                "ever_paid_jul16", rep("x", 6L),
+                "earliest_pmt_jul16", rep("x", 6L)),
+  col_types = abbr_to_colClass("tbtbtbnb",
+                               "16112616"))
 
 setDT(followup)
+
+followup[ , earliest_pmt_jul16 := 
+            as.Date(earliest_pmt_jul16, origin = D("1899-12-30"))]
 
 ##Quilting time!
 ### Framework:
@@ -151,7 +155,8 @@ properties[opa_bg, assessed_mv := as.numeric(i.assessed_mv), on = "opa_no"]
 #7 properties were dissolved between 2015 & 2016; exclude those
 properties[followup[total_bill_2016 != "Consolidation/Subdivision"], 
            `:=`(ever_paid_jul16 = i.ever_paid_jul16,
-                paid_full_jul16 = i.paid_full_jul16), on = "account"]
+                paid_full_jul16 = i.paid_full_jul16,
+                earliest_pmt_jul16 = i.earliest_pmt_jul16), on = "account"]
 
 ##Data Clean-up
 ###Account ID with extra whitespace
@@ -193,6 +198,9 @@ owners <-
                paid_full_dec = all(paid_full_dec),
                paid_full_jul16 = all(paid_full_jul16),
                total_paid_dec = sum(total_paid_dec),
+               earliest_pmt_jul16 = {
+                 if (all(is.na(earliest_pmt_jul16))) D(NA)
+                 else min(earliest_pmt_jul16, na.rm = TRUE)},
                total_due = sum(total_due),
                assessed_mv = sum(assessed_mv),
                flag_holdout_overlap =
