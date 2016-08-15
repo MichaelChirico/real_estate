@@ -18,13 +18,6 @@ wds <- c(data = "/media/data_drive/real_estate/",
          log = mn %+% "logs/round_two/")
 write.packages(wds["log"] %+% "cleaning_session.txt")
 
-#Specifying order/reference treatments for
-#  the 7- and 8-treatment groups
-#  (vs. Control and Holdout, resp.)
-trt.nms <- c("Control", "Amenities", "Moral", 
-             "Duty", "Peer", "Lien", "Sheriff")
-trt.nms8 <- c("Holdout", trt.nms)
-
 #Data Import ####
 ##Block I: Main Sample, July Cross-Section
 ## * total_paid is the accrual between June 1, 2015 and July 22, 2015
@@ -176,7 +169,16 @@ properties[ , holdout := treat15 == "Holdout"]
 properties[ , flag_holdout_overlap := any(treat15 == "Holdout") &&
               any(treat15 != "Holdout"), by = owner1]
 
-properties[ , treat8 := factor(gsub("_.*", "", treat15), trt.nms8)]
+rename <-
+  as.list(setNames(c("Holdout", "Control", "Amenities", "Moral", 
+                     "Duty", "Peer", "Lien", "Sheriff"),
+                   c("Holdout", "Control", "Neighborhood", "Community", 
+                     "Duty", "Peer", "Lien", "Sheriff")))
+
+properties[ , treat8 := factor(gsub("_.*", "", treat15), 
+                               unlist(rename))]
+levels(properties$treat8) <- rename
+
 properties[(!holdout), treat7 := factor(treat8)]
 
 ###Get owner-level version of data, keeping only key analysis variables
