@@ -9,6 +9,12 @@ gc()
 #Michael Chirico's function of convenience packages;
 #  install via devtools::install_github("MichaelChirico/funchir")
 library(funchir)
+#Version 1.9.7+ required for access to the fwrite function
+#  (speedy csv writing); for compatibility with data.table
+#  versions 1.9.6-, replace fwrite with write.csv from base R.
+#  To install the development version, run:
+#  install.packages("data.table", type = "source",
+#                   repos = "http://Rdatatable.github.io/data.table")
 library(data.table)
 library(readxl)
 library(xlsx)
@@ -58,10 +64,7 @@ holdout_jul[update_opas, opa_no := i.old, on = c(opa_no = "new")]
 full_sep <- read_excel(
   wds["data"] %+%
     "req20150709_PennLetterExperiment (September 2015 update) v2.xlsx",
-  ##** NOTE: I'm using my own branch of readxl here which
-  ##   supports multiple NA values; installed via
-  ##   devtools::install_github("MichaelChirico/readxl@multiple_na") **
-  sheet = "DETAILS", skip = 7L, na = c("NULL", "-"),
+  sheet = "DETAILS", skip = 7L, na = "-",
   col_names = c("x", "opa_no", rep("x", 9L), "paid_full_sep",
                 "ever_paid_sep", rep("x", 12L)),
   col_types = abbr_to_colClass("btbtbb", "119293"))
@@ -76,8 +79,7 @@ full_sep[update_opas, opa_no := i.old, on = c(opa_no = "new")]
 ##Block IV: Full Sample, December Cross-Section
 full_dec <- read_excel(
   wds["data"] %+% "req20150709_PennLetterExperiment (December 2015 update) v2.xlsx",
-  #See above about length-2 NA
-  sheet = "DETAILS", skip = 7L, na = c("NULL", "-"),
+  sheet = "DETAILS", skip = 7L, na = "-",
   col_names = c("account", "opa_no" , rep("x", 9L),
               "paid_full_dec", "ever_paid_dec", 
               rep("x", 6L), "total_paid_dec", rep("x", 5L)),
@@ -111,7 +113,7 @@ followup <- read_excel(
   wds["data"] %+%
     "req20150709_PennLetterExperiment (July 2016 update with 2016 " %+% 
     "delinquency, payments, and agreements).xlsx",
-  sheet = "DETAILS", skip = 1L, na = c("NULL", "-"),
+  sheet = "DETAILS", skip = 1L, na = "-",
   col_names = c("account", rep("x", 6L), 
                 "total_bill_2016", "x", "paid_full_jul16",
                 "ever_paid_jul16", rep("x", 6L),

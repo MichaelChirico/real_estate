@@ -1,20 +1,22 @@
-Package info for code run on 2016-08-15 11:47:09:
+Package info for code run on 2016-08-22 16:14:24:
 R version 3.2.4 (2016-03-10)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Ubuntu 14.04.3 LTS
 
 locale:
- [1] LC_CTYPE=en_US.UTF-8          LC_NUMERIC=C                  LC_TIME=en_US.UTF-8          
- [4] LC_COLLATE=en_US.UTF-8        LC_MONETARY=en_US.UTF-8       LC_MESSAGES=en_US.UTF-8      
- [7] LC_PAPER=en_US.UTF-8          LC_NAME=en_US.UTF-8           LC_ADDRESS=en_US.UTF-8       
-[10] LC_TELEPHONE=en_US.UTF-8      LC_MEASUREMENT=en_US.UTF-8    LC_IDENTIFICATION=en_US.UTF-8
+ [1] LC_CTYPE=en_US.UTF-8          LC_NUMERIC=C                 
+ [3] LC_TIME=en_US.UTF-8           LC_COLLATE=en_US.UTF-8       
+ [5] LC_MONETARY=en_US.UTF-8       LC_MESSAGES=en_US.UTF-8      
+ [7] LC_PAPER=en_US.UTF-8          LC_NAME=en_US.UTF-8          
+ [9] LC_ADDRESS=en_US.UTF-8        LC_TELEPHONE=en_US.UTF-8     
+[11] LC_MEASUREMENT=en_US.UTF-8    LC_IDENTIFICATION=en_US.UTF-8
 
 attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] xlsx_0.5.7        xlsxjars_0.6.1    rJava_0.9-7       readxl_0.1.0.9000 data.table_1.9.7 
-[6] funchir_0.1.2    
+[1] xlsx_0.5.7       xlsxjars_0.6.1   rJava_0.9-7      readxl_0.1.1    
+[5] data.table_1.9.7 funchir_0.1.2   
 
 loaded via a namespace (and not attached):
 [1] rsconnect_0.4.1.11 tools_3.2.4        Rcpp_0.12.5       
