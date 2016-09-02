@@ -4,17 +4,19 @@
 #Michael Chirico
 
 ##Packages
-rm(list=ls(all=T))
+rm(list=ls(all = TRUE))
 gc()
 #Michael Chirico's function of convenience packages;
 #  install via devtools::install_github("MichaelChirico/funchir")
 library(funchir)
 #Version 1.9.7+ required for access to the fwrite function
 #  (speedy csv writing); for compatibility with data.table
-#  versions 1.9.6-, replace fwrite with write.csv from base R.
+#  versions <=1.9.6, replace fwrite with write.csv from base R.
 #  To install the development version, run:
 #  install.packages("data.table", type = "source",
 #                   repos = "http://Rdatatable.github.io/data.table")
+#  If this doesn't work right away, follow the additional
+#  instructions here: https://github.com/Rdatatable/data.table/wiki/Installation
 library(data.table)
 library(readxl)
 library(xlsx)
@@ -184,6 +186,13 @@ levels(properties$treat8) <- rename
 properties[(!holdout), treat7 := factor(treat8)]
 
 ###Get owner-level version of data, keeping only key analysis variables
+
+####Define a randomized anonymous ID for each owner
+####  to facilitate public dissemination of results & data
+#####Pulled from random.org Sep. 2, 2016 @ 11:38 AM EST
+set.seed(65976082)
+properties[sample(.N), owner_id := .GRP, by = owner1]
+properties[ , owner1 := NULL]
 owners <- 
   #Sort by treat7 within owner1 so that Holdout properties sink to
   #  the bottom (forcing the treatment associated with each
@@ -209,7 +218,7 @@ owners <-
                assessed_mv = sum(assessed_mv),
                flag_holdout_overlap =
                  flag_holdout_overlap[1L], .N),
-             by = owner1]
+             by = owner_id]
 
 ###  Subsample Flags
 owners[ , unq_own := N == 1]
