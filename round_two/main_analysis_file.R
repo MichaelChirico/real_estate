@@ -65,6 +65,9 @@ owners[ , treat7 :=
           factor(treat7, c("Control", "Neighborhood", "Community", 
                            "Duty", "Peer", "Lien", "Sheriff"))]
 
+owners[ , earliest_pmt_dec := 
+          as.Date(earliest_pmt_dec, format = "%Y-%m-%d")]
+
 # TABLE 1: Balance - Treated vs. Holdout Comparison (Unique Owners) ####
 hold_bal <- 
   cbind(t(
@@ -259,3 +262,38 @@ print(xtable(
   caption = "Estimated Six-Month Impact on Revenue",
   label = "lg_rev", align = "rlcc"),
   include.rownames = FALSE, comment = FALSE, caption.placement = "top")
+
+#Extra: Cumulative Hazard in Hold-out ####
+
+move.avg.5 = function(x) {
+  nn = length(x)
+  out = numeric(nn)
+  out[1L] = mean(x[1L:4L])
+  out[2L] = mean(x[1L:5L])
+  out[3L] = mean(x[1L:6L])
+  out[4L:(nn - 3L)] = 1/7*(x[1L:(nn - 6L)] + x[2L:(nn - 5L)] + 
+                            x[3L:(nn - 4L)] + x[4L:(nn - 3L)] + 
+                            x[5L:(nn - 2L)] + x[6L:(nn - 1L)] + 
+                             x[7L:nn])
+  out[nn - 2L] = mean(x[(nn - 5L):nn])
+  out[nn - 1L] = mean(x[(nn - 4L):nn])
+  out[nn] = mean(x[(nn - 3L):nn])
+  out
+}
+
+owners[(unq_own & holdout & !is.na(earliest_pmt_dec)),
+       .N, keyby = earliest_pmt_dec
+       ][ , {
+         png("~/Desktop/cum_haz_holdout.png")
+         plot(earliest_pmt_dec, cumsum(N), type = "l", col = "blue", lwd = 3L,
+              xlab = "Date", ylab = "Cumulative Payments Received")
+         dev.off()
+         png("~/Desktop/pmt_flow_holdout.png")
+         plot(earliest_pmt_dec, N, type = "l", col = "red", lwd = 2L,
+              xlab = "Date", ylab = "Payments Received on Date")
+         lines(earliest_pmt_dec, move.avg.5(N), type = "l", col = "darkgreen",
+               lwd = 3L)
+         dev.off()
+         .(date = earliest_pmt_dec, pmts_on_date = N, 
+           pmts_thru_date = cumsum(N), wkday = weekdays(earliest_pmt_dec))}
+         ][ , fwrite(.SD, "~/Desktop/cumhazdata.csv", quote = TRUE)]

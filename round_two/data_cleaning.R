@@ -85,10 +85,13 @@ full_dec <- read_excel(
   sheet = "DETAILS", skip = 7L, na = "-",
   col_names = c("account", "opa_no" , rep("x", 9L),
               "paid_full_dec", "ever_paid_dec", 
-              rep("x", 6L), "total_paid_dec", rep("x", 5L)),
-  col_types = abbr_to_colClass("tbtbnb", "292615"))
+              rep("x", 5L), "earliest_pmt_dec",
+              "total_paid_dec", rep("x", 5L)),
+  col_types = abbr_to_colClass("tbtbdnb", "2925115"))
 
 setDT(full_dec)
+
+full_dec[ , earliest_pmt_dec := as.Date(earliest_pmt_dec)]
 
 ###  **TO DO: INSERT E-MAIL META DATA FROM DOR CONFIRMATION**
 update_opas <-
@@ -217,6 +220,9 @@ owners <-
                paid_full_dec = all(paid_full_dec),
                paid_full_jul16 = all(paid_full_jul16),
                total_paid_dec = sum(total_paid_dec),
+               earliest_pmt_dec = {
+                 if (all(is.na(earliest_pmt_dec))) D(NA)
+                 else min(earliest_pmt_dec, na.rm = TRUE)},
                earliest_pmt_jul16 = {
                  if (all(is.na(earliest_pmt_jul16))) D(NA)
                  else min(earliest_pmt_jul16, na.rm = TRUE)},

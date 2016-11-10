@@ -1,4 +1,4 @@
-Package info for code run on 2016-11-09 17:35:53:
+Package info for code run on 2016-11-10 17:26:57:
 R version 3.3.1 (2016-06-21)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Ubuntu 14.04.3 LTS
@@ -15,8 +15,8 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] xlsx_0.5.7        xlsxjars_0.6.1    rJava_0.9-8       readxl_0.1.1.9000
-[5] data.table_1.9.7  funchir_0.1.2    
+[1] xlsx_0.5.7        xlsxjars_0.6.1    rJava_0.9-8       data.table_1.9.7 
+[5] funchir_0.1.2     readxl_0.1.1.9000
 
 loaded via a namespace (and not attached):
 [1] rsconnect_0.4.3 tools_3.3.1     Rcpp_0.12.7    
