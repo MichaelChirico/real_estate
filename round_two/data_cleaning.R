@@ -80,7 +80,8 @@ full_sep[update_opas, opa_no := i.old, on = c(opa_no = "new")]
 
 ##Block IV: Full Sample, December Cross-Section
 full_dec <- read_excel(
-  wds["data"] %+% "req20150709_PennLetterExperiment (December 2015 update) v2.xlsx",
+  wds["data"] %+% 
+    "req20150709_PennLetterExperiment (December 2015 update) v2.xlsx",
   sheet = "DETAILS", skip = 7L, na = "-",
   col_names = c("account", "opa_no" , rep("x", 9L),
               "paid_full_dec", "ever_paid_dec", 
@@ -192,6 +193,11 @@ properties[(!holdout), treat7 := factor(treat8)]
 #####Pulled from random.org Sep. 2, 2016 @ 11:38 AM EST
 set.seed(65976082)
 properties[sample(.N), owner_id := .GRP, by = owner1]
+
+###Write out owner1-owner_id linkage
+fwrite(unique(properties[ , .(owner1, owner_id, opa_no)]),
+       wds["data"] %+% "round_two_anon_id_link.csv", quote = TRUE)
+
 properties[ , owner1 := NULL]
 owners <- 
   #Sort by treat7 within owner1 so that Holdout properties sink to
