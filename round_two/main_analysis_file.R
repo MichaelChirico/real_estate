@@ -263,37 +263,70 @@ print(xtable(
   label = "lg_rev", align = "rlcc"),
   include.rownames = FALSE, comment = FALSE, caption.placement = "top")
 
-#Extra: Cumulative Hazard in Hold-out ####
-
-move.avg.5 = function(x) {
-  nn = length(x)
-  out = numeric(nn)
-  out[1L] = mean(x[1L:4L])
-  out[2L] = mean(x[1L:5L])
-  out[3L] = mean(x[1L:6L])
-  out[4L:(nn - 3L)] = 1/7*(x[1L:(nn - 6L)] + x[2L:(nn - 5L)] + 
-                            x[3L:(nn - 4L)] + x[4L:(nn - 3L)] + 
-                            x[5L:(nn - 2L)] + x[6L:(nn - 1L)] + 
-                             x[7L:nn])
-  out[nn - 2L] = mean(x[(nn - 5L):nn])
-  out[nn - 1L] = mean(x[(nn - 4L):nn])
-  out[nn] = mean(x[(nn - 3L):nn])
-  out
+#Extra: Cumulative Hazard vs. Hold-out ####
+trt.nms = owners[ , levels(treat8)]
+get.col<-function(st){
+  cols <- 
+    c(Big="blue", Small="red", Control = "blue", Neighborhood = "yellow",
+      Community = "cyan", Duty = "darkgreen", Lien = "red", Sheriff = "orchid",
+      Peer = "orange", Holdout = "darkgray")
+  cols[gsub("\\s.*", "", as.character(st))]
 }
 
-owners[(unq_own & holdout & !is.na(earliest_pmt_dec)),
-       .N, keyby = earliest_pmt_dec
-       ][ , {
-         png("~/Desktop/cum_haz_holdout.png")
-         plot(earliest_pmt_dec, cumsum(N), type = "l", col = "blue", lwd = 3L,
-              xlab = "Date", ylab = "Cumulative Payments Received")
-         dev.off()
-         png("~/Desktop/pmt_flow_holdout.png")
-         plot(earliest_pmt_dec, N, type = "l", col = "red", lwd = 2L,
-              xlab = "Date", ylab = "Payments Received on Date")
-         lines(earliest_pmt_dec, move.avg.5(N), type = "l", col = "darkgreen",
-               lwd = 3L)
-         dev.off()
-         .(date = earliest_pmt_dec, pmts_on_date = N, 
-           pmts_thru_date = cumsum(N), wkday = weekdays(earliest_pmt_dec))}
-         ][ , fwrite(.SD, "~/Desktop/cumhazdata.csv", quote = TRUE)]
+dt.rng<-owners[(unq_own),{rng<-range(earliest_pmt_dec,na.rm=T)
+seq(from=rng[1],to=rng[2],by="day")}]
+#For pretty printing, get once/week subset
+dt.rng2<-dt.rng[seq(1,length(dt.rng),length.out=7)]
+
+date.dt <- 
+  CJ(treat8 = trt.nms, date = dt.rng,
+     unique=TRUE, sorted = FALSE)
+cum_haz<-owners[(unq_own),sum(ever_paid_dec)+0.,
+                keyby=.(treat8,earliest_pmt_dec)
+                ][,.(ep=cumsum(V1[idx<-!is.na(earliest_pmt_dec)]),
+                     date=earliest_pmt_dec[idx]),by=treat8
+                  ][owners[(unq_own),.N,treat8],ep:=ep/i.N,on="treat8"
+                    ][date.dt, on = c("treat8", "date"), roll = TRUE
+                      ][,.(treat7=treat8[idx<-treat8!="Holdout"],
+                           ep=ep[idx]-ep[!idx]),by=date]
+
+dtunqown = owners[(unq_own)]
+BB <- 5000
+cis <- dcast(rbindlist(lapply(integer(BB), function(...){
+  dt <- dtunqown[sample(.N,rep=T)]
+  dt[,sum(ever_paid_dec)+0.,keyby=.(treat8,earliest_pmt_dec)
+     ][,.(ep=cumsum(V1[idx<-!is.na(earliest_pmt_dec)]),
+          date=earliest_pmt_dec[idx]),by=treat8
+       ][dt[,.N,treat8],ep:=ep/i.N,on="treat8"
+         ][date.dt, on = c("treat8", "date"),roll = TRUE
+           ][,.(treat7=treat8[idx<-treat8!="Holdout"],
+                ep=ep[idx]-ep[!idx]),by=date]}),idcol="bootID"
+  )[,quantile(ep, c(.025, .975), na.rm=T), by = .(treat7, date)],
+  treat7+date~c("low","high")[rowid(treat7,date)],value.var="V1")
+
+dcast(cum_haz[cis,on=c("treat7","date")],
+      date~treat7,value.var=c("low","ep","high")
+      )[,{pdf2("~/Desktop/cum_haz_ever_paid_dec_8_own_cis.pdf")
+        par(mfrow=c(2,4),
+              mar=c(0,0,1.1,0),
+              oma=c(7.1,4.1,4.1,1.1))
+        ylm <- range(.SD[,!"date",with=F])
+        axl <- list(x = list(at=dt.rng2,las=2,
+                         labels=format(dt.rng2,"%b %d")),
+                    y = list())
+        for (ii in 1:7){
+          tr <- (trt.nms%\%"Holdout")[ii]
+          matplot(date, do.call("cbind",mget(c("low_","ep_","high_")%+%tr)),
+                  type="l",lty=c(2,1,2),col=get.col(tr),
+                  lwd=3,xaxt="n",yaxt="n",ylim=ylm)
+          abline(h = 0, col = "black", lwd = 2)
+          if (ii == 4L) axis(side = 1L, at = dt.rng2, las = 2L,
+                            labels = format(dt.rng2, "%b %d"))
+          else tile.axes(ii,2,4,axl)
+          title(tr)}
+        title("Cumulative Partial Participation (Dec.)"%+%
+                "\nRelative to Holdout",outer=T)
+        mtext("Date",side=1,outer=T,line=5.5)
+        mtext("Probability Ever Paid vs. Holdout",
+              side=2,outer=T,line=2.5)
+        dev.off2()}]
