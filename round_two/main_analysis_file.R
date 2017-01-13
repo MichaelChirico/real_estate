@@ -307,3 +307,81 @@ print.xtable(xtable(cbind(t(
   include.colnames = FALSE, comment = FALSE, 
   sanitize.text.function = identity, 
   only.contents = TRUE, hline.after = c(0L, 1L))
+
+#versions of LPM tables with logit specification
+##table2
+tbl <- capture.output(texreg(lapply(lapply(expression(
+  `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
+  `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
+  #Multiply indicator by 100 so the units are in %ages already
+  function(x) owners[(unq_own), glm(eval(x) ~ treat8, family = binomial)]), 
+  rename_coef, nn = 8), stars = c(.01, .05, .1), 
+  include.rsquared = FALSE, caption.above = TRUE,
+  include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, label = "pc_lin",
+  caption = "Short-Term Logistic Model Estimates",
+  custom.note = "%stars. Holdout values in levels; " %+% 
+    "remaining figures relative to this"))
+
+## Replace Holdout SEs with horizontal rule, 
+##   eliminate significance for intercept,
+##   add header for Ever Paid vs. Paid in Full
+idx <- grep("^Holdout", tbl)
+
+tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
+
+tbl <- c(tbl[1L:(idx - 3L)],
+         " & \\multicolumn{2}{c}{Ever Paid} & " %+% 
+           "\\multicolumn{2}{c}{Paid in Full} \\\\",
+         tbl[c(idx - 2L, idx)],
+         "\\hline", tbl[(idx + 2L):length(tbl)])
+
+cat(tbl, sep = "\n")
+
+##table 4
+tbl <- capture.output(texreg(lapply(c(lapply(expression(
+  `One Month` = ever_paid_jul, 
+  `Three Months` = ever_paid_sep),
+  function(x) owners[(!holdout), glm(eval(x) ~ treat7, family = binomial)]),
+  lapply(expression(`One Month` = ever_paid_jul, 
+                    `Three Months` = ever_paid_sep),
+         function(x) owners[(!holdout & unq_own), 
+                            glm(eval(x) ~ treat7, family = binomial)])),
+  rename_coef, nn = 7), omit.coef = "Control", 
+  include.rsquared = FALSE, include.rmse = FALSE,
+  include.adjrs = FALSE, stars = c(.001, .05, .1),
+  caption = "Robustness Analysis: Multiple Owners",
+  label = "sh_lpm_rob", caption.above = TRUE))
+
+idx <- grep("^\\\\begin\\{tabular\\}", tbl)
+
+tbl <- c(tbl[1L:(idx + 1L)], 
+         " & \\multicolumn{2}{c}{All Owners} & " %+% 
+           "\\multicolumn{2}{c}{Unary Owners} \\\\",
+         tbl[(idx + 2L):length(tbl)])
+
+cat(tbl, sep = "\n")
+
+##table 5
+tbl <- capture.output(texreg(lapply(lapply(expression(
+  `Six Months` = ever_paid_dec, `Tax Year 2016` = ever_paid_jul16,
+  `Six Months` = paid_full_dec, `Tax Year 2016` = paid_full_jul16),
+  function(x) owners[(unq_own), glm(eval(x) ~ treat8, family = binomial)]),
+  rename_coef, nn = 8), stars = c(.01, .05, .1), 
+  include.rsquared = FALSE, caption.above = TRUE,
+  include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, label = "lg_pc_lin",
+  caption = "Long-Term Linear Probability Model Estimates",
+  custom.note = "%stars. Holdout values in levels; " %+% 
+    "remaining figures relative to this"))
+
+## Replace Holdout SEs with horizontal rule, add header for EP vs. PF
+idx <- grep("^Holdout", tbl)
+
+tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
+
+tbl <- c(tbl[1L:(idx - 3L)],
+         " & \\multicolumn{2}{c}{Ever Paid} & " %+% 
+           "\\multicolumn{2}{c}{Paid in Full} \\\\",
+         tbl[c(idx - 2L, idx)],
+         "\\hline", tbl[(idx + 2L):length(tbl)])
+
+cat(tbl, sep = "\n")
