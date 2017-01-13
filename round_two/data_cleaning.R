@@ -9,14 +9,6 @@ gc()
 #Michael Chirico's function of convenience packages;
 #  install via devtools::install_github("MichaelChirico/funchir")
 library(funchir)
-#Version 1.9.7+ required for access to the fwrite function
-#  (speedy csv writing); for compatibility with data.table
-#  versions <=1.9.6, replace fwrite with write.csv from base R.
-#  To install the development version, run:
-#  install.packages("data.table", type = "source",
-#                   repos = "http://Rdatatable.github.io/data.table")
-#  If this doesn't work right away, follow the additional
-#  instructions here: https://github.com/Rdatatable/data.table/wiki/Installation
 library(data.table)
 library(readxl)
 library(xlsx)
@@ -62,6 +54,8 @@ update_opas <- data.table(old = "057027304",
                           new = "057026500")
 holdout_jul[update_opas, opa_no := i.old, on = c(opa_no = "new")]
 
+full_jul = rbind(main_jul, holdout_jul)
+
 ##Block III: Full Sample, September Cross-Section
 full_sep <- read_excel(
   wds["data"] %+%
@@ -72,6 +66,9 @@ full_sep <- read_excel(
   col_types = abbr_to_colClass("btbtbb", "119293"))
 
 setDT(full_sep)
+
+#readxl thinks a row has data that's empty; exclude
+full_sep = full_sep[!is.na(opa_no)]
 
 ###  **TO DO: INSERT E-MAIL META DATA FROM DOR CONFIRMATION**
 update_opas <- data.table(old = c("151102600", "884350465"),
@@ -90,6 +87,8 @@ full_dec <- read_excel(
   col_types = abbr_to_colClass("tbtbdnb", "2925115"))
 
 setDT(full_dec)
+#readxl thinks a row has data that's empty; exclude
+full_dec = full_dec[!is.na(opa_no)]
 
 full_dec[ , earliest_pmt_dec := as.Date(earliest_pmt_dec)]
 
@@ -101,12 +100,32 @@ full_dec[update_opas, opa_no := i.old, on = c(opa_no = "new")]
 
 ##Block V: Main Sample Background Data
 ## * total_due is pre-study balance
-main_bg <- fread(wds["proj"] %+% "round_2_full_data.csv", 
-                 select = c("opa_no", "owner1", "total_due", "rand_id"))
+bgvars <- c("opa_no", "owner1", "total_due", "rand_id")
+bg_main <- fread(wds["proj"] %+% "round_2_full_data.csv", select = bgvars)
 
 ##Block VI: Holdout Sample Background Data
-holdout_bg <- fread(wds["proj"] %+% "holdout_sample.csv",
+bg_holdout <- fread(wds["proj"] %+% "holdout_sample.csv",
                     select = c("opa_no", "owner1", "total_due"))
+#Need fill since holdout_bg lacks rand_id
+bg = rbind(bg_main, bg_holdout, fill = TRUE)
+
+nbhds = fread("/media/data_drive/real_estate/round_two_property_file.csv",
+              select = c("BRT NUMBER", "AZAVEA NEIGHBORHOOD"),
+              col.names = c("opa_no", "azavea"))
+#There was an issue where the final file we received didn't have
+#  the Azavea neighborhoods included, but a slightly earlier
+#  version did; these three properties were new to the
+#  final version, so we just geocoded them by hand.
+nbhds = 
+  rbind(nbhds,
+        data.table(opa_no = c("632196220", "661068112", "881035640"),
+                   azavea = c("Bustleton", "Morrell Park", "Logan Square")))
+
+#only focus on section of city
+nbhds[fread(wds["proj"] %+% "azavea_nbhd_quad_mapping.csv"),
+      azavea_section := i.azavea_quad, on = c(azavea = "azavea_nbhd")]
+
+bg[nbhds, azavea_section := i.azavea_section, on = "opa_no"]
 
 ###Block VII: Other Background Data
 ###  From OPA-issued Property Data CD
@@ -138,18 +157,10 @@ followup[ , earliest_pmt_jul16 :=
 ###  II III IV VI VII
 ### (blocks stacked vertically will be stitched/appended,
 ###  and each column involves a merge to the previous column)
-bgvars <- c("opa_no", "owner1", "total_due", "rand_id")
 
 properties <- 
-  rbind(main_jul, holdout_jul
-        )[full_sep, on = "opa_no"
-          ][full_dec, on = "opa_no"
-            #Need fill since holdout_bg lacks rand_id
-            ][rbind(main_bg, holdout_bg, fill = TRUE),
-              (bgvars) := mget("i." %+% bgvars), on = "opa_no"
-              #one of the Excel files is funky and the reader
-              #  added a phantom row; this removes that
-              ][!is.na(treat15)]
+  Reduce(function(x, y) x[y, on = "opa_no"],
+         list(full_jul, full_sep, full_dec, bg))
 
 properties[opa_bg, assessed_mv := as.numeric(i.assessed_mv), on = "opa_no"]
 
@@ -211,6 +222,9 @@ owners <-
                treat8 = treat8[1L],
                rand_id = rand_id[1L],
                holdout = all(holdout),
+               #only really meaningful at the
+               #  owner level for unary owners
+               azavea_section = azavea_section[1L],
                ever_paid_jul = any(ever_paid_jul),
                ever_paid_sep = any(ever_paid_sep),
                ever_paid_dec = any(ever_paid_dec),

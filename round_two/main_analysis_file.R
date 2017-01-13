@@ -68,97 +68,50 @@ owners[ , treat7 :=
 owners[ , earliest_pmt_dec := 
           as.Date(earliest_pmt_dec, format = "%Y-%m-%d")]
 
-# TABLE 1: Balance - Treated vs. Holdout Comparison (Unique Owners) ####
-hold_bal <- 
-  cbind(t(
-    owners[(unq_own), 
-           .(`Amount Due (June)` = dol.form(mean(total_due), tex = TRUE),
-             `Assessed Property Value` = 
-               dol.form(mean(assessed_mv, na.rm = TRUE)),
-             `\\# Owners` = prettyNum(.N, big.mark = ",")),
-           by = .(Variable = c("Treated", "Holdout")[holdout + 1L])]),
-    c("$p$-value", 
-      `Amount Due (June)` = 
-        owners[(unq_own), round(lmfp(total_due ~ holdout), 2L)],
-      `Assessed Property Value` = 
-        owners[(unq_own), round(lmfp(assessed_mv ~ holdout), 2L)],
-      `\\# Owners` = ""))
-
-print(xtable(hold_bal, caption = "Balance between Holdout and Treated Samples",
-             label = "bal_hold", align = c("lrrc")),
-      caption.placement = "top", comment = FALSE, include.colnames = FALSE, 
-      sanitize.text.function = identity, hline.after = c(0L, 4L))
-
-# TABLE 2: Balance  - Comparison by Treatment, Full & Unique Owner Sample ####
+# TABLE 1: Balance  - Comparison by Treatment ####
 ##Print Table Header
 ### *surround with {} so the table all prints together*
 {cat("\\begin{sidewaystable}[ht]",
     "\\centering", 
-    "\\caption{Balance on Observables}",
+    "\\caption{Balance on Observables (Unary Owners)}",
     "\\label{balance}",
-    "\\begin{tabular}{lrrrrrrrc}", 
-    "\\hline",
-    "\\multicolumn{9}{c}{Unique Owners} \\\\", sep = "\n")
+    "\\begin{tabular}{lrrrrrrrrc}", 
+    "\\hline", sep = "\n")
 
-##Top Section: Unique Owners Only
 print.xtable(xtable(cbind(t(
-  owners[(!holdout & unq_own),
-         .(`Amount Due (June)` = dol.form(mean(total_due), tex = TRUE),
-           `Assessed Property Value` = 
-             dol.form(mean(assessed_mv, na.rm = TRUE), tex = TRUE),
-           `\\# Owners` = prettyNum(.N, big.mark = ",")),
-         keyby = .(Variable = treat7)]), 
+  owners[(unq_own),
+         c(.(`Amount Due (June)` = dol.form(mean(total_due), tex = TRUE)),
+           .(`Assessed Property Value` = 
+                  dol.form(mean(assessed_mv, na.rm = TRUE), tex = TRUE)),
+           as.list(table(azavea_section)),
+           .(`\\# Owners` = prettyNum(.N, big.mark = ","))),
+         keyby = .(Variable = treat8)]), 
   p_tex(c(sapply(c(
     `Amount Due (June)` = "total_due",
     `Assessed Property Value` = "assessed_mv"),
-    function(x) owners[(!holdout & unq_own), lmfp(get(x) ~ treat7)]),
-    `\\# Owners` =
-      owners[(!holdout & unq_own), chisq.test(table(treat7))$p.value])))),
+    function(x) owners[(unq_own), lmfp(get(x) ~ treat8)]),
+    owners[(unq_own), c(round(chisq.test(table(
+      azavea_section, treat8))$p.value, 2L),
+      rep(NA, uniqueN(azavea_section) - 1L))],
+    #not targeting owners, so exclude
+    `\\# Owners` = NA)))),
   include.colnames = FALSE, comment = FALSE, 
-  #exclude table header since we're combining two tables;
-  #  setting sanitize.text.function prevents xtable from
+  #setting sanitize.text.function prevents xtable from
   #  commenting out the math markup (especially $). This
   #  is also why we use tex = TRUE for dol.form.
   sanitize.text.function = identity, only.contents = TRUE,
-  floating = TRUE, hline.after = c(0L, 1L))
-
-##Bottom Section: Exclude Holdout Only
-cat("\\hline",
-    "\\multicolumn{9}{c}{Unique and Multiple Owners} \\\\", sep = "\n")
-
-print.xtable(xtable(cbind(t(
-  owners[(!holdout),
-         .(`Amount Due (June)` = dol.form(mean(total_due), tex = TRUE),
-           `Assessed Property Value` = 
-             dol.form(mean(assessed_mv, na.rm = TRUE), tex = TRUE),
-           `\\% with Unique Owner` = to.pct(mean(unq_own), 1L),
-           `\\% Overlap with Holdout` = to.pct(mean(flag_holdout_overlap), 2L),
-           `\\# Properties per Owner` = round(mean(N), 2L),
-           `\\# Owners` = prettyNum(.N, big.mark = ",")),
-         keyby = .(Variable = treat7)]), 
-  p_tex(c(sapply(c(
-    `Amount Due (June)` = "total_due",
-    `Assessed Property Value` = "assessed_mv",
-    `\\% with Unique Owner` = "unq_own",
-    `\\% Overlap with Holdout` = "flag_holdout_overlap",
-    `\\# Properties per Owner` = "N"),
-    function(x) owners[(!holdout), lmfp(get(x) ~ treat7)]),
-    `\\# Owners` =
-      owners[(!holdout), chisq.test(table(treat7))$p.value])))),
-  include.colnames = FALSE, comment = FALSE, 
-  sanitize.text.function = identity, 
-  only.contents = TRUE, hline.after = c(0L, 1L))
+  floating = TRUE, hline.after = c(0L, 1L, 3L, 9L))
 
 cat("\\hline",
-    "\\multicolumn{9}{l}" %+% 
-      "{\\scriptsize{$p$-values in rows 1-5 are " %+% 
+    "\\multicolumn{10}{l}" %+% 
+      "{\\scriptsize{$p$-values in rows 1-2 are " %+% 
       "$F$-test $p$-values from regressing each " %+% 
       "variable on treatment dummies. A $\\chi^2$ " %+% 
-      "test was used for the count of owners.}} \\\\",
+      "test was used for the geographic distribution.}} \\\\",
     "\\end{tabular}",
     "\\end{sidewaystable}", sep = "\n")}
 
-# TABLE 3: Regression - Ever Paid/Paid Full @ 1 & 3 Months, LPM ####
+# TABLE 2: Regression - Ever Paid/Paid Full @ 1 & 3 Months, LPM ####
 tbl <- capture.output(texreg(lapply(lapply(expression(
   `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
   `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
@@ -186,7 +139,7 @@ tbl <- c(tbl[1L:(idx - 3L)],
 
 cat(tbl, sep = "\n")
 
-# TABLE 4: Revenue - Per-Letter Impact @ 3 Months ####
+# TABLE 3: Revenue - Per-Letter Impact @ 3 Months ####
 print(xtable(
   #Use keyby to make sure the output is sorted and Holdout comes first
   owners[(unq_own), .(.N, mean(ever_paid_sep)), keyby = treat8
@@ -202,7 +155,7 @@ print(xtable(
   label = "sh_rev", align = "rlcc"),
   include.rownames = FALSE, comment = FALSE, caption.placement = "top")
 
-# TABLE 5: Regression - Ever Paid @ 1 & 3 Months, LPM, vs. Control ####
+# TABLE 4: Regression - Ever Paid @ 1 & 3 Months, LPM, vs. Control ####
 tbl <- capture.output(texreg(lapply(c(lapply(expression(
   `One Month` = ever_paid_jul, 
   `Three Months` = ever_paid_sep),
@@ -225,7 +178,7 @@ tbl <- c(tbl[1L:(idx + 1L)],
 
 cat(tbl, sep = "\n")
 
-# TABLE 6: Regression - Ever Paid/Paid Full @ 6 & 12 Months, LPM ####
+# TABLE 5: Regression - Ever Paid/Paid Full @ 6 & 12 Months, LPM ####
 tbl <- capture.output(texreg(lapply(lapply(expression(
   `Six Months` = ever_paid_dec, `Tax Year 2016` = ever_paid_jul16,
   `Six Months` = paid_full_dec, `Tax Year 2016` = paid_full_jul16),
@@ -250,7 +203,7 @@ tbl <- c(tbl[1L:(idx - 3L)],
 
 cat(tbl, sep = "\n")
 
-# TABLE 7: Revenue - Per-Letter Impact @ 6 Months ####
+# TABLE 6: Revenue - Per-Letter Impact @ 6 Months ####
 print(xtable(
   owners[(unq_own), .(.N, mean(ever_paid_dec)), keyby = treat8
          ][ , .(Treatment = treat8[-1L], 
@@ -330,3 +283,27 @@ dcast(cum_haz[cis,on=c("treat7","date")],
         mtext("Probability Ever Paid vs. Holdout",
               side=2,outer=T,line=2.5)
         dev.off2()}]
+
+#Table 1, but for comparing full & unary-owner samples
+print.xtable(xtable(cbind(t(
+  owners[(!holdout),
+         .(`Amount Due (June)` = dol.form(mean(total_due), tex = TRUE),
+           `Assessed Property Value` = 
+             dol.form(mean(assessed_mv, na.rm = TRUE), tex = TRUE),
+           `\\% with Unique Owner` = to.pct(mean(unq_own), 1L),
+           `\\% Overlap with Holdout` = to.pct(mean(flag_holdout_overlap), 2L),
+           `\\# Properties per Owner` = round(mean(N), 2L),
+           `\\# Owners` = prettyNum(.N, big.mark = ",")),
+         keyby = .(Variable = treat7)]), 
+  p_tex(c(sapply(c(
+    `Amount Due (June)` = "total_due",
+    `Assessed Property Value` = "assessed_mv",
+    `\\% with Unique Owner` = "unq_own",
+    `\\% Overlap with Holdout` = "flag_holdout_overlap",
+    `\\# Properties per Owner` = "N"),
+    function(x) owners[(!holdout), lmfp(get(x) ~ treat7)]),
+    `\\# Owners` =
+      owners[(!holdout), chisq.test(table(treat7))$p.value])))),
+  include.colnames = FALSE, comment = FALSE, 
+  sanitize.text.function = identity, 
+  only.contents = TRUE, hline.after = c(0L, 1L))
