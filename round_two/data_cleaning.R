@@ -10,8 +10,9 @@ gc()
 #  install via devtools::install_github("MichaelChirico/funchir")
 library(funchir)
 library(data.table)
+#As of Jan. 21, 2017, using the development version;
+#  install via devtools::install_github("hadley/readxl")
 library(readxl)
-library(xlsx)
 setwd(mn <- "~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 wds <- c(data = "/media/data_drive/real_estate/",
          proj = mn %+% "round_two/", 
@@ -21,27 +22,32 @@ write.packages(wds["log"] %+% "cleaning_session.txt")
 #Data Import ####
 ##Block I: Main Sample, July Cross-Section
 ## * total_paid is the accrual between June 1, 2015 and July 22, 2015
-main_jul <- read.xlsx3(
+
+main_jul = read_excel(
   wds["data"] %+% "Payments and Balance Penn Letter Experiment_150727.xlsx",
-  colIndex = c(2L, 5L, 8L, 9L), sheetName = "DETAILS", 
-  header = TRUE, startRow = 9L, stringsAsFactors = FALSE, 
-  colClasses = "character")
+  sheet = 'DETAILS', skip = 8L, na = "-", 
+  col_names = c('x', 'opa_no', 'x', 'x', 'treat15', 'x', 
+                'x', 'paid_full_jul', 'ever_paid_jul', rep('x', 6L)),
+  col_types = abbr_to_colClass('btbtbtb', '1121226'))
 
 setDT(main_jul)
 
-setnames(main_jul, c("opa_no", "treat15", "paid_full_jul", "ever_paid_jul"))
-
+#readxl thinks a row has data that's empty; exclude                    
+main_jul = main_jul[!is.na(opa_no)]
+  
 ##Block II: Holdout Sample, July Cross-Section
-holdout_jul <- read.xlsx3(
+holdout_jul = read_excel(
   wds["data"] %+% "req20150709_PennLetterExperiment_"%+%
     "v2_Commissioners Control Details.xlsx",
-  colIndex = c(2L, 8L, 9L), sheetName = "DETAILS",
-  header = TRUE, startRow = 9L, stringsAsFactors = FALSE, 
-  colClasses = "character")
+  sheet = 'DETAILS', skip = 8L, na = "-", 
+  col_names = c('x', 'opa_no', rep('x', 5L), 
+                'paid_full_jul', 'ever_paid_jul', rep('x', 5L)),
+  col_types = abbr_to_colClass('btbtb', '11525'))
 
 setDT(holdout_jul)
 
-setnames(holdout_jul, c("opa_no", "paid_full_jul", "ever_paid_jul"))
+#readxl thinks a row has data that's empty; exclude   
+holdout_jul = holdout_jul[!is.na(opa_no)]
 
 holdout_jul[ , treat15 := "Holdout"]
 
