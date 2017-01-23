@@ -65,18 +65,19 @@ University of Pennsylvania}
 
 Property taxes play a central role in the financing of municipal
 government services. Yet, municipal governments commonly confront
-problems with property tax collection even when the tax base is known.
-There is surprisingly little evidence on what authorities can do to
-increase property tax compliance. Focusing on a sample of let or procrastinating tax payers,  
-this paper analyzes seven different
-notification strategies through a randomized controlled
-experiment conducted with the City of Philadelphia.  All seven
-notification strategies increase property tax compliance over the
-usual approach of simply sending a bill.  The most effective
-notifications are the those that threaten to take out a lien on the
-property or to foreclose by sheriff's sale for continued failure to
-pay taxes.  The results suggest that economic motives to pay property
-taxes are more effective than those that appeal to social norms.
+problems with property tax collection despite the fact that the tax
+base is known.  We model delinquent tax payers as
+procrastinators. Late payments arise due to present bias and lack of
+salience.  This paper develops and implements a randomized controlled
+experiment conducted with the City of Philadelphia. The experiment is
+based on different notification or nudge strategies.  Within this
+structure, our experiment allow us to identify the relative importance
+of the three key sets of parameters of our model.  We find that all
+notification strategies increase property tax compliance which
+indicates that lack of salience is a key component of non-compliance
+behavior.  The most effective notifications are the those that
+threaten to take out a lien on the property or to foreclose by
+sheriff's sale for continued failure to pay taxes.
 
 \bigskip
 
@@ -90,24 +91,22 @@ Experiment, Deterrence, Public Service Appeal, Appeal to Civic Duty.
 
 \section{Introduction}
 
-Property taxation is the primary tax for most U.S. cities.  In 2013 over
-72 percent of all local government revenue and over 50 percent of own
-revenues came from the property tax.  Yet collection of the tax has,
-in many cities, been problematic.  Despite the administrative advantages of the property tax,  
-collection of the tax has, in many U.S. cities, been problematic. 
-While some U.S. cities do an
+Property taxation is the primary tax for most U.S. cities.  In 2013
+over 72 percent of all local government revenue and over 50 percent of
+own revenues came from the property tax.  Yet collection of the tax
+has, in many cities, been problematic.  While some U.S. cities do an
 excellent job in collecting the tax, receiving over 95 percent of
 assessed revenues in the year the tax is due, other cities have over
 the last ten years done significantly worse -- notably Flint (78\%),
 Cleveland (84\%), Pittsburgh (86\%), Milwaukee (87\%), Philadelphia
-(88\%), Detroit (89\%), and St. Louis (89\%).\footnote{For more details, see \citeA{CILMS-16}.}  
-While Flint, Detroit, Cleveland and Milwaukee are relatively poor cities,
-Philadelphia and Pittsburgh are not.  Among the list of cities with
-outstanding tax collection records are Buffalo, Birmingham, Houston,
-and New Orleans.  While city poverty is important, it cannot be the
-whole explanation for low rates of collection.  Poor tax
-administration is likely to be an important contributing factor as
-well.
+(88\%), Detroit (89\%), and St. Louis (89\%).\footnote{For more
+  details, see \citeA{CILMS-16}.}  While Flint, Detroit, Cleveland and
+Milwaukee are relatively poor cities, Philadelphia and Pittsburgh are
+not.  Among the list of cities with outstanding tax collection records
+are Buffalo, Birmingham, Houston, and New Orleans.  While city poverty
+is important, it cannot be the whole explanation for low rates of
+collection.  Poor tax administration is likely to be an important
+contributing factor as well.
 
 This failure to collect the property tax on time creates
 budget uncertainty at best and budget deficits at worst.  Yet
@@ -126,70 +125,75 @@ Payment is primarily  a matter of enforcement.  The most common
 enforcement strategy is the economic stick: fines and penalties.
 Failure to pay property taxes in time leads to interest penalties
 sufficiently large that there is no arbitrage advantage to waiting,
-and perhaps to a significant late fine as well.  Fines, however, only
-work if taxpayers believe they will be enforced.
+and perhaps to a significant late fine as well.  
 
 When a delinquent tax payer does not respond to penalties and fines,
 the city can take out a tax lien on the property.  A lien does not
-impose any immediate direct, tangible costs on a delinquent tax payer 
-since payments are typically only realized at the time of a transaction.\footnote{A city can also sell
-tax liens to investors  to speed up the revenue collection process. Liens often sell
- at above par prices because of the foreclosure option. But selling liens to "vulture investors" can be politically costly for a city administration.} 
-However, obtaining a tax lien enables the owner of the lien to eventually 
-start a foreclosure process. When the owner of a property located in a city fails to make
-a payment arrangement on municipal debt levied on his/her property,
-that property may be sold at auction to allow the city to collect on that unpaid
-debt.  However, the foreclosure process is costly and time intensive.\footnote{Auctions are 
-administered in Philadelphia by
-the Office of the Sheriff.  This process of offloading a property at Sheriff's
-Sale can take nine months to a year.} 
+impose any immediate direct, tangible costs on a delinquent tax payer
+since payments are typically only realized at the time of a
+transaction.\footnote{A city can also sell tax liens to investors to
+  speed up the revenue collection process. Liens often sell at above
+  par prices because of the foreclosure option. But selling liens to
+  "vulture investors" can be politically costly for a city
+  administration.}  However, obtaining a tax lien enables the owner of
+the lien to eventually start a foreclosure process. When the owner of
+a property located in a city fails to make a payment arrangement on
+municipal debt levied on his or her property, that property may be
+sold at auction to allow the city to collect on that unpaid debt.
+However, the foreclosure process is costly and time
+intensive.\footnote{Auctions are administered in Philadelphia by the
+  Office of the Sheriff.  This process of offloading a property at
+  Sheriff's Sale can take nine months to a year.}  While there are
+some problems with the effectiveness of the existing enforcement
+mechanisms, it is only possible to avoid payment by abandoning the
+property in the long run. Needless to say, this is a very costly
+option for most properties.
 
- While there are some problems with the effectiveness of the 
-existing enforcement mechanisms, it is only possible to avoid payment by abandoning the
-property in the long run. Needless to say, this is a very costly option for most
-properties.  Given that a lack of property tax compliance may
-depend on other factors that are not directly related to enforcement,
-researchers have started to explore the effectiveness of
-softer, nudge approaches or notification strategies to reinforce the
-different motivations of tax compliance.  This paper uses a field experiment involving over 19,000 delinquent
-Philadelphia taxpayers to examine the effectiveness of seven
-alternative strategies for improving city property tax
-collection. Each involves a randomly assigned tax ``nudge'' of a
-delinquent taxpayer.  The first is a simple reminder that the payment
-is late.  The next two involve the reminder plus a threat of a
-significant sanction if payment is not received by the end of the
-calendar year: a lien on the home when sold equal to taxes due plus
-accrued interest and penalties \textit{or} the lien coupled with an
-immediate sheriff's sale of the home to collect the lien.  The final
-four nudges include the reminder coupled with an appeal to what the
-tax compliance literature has called a ``tax morale'' motive from
-paying one's tax taxes.\footnote{See \citeA{Luttmer-14} for a review
-  of the tax morale strategies for tax compliance.  They identify
-  three tax morale motivations in the literature, each grounded in a
-  positive gain in utility from the act of paying one's taxes.  These
-  include: 1) a motive from reciprocity where the taxpayer recognizes
-  they are part of a larger group playing a non-cooperative game with
-  other taxpayers; 2) a motive from peer behavior where the taxpayer
-  gains utility from knowledge that they are part of larger group of
-  contributors; and 3) an intrinsic motivation that provides a direct
-  utility benefit from the act of paying one's taxes.
-  \citeA{Luttmer-14}also mention taxpayer culture and taxpayer
-  behavior other than utility maximization as additional explanations
-  for the rate of taxpayer compliance. }  The four morale motives
-included here are: first, a reminder that taxes pay for neighborhood
-services such as street repairs, trash pick-up and the local park;
-second, a reminder that taxes pay for important city-wide services
-such as police protection and public schools; third, a reminder that 9
-out of 10 Philadelphians have paid their taxes and you have not; and
-fourth, a reminder that paying one's taxes is an important obligation
-of citizenship in a democracy.  Tax compliance after receiving one of
-the seven ``nudges'' is then compared to compliance for those who have
-not received a ``nudge''-- our ``holdout'' sample.
+Despite the fact that there are no obvious financial gains to not
+paying property taxes, we observe that a significant fraction of tax
+payers do not pay on time. To explain the behavior of these
+procrastinators, researchers have started to explore the effectiveness
+of softer, nudge approaches or notification strategies to reinforce
+the different motivations of tax compliance.  This paper uses a field
+experiment involving over 19,000 delinquent Philadelphia taxpayers to
+examine the effectiveness of seven alternative strategies for
+improving city property tax collection. Each involves a randomly
+assigned tax ``nudge'' of a delinquent taxpayer.  The first is a
+simple reminder that the payment is late.  The next two involve the
+reminder plus a threat of a significant sanction if payment is not
+received by the end of the calendar year: a lien on the home when sold
+equal to taxes due plus accrued interest and penalties \textit{or} the
+lien coupled with an immediate sheriff's sale of the home to collect
+the lien.  The final four nudges include the reminder coupled with an
+appeal to what the tax compliance literature has called a ``tax
+morale'' motive from paying one's tax taxes.\footnote{See
+  \citeA{Luttmer-14} for a review of the tax morale strategies for tax
+  compliance.  They identify three tax morale motivations in the
+  literature, each grounded in a positive gain in utility from the act
+  of paying one's taxes.  These include: 1) a motive from reciprocity
+  where the taxpayer recognizes they are part of a larger group
+  playing a non-cooperative game with other taxpayers; 2) a motive
+  from peer behavior where the taxpayer gains utility from knowledge
+  that they are part of larger group of contributors; and 3) an
+  intrinsic motivation that provides a direct utility benefit from the
+  act of paying one's taxes.  \citeA{Luttmer-14} also mention taxpayer
+  culture and taxpayer behavior other than utility maximization as
+  additional explanations for the rate of taxpayer compliance. }  The
+four morale motives included here are: first, a reminder that taxes
+pay for neighborhood services such as street repairs, trash pick-up
+and the local park; second, a reminder that taxes pay for important
+city-wide services such as police protection and public schools;
+third, a reminder that 9 out of 10 Philadelphians have paid their
+taxes and you have not; and fourth, a reminder that paying one's taxes
+is an important obligation of citizenship in a democracy.  Tax
+compliance after receiving one of the seven ``nudges'' is then
+compared to compliance for those who have not received a ``nudge''--
+our ``holdout'' sample.
 
 To understand the potential influence of each nudge, we model tax
 delinquency as a problem of taxpayer procrastination following
-\citeA{Akerlof-91} and \citeA{DR-99}.  Procrastination occurs for two
-reasons: present bias as in \citeA{DR-99} and declining saliency as in
+\citeA{Akerlof-91} and \citeA{DR-99}.  Procrastination occurs 
+because of present bias as in \citeA{DR-99} and declining saliency as in
 \citeA{Akerlof-91}.  Present bias is always present.  Saliency can be
 nudged by a reminder letter.  The reminder letters stressing liens or
 liens and the sale of one's home add a future expected cost to
@@ -222,13 +226,9 @@ important local tax.\footnote{We conducted an earlier pilot study of
   property tax compliance in Philadelphia.  The results are reported
   in \fullciteA{CILMS-16}.  We find evidence that motives driven by
   reciprocity, peer effects, and civic duty can positively impact
-  property tax payment compliance. But our sample in that pilot 
-  study was too small to draw reliable inference. Moreover, the sample 
-  focuses on repeat tax delinquents.  In this study we focus on tarty or procrastinating tax payers 
-  and 
-  specifically examine deterrence, reciprocity, peer influence, and
-  civic duty notifications with a larger sample of first time tax
-  non-compliers.}
+  property tax payment compliance. The sample in that pilot study
+  was too small to draw reliable inference. Moreover, the sample
+  focused on repeat instead of first time tax delinquents.}
 
 Our experiment began on June 15, 2015 with the identification of
 19,028 delinquent taxpayers who owed more than \$10 to the city in
@@ -244,29 +244,41 @@ reminding them that their taxes were due and that liens including
 taxes and penalties will be assigned at the end of the collection
 year, December 31, 2015.
 
-By September 15, 2015, 40.8 percent of the holdout sample had paid their
-taxes in full and another 10.6 percent had made a partial tax payment.
-The average payment from the holdout sample was \$xxx per paying
-taxpayer.  Among the 16,940 taxpayers receiving one of our seven nudge
-letters, xx percent had paid their taxes in full by September 15, 2015
-and another xx percent had made a partial payment.  The average
-payment from the treated sample receiving one of the seven reminders
-was \$xxx per paying taxpayer.  Both in terms of the rate of taxpayer
-compliance and in the levels of payment, the reminder letters offered
-significant improvement over doing nothing.  The most effective
-reminders were the two letters threatening liens.  
+By July 15, 2015, 30.5 percent of all taxpayers in the holdout (``do
+nothing'') sample had made some contribution towards their tax
+liabilities.  The compliance rate in the control sample who just
+received a neutral reminder letter was 3.8 percent higher than in the
+hold out sample. The estimate is significantly different form zero
+which indicates that lack of salience is an important factor in
+explaining non-compliance behavior.  The fact that messages that
+stress tax moral did not outperform the reminder letter, indicates
+that potential utility gains associated with the letters are
+insignificant. In contrast 39.5 percent of taxpayers that received the
+lien letter and 37.9 percent that received the sheriff's sale letters
+had made payments. This finding suggests that these two letters not
+only improved saliency, but also increased deterrence.
 
-By December 31, the
-two collection agencies then assigned to the remaining 1x,xxx
-taxpayers who had made no payment by August 15 succeeded in increasing
-the rate of collection by an additional xx percent for payments in
-full, and by xx percent for a partial payment.  The average level of
-payment from this initially ``unresponsive'' cohort was \$xxx per
-paying taxpayer.  Finally, there is no evidence that our letters or
-the efforts of the collection agency had a lasting effect on taxpayer
-compliance into 2016, either among the entire sample or more likely
-among those who had responded positively to 2015 enforcement
-strategies.
+The findings are similar after three months.  By September 15, 2015,
+51.4 percent of all households in the holdout sample had made some
+contribution compared to 55.3 in the control sample. The compliance
+rate was 60.6 percent for the lien and 60.2 percent for the sheriff's
+sale letters. Using fairly conservative estimates for the revenue per
+letter. The three-month impact on revenue for the lien and sheriff's
+sale letters were approximately \$75 per letter and \$32 for the
+control letter.  We also find that approximately 80 percent of the tax
+payers that responded to our letters paid the amount due in full and
+did not need a payment plan. This suggests that liquidity concerns are
+only relevant for up to approximately 20 percent of the delinquent tax
+payers.
+
+By December 15, 2015, we observe some convergence in the effectiveness
+of all nudge strategies. We think that this result is probably due to
+the activities of the collection agencies that were employed by the
+city after roughly three month into the experiment. Finally, there is
+no evidence that our letters or the efforts of the collection agency
+had a lasting effect on taxpayer compliance into 2016, either among
+the entire sample or more likely among those who had responded
+positively to 2015 enforcement strategies.
 
 The rest of the paper is organized as follows.  Section 2 provides a
 behavioral model of tax compliance that allows for delay and
@@ -283,43 +295,41 @@ activities in the City of Philadelphia.
 
 Most city residents are law abiding citizens.  If late in their city
 tax payments it is unlikely it is part of a strategic plan to avoid
-payment.  Property tax payments are computed by the city as home value
-times the city's property tax rate and are known both to the city and
-the taxpayer.  While it is possible to avoid payment by abandoning the
-property, this is very costly.  For the vast majority of taxpayers the
-only issue is timely payment.  Taxpayers receive their tax bill in
-January of the fiscal year with full payment or an agreed to payment
-schedule required by the end of March.  Most families have the payment
-withheld in an escrow account as part of their monthly mortgage
-payments.  If payment, or enrollment in a payment plan, has not been
-made by the end of April, the city starts enforcement proceedings
-against the taxpayer.  Enforcement begins with a reminder letter that
-all taxes and additional accrued interest and penalties are now due.
-In Philadelphia, those reminder letters are mailed in early May.  A
-sample of the City's standard reminder letter is shown in Figure 1.
-We are studying the payment decisions of these delinquent, or late,
-taxpayers.
+payment.  Property tax payments are computed by the city as assessed
+home value times the city's property tax rate and are known both to
+the city and the taxpayer.  While it is possible to avoid payment by
+abandoning the property, this is very costly.  For the vast majority
+of taxpayers the only issue is timely payment.  Taxpayers receive
+their tax bill in January of the fiscal year with full payment or an
+agreed to payment schedule required by the end of March.  Most
+families have the payment withheld in an escrow account as part of
+their monthly mortgage payments.  If payment, or enrollment in a
+payment plan, has not been made by the end of April, the city starts
+enforcement proceedings against the taxpayer.  Enforcement begins with
+a reminder letter that all taxes and additional accrued interest and
+penalties are now due.  In Philadelphia, those reminder letters are
+mailed in early May.  A sample of the City's standard reminder letter
+is shown in Figure 1.  We are studying the payment decisions of these
+delinquent, or late, taxpayers. Following the analysis of O'Donoghue
+and Rabin (1999), our late taxpayer are seen as procrastinators who
+struggle with the problem of when to pay their property
+taxes.\footnote{We are not the first to model taxpayer compliance as a
+  problem of procrastination; see Hallsworth, et. al.  (2014). We
+  differ from their analysis in two ways.  First, their focus is on
+  late taxpayers as possibly credit-constrained households.  That is
+  less of an issue for our work as all our taxpayers are homeowners
+  with assets that can used as collateral for a loan to pay taxes.  It
+  is true that homeowners, particularly the elderly, may not utilize
+  such loans, but that is problem of financial literacy not tax
+  compliance.  Second, while we both rely upon the fundamental work of
+  O'Donoghue and Rabin (1999), we amend that analysis to include the
+  insight of Akerlof (1991) on the importance of ``saliency'' to the
+  problem for procrastinators. We also extend the model to allow for
+  active tax enforcement by the city.}
 
-Following the analysis of O'Donoghue and Rabin (1999), our late
-taxpayer are seen as procrastinators who struggle with the problem of
-when to pay their property taxes.\footnote{We are not the first to
-  model taxpayer compliance as a problem of procrastination; see
-  Hallsworth, et. al.  (2014). We differ from their analysis in two
-  ways.  First, their focus is on late taxpayers as possibly
-  credit-constrained households.  That is less of an issue for our
-  work as all our taxpayers are homeowners with assets that can used
-  as collateral for a loan to pay taxes.  It is true that homeowners,
-  particularly the elderly, may not utilize such loans, but that is
-  problem of financial literacy not tax compliance.  Second, while we
-  both rely upon the fundamental work of O'Donoghue and Rabin (1999),
-  we amend that analysis to include the insight of Akerlof (1991) on
-  the importance of ``saliency'' to the problem for
-  procrastinators. We also extend the model to allow for active tax
-  enforcement by the city.}
-
-Our taxpayer makes this decision every two weeks or perhaps every
-month as they pay their family bills.  They can pay their taxes today,
-or postpone the decision until ``tomorrow.''  If they pay their taxes
+Our taxpayer makes a decision every two weeks or perhaps every month
+as they pay their family bills.  They can pay their taxes today, or
+postpone the decision until ``tomorrow.''  If they pay their taxes
 today, they bear the immediate cost equal to the payment made.
 Taxpayers enjoy a benefit from having paid their taxes, but those
 benefits are not realized until ``tomorrow,'' either as the simple
@@ -330,31 +340,31 @@ obligations to their fellow residents.\footnote{ We make the realistic
   whether they pay their taxes or not.  If they do not pay their
   taxes, then they will be free-riding on the good will of their more
   responsible neighbors.  }  This is O'Donoghue and Rabin's problem of
-the procrastinator facing immediate costs and delayed benefits. The decision 
-period is today at time $t$, where $t$ represents the number of
-periods since first receiving a notice that taxes are due. 
- In deciding today as to whether to pay or not pay taxes, the taxpayer's
-intertemporal utility function is specified over possible dates for
-payment. If the tax payer makes a payment at time $t$, lifetime utility at time
-$t$ is given by:
+the procrastinator facing immediate costs and delayed benefits. The
+decision period is today at time $t$, where $t$ represents the number
+of periods since first receiving a notice that taxes are due.  In
+deciding today as to whether to pay or not pay taxes, the taxpayer's
+inter-temporal utility function is specified over possible dates for
+payment. If the tax payer makes a payment at time $t$, lifetime
+utility at time $t$ is given by:
 \begin{eqnarray}\label{eq1}
 U_t^t  &=& (\varphi^{t+1} \beta \delta) \;  V - c_ t 
 \end{eqnarray}
-where $c_t$ is the cost of tax payment at time $t$ and $V$ is the
-benefit of knowing one’s taxes are paid but not enjoyed until the
+where $c_t$ is the cost of tax payment at time $t$, and $V$ is the
+benefit of knowing one's taxes are paid but not enjoyed until the
 period after payment.  We assume $V$ is constant for whenever taxes
 are paid. Later on we extend the model and show that $V$ may depend on
 notifications which may reinforce the benefits of tax compliance.
 
-Benefits $V$ one period hence are evaluated in today (period $t$)
-dollars allowing for declining saliency to future benefits and costs
-at rate $\varphi$ ($0 \le \varphi \le 1$), possible present bias to all
-discounting at rate $\beta$ ($0  \le \beta \le 1$), and the usual
-discounting of money values at rate $\delta$ ($0 \le \delta\le 1$).  If
-the tax payer plans to make a payment at time $t + s$, then the
-anticipated lifetime utility at time $t$ of that payment is given by:
+Benefits are evaluated in today (period $t$) dollars allowing for
+declining saliency to future benefits and costs at rate $\varphi$ ($0
+\le \varphi \le 1$), possible present bias to all discounting at rate
+$\beta$ ($0 \le \beta \le 1$), and the usual discounting of money
+values at rate $\delta$ ($0 \le \delta\le 1$).  If the tax payer plans
+to make a payment at time $t + s$, then the anticipated lifetime
+utility at time $t$ of that payment is given by:
 \begin{eqnarray}\label{eq2}
-U_t^{t+s} &=& (\varphi^{t+s+1} \beta \delta^{s+1}) V - (\varphi^{t+s}
+U_t^{t+s} &=& (\varphi^{t+s+1} \beta \delta^{s+1}) \; V \; - \; (\varphi^{t+s}
 \beta \delta^{s}) c_ {t+s} \; \; \; \; \; \; s=1,2, ...
 \end{eqnarray}
 where $c_{t+s}$ are the costs of tax payments at time $t+s$. The costs
@@ -365,58 +375,62 @@ While tax payments made today are realized as a cost  ($c_{t}$) today,
 tomorrow's tax payments and tomorrow's benefits are both realized in
 the next period, and are, therefore, discounted for today's decisions.
 Outcomes realized one period from today are discounted at the rate
-$(\varphi^{t+1} \beta \delta)$ and if realized in the two periods from
-today at the rate ( $\varphi^{t+2} \beta \delta^2)$. 
+$\varphi^{t+1} \beta \delta$ and if realized in the two periods from
+today at the rate $\varphi^{t+2} \beta \delta^2$. 
 
-In our analysis the time horizon of each individual period is
-relatively short, perhaps two weeks to a month between paying one's
-bills, and the overall decision horizon of our delinquent taxpayer's
-is no longer than seven months.  We will therefore assume $\delta=1$.
-The taxpayer may display a present bias, however, represented by a
-further discounting of future costs and benefits at a rate $\beta <1$;
-time consistent taxpayers do not display a present bias so $\beta=1$.
+In our analysis the length of each individual period is relatively
+short, perhaps two weeks to a month between paying one's bills, and
+the overall decision horizon of our delinquent taxpayer's is no longer
+than several months.  We will, therefore, assume that $\delta=1$.  The
+taxpayer may display a present bias, however, represented by a further
+discounting of future costs and benefits at a rate $\beta <1$; time
+consistent taxpayers do not display a present bias so $\beta=1$.
 Finally, our delinquent taxpayer may be forgetful which we represent
-as a declining rate of awareness or saliency, $\varphi^{t+s}$.  Constrained by bounded rationality, taxpayers may
-only be able to pay attention to limited set of facts or tasks.  For
-the forgetful taxpayer, $\varphi < 1$; for the fully aware taxpayer,
+as a declining rate of awareness or saliency, $\varphi^{t+s}$.
+Constrained by bounded rationality, taxpayers may only be able to pay
+attention to limited set of facts or tasks (Akerlof, 1991).  For the
+forgetful taxpayer, $\varphi < 1$; for the fully aware taxpayer,
 $\varphi = 1$. In the extreme future or for the very forgetful
 taxpayer, $\varphi \simeq 0$ - that is, ``out of sight, out of mind.''
 Introducing the concept of saliency is a relatively simply way to give
 ``reminders'' an explicit role in taxpayer compliance.\footnote{
   Saliency and reminders play a similar role in the behavioral
   economics of health policies; see \citeA{Kessler-Zhang-14} for a
-  review.}
+  review.} As we discuss in detail below, saliency can explain
+differences in the response rates of tax payers in the holdout sample
+and tax payers that just received a neutral reminder letter.
 
-Our analysis focuses on the taxpayer who O'Donoghue and Rabin identify
-as the naive procrastinator.  His payment behavior stands in contrast
-to that of the fully aware ($\varphi = 1$) and time consistent ($\beta
-= 1$) taxpayer who will always pay her taxes on time (see below) and
-the sophisticated procrastinator who recognizes she is forgetful
-and/or present biased but is able to commits to an optimal payment
-schedule in advance.  Here, that commitment device could be an escrow
-account with the mortgage bank or a city arranged tax payment plan.
-In contrast, the naive procrastinator assumes that he will remember to
-pay his taxes next period and do so in an optimal, time consistent way
--- but he does not.  As a result, he may keep postponing payment until
-the end of the tax year  when some drastic action -- for
-example, court seizure of the home or garnishment of wages -- is taken
-to collect all taxes, interest, and penalties due.  Since both time
-consistent and sophisticated procrastinators will have paid, or have
-arranged to have paid, their property tax, they will not be in our sample
-of late taxpayers.  Only naive procrastinators will be in our sample.
+Our analysis focuses on the type of taxpayer who O'Donoghue and Rabin
+identify as the naive procrastinator.  Her payment behavior stands in
+contrast to that of the fully aware ($\varphi = 1$) and time
+consistent ($\beta = 1$) taxpayer who will always pay her taxes on
+time (see below) and the sophisticated procrastinator who recognizes
+she is forgetful and/or present biased but is able to commit to an
+optimal payment schedule in advance.  Here, that commitment device
+could be an escrow account with the mortgage bank or a city arranged
+tax payment plan.  In contrast, the naive procrastinator assumes that
+she will remember to pay her taxes next period and do so in an
+optimal, time consistent way -- but she does not.  As a result, she
+may keep postponing payment until the end of the tax year when some
+drastic action -- for example, court seizure of the home or
+garnishment of wages -- is taken to collect all taxes, interest, and
+penalties due.  Since both time consistent and sophisticated
+procrastinators will have paid, or have arranged to have paid, their
+property tax, they will not be in our sample of late taxpayers.  Only
+naive procrastinators will be in our sample.
 
-How does the naive procrastinator decide to pay their taxes?   He will
-pay his taxes if the benefits from paying today are greater than
+How does the naive procrastinator decide to pay her taxes?  She will
+pay her taxes if the benefits from paying today are greater than
 benefits of paying at some later date.  Following O'Donoghue and
 Rabin, we assume the naive taxpayer adopts what they call a
-\textit{perception-perfect strategy} and pays their taxes today only
-if doing so gives them more perceived utility today than by paying at
+\textit{perception-perfect strategy} and pays her taxes today only if
+doing so gives them more perceived utility today than by paying at
 some future date.  In our problem with constant $V$ and rising costs
 $c_{t+s}$ because of accumulating interests and penalties, the best
 alternative date for paying taxes will always be in the immediate next
 period $ t + 1$.  If so and assuming $\delta=1$, the naive
-procrastinator pays today, if the lifetime utility of paying today are greater
-or equal to the lifetime utility if she delays:
+procrastinator pays today, if the lifetime utility of paying today are
+greater or equal to the lifetime utility if she delays:
 \begin{eqnarray}\label{eq3}
 (\varphi^{t+1} \beta) \; V - c_ t &\ge& (\varphi^{t+2} \beta) \; V -
   (\varphi^{t+1} \beta) \; c_ {t+1}
@@ -450,18 +464,18 @@ paying taxes in prior periods:\footnote{Strictly speaking interest and
   specification to reflect the grace period. All comparative statics
   from the model will be the same. }
 \begin{eqnarray}\label{eq5}
-c_{t+s} &=& T \; (1 + \rho)^{t+s} \; \; \; s=0,1,2,.
+c_{t+s} &=& T \; (1 + \rho)^{t+s} \; \; \; s=0,1,2,...
 \end{eqnarray}
-Substituting these definitions into equation (\ref{eq4}) gives:  
+Substituting this definition into equation (\ref{eq4}) gives:  
 \begin{eqnarray}\label{eq6}
-(\varphi^{t+1} \beta) \; (V (1-\varphi) + T \; (1 + \rho)^{t+1}) &\ge&
+\varphi^{t+1} \beta \; (V (1-\varphi) + T \; (1 + \rho)^{t+1}) &\ge&
   T \; (1 + \rho)^{t}
 \end{eqnarray}
 as the requirement for current period tax compliance.  More simply,
-re-arrange and divide both sides by $T(1 + \rho)^{t}$ and the condition
+rearrange and divide both sides by $T(1 + \rho)^{t}$ and the condition
 for immediate tax payment becomes:
 \begin{eqnarray}\label{eq7}
-(\varphi^{t+1} \beta) \;  (v (1-\varphi) +  (1 + \rho))  &\ge&   1
+\varphi^{t+1} \beta \;  (v (1-\varphi) +  (1 + \rho))  &\ge&   1
 \end{eqnarray}
 where $v = V/[T(1 + \rho)^{t}$] are the benefits of paying one's taxes
 per dollar of taxes (and penalties) paid.  The RHS of equation
@@ -470,7 +484,7 @@ of equation (\ref{eq7}) is the perceived costs of delaying and paying
 one's taxes in the next period.  The perceived costs of delay are
 equal to the future benefits ``forgotten'' per dollar of taxes paid
 \textit{plus} the added tax penalties from waiting.  The taxpayer will
-pay their taxes today if the cost of paying a tax dollar today is less
+pay her taxes today if the cost of paying a tax dollar today is less
 than or equal to the costs of waiting and paying that tax dollar in
 the next period.
 
@@ -485,33 +499,33 @@ that occurs through the payment of interest and penalties when taxes
 are paid, the city may also use an \textit{activist} enforcement
 strategy that audits some delinquent taxpayers at the beginning of the
 current period. Alternatively, we can interpret the enforcement
-strategy as taking out a lien
-and proceeding with a sheriff's sale.
+strategy as taking out a lien and proceeding with a sheriff's sale.
 
 If audited and determined to be a delinquent taxpayer, with
-probability $\pi$, the taxpayer must then pay an additional fine $F$ 
-in the next period.  $F$ might include ``booting''
-the taxpayer's car, removing the taxpayer's children from school until
-payment is received, or additional fines equal to added administrative
-costs plus penalties.  A city might target its activist strategy at
-those taxpayers with very large tax bills or with a long history of
-late payments.
+probability $\pi$, the taxpayer must then pay an additional fine $F$
+in the next period.  $F$ might include ``booting'' the taxpayer's car,
+removing the taxpayer's children from school until payment is
+received, or additional fines equal to added administrative costs plus
+penalties.  A city might target its activist strategy at those
+taxpayers with very large tax bills or with a long history of late
+payments.
 
-We assume, for simplicity, that enforcement is only in period $t$ and
-not later.\footnote{The extension to a model in which enforcement
-  occurs in each period with probability $\pi$ is not difficult and
-  all results summarized in Proposition 1 also apply in that model.}
-If the tax payer does not pay in period $t$, then under the activist
-enforcement strategy, the expected utility in the next period if there
-is delay must allow for the possible imposition of the penalty, $F$.
-In that case, the expected lifetime utility from a one period delay becomes:
+We assume, for simplicity, that activist enforcement is only in period
+$t$ and not later.\footnote{The extension to a model in which
+  enforcement occurs in each period with probability $\pi$ is not
+  difficult and all results summarized in Proposition 1 also apply in
+  that model.}  If the tax payer does not pay in period $t$, then
+under the activist enforcement strategy, the expected lifetime utility
+in the next period if there is delay must allow for the possible
+imposition of the penalty, $F$.  In that case, the expected lifetime
+utility from a one period delay becomes:
 \begin{eqnarray}\label{eq8}
 U_t^{t+1} &=& \pi  \; [\varphi^{t+2} \beta \; V - \varphi^{t+1} \beta c_
   {t+1} - \varphi^{t+1} \beta F ) \; +  \; (1-\pi) \;  [\varphi^{t+2} \beta V -
     \varphi^{t+1} \beta c_ {t+1}], \; \; \; \mbox{or}, \nonumber  \\ 
 &=& \varphi^{t+1} \beta \; [ \varphi V - c_ {t+1} - \pi F ]
  \end{eqnarray}
-Now the tax payer’s decision rule is to pay if the expected utility of
+Now the tax payer's decision rule is to pay if the expected utility of
 delay is less than the expected utility of paying today, or with the
 normalization that $f = F/(T(1 + \rho)^{t})$ , if:
 \begin{eqnarray}\label{eq9}
@@ -523,16 +537,16 @@ enforcement parameters $\pi$ and $f$. The following proposition then
 summarizes our analysis above.
 \begin{prop}
 Naive procrastinating taxpayers will pay their taxes today if their
-perceived costs of delaying payment are greater than or equal to the
-costs of paying their taxes today.  The likelihood of payment will
-increase as:
+perceived expected lifetime utility of delaying payment are greater
+than or equal to the lifetime utility of paying their taxes today.
+The likelihood of payment will increase as:
 \begin{enumerate}
 \item taxpayer saliency of future benefits and costs increases
   ($\varphi$ rises);
 \item taxpayer present bias is reduced ($\beta$ rises); 
 \item the benefits from the act of tax payment increases ($v$ rises);
 \item the rate of interest and penalties upon late payment increase
-  ($\rho$ rises);
+  ($\rho$ rises); and
 \item the enforcement probability ($\pi$) and the fines ($f$) increase.
 \end{enumerate}
 \end{prop}
@@ -543,68 +557,75 @@ empirical analysis of the experiment reported in Sections IV and V.
 
 \section{A Field Experiment }
 
- The research setting for the experiment is the City of Philadelphia
- for fiscal year, 2015.  Notices of property tax payments are sent on
- January 1, and the full balance of taxes are due by March 31.  If
- payment has not been received by that date, or the taxpayer has not
- entered into a tax payment plan with the City, then taxes are
- considered delinquent and interest and penalties begin to accrue.  On
- April 1, the City's Department of Revenue (DoR) begins contracting
- all taxpayers with unpaid accounts, informing them of taxes due and
- accumulated interest and penalties for late payment.  At this time,
- the City will normally send two-thirds of the delinquent accounts to outside
- collection agencies acting as co-counsel for the City.  The outside
- collection agencies are reimbursed at the rate of six percent of all
- their delinquent revenues collected by December 31.  The remaining
- one-third of the delinquent accounts remain with the DoR for
- collection.  All accounts still delinquent on December 31 are then
- assigned to new outside collection agencies.
 
-Our experiment was implemented with those taxpayers newly delinquent on
-March 31, 2105.  Of the
-579,828 properties in the city receiving 2015 tax bills, approximately
-100,000 or 17 percent were late in payment as of April 1.  Of these
-100,000 accounts, 27,264 accounts still owed more than \$10 as of May
-15. None had been assigned to the two outside collection agencies.
-For these 27,264 accounts, we identified the 19,333
-tax account holders responsible for payment. Our experiment
-therefore excludes all chronically delinquent taxpayers who owed taxes
-from prior years.  Of the 19,333 newly delinquent taxpayers, 2,393
-taxpayers owned more than one property.  While all 19,333 taxpayers
-were included in the experiment, we focus our empirical work on the
-16,940 taxpayers who owned only one property.\footnote{ As a
-  robustness check we repeated our empirical analysis for the full
-  sample of 19,333 taxpayers and the results are identical those we
-  report in Sections IV and V below. }  Our experiment began with the
-mailing of reminder letters in mid-June, 2015 and continued to
-December 31, 2015.  Of the unary taxpayers, 16,940 taxpayers
-received a standard or experimental reminder letter and 2,088 delinquent taxpayers did not
-receive a reminder.  This sample of 2,088 taxpayers became our
-``holdout'' sample and the basis for identifying the importance of
-saliency in taxpaying behavior. To ensure that our experiment was not contaminated by
-other treatments not under our control, the DoR agreed to postpone all
-other enforcement activities until August 15.  In particular, the
-outside collection agencies were not allowed to begin their collection
-efforts until after that date.  The likely earliest date that those
-efforts led to any contact with a taxpayer is September 1. 
+The research setting for the experiment is the City of Philadelphia
+for fiscal year, 2015.  Notices of property tax payments are sent on
+January 1, and the full balance of taxes are due by March 31.  If
+payment has not been received by that date, or the taxpayer has not
+entered into a tax payment plan with the City, then taxes are
+considered delinquent and interest and penalties begin to accrue.  On
+April 1, the City's Department of Revenue (DoR) begins contracting all
+taxpayers with unpaid accounts, informing them of taxes due and
+accumulated interest and penalties for late payment.  At this time,
+the City will normally send two-thirds of the delinquent accounts to
+outside collection agencies acting as co-counsel for the City.  The
+outside collection agencies are reimbursed at the rate of six percent
+of all their delinquent revenues collected by December 31.  The
+remaining one-third of the delinquent accounts remain with the DoR for
+collection.  All accounts still delinquent on December 31 are then
+assigned to new outside collection agencies. For the purposes of our
+experiment the City of Philadelphia agreed to delay sending the
+delinquent accounts to the collection agencies until August 15, 2015.
+
+Our experiment was implemented with those taxpayers newly delinquent
+on March 31, 2015.  Of the 579,828 properties in the city receiving
+2015 tax bills, approximately 100,000 or 17 percent were late in
+payment as of April 1.  Of these 100,000 accounts, 27,264 accounts
+still owed more than \$10 as of May 15. None had been assigned to the
+two outside collection agencies.  For these 27,264 accounts, we
+identified the 19,333 tax account holders responsible for payment. Our
+experiment therefore excludes all chronically delinquent taxpayers who
+owed taxes from prior years.  Of the 19,333 newly delinquent
+taxpayers, 2,393 taxpayers owned more than one property.  While all
+19,333 taxpayers were included in the experiment, we focus our
+empirical work on the 16,940 taxpayers who owned only one
+property.\footnote{ As a robustness check we repeated our empirical
+  analysis for the full sample of 19,333 taxpayers and the results are
+  identical those we report in Sections IV and V below. }  Our
+experiment began with the mailing of reminder letters in mid-June,
+2015 and continued to December 31, 2015.  Of the unary taxpayers,
+16,940 taxpayers received a standard or experimental reminder letter
+and 2,088 delinquent taxpayers did not receive a reminder.  This
+sample of 2,088 taxpayers became our ``holdout'' sample and the basis
+for identifying the importance of saliency in taxpaying behavior. To
+ensure that our experiment was not contaminated by other treatments
+not under our control, the DoR agreed to postpone all other
+enforcement activities until August 15.  In particular, the outside
+collection agencies were not allowed to begin their collection efforts
+until after that date.  The likely earliest date that those efforts
+led to any contact with a taxpayer is September 1.
 
 Each reminder letter in our experiment was drafted to identify the
 possible impact on taxpayer compliance of the key variables in
 equation (\ref{eq9}).  We could not, however, measure the effect of
 either taxpayer present bias ($\beta$) because our sample was limited
-to delinquent taxpayers only or the impact of a more activist
-enforcement strategy $(\pi, f)$ as the city had not adopted
-such a strategy in our sample year, 2015.  Our aim is to identify the
-potential importance of taxpayer saliency ($\varphi$), tax morales as
-they impact the benefits of tax payment ($v$), and interest and
-penalties ($\rho$).  Each reminder letter was approved by City's DoR
-to ensure that it could be understood by a taxpayer with at least a
-fourth or fifth grade level of English reading comprehension.  Each
-letter also provided contact information for assistance for
-non-English speaking taxpayers.  Translation were available for a number of
-different languages.\footnote{The full template for each letter is available
-as an online appendix.}  For brevity we present here the important
-distinguishing feature of each letter.
+to delinquent taxpayers only. We also cannot evaluate the direct
+impact of a more activist enforcement strategy $(\pi, f)$ as the city
+had not adopted such a strategy in our sample year, 2015.\footnote{It
+  is possible and consistent with our findings reported below that
+  lien and the sherif's sale notification strategies had an indirect
+  effect by changing the subjective beliefs regarding $(\pi,f)$.} Our
+main aim is to identify the potential importance of taxpayer saliency
+($\varphi$), tax morales as they impact the benefits of tax payment
+($v$), and interest and penalties ($\rho$).  Each reminder letter was
+approved by City's DoR to ensure that it could be understood by a
+taxpayer with at least a fourth or fifth grade level of English
+reading comprehension.  Each letter also provided contact information
+for assistance for non-English speaking taxpayers.  Translation were
+available for a number of different languages.\footnote{The full
+  template for each letter is available as an online appendix.}  For
+brevity we present here the important distinguishing feature of each
+letter.
 
 \bigskip
 
@@ -618,23 +639,23 @@ online at  www.phila.gov/pay. Paying by E-check only costs 35 cent
 \bigskip
 
  The reminder-only letter allows us to identify the potential
- importance of tax saliency to taxpayer compliance.  From
- equation \eqref{eq9} our holdout sample has a rate of saliency of
+ importance of tax saliency to taxpayer compliance.  From equation
+ \eqref{eq9} our holdout sample has a rate of saliency of
  $\varphi^{t+1}$ when evaluating future benefits and costs.  But those
- receiving our reminder letter today  have a rate of
- saliency when evaluating future benefits and costs of $\varphi$ only.
- When saliency is important, future taxes and
- benefits will be more salient after the receipt of the reminder, thus
- increasing the likelihood of taxpayer compliance. A higher rate of
- compliance among taxpayers receiving the reminder-only letter
- compared to those in the hold-out cohort identifies a separate role
- for saliency in taxpayer compliance.\footnote{Our experimental design
-   can identify the presence of saliency by an increase in compliance
-   for those receiving a reminder letter, but time staggered reminder
-   letters at a two-week or monthly interval would be needed to
-   identify the actual rate of saliency -- that is, the value of
-   $\varphi$.  This was not possible within the time constraints
-   imposed by DoR on our experiment.  }
+ receiving our reminder letter today have a rate of saliency when
+ evaluating future benefits and costs of $\varphi$ only.  When
+ saliency is important, future taxes and benefits will be more salient
+ after the receipt of the reminder, thus increasing the likelihood of
+ taxpayer compliance. A higher rate of compliance among taxpayers
+ receiving the reminder-only letter compared to those in the hold-out
+ cohort identifies a separate role for saliency in taxpayer
+ compliance.\footnote{Our experimental design can identify the
+   presence of saliency by an increase in compliance for those
+   receiving a reminder letter, but time staggered reminder letters at
+   a two-week or monthly interval would be needed to identify the
+   actual rate of saliency -- that is, the value of $\varphi$.  This
+   was not possible within the time constraints imposed by DoR on our
+   experiment.  }
    
 \bigskip
 
@@ -665,21 +686,21 @@ near you: $<$List Three Properties and Sale Dates$>$ \textbf{Pay your
 The reminder letter coupled with the threat of a lien, or a lien plus
 a sheriff's sale of the taxpayer's home, increase the expected
 interest and penalties to the costs of delay -- that is, an increase
-in $\rho$ and  $f$.  Both letters make clear that interest and penalties will
-be collected by listing neighborhood properties where these added
-enforcement measures have been implemented.  A taxpayer lien for all
-interest and penalties will be collected at the future date of home
-sale, which may be a very large obligation if the home is sold
-significantly in the future.  A lien coupled with a sheriff's sale may
-occur sooner and thus have lower accumulated interest and penalties,
-but the forced sale of one's home is likely to have very high psychic
-costs.  Which of the two added penalties is larger, and therefore
-likely to have a stronger impact on compliance, will depend upon the
-circumstances of the individual delinquent taxpayer.  However, both
-letters should increase compliance over the holdout cohort from the
-reminder effect on saliency and from the added expected penalty, and
-both letters should increase compliance over the reminder-only letter
-from the added expected penalty.
+in penalties ($\rho$).  Both letters make clear that interest and
+penalties will be collected by listing neighborhood properties where
+these added enforcement measures have been implemented.  A taxpayer
+lien for all interest and penalties will be collected at the future
+date of home sale, which may be a very large obligation if the home is
+sold significantly in the future.  A lien coupled with a sheriff's
+sale may occur sooner and thus have lower accumulated interest and
+penalties, but the forced sale of one's home is likely to have very
+high psychic costs.  Which of the two added penalties is larger, and
+therefore likely to have a stronger impact on compliance, will depend
+upon the circumstances of the individual delinquent taxpayer.
+However, both letters should increase compliance over the holdout
+cohort from the reminder effect on saliency and from the added
+expected penalty, and both letters should increase compliance over the
+reminder-only letter from the added expected penalty.
 
 Our final four reminder letters test for the potential role of ``tax
 morale'' motives for compliance.  An appeal to a tax morale is meant
@@ -746,15 +767,14 @@ community services.  \textbf{By failing to do so, you are not meeting
 
 \bigskip
 
-The morale benefits from knowing one has paid one's taxes equals
-a weighted average of these motivations ($v$) plus a possible
-additional weight ($v_{i}$) when one of the reminder letters
-reinforces or enhances the affected benefit from tax payment:
-$v + \sum_{i} \omega_{i} v_{i}$, where $i =$ N, C, P, or D,
-and where $\omega_{i} = 1$ if a reminder letter is received targeting
-benefit $i$, and $v_{i}$ is the additional weight given to that
-motivation. We take as evidence that a particular tax morale increases
-and thus, from our Proposition, increases the likelihood of tax
+The morale benefits from knowing one has paid one's taxes equals a
+weighted average of these motivations ($v$) plus a possible additional
+weight ($v_{i}$) when one of the reminder letters reinforces or
+enhances the affected benefit from tax payment: $v + \sum_{i}
+\omega_{i} v_{i}$, where $i =$ N, C, P, or D, and where $\omega_{i} =
+1$ if a reminder letter is received targeting benefit $i$, and $v_{i}$
+is the additional weight given to that motivation. We take as evidence
+that an increase in tax morale increases the likelihood of tax
 compliance when a tax morale reminder letter increases the rate of
 compliance above that of those receiving a reminder-only letter.  If
 none of the tax morale letters impact compliance above a reminder-only
@@ -768,36 +788,37 @@ reminders and penalties.
 
 Randomization took place in two stages.  As a baseline control, we
 randomly removed 3,000 delinquent properties from the possibility of
-receiving any reminder letter at all.  These taxpayers (N=2,088) became our
-holdout sample and allowed us to estimate the efficacy of simply
-communicating with the taxpayer after the date that taxes are due. We
-next grouped all remaining properties by owner and block randomized
-all owners to treatments based on the total amount of property taxes
-owed on all of their properties. Since most property owners and
-delinquent property owners own only one property, our main interest in
-this study is on unary owners, i.e. households that only own one
-property in the city. Once we restrict attention to this sample,we
-have 16,940 observations in the treatment group and 2,088 observations
-in the holdout sample.  The total sample size is 19,028.\footnote{We
-  also trimmed the sample and excluded the 28 owners with highest
-  total assessed property value. None of the findings reported in the
-  paper depend on this trimming.}  Table \ref{balance} checks whether
-the treatment and control group are balanced based on the two most
-important variables, amount due and assessed property value. 
+receiving any reminder letter at all.  These taxpayers (N=2,088)
+became our holdout sample and allowed us to estimate the efficacy of
+simply communicating with the taxpayer after the date that taxes are
+due. We next grouped all remaining properties by owner and block
+randomized all owners to treatments based on the total amount of
+property taxes owed on all of their properties. Since most property
+owners and delinquent property owners own only one property, our main
+interest in this study is on unary owners, i.e. households that only
+own one property in the city. Once we restrict attention to this
+sample,we have 16,940 observations in the treatment group and 2,088
+observations in the holdout sample.  The total sample size is
+19,028.\footnote{We also trimmed the sample and excluded the 28 owners
+  with highest total assessed property value. None of the findings
+  reported in the paper depend on this trimming.}  Table \ref{balance}
+checks whether the treatment and control group are balanced based on
+the two most important variables, amount due and assessed property
+value.
 
 Table \ref{balance} shows that randomization was successful in the
 unary owner sample.  The average debt owed by each owner was \$1,287
 in the treatment group and \$1,233 in the holdout sample. The average
 assessed property value is \$144,145 in the treatment group and
-\$142,630 in the control group. As a further test of our randomization 
-procedure, we also checked to see whether randomization achieved spatial 
-uniformity throughout the geographic expanse of the city. As reported in 
-Table \ref{balance} geographic balance was achieved.
+\$142,630 in the control group. As a further test of our randomization
+procedure, we also checked to see whether randomization achieved
+spatial uniformity throughout the geographic expanse of the city. As
+reported in Table \ref{balance} geographic balance was achieved.
 
 Next we test whether randomization was successful among the seven
-experimental treatment groups. Table \ref{balance} shows the results for the unary
-owner sample. Overall, we find no
-evidence that would suggest any problems with randomization.
+experimental treatment groups. Table \ref{balance} shows the results
+for the unary owner sample. Overall, we find no evidence that would
+suggest any problems with randomization.
 
 
 
@@ -806,32 +827,31 @@ evidence that would suggest any problems with randomization.
 \caption{Balance on Observables (Unary Owners)}\label{balance}
 \vspace{10mm}
 \begin{tabular}{lrrrrrrrrc}
-\hline
-  \hline
-Variable & Holdout & Control & Neighborhood & Community & Duty & Peer & Lien & Sheriff & $p$-value \\ 
-   \hline
-Amount Due (June) & \$1,233 & \$1,256 & \$1,289 & \$1,290 & \$1,299 & \$1,280 & \$1,280 & \$1,315 & 0.92 \\ 
- Property Value & \$142,630 & \$158,370 & \$159,079 & \$130,265 & \$165,617 & \$130,936 & \$130,642 & \$134,334 & 0.53 \\ 
-   \hline
-Center City & 109 & 111 & 118 & 105 & 129 & 114 & 109 & 115 & 0.67 \\ 
-  Northeast Philadelphia & 352 & 427 & 397 & 399 & 394 & 427 & 383 & 370 &  \\ 
-  North Philadelphia & 449 & 520 & 491 & 498 & 527 & 533 & 525 & 526 &  \\ 
-  Northwest Philadelphia & 537 & 601 & 620 & 654 & 611 & 615 & 645 & 666 &  \\ 
-  South Philadelphia & 210 & 211 & 242 & 234 & 248 & 241 & 253 & 239 &  \\ 
-  West Philadelphia & 431 & 549 & 519 & 551 & 523 & 486 & 514 & 500 &  \\ 
-   \hline
-\# Owners & 2,088 & 2,419 & 2,387 & 2,441 & 2,432 & 2,416 & 2,429 & 2,416 &  \\ 
-  \hline
-\multicolumn{10}{l}{\scriptsize{$p$-values in rows 1-2 are $F$-test $p$-values from regressing each variable on treatment dummies. A $\chi^2$ test was used for the geographic distribution.}} \\
+\hline \hline Variable & Holdout & Control & Neighborhood & Community
+& Duty & Peer & Lien & Sheriff & $p$-value \\ \hline Amount Due (June)
+& \$1,233 & \$1,256 & \$1,289 & \$1,290 & \$1,299 & \$1,280 & \$1,280
+& \$1,315 & 0.92 \\ Property Value & \$142,630 & \$158,370 & \$159,079
+& \$130,265 & \$165,617 & \$130,936 & \$130,642 & \$134,334 & 0.53
+\\ \hline Center City & 109 & 111 & 118 & 105 & 129 & 114 & 109 & 115
+& 0.67 \\ Northeast Philadelphia & 352 & 427 & 397 & 399 & 394 & 427 &
+383 & 370 & \\ North Philadelphia & 449 & 520 & 491 & 498 & 527 & 533
+& 525 & 526 & \\ Northwest Philadelphia & 537 & 601 & 620 & 654 & 611
+& 615 & 645 & 666 & \\ South Philadelphia & 210 & 211 & 242 & 234 &
+248 & 241 & 253 & 239 & \\ West Philadelphia & 431 & 549 & 519 & 551 &
+523 & 486 & 514 & 500 & \\ \hline \# Owners & 2,088 & 2,419 & 2,387 &
+2,441 & 2,432 & 2,416 & 2,429 & 2,416 & \\ \hline
+\multicolumn{10}{l}{\scriptsize{$p$-values in rows 1-2 are $F$-test
+    $p$-values from regressing each variable on treatment dummies. A
+    $\chi^2$ test was used for the geographic distribution.}} \\
 \end{tabular}
 \end{sidewaystable}
 
 While the vast majority of properties in the city of Philadelphia are
 owned by unary owners, approximately 10 percent of the properties are
-owned by individuals or firms that own multiple properties. Since we are 
-interested in taxpayer compliance and not property
-compliance, we identified owners of multiple delinquent properties by
-their legal name and randomly assigned each owner to a treatment
+owned by individuals or firms that own multiple properties. Since we
+are interested in taxpayer compliance and not property compliance, we
+identified owners of multiple delinquent properties by their legal
+name and randomly assigned each owner to a treatment
 group.\footnote{We lacked an objective identifier such as a social
   security.  There is some possibility that two or more different
   owners have the same name, but inspection by the authors found this
@@ -843,19 +863,18 @@ between the propensity to pay taxes and total debt owed, randomization
 blocks were defined according to owner-level total debt to assure
 uniformity of samples along the dimension of debt owed. Each property
 assigned to receive a reminder letter was equally likely to receive
-each of the seven treatments. Results for multiple property owners, which
-do not differ from results for unary property owners, are reported
-in the appendix.
-
-Including the holdout sample and excluding multiple owners gives us a
-sample size of 19,028 observations.\footnote{Unfortunately, we were
-  not able to include the holdout sample in the block-randomization
-  procedure. As a consequence, we can only include the holdout sample
-  into our analysis if we condition on unary ownership.} Table \ref{balance2}
-in the Appendix displays the balance tests for pre-randomization characteristics
-\ref{balance}. We also confirmed that randomization was also successful 
-in this larger sample that included multiple property owners.  There
-are no statistically significant differences across reminder letters.
+each of the seven treatments. Results for multiple property owners,
+which do not differ from results for unary property owners, are
+reported in Table \ref{balance2} in the appendix.  Including the
+holdout sample and excluding multiple owners gives us a sample size of
+19,028 observations.\footnote{Unfortunately, we were not able to
+  include the holdout sample in the block-randomization procedure. As
+  a consequence, we can only include the holdout sample into our
+  analysis if we condition on unary ownership.} Table \ref{balance2}
+displays the balance tests for pre-randomization characteristics
+\ref{balance}. It confirms that randomization was also successful in
+this larger sample that included multiple property owners.  There are
+no statistically significant differences across reminder letters.
 
 \section{Empirical Results}
 
@@ -1039,9 +1058,10 @@ sample. This evidence leads us to conclude that owners of multiple
 properties are less likely to respond the kind of nudge strategies
 explored in this paper.
 
-Finally, we estimated all models using Logit models instead of linear probability
-models. The results are reported in Tables \ref{sh_logit} and \ref{sh_logit_rob} in the Appendix. Overall,
-the results are qualitatively and quantitatively very similar.
+Finally, we estimated all models using Logit models instead of linear
+probability models. The results are reported in Tables \ref{sh_logit}
+and \ref{sh_logit_rob} in the Appendix. Overall, the results are
+qualitatively and quantitatively very similar.
 
 \subsection{Long-Term Impact}
 
@@ -1183,133 +1203,85 @@ tax compliance in 2016. However, it is worth noting that the overall
 compliance rate in 2016 was significantly higher than that in 2015,
 which may be a direct consequence of our increased enforcement
 activities.
- 
-\section{Policy Impact  (NEEDS TO BE REWRITTEN)}
-
-Our research had some direct impact on the tax enforcement activities
-of the City of Philadelphia. In the fall of 2015, the City decided to mail 
-letters to delinquent owners of more
-than 4,000 selective properties, warning them of an impending lien
-sale. the Philadelphia Magazine reported in July 2015 that ``the
-threat was clear: If they didn't pay their delinquent taxes, the city
-would try to sell their debts to a third party. Out of the 4,000-plus
-properties, 1,419 of the owners paid their delinquent taxes in full,
-while 645 paid their 2015 taxes. The city reaped \$5.5 million in
-cash, as well as an additional \$2.2 million in expected payment
-agreements. [..] In other words, it appears that a lien sale is an incredibly effective
-tool with which to threaten property owners who have not paid their
-taxes.'
 
 
-In 2016 the city then
-  decided to send a version of our sheriff's sale letter to all late
-  tax payers in the summer of 2016. The appendix shows the letter used
-  by the city which is almost identical to the letter that we used in
-  our experiment.  Compared to the years before the experiment, in
-  which roughly 24,000 accounts were sent for action by outside
-  revenue collections firms (23,187--FY'14 and 24,922--FY'15), in the
-  year of the experiment (FY'16) only 18,004 accounts were sent for
-  collection. 
-  
-\section{Conclusions (NEEDS TO BE REWRITTEN)}
+\section{Conclusions}
 
 
-We have designed and implemented a new, multi-arm field experiment
-designed to test which low-cost notification strategies increase
-property tax payment rates. Our results suggest that notification
-strategies are effective at reducing tax delinquency and increasing
-tax revenue collection.  Our different treatments are motivated by a
-wide swath of theorized ``nudges'' including social norming, moral
-suasion, tax morale, and deterrence. Our results suggest that all
-treatments are successful in increasing tax compliance and raising
-revenue for the City in the short run. Hence, a revenue director can
-choose from a menu of effective messages to increase tax compliance and
-revenue collection.
+Collection of the property tax has been problematic in many
+U.S. cities.  Noncompliance a significant concern since local
+governments are denied the revenues needed to provide basic public
+services essential for ensuring the safety, health, and minimal
+well-being of all citizens. If there is significant non-compliance and
+basic services are to be provided, then tax rates will need to rise on
+those who pay taxes. Non-compliance also undermines the principle that
+everyone has to pay their ``fair share" of taxes. Given the
+administrative advantages of the property tax, payment is primarily a
+matter of enforcement.  Despite the fact that there are no obvious
+financial gains to not paying property taxes, we observe that a
+significant fraction of tax payers do not pay on time. We follow
+Akerlof (1991) and O'Donoghue and Rabin (1999) and model tarty or
+delinquent tax payers as procrastinators. Payment delay occurs in our
+model because of present bias and declining saliency.
 
-There are, however, some important quantitative differences in the
-effectiveness of the different messages, which imply some trade-offs
-faced by the revenue director. Credible threats regarding the
-foreseeable consequences of nonpayment are much more effective than
-other treatments that rely on moral persuasions or appeals to civic
-duty. While these results differ from some recently reported studies
-\cite{delcarpio,Hallsworth-14}, it is quite consistent with others
-that share a focus on estimating the impact of notification strategies
-on tax delinquents rather than all potential
-taxpayers\cite{castro,Hallsworthb-14}.  If a revenue director wants to
-generate more property tax collection in a setting such as
-Philadelphia, it appears that he or she should choose a tougher and
-politically more costly message.
+We then designed and implemented a new, multi-arm field experiment in
+the City of Philadelphia.  Within the structure of our experiment, we
+can identify and estimate the relative importance of the key
+parameters within our model.  Note that present bias is always present
+and helps to distinguish regular tax ayers from delinquent tax payers.
+Our experiment has, therefore, focused on first time delinquent tax
+payers.  Our model suggests that saliency can be nudged by a reminder
+letter.  Saliency can explain the large and significant differences in
+payment rates between individuals in our hold-out sample and those
+that received any type of reminder letter. The additional gains of
+letters that stress tax moral over neutral reminder letters are
+insignificant. We modeled these reminder letters as utility gains to
+the procrastinator from paying ones taxes. Our empirical results are
+consistent with the view that there are no additional utility gains
+form stressing various aspects of tax moral. In contrast, the reminder
+letters stressing liens or liens and the sale of one's home add a
+future expected cost to non-payment as in the tax compliance model of
+Allingham and Sandmo (1972).  We find that these reminder letters
+consistently outperform simple reminder letters in the short and the
+long run.  We find that these letters are also effective, but the
+gains are smaller than the letters that reinforce deterrence. Finally,
+we found that, conditional on any payment, most tardy tax payers
+became near perfect compliers, making full payments in almost all
+cases. This suggests that, at least for the margin affected, liquidity
+constraints are not the primary reason for initial non-payment.
 
-The long-run effects of our intervention are somewhat harder to assess.  We
-still find that credible threat notifications increase repayment rates
-and revenues after six months, although the effects are smaller than
-the ones observed in the short run.  All tax payers that were still
-tardy three months after our experiment were contacted by a collection
-agency that engaged in serious enforcement activities. We think it is
-likely that this additional treatment may explain the convergence in
-the effectiveness of our treatments that we observe in the data.
+Our results clearly suggest that many tax delinquents are struggling
+with making timely payments, which may be partially due to a lack of
+salience. The provision of detailed information had a clear impact on
+the likelihood of repayment. Our main result echoes other recent
+findings that clear, consistent, and timely provision of information
+on consequences, particularly in the context of compliance monitoring,
+can lead to notable improvements in behavioral compliance
+\cite{Bhargava-15}. The puzzle of high non-payment rates can also be
+understood as a case of under-enforcement.
 
-Overall, our findings suggests that increasing tax compliance at low
-cost is possible. More research is needed on the reasons for different
-behavioral responses to economic and non-economic messages. 
-Perhaps the differences in the effectiveness of the various
-treatments lie in alternative theories of why tax delinquents exist in
-the first place? Non-economic theories of non-payment
-implicitly rest on the assumption that non-compliers are not
-liquidity-constrained and are merely unaware of the collective
-consequences of non-payment. Under this analysis, tax delinquency is
-due to discouragement, indifference, lack of appreciation, or
-unawareness. Delinquents merely need to be encouraged or reminded to
-participate. If tax delinquents are discouraged, providing them with
-information about peer behavior, neighborhood or civic duty increases
-the overall rate of tax compliance. This may reflect the fact that
-delinquents are not indifferent to their peers' positive and negative
-behavior. Likewise, the provision of information on public goods
-assumes that recipients have not incorporated consideration of public
-goods funded through tax dollars into their payment behavior.  Our
-results, however, suggest that this is an incomplete explanation for
-tax delinquency in Philadelphia.\footnote{We explored differences in
-envelope size as a potential avenue to increase revenues. We observe
-no effect of increased envelope size.  Apparently, taxpayers open
-tax bills even if they do not pay them.}
-
-Our results do clearly suggest that many tax delinquents are seemingly
-unaware of the consequences of nonpayment. Our provision of detailed
-information about the collection process had a clear impact on the
-likelihood of repayment. This result echoes other recent findings that
-clear, consistent, and timely provision of information on
-consequences, particularly in the context of compliance monitoring,
-can lead to notable improvements in behavioral compliance -- see also
-\citeA{hawken,Bhargava-15}. Perhaps, then, the puzzle of high
-non-payment rates can be understood as a case of
-under-enforcement. This possibility is bolstered by the fact that,
-conditional on any payment, converted defiers became near perfect
-compliers, making full payments in almost all cases. This suggests
-that, at least for the margin affected, liquidity constraints are not
-the primary reason for initial non-payment.
-
-Notification strategies that convey information about enforcement
-activities are best viewed as complements and not substitutes to
-traditional enforcement activities.  Notifications provide information
-about enforcement, thus resolve some problems that arise because some
-tax payers are not well informed about the consequences of
-non-compliance.  Providing credible and tangible information can then
-help to overcome this incomplete information problem.  However, any
-threat to take a lien on a house or to start a foreclosure process can
-only be credible if it is backed up by real actions. It is hard to
-believe that notifications strategies that convey empty threats on
-enforcement activities can be effective.
-
-The main insights and empirical results of this study are promising
-for future research. For example, an interesting additional experiment
-would compare the effectiveness of our notification strategies to the
-effectiveness of the enforcement activities by the collection
-agency. Presumably a large fraction of the success of the collection
-agencies could be achieved by properly targeted notifications at much
-lower cost. Such an experiment might allow us to design potentially
-more cost-effective strategies to increase property tax collection and
-reduce the dependency on professional collection agencies.
-
+Our results suggest that a variety of treatments may be successful in
+increasing tax compliance and raising revenue for any city that is
+struggling with collecting property taxes. Hence, a revenue director
+can choose from a menu of effective messages to increase tax
+compliance and revenue collection. There are, however, some important
+quantitative differences in the effectiveness of the different
+messages, which imply some trade-offs faced by the revenue director.
+If a revenue director wants to generate more property tax collection
+in a setting such as Philadelphia, it appears that he or she should
+choose a tougher and politically more costly message.  Compared to the
+years before the experiment, in which roughly 24,000 accounts were
+sent for action by outside revenue collections firms (23,187--FY'14
+and 24,922--FY'15), in the year of the experiment (FY'16) only 18,004
+accounts were sent for collection. In 2016 the City of Philadelphia
+decided to send a version of our sheriff's sale letter to all late tax
+payers in the summer of 2016.\footnote{The appendix shows the letter
+  used by the city which is almost identical to the letter that we
+  used in our experiment.} Our experiment, therefore, changed the
+equilibrium and convinced the City of Philadelphia to adopt a more
+promising enforcement strategy.  It is reasonable to conjecture that
+other U.S. cities that have struggled with collecting property taxes,
+could benefit from the insights of this paper.
 
 \newpage
 
@@ -1324,52 +1296,22 @@ reduce the dependency on professional collection agencies.
 
 \bigskip
 
+\newpage
+
 \begin{appendix}
 
 \section{Appendix: Additional Figures and Tables}
 
-The appendix contains Table \ref{balance2} which summarizes
- additional balance tests. It also contains Tables \ref{sh_logit}
- and \ref{sh_logit_rob} which report estimates based on Logit models.
- 
- Finally, we include the originial reminder letter that was used by the city 
- prior to our experiment in Figure 1 and the one that adopted by the city in 2016 in Figure 2.
-
-\begin{sidewaystable}[htbp]
-\centering
-\caption{Balance on Observables (cont.)}\label{balance2}
-\bigskip
-\begin{tabular}{lrrrrrrrc}
-\hline
-\multicolumn{9}{c}{Unary Owners} \\
-\hline
-Variable & Control & Neighborhood & Community & Duty & Peer & Lien & Sheriff & $p$-value \\ 
-\hline
-Amount Due (June) & \$1,256 & \$1,289 & \$1,290 & \$1,299 & \$1,280 & \$1,280 & \$1,315 & 0.98 \\ 
-Assessed Property Value & \$158,370 & \$159,079 & \$130,265 & \$165,617 & \$130,936 & \$130,642 &
- \$134,334 & 0.46 \\ 
-\# Owners & 2,419 & 2,387 & 2,441 & 2,432 & 2,416 & 2,429 & 2,416 & 0.99 \\ 
-\hline
-\multicolumn{9}{c}{Unary and Multiple Owners} \\
-\hline
-Variable & Control & Neighborhood & Community & Duty & Peer & Lien & Sheriff & $p$-value \\ 
-\hline
-Amount Due (June) & \$1,593 & \$1,589 & \$1,583 & \$1,583 & \$1,572 & \$1,593 & \$1,590 & 1 \\ 
-Assessed Property Value & \$180,664 & \$180,172 & \$153,528 & \$183,991 & \$155,438 & \$155,499 & \$157,398 & 0.48 \\ 
-\% with Unary Owner & 87.6 & 86.4 & 88.4 & 88.1 & 87.5 & 88.0 & 87.5 & 0.42 \\ 
-\% Overlap with Holdout & 3.69 & 3.73 & 3.40 & 3.40 & 3.55 & 3.44 & 3.29 & 0.97 \\ 
-\# Properties per Owner & 1.27 & 1.32 & 1.26 & 1.26 & 1.26 & 1.26 & 1.26 & 0.67 \\ 
-\# Owners & 2,762 & 2,762 & 2,762 & 2,762 & 2,762 & 2,761 & 2,762 & 1 \\ 
-\hline
-\multicolumn{9}{l}{\scriptsize{$p$-values in rows 1-5 are $F$-test
-    $p$-values from regressing each variable on treatment dummies. A
-    $\chi^2$ test was used for the count of owners.}} \\
-\end{tabular}
-\end{sidewaystable}
+The appendix contains Tables \ref{sh_logit} and \ref{sh_logit_rob}
+which report estimates based on Logit models.  It also contains Table
+\ref{balance2} which summarizes additional balance tests. Finally, we
+include the original reminder letter that was used by the city prior
+to our experiment in Figure 1 and the letter that was adopted by the
+city in 2016 in Figure 2.
 
 
 
-\begin{table}
+\begin{table}[htb]
 \caption{Short-Term Logistic Model Estimates}\label{sh_logit}
 \begin{center}
 \begin{tabular}{l c c c c }
@@ -1399,7 +1341,9 @@ Log Likelihood & -12238.6     & -13026.4    & -10794.8     & -13038.7     \\
 Deviance       & 24477.1      & 26052.9     & 21589.6      & 26077.5      \\
 Num. obs.      & 19028        & 19028       & 19028        & 19028        \\
 \hline
-\multicolumn{5}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. Holdout values in levels; remaining figures relative to this}}
+\multicolumn{5}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$,
+    $^*p<0.1$. Holdout values in levels; remaining figures relative to
+    this}}
 \end{tabular}
 \end{center}
 \end{table}
@@ -1438,6 +1382,40 @@ Num. obs.      & 19333        & 19333        & 16940        & 16940        \\
 \end{center}
 \end{table}
 
+
+\begin{sidewaystable}[htbp]
+\centering
+\caption{Balance on Observables (cont.)}\label{balance2}
+\bigskip
+\begin{tabular}{lrrrrrrrc}
+\hline
+\multicolumn{9}{c}{Unary Owners} \\
+\hline
+Variable & Control & Neighborhood & Community & Duty & Peer & Lien & Sheriff & $p$-value \\ 
+\hline
+Amount Due (June) & \$1,256 & \$1,289 & \$1,290 & \$1,299 & \$1,280 & \$1,280 & \$1,315 & 0.98 \\ 
+Assessed Property Value & \$158,370 & \$159,079 & \$130,265 & \$165,617 & \$130,936 & \$130,642 &
+ \$134,334 & 0.46 \\ 
+\# Owners & 2,419 & 2,387 & 2,441 & 2,432 & 2,416 & 2,429 & 2,416 & 0.99 \\ 
+\hline
+\multicolumn{9}{c}{Unary and Multiple Owners} \\
+\hline
+Variable & Control & Neighborhood & Community & Duty & Peer & Lien & Sheriff & $p$-value \\ 
+\hline
+Amount Due (June) & \$1,593 & \$1,589 & \$1,583 & \$1,583 & \$1,572 & \$1,593 & \$1,590 & 1 \\ 
+Assessed Property Value & \$180,664 & \$180,172 & \$153,528 & \$183,991 & \$155,438 & \$155,499 & \$157,398 & 0.48 \\ 
+\% with Unary Owner & 87.6 & 86.4 & 88.4 & 88.1 & 87.5 & 88.0 & 87.5 & 0.42 \\ 
+\% Overlap with Holdout & 3.69 & 3.73 & 3.40 & 3.40 & 3.55 & 3.44 & 3.29 & 0.97 \\ 
+\# Properties per Owner & 1.27 & 1.32 & 1.26 & 1.26 & 1.26 & 1.26 & 1.26 & 0.67 \\ 
+\# Owners & 2,762 & 2,762 & 2,762 & 2,762 & 2,762 & 2,761 & 2,762 & 1 \\ 
+\hline
+\multicolumn{9}{l}{\scriptsize{$p$-values in rows 1-5 are $F$-test
+    $p$-values from regressing each variable on treatment dummies. A
+    $\chi^2$ test was used for the count of owners.}} \\
+\end{tabular}
+\end{sidewaystable}
+
+
 \end{appendix}
 
 \begin{figure}
@@ -1452,10 +1430,4 @@ Num. obs.      & 19333        & 19333        & 16940        & 16940        \\
 \end{center}
 \end{figure}
 
-\newpage
-
-
-
 \end{document}
-
-
