@@ -163,18 +163,24 @@ tbl <- capture.output(texreg(lapply(c(lapply(expression(
   lapply(expression(`One Month` = ever_paid_jul, 
                     `Three Months` = ever_paid_sep),
          function(x) owners[(!holdout & unq_own), lm(eval(x) ~ treat7)])),
-  rename_coef, nn = 7), omit.coef = "Control", 
+  rename_coef, nn = 7), 
   include.rsquared = FALSE, include.rmse = FALSE,
   include.adjrs = FALSE, stars = c(.001, .05, .1),
   caption = "Robustness Analysis: Multiple Owners",
   label = "sh_lpm_rob", caption.above = TRUE))
 
-idx <- grep("^\\\\begin\\{tabular\\}", tbl)
+## Replace Control SEs with horizontal rule, 
+##   eliminate significance for intercept,
+##   add header for Ever Paid vs. Paid in Full
+idx <- grep("^Control", tbl)
 
-tbl <- c(tbl[1L:(idx + 1L)], 
+tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
+
+tbl <- c(tbl[1L:(idx - 3L)],
          " & \\multicolumn{2}{c}{All Owners} & " %+% 
            "\\multicolumn{2}{c}{Unary Owners} \\\\",
-         tbl[(idx + 2L):length(tbl)])
+         tbl[c(idx - 2L, idx)],
+         "\\hline", tbl[(idx + 2L):length(tbl)])
 
 cat(tbl, sep = "\n")
 
