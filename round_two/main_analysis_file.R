@@ -180,8 +180,8 @@ cat(tbl, sep = "\n")
 
 # TABLE 5: Regression - Ever Paid/Paid Full @ 6 & 12 Months, LPM ####
 tbl <- capture.output(texreg(lapply(lapply(expression(
-  `Six Months` = ever_paid_dec, `Tax Year 2016` = ever_paid_jul16,
-  `Six Months` = paid_full_dec, `Tax Year 2016` = paid_full_jul16),
+  `Ever Paid` = ever_paid_dec, `Paid in Full` = paid_full_dec,
+  `Ever Paid` = ever_paid_jul16, `Paid in Full` = paid_full_jul16),
   function(x) owners[(unq_own), lm(I(100 * eval(x)) ~ treat8)]),
   rename_coef, nn = 8), stars = c(.01, .05, .1), 
   include.rsquared = FALSE, caption.above = TRUE,
@@ -196,8 +196,8 @@ idx <- grep("^Holdout", tbl)
 tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
 
 tbl <- c(tbl[1L:(idx - 3L)],
-         " & \\multicolumn{2}{c}{Ever Paid} & " %+% 
-           "\\multicolumn{2}{c}{Paid in Full} \\\\",
+         " & \\multicolumn{2}{c}{Six Months} & " %+% 
+           "\\multicolumn{2}{c}{Subsequent Tax Cycle} \\\\",
          tbl[c(idx - 2L, idx)],
          "\\hline", tbl[(idx + 2L):length(tbl)])
 
@@ -243,6 +243,18 @@ cum_haz<-owners[(unq_own),sum(ever_paid_dec)+0.,
                       ][,.(treat7=treat8[idx<-treat8!="Holdout"],
                            ep=ep[idx]-ep[!idx]),by=date]
 
+owners[(unq_own),sum(ever_paid_dec)+0.,
+                keyby=.(rec = treat8 == "Holdout",earliest_pmt_dec)
+                ][,.(ep=cumsum(V1[idx<-!is.na(earliest_pmt_dec)]),
+                     date=earliest_pmt_dec[idx]),by=rec
+                  ][owners[(unq_own),.N,by = .(rec = treat8 == "Holdout")],ep:=ep/i.N,on="rec"
+                    ]
+
+owners[,sum(ever_paid_dec)+0.,
+                keyby=earliest_pmt_dec
+                ][,.(ep=cumsum(V1[idx<-!is.na(earliest_pmt_dec)]),
+                     date=earliest_pmt_dec[idx])
+                  ][month(date) %in% 8:9]
 dtunqown = owners[(unq_own)]
 BB <- 5000
 cis <- dcast(rbindlist(lapply(integer(BB), function(...){
