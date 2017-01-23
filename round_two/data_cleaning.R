@@ -67,9 +67,21 @@ full_sep <- read_excel(
   wds["data"] %+%
     "req20150709_PennLetterExperiment (September 2015 update) v2.xlsx",
   sheet = "DETAILS", skip = 7L, na = "-",
-  col_names = c("x", "opa_no", rep("x", 9L), "paid_full_sep",
-                "ever_paid_sep", rep("x", 12L)),
-  col_types = abbr_to_colClass("btbtbb", "119293"))
+  col_names = c(`ACCOUNT-ID` = "x", `BRT NUMBER` = "opa_no",
+                `PROP ADDR` = "x", `PZIP5` = "x", `Y_LAT` = 'x',
+                `X_LONG` = 'x', `TREATMENT` = 'x', `ENVELOPE TYPE` = 'x',
+                `MESSAGE TYPE` = 'x', `TOTAL DUE (MAY 2015)` = 'x',
+                `PRE 2015 BALANCE` = 'x', 
+                `CURRENT AMOUNT OWED` = "paid_full_sep",
+                `PAYMENT(S) MADE` = "ever_paid_sep", `AGREEMENT` = 'x',
+                `# YEARS OWED` = 'x', `EARLIEST YEAR OWED` = 'x',
+                `LATEST YEAR OWED` = 'x', 
+                `TOTAL DUE (SEPTEMBER 2015)` = 'x',
+                `EARLIEST PAYMENT` = 'x', `TOTAL PAID` = 'total_paid_sep',
+                `AGREEMENT TYPE` = 'x', `AGREEMENT STATUS` = 'x',
+                `AGREEMENT START DATE` = 'x',
+                `AGREEMENT AMOUNT` = 'x', `ROW` = 'x'),
+  col_types = abbr_to_colClass("btbtbnb", "1192615"))
 
 setDT(full_sep)
 
@@ -239,6 +251,7 @@ owners <-
                paid_full_sep = all(paid_full_sep),
                paid_full_dec = all(paid_full_dec),
                paid_full_jul16 = all(paid_full_jul16),
+               total_paid_sep = sum(total_paid_sep),
                total_paid_dec = sum(total_paid_dec),
                earliest_pmt_dec = {
                  if (all(is.na(earliest_pmt_dec))) D(NA)
@@ -252,7 +265,7 @@ owners <-
                  flag_holdout_overlap[1L], .N),
              by = owner_id]
 
-###  Subsample Flags
+### Unary Owner Sample Flag
 owners[ , unq_own := N == 1]
 
 ### Write output

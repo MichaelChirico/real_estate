@@ -1,4 +1,4 @@
-Package info for code run on 2017-01-23 16:35:09:
+Package info for code run on 2017-01-23 17:33:43:
 R version 3.3.2 (2016-10-31)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Ubuntu 14.04.3 LTS
@@ -13,7 +13,8 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] texreg_1.36.20    xtable_1.8-2      data.table_1.10.0 funchir_0.1.2    
+[1] texreg_1.36.20    xtable_1.8-2      readxl_0.1.1.9000 data.table_1.10.0
+[5] funchir_0.1.2    
 
 loaded via a namespace (and not attached):
-[1] tools_3.3.2
+[1] assertthat_0.1 tools_3.3.2    tibble_1.2     Rcpp_0.12.9   

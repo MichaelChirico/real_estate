@@ -148,8 +148,8 @@ print(xtable(
                 `Impact Per Letter` = 
                   dol.form(x <-  (V2[-1L] - V2[1L]) * 
                              #Get median positive payment by December
-                             owners[(unq_own & total_paid_dec > 0), 
-                                    median(total_paid_dec)],  dig = 2L), 
+                             owners[(unq_own & total_paid_sep > 0), 
+                                    median(total_paid_sep)],  dig = 2L), 
                 `Total Impact` = dol.form(N[-1L] * x))],
   caption = "Estimated Three-Month Impact on Revenue",
   label = "sh_rev", align = "rlcc"),
