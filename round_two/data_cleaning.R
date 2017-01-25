@@ -207,7 +207,7 @@ properties[ , flag_holdout_overlap := any(treat15 == "Holdout") &&
 rename <-
   as.list(setNames(c("Holdout", "Control", "Amenities", "Moral", 
                      "Duty", "Peer", "Lien", "Sheriff"),
-                   c("Holdout", "Control", "Neighborhood", "Community", 
+                   c("Holdout", "Reminder", "Neighborhood", "Community", 
                      "Duty", "Peer", "Lien", "Sheriff")))
 
 properties[ , treat8 := factor(gsub("_.*", "", treat15), 

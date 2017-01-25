@@ -256,7 +256,7 @@ owners[(unq_own),sum(ever_paid_dec)+0.,
                   ][owners[(unq_own),.N,by = .(rec = treat8 == "Holdout")],ep:=ep/i.N,on="rec"
                     ]
 
-owners[,sum(ever_paid_dec)+0.,
+owners[(unq_own),sum(ever_paid_dec)+0.,
                 keyby=earliest_pmt_dec
                 ][,.(ep=cumsum(V1[idx<-!is.na(earliest_pmt_dec)]),
                      date=earliest_pmt_dec[idx])
