@@ -25,7 +25,7 @@ write.packages(wds["log"] %+% "analysis_session.txt")
 ###Get the p-value on the full-regression F-test of an OLS call
 lmfp <- function(formula){rename_coef <- function(obj){
   nms <- names(obj$coefficients)
-  nms[nms == "(Intercept)"] <- "Control"
+  nms[nms == "(Intercept)"] <- "Reminder"
   nms <- gsub("treat7", "", nms)
   names(obj$coefficients) <- nms
   obj
@@ -43,8 +43,8 @@ p_tex <- function(x) c("$p$-value", round(x, 2L))
 ###Specially tailor the lm object for pretty printing
 rename_coef <- function(obj, nn){
   nms <- names(obj$coefficients)
-  nms[nms == "(Intercept)"] <- if (nn == 7) "Control" else "Holdout"
-  #treatment dummies take the form treat8Control, etc -- 
+  nms[nms == "(Intercept)"] <- if (nn == 7) "Reminder" else "Holdout"
+  #treatment dummies take the form treat8Reminder, etc -- 
   #  eliminate the treat8 part for digestibility
   nms <- gsub("treat" %+% nn, "", nms)
   names(obj$coefficients) <- nms
@@ -59,11 +59,11 @@ owners <- fread(wds["data"] %+% "round_two_analysis_owners.csv"
 
 ##set factor levels (and, thereby, the reference group)
 owners[ , treat8 := 
-          factor(treat8, c("Holdout", "Control", "Neighborhood",
-                           "Community", "Duty", "Peer", "Lien", "Sheriff"))]
+          factor(treat8, c("Holdout", "Reminder", "Lien", "Sheriff",
+                           "Neighborhood", "Community", "Peer", "Duty"))]
 owners[ , treat7 := 
-          factor(treat7, c("Control", "Neighborhood", "Community", 
-                           "Duty", "Peer", "Lien", "Sheriff"))]
+          factor(treat7, c("Reminder", "Lien", "Sheriff",
+                           "Neighborhood", "Community", "Peer", "Duty"))]
 
 owners[ , earliest_pmt_dec := 
           as.Date(earliest_pmt_dec, format = "%Y-%m-%d")]
@@ -155,30 +155,29 @@ print(xtable(
   label = "sh_rev", align = "rlcc"),
   include.rownames = FALSE, comment = FALSE, caption.placement = "top")
 
-# TABLE 4: Regression - Ever Paid @ 1 & 3 Months, LPM, vs. Control ####
-tbl <- capture.output(texreg(lapply(c(lapply(expression(
-  `One Month` = ever_paid_jul, 
-  `Three Months` = ever_paid_sep),
-  function(x) owners[(!holdout), lm(eval(x) ~ treat7)]),
-  lapply(expression(`One Month` = ever_paid_jul, 
-                    `Three Months` = ever_paid_sep),
-         function(x) owners[(!holdout & unq_own), lm(eval(x) ~ treat7)])),
-  rename_coef, nn = 7), 
-  include.rsquared = FALSE, include.rmse = FALSE,
-  include.adjrs = FALSE, stars = c(.001, .05, .1),
-  caption = "Robustness Analysis: Multiple Owners",
-  label = "sh_lpm_rob", caption.above = TRUE))
+# TABLE 4: Regression - Ever Paid @ 1 & 3 Months, LPM, vs. Reminder ####
+tbl <- capture.output(texreg(lapply(lapply(expression(
+  `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
+  `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
+  #Multiply indicator by 100 so the units are in %ages already
+  function(x) owners[(!holdout & unq_own), lm(I(100 * eval(x)) ~ treat7)]), 
+  rename_coef, nn = 7), stars = c(.01, .05, .1), 
+  include.rsquared = FALSE, caption.above = TRUE,
+  include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, label = "sh_lpm_rob",
+  caption = "Robustness Analysis: Relative to Reminder",
+  custom.note = "%stars. Reminder values in levels; " %+% 
+    "remaining figures relative to this"))
 
-## Replace Control SEs with horizontal rule, 
+## Replace Reminder SEs with horizontal rule, 
 ##   eliminate significance for intercept,
 ##   add header for Ever Paid vs. Paid in Full
-idx <- grep("^Control", tbl)
+idx <- grep("^Reminder", tbl)
 
 tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
 
 tbl <- c(tbl[1L:(idx - 3L)],
-         " & \\multicolumn{2}{c}{All Owners} & " %+% 
-           "\\multicolumn{2}{c}{Unary Owners} \\\\",
+         " & \\multicolumn{2}{c}{Ever Paid} & " %+% 
+           "\\multicolumn{2}{c}{Paid in Full} \\\\",
          tbl[c(idx - 2L, idx)],
          "\\hline", tbl[(idx + 2L):length(tbl)])
 
@@ -226,7 +225,7 @@ print(xtable(
 trt.nms = owners[ , levels(treat8)]
 get.col<-function(st){
   cols <- 
-    c(Big="blue", Small="red", Control = "blue", Neighborhood = "yellow",
+    c(Big="blue", Small="red", Reminder = "blue", Neighborhood = "yellow",
       Community = "cyan", Duty = "darkgreen", Lien = "red", Sheriff = "orchid",
       Peer = "orange", Holdout = "darkgray")
   cols[gsub("\\s.*", "", as.character(st))]
@@ -364,7 +363,7 @@ tbl <- capture.output(texreg(lapply(c(lapply(expression(
                     `Three Months` = ever_paid_sep),
          function(x) owners[(!holdout & unq_own), 
                             glm(eval(x) ~ treat7, family = binomial)])),
-  rename_coef, nn = 7), omit.coef = "Control", 
+  rename_coef, nn = 7), omit.coef = "Reminder", 
   include.rsquared = FALSE, include.rmse = FALSE,
   include.adjrs = FALSE, stars = c(.001, .05, .1),
   caption = "Robustness Analysis: Multiple Owners",
@@ -393,6 +392,34 @@ tbl <- capture.output(texreg(lapply(lapply(expression(
 
 ## Replace Holdout SEs with horizontal rule, add header for EP vs. PF
 idx <- grep("^Holdout", tbl)
+
+tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
+
+tbl <- c(tbl[1L:(idx - 3L)],
+         " & \\multicolumn{2}{c}{Ever Paid} & " %+% 
+           "\\multicolumn{2}{c}{Paid in Full} \\\\",
+         tbl[c(idx - 2L, idx)],
+         "\\hline", tbl[(idx + 2L):length(tbl)])
+
+cat(tbl, sep = "\n")
+
+# Short-term Estimates for All Owners
+tbl <- capture.output(texreg(lapply(lapply(expression(
+  `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
+  `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
+  #Multiply indicator by 100 so the units are in %ages already
+  function(x) owners[(!holdout), lm(I(100 * eval(x)) ~ treat7)]), 
+  rename_coef, nn = 7), stars = c(.01, .05, .1), 
+  include.rsquared = FALSE, caption.above = TRUE,
+  include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, label = "sh_lpm_mult",
+  caption = "Robustness Analysis: Relative to Reminder (Multiple Owners)",
+  custom.note = "%stars. Reminder values in levels; " %+% 
+    "remaining figures relative to this"))
+
+## Replace Reminder SEs with horizontal rule, 
+##   eliminate significance for intercept,
+##   add header for Ever Paid vs. Paid in Full
+idx <- grep("^Reminder", tbl)
 
 tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
 
