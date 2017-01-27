@@ -302,12 +302,46 @@ dcast(cum_haz[cis,on=c("treat7","date")],
         dev.off2()}]
 
 #Table 1, but for comparing full & unary-owner samples
+{cat("\\begin{sidewaystable}[ht]",
+    "\\centering", 
+    "\\caption{Balance on Observables}",
+    "\\label{balance}",
+    "\\begin{tabular}{lrrrrrrrc}", 
+    "\\hline",
+    "\\multicolumn{9}{c}{Unary Owners} \\\\", sep = "\n")
+
+##Top Section: Unique Owners Only
+print.xtable(xtable(cbind(t(
+  owners[(!holdout & unq_own),
+         .(`Amount Due (June)` = dol.form(mean(total_due), tex = TRUE),
+           `Assessed Property Value` = 
+             dol.form(mean(assessed_mv, na.rm = TRUE), tex = TRUE),
+           `\\# Owners` = prettyNum(.N, big.mark = ",")),
+         keyby = .(Variable = treat7)]), 
+  p_tex(c(sapply(c(
+    `Amount Due (June)` = "total_due",
+    `Assessed Property Value` = "assessed_mv"),
+    function(x) owners[(!holdout & unq_own), lmfp(get(x) ~ treat7)]),
+    `\\# Owners` =
+      owners[(!holdout & unq_own), chisq.test(table(treat7))$p.value])))),
+  include.colnames = FALSE, comment = FALSE, 
+  #exclude table header since we're combining two tables;
+  #  setting sanitize.text.function prevents xtable from
+  #  commenting out the math markup (especially $). This
+  #  is also why we use tex = TRUE for dol.form.
+  sanitize.text.function = identity, only.contents = TRUE,
+  floating = TRUE, hline.after = c(0L, 1L))
+
+##Bottom Section: Exclude Holdout Only
+cat("\\hline",
+    "\\multicolumn{9}{c}{Unary and Multiple Owners} \\\\", sep = "\n")
+
 print.xtable(xtable(cbind(t(
   owners[(!holdout),
          .(`Amount Due (June)` = dol.form(mean(total_due), tex = TRUE),
            `Assessed Property Value` = 
              dol.form(mean(assessed_mv, na.rm = TRUE), tex = TRUE),
-           `\\% with Unique Owner` = to.pct(mean(unq_own), 1L),
+           `\\% with Unary Owner` = to.pct(mean(unq_own), 1L),
            `\\% Overlap with Holdout` = to.pct(mean(flag_holdout_overlap), 2L),
            `\\# Properties per Owner` = round(mean(N), 2L),
            `\\# Owners` = prettyNum(.N, big.mark = ",")),
@@ -315,7 +349,7 @@ print.xtable(xtable(cbind(t(
   p_tex(c(sapply(c(
     `Amount Due (June)` = "total_due",
     `Assessed Property Value` = "assessed_mv",
-    `\\% with Unique Owner` = "unq_own",
+    `\\% with Unary Owner` = "unq_own",
     `\\% Overlap with Holdout` = "flag_holdout_overlap",
     `\\# Properties per Owner` = "N"),
     function(x) owners[(!holdout), lmfp(get(x) ~ treat7)]),
@@ -324,6 +358,15 @@ print.xtable(xtable(cbind(t(
   include.colnames = FALSE, comment = FALSE, 
   sanitize.text.function = identity, 
   only.contents = TRUE, hline.after = c(0L, 1L))
+
+cat("\\hline",
+    "\\multicolumn{9}{l}" %+% 
+      "{\\scriptsize{$p$-values in rows 1-5 are " %+% 
+      "$F$-test $p$-values from regressing each " %+% 
+      "variable on treatment dummies. A $\\chi^2$ " %+% 
+      "test was used for the count of owners.}} \\\\",
+    "\\end{tabular}",
+    "\\end{sidewaystable}", sep = "\n")}
 
 #versions of LPM tables with logit specification
 ##table2
