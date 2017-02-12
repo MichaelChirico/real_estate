@@ -197,7 +197,6 @@ tbl <- c(tbl[1L:(idx - 3L)],
 cat(tbl, sep = "\n")
 
 # TABLE 5: Three Month Impact of Collection ``Nudges"* ####
-## **TO DO: CONFORM TO AER SUBMISSION**
 note = 
   paste('\\scriptsize* Sample Size are the number of single property',
         'tax payers in the treatment group.  Total Taxes Owed is the',
@@ -353,7 +352,6 @@ cat("\\hline",
 tbl <- capture.output(texreg(lapply(lapply(expression(
   `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
   `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
-  #Multiply indicator by 100 so the units are in %ages already
   function(x) owners[(unq_own), glm(eval(x) ~ treat8, family = binomial)]), 
   rename_coef, nn = 8), stars = c(.01, .05, .1), 
   include.rsquared = FALSE, caption.above = TRUE,
@@ -379,4 +377,26 @@ tbl <- c(tbl[1L:(idx - 3L)],
 cat(tbl, sep = "\n")
 
 # TABLE A4: Logit Estimates Including Multiple Owners ####
-## **TO DO: TABLE A4 **
+tbl <- capture.output(texreg(lapply(
+  list(`One Month` = 
+         owners[ , glm(ever_paid_jul ~ treat7, family = binomial)],
+       `Three Months` = 
+         owners[ , glm(ever_paid_sep ~ treat7, family = binomial)],
+       `One Month` = 
+         owners[(unq_own), glm(ever_paid_jul ~ treat7, family = binomial)],
+       `Three Months` = 
+         owners[(unq_own), glm(ever_paid_sep ~ treat7, family = binomial)]),
+  rename_coef, nn = 7), stars = c(.01, .05, .1), 
+  include.rsquared = FALSE, caption.above = TRUE,
+  include.adjrs = FALSE, include.rmse = FALSE, digits = 2L, 
+  label = "sh_logit_rob", float.pos = 'htbp', omit.coef = 'Reminder',
+  caption = "Logit Estimates Including Multiple Owners"))
+
+idx = grep('One Month', tbl, fixed = TRUE) - 1L
+
+tbl <- c(tbl[1L:idx],
+         " & \\multicolumn{2}{c}{All Owners} & " %+% 
+           "\\multicolumn{2}{c}{Unary Owners} \\\\",
+         tbl[(idx + 1L):length(tbl)])
+
+cat(tbl, sep = "\n")
