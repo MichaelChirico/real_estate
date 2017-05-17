@@ -6,12 +6,8 @@
 ##Packages
 rm(list=ls(all = TRUE))
 gc()
-#Michael Chirico's function of convenience packages;
-#  install via devtools::install_github("MichaelChirico/funchir")
 library(funchir)
 library(data.table)
-#As of Jan. 21, 2017, using the development version;
-#  install via devtools::install_github("hadley/readxl")
 library(readxl)
 setwd(mn <- "~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 wds <- c(data = "/media/data_drive/real_estate/",
@@ -28,7 +24,7 @@ main_jul = read_excel(
   sheet = 'DETAILS', skip = 8L, na = "-", 
   col_names = c('x', 'opa_no', 'x', 'x', 'treat15', 'x', 
                 'x', 'paid_full_jul', 'ever_paid_jul', rep('x', 6L)),
-  col_types = abbr_to_colClass('btbtbtb', '1121226'))
+  col_types = abbr_to_colClass('stststs', '1121226'))
 
 setDT(main_jul)
 
@@ -42,7 +38,7 @@ holdout_jul = read_excel(
   sheet = 'DETAILS', skip = 8L, na = "-", 
   col_names = c('x', 'opa_no', rep('x', 5L), 
                 'paid_full_jul', 'ever_paid_jul', rep('x', 5L)),
-  col_types = abbr_to_colClass('btbtb', '11525'))
+  col_types = abbr_to_colClass('ststs', '11525'))
 
 setDT(holdout_jul)
 
@@ -63,10 +59,10 @@ holdout_jul[update_opas, opa_no := i.old, on = c(opa_no = "new")]
 full_jul = rbind(main_jul, holdout_jul)
 
 ##Block III: Full Sample, September Cross-Section
-full_sep <- read_excel(
+full_sep = read_excel(
   wds["data"] %+%
     "req20150709_PennLetterExperiment (September 2015 update) v2.xlsx",
-  sheet = "DETAILS", skip = 7L, na = "-",
+  sheet = "DETAILS", skip = 8L, na = "-",
   col_names = c(`ACCOUNT-ID` = "x", `BRT NUMBER` = "opa_no", `PROP ADDR` = "x",
                 `PZIP5` = "x", `Y_LAT` = 'x', `X_LONG` = 'x', 
                 `TREATMENT` = 'x', `ENVELOPE TYPE` = 'x', `MESSAGE TYPE` = 'x',
@@ -79,12 +75,9 @@ full_sep <- read_excel(
                 `AGREEMENT TYPE` = 'x', `AGREEMENT STATUS` = 'x',
                 `AGREEMENT START DATE` = 'x',
                 `AGREEMENT AMOUNT` = 'x', `ROW` = 'x'),
-  col_types = abbr_to_colClass("btbtbnb", "1192615"))
+  col_types = abbr_to_colClass("ststsns", "1192615"))
 
 setDT(full_sep)
-
-#readxl thinks a row has data that's empty; exclude
-full_sep = full_sep[!is.na(opa_no)]
 
 ###  **TO DO: INSERT E-MAIL META DATA FROM DOR CONFIRMATION**
 update_opas <- data.table(old = c("151102600", "884350465"),
@@ -92,19 +85,17 @@ update_opas <- data.table(old = c("151102600", "884350465"),
 full_sep[update_opas, opa_no := i.old, on = c(opa_no = "new")]
 
 ##Block IV: Full Sample, December Cross-Section
-full_dec <- read_excel(
+full_dec = read_excel(
   wds["data"] %+% 
     "req20150709_PennLetterExperiment (December 2015 update) v2.xlsx",
-  sheet = "DETAILS", skip = 7L, na = "-",
+  sheet = "DETAILS", skip = 8L, na = "-",
   col_names = c("account", "opa_no" , rep("x", 9L),
               "paid_full_dec", "ever_paid_dec", 
               rep("x", 5L), "earliest_pmt_dec",
               "total_paid_dec", rep("x", 5L)),
-  col_types = abbr_to_colClass("tbtbdnb", "2925115"))
+  col_types = abbr_to_colClass("tstsdns", "2925115"))
 
 setDT(full_dec)
-#readxl thinks a row has data that's empty; exclude
-full_dec = full_dec[!is.na(opa_no)]
 
 full_dec[ , earliest_pmt_dec := as.Date(earliest_pmt_dec)]
 
@@ -117,17 +108,20 @@ full_dec[update_opas, opa_no := i.old, on = c(opa_no = "new")]
 ##Block V: Main Sample Background Data
 ## * total_due is pre-study balance
 bgvars <- c("opa_no", "owner1", "total_due", "rand_id")
-bg_main <- fread(wds["proj"] %+% "round_2_full_data.csv", select = bgvars)
+bg_main = fread(wds["proj"] %+% "round_2_full_data.csv",
+                select = bgvars, colClasses = list(character = 'opa_no'))
 
 ##Block VI: Holdout Sample Background Data
-bg_holdout <- fread(wds["proj"] %+% "holdout_sample.csv",
-                    select = c("opa_no", "owner1", "total_due"))
+bg_holdout = fread(wds["proj"] %+% "holdout_sample.csv",
+                   select = c("opa_no", "owner1", "total_due"),
+                   colClasses = list(character = 'opa_no'))
 #Need fill since holdout_bg lacks rand_id
 bg = rbind(bg_main, bg_holdout, fill = TRUE)
 
 nbhds = fread("/media/data_drive/real_estate/round_two_property_file.csv",
               select = c("BRT NUMBER", "AZAVEA NEIGHBORHOOD"),
-              col.names = c("opa_no", "azavea"))
+              col.names = c("opa_no", "azavea"),
+              colClasses = list(character = 'BRT NUMBER'))
 #There was an issue where the final file we received didn't have
 #  the Azavea neighborhoods included, but a slightly earlier
 #  version did; these three properties were new to the
@@ -146,8 +140,17 @@ bg[nbhds, azavea_section := i.azavea_section, on = "opa_no"]
 ###Block VII: Other Background Data
 ###  From OPA-issued Property Data CD
 ###  (certified for 2015, received May 2014)
-opa_bg <- fread(wds["data"] %+% "prop2015.txt", select = c("PARCEL", "MV"))
-setnames(opa_bg, c("opa_no", "assessed_mv"))
+opa_bg = fread(wds["data"] %+% "prop2015.txt",
+               select = c('PARCEL', 'MV', 'SALE DATE'),
+               col.names = c('opa_no', 'assessed_mv', 'sale_date'),
+               colClasses = list(character = c('PARCEL', 'SALE DATE'),
+                                 numeric = 'MV'))
+opa_bg[ , sale_date := as.Date.character(sale_date, format = '%Y%m%d')]
+opa_bg[ , tenure := 
+          #difftime doesn't have units = 'years' for some reason...
+          round(unclass(difftime(as.Date('2015-06-01'), sale_date,
+                                 units = 'weeks')/52))]
+opa_bg[ , sale_date := NULL]
 
 ###Block VIII: One-Year Follow-Up Data
 followup <- read_excel(
@@ -159,13 +162,10 @@ followup <- read_excel(
                 "total_bill_2016", "x", "paid_full_jul16",
                 "ever_paid_jul16", rep("x", 6L),
                 "earliest_pmt_jul16", rep("x", 6L)),
-  col_types = abbr_to_colClass("tbtbtbnb",
+  col_types = abbr_to_colClass("tststsds",
                                "16112616"))
 
 setDT(followup)
-
-followup[ , earliest_pmt_jul16 := 
-            as.Date(earliest_pmt_jul16, origin = D("1899-12-30"))]
 
 ##Quilting time!
 ### Framework:
@@ -176,9 +176,7 @@ followup[ , earliest_pmt_jul16 :=
 
 properties <- 
   Reduce(function(x, y) x[y, on = "opa_no"],
-         list(full_jul, full_sep, full_dec, bg))
-
-properties[opa_bg, assessed_mv := as.numeric(i.assessed_mv), on = "opa_no"]
+         list(full_jul, full_sep, full_dec, bg, opa_bg))
 
 #7 properties were dissolved between 2015 & 2016; exclude those
 properties[followup[total_bill_2016 != "Consolidation/Subdivision"], 
@@ -259,6 +257,7 @@ owners <-
                  else min(earliest_pmt_jul16, na.rm = TRUE)},
                total_due = sum(total_due),
                assessed_mv = sum(assessed_mv),
+               tenure = median(tenure, na.rm = TRUE),
                flag_holdout_overlap =
                  flag_holdout_overlap[1L], .N),
              by = owner_id]

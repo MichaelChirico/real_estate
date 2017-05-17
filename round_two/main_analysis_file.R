@@ -81,15 +81,17 @@ owners[ , earliest_pmt_dec :=
 
 print.xtable(xtable(cbind(t(
   owners[(unq_own),
-         c(.(`Amount Due (June)` = dol.form(mean(total_due), tex = TRUE)),
-           .(`Assessed Property Value` = 
-                  dol.form(mean(assessed_mv, na.rm = TRUE), tex = TRUE)),
+         c(list(`Amount Due (June)` = dol.form(mean(total_due), tex = TRUE),
+                `Assessed Property Value` = 
+                  dol.form(mean(assessed_mv, na.rm = TRUE), tex = TRUE),
+                `Ownership Tenure (Years)` = round(mean(tenure, na.rm = TRUE), 1L)),
            as.list(table(azavea_section)),
-           .(`\\# Owners` = prettyNum(.N, big.mark = ","))),
+           list(`\\# Owners` = prettyNum(.N, big.mark = ","))),
          keyby = .(Variable = treat8)]), 
   p_tex(c(sapply(c(
     `Amount Due (June)` = "total_due",
-    `Assessed Property Value` = "assessed_mv"),
+    `Assessed Property Value` = "assessed_mv",
+    `Ownership Tenure (Years)` = 'tenure'),
     function(x) owners[(unq_own), lmfp(get(x) ~ treat8)]),
     owners[(unq_own), c(round(chisq.test(table(
       azavea_section, treat8))$p.value, 2L),
@@ -400,3 +402,4 @@ tbl <- c(tbl[1L:idx],
          tbl[(idx + 1L):length(tbl)])
 
 cat(tbl, sep = "\n")
+
