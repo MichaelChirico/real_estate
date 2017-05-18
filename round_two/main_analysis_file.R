@@ -407,3 +407,91 @@ tbl <- c(tbl[1L:idx],
 
 cat(tbl, sep = "\n")
 
+
+# SANDBOX ####
+pdf('~/Desktop/ep_by_mv.pdf', 
+    width = 21, height = 21)
+par(mfrow = c(3, 3), oma = c(2, 0, 2, 0))
+tn = levels(owners$treat8)
+cutoffs = 
+  paste0('Q', 1:4, ': ', 
+         owners[assessed_mv>0, levels(create_quantiles(assessed_mv/1e5,
+                                                       4L, labels = NULL))])
+owners[assessed_mv>0, .(ep1 = mean(ever_paid_jul),
+                        ep3 = mean(ever_paid_sep),
+                        ep6 = mean(ever_paid_dec)), 
+       keyby = .(treat8, Q = create_quantiles(assessed_mv, 4L))
+       ][ , dcast(.SD, Q ~ treat8, value.var = c('ep1', 'ep3', 'ep6'))
+          ][ , {
+            y = .SD[ , grep('ep1', names(.SD)), with = FALSE]
+            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
+                    main = 'One Month', las = 1,
+                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
+            legend('topleft', legend = cutoffs,
+                   title = 'Quartile Cutoffs ($100k)')
+            y = .SD[ , grep('ep3', names(.SD)), with = FALSE]
+            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
+                    main = 'Three Months', las = 1,
+                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
+            mtext('Ever Paid by (Quartile of) Property Value', 
+                  side = 3L, line = 3L)
+            y = .SD[ , grep('ep6', names(.SD)), with = FALSE]
+            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
+                    main = 'Six Months', las = 1,
+                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
+          }]
+
+cutoffs = 
+  paste0('Q', 1:4, ': ', 
+         owners[ , levels(create_quantiles(total_due/1e3, 4L, labels = NULL))])
+owners[ , .(ep1 = mean(ever_paid_jul),
+            ep3 = mean(ever_paid_sep),
+            ep6 = mean(ever_paid_dec)), 
+       keyby = .(treat8, Q = create_quantiles(total_due, 4L))
+       ][ , dcast(.SD, Q ~ treat8, value.var = c('ep1', 'ep3', 'ep6'))
+          ][ , {
+            y = .SD[ , grep('ep1', names(.SD)), with = FALSE]
+            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
+                    main = 'One Month', las = 1,
+                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
+            legend('topleft', legend = cutoffs,
+                   title = 'Quartile Cutoffs ($1000)')
+            y = .SD[ , grep('ep3', names(.SD)), with = FALSE]
+            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
+                    main = 'Three Months', las = 1,
+                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
+            mtext('Ever Paid by (Quartile of) Total Due', 
+                  side = 3L, line = 3L)
+            y = .SD[ , grep('ep6', names(.SD)), with = FALSE]
+            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
+                    main = 'Six Months', las = 1,
+                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
+          }]
+
+cutoffs = 
+  paste0('Q', 1:4, ': ', 
+         owners[tenure>0, levels(create_quantiles(tenure, 4L, labels = NULL))])
+owners[tenure>0, .(ep1 = mean(ever_paid_jul),
+           ep3 = mean(ever_paid_sep),
+           ep6 = mean(ever_paid_dec)), 
+       keyby = .(treat8, Q = create_quantiles(tenure, 4L))
+       ][ , dcast(.SD, Q ~ treat8, value.var = c('ep1', 'ep3', 'ep6'))
+          ][ , {
+            y = .SD[ , grep('ep1', names(.SD)), with = FALSE]
+            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
+                    main = 'One Month', las = 1,
+                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
+            legend('topleft', legend = cutoffs,
+                   title = 'Quartile Cutoffs (Years)')
+            y = .SD[ , grep('ep3', names(.SD)), with = FALSE]
+            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
+                    main = 'Three Months', las = 1,
+                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
+            mtext('Ever Paid by (Quartile of) Ownership Tenure', 
+                  side = 3L, line = 3L)
+            y = .SD[ , grep('ep6', names(.SD)), with = FALSE]
+            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
+                    main = 'Six Months', las = 1,
+                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
+          }]
+dev.off()
