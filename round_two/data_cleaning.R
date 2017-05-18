@@ -21,29 +21,23 @@ write.packages(wds["log"] %+% "cleaning_session.txt")
 
 main_jul = read_excel(
   wds["data"] %+% "Payments and Balance Penn Letter Experiment_150727.xlsx",
-  sheet = 'DETAILS', skip = 8L, na = "-", 
+  sheet = 'DETAILS', skip = 9L, na = "-", 
   col_names = c('x', 'opa_no', 'x', 'x', 'treat15', 'x', 
                 'x', 'paid_full_jul', 'ever_paid_jul', rep('x', 6L)),
   col_types = abbr_to_colClass('stststs', '1121226'))
 
 setDT(main_jul)
 
-#readxl thinks a row has data that's empty; exclude                    
-main_jul = main_jul[!is.na(opa_no)]
-  
 ##Block II: Holdout Sample, July Cross-Section
 holdout_jul = read_excel(
   wds["data"] %+% "req20150709_PennLetterExperiment_"%+%
     "v2_Commissioners Control Details.xlsx",
-  sheet = 'DETAILS', skip = 8L, na = "-", 
+  sheet = 'DETAILS', skip = 9L, na = "-", 
   col_names = c('x', 'opa_no', rep('x', 5L), 
                 'paid_full_jul', 'ever_paid_jul', rep('x', 5L)),
   col_types = abbr_to_colClass('ststs', '11525'))
 
 setDT(holdout_jul)
-
-#readxl thinks a row has data that's empty; exclude   
-holdout_jul = holdout_jul[!is.na(opa_no)]
 
 holdout_jul[ , treat15 := "Holdout"]
 
@@ -171,12 +165,12 @@ setDT(followup)
 ### Framework:
 ###  I  III IV V  VII
 ###  II III IV VI VII
-### (blocks stacked vertically will be stitched/appended,
+### (blocks stacked vertically have been stitched/appended,
 ###  and each column involves a merge to the previous column)
 
 properties <- 
   Reduce(function(x, y) x[y, on = "opa_no"],
-         list(full_jul, full_sep, full_dec, bg, opa_bg))
+         list(opa_bg, full_jul, full_sep, full_dec, bg))
 
 #7 properties were dissolved between 2015 & 2016; exclude those
 properties[followup[total_bill_2016 != "Consolidation/Subdivision"], 

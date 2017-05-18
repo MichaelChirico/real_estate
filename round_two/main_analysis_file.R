@@ -21,6 +21,9 @@ wds <- c(log = mn %+% "logs/round_two/",
          data = "/media/data_drive/real_estate/"); rm(mn)
 write.packages(wds["log"] %+% "analysis_session.txt")
 
+##Exclude the top two blocks?
+excludeTopBlocks = FALSE
+
 ##Specialized Functions
 ###Get the p-value on the full-regression F-test of an OLS call
 lmfp <- function(formula){rename_coef <- function(obj){
@@ -53,9 +56,10 @@ rename_coef <- function(obj, nn){
 
 #Data import
 #  Importing directly from cleaned analysis files created with data_cleaning.R.
-owners <- fread(wds["data"] %+% "round_two_analysis_owners.csv"
-                #exclude top 2 randomization blocks
-                )[(holdout | rand_id > 2)]
+owners <- fread(wds["data"] %+% "round_two_analysis_owners.csv")
+
+#exclude top 2 randomization blocks
+if (excludeTopBlocks) owners = owners[(holdout | rand_id > 2)]
 
 ##set factor levels (and, thereby, the reference group)
 owners[ , treat8 := 
