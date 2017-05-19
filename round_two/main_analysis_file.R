@@ -495,3 +495,26 @@ owners[tenure>0, .(ep1 = mean(ever_paid_jul),
                     ylab = 'Proportion Ever Paid', ylim = c(0, 1))
           }]
 dev.off()
+
+
+owners[unq_own & assessed_mv>0, mv_quartile := create_quantiles(assessed_mv, 4)]
+owners[(unq_own), debt_quartile := create_quantiles(total_due, 4)]
+owners[unq_own & tenure>0, tenure_quartile := create_quantiles(tenure, 4)]
+
+owners[unq_own & assessed_mv>0, 
+       texreg(lapply(expression(`1 Month` = ever_paid_jul, 
+                                `3 Months` = ever_paid_sep,
+                                `6 Months` = ever_paid_dec),
+                     function(ep) lm(eval(ep) ~ mv_quartile/treat8)))]
+
+owners[(unq_own), 
+       texreg(lapply(expression(`1 Month` = ever_paid_jul, 
+                                `3 Months` = ever_paid_sep,
+                                `6 Months` = ever_paid_dec),
+                     function(ep) lm(eval(ep) ~ debt_quartile/treat8)))]
+
+owners[unq_own & tenure>0, 
+       texreg(lapply(expression(`1 Month` = ever_paid_jul, 
+                                `3 Months` = ever_paid_sep,
+                                `6 Months` = ever_paid_dec),
+                     function(ep) lm(eval(ep) ~ tenure_quartile/treat8)))]
