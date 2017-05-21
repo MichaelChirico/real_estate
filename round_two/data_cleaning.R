@@ -9,6 +9,12 @@ gc()
 library(funchir)
 library(data.table)
 library(readxl)
+library(rgdal)
+library(rgeos)
+library(sp)
+library(maptools)
+library(spatstat)
+library(splancs)
 setwd(mn <- "~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
 wds <- c(data = "/media/data_drive/real_estate/",
          proj = mn %+% "round_two/", 
@@ -56,9 +62,10 @@ full_jul = rbind(main_jul, holdout_jul)
 full_sep = read_excel(
   wds["data"] %+%
     "req20150709_PennLetterExperiment (September 2015 update) v2.xlsx",
-  sheet = "DETAILS", skip = 8L, na = "-",
-  col_names = c(`ACCOUNT-ID` = "x", `BRT NUMBER` = "opa_no", `PROP ADDR` = "x",
-                `PZIP5` = "x", `Y_LAT` = 'x', `X_LONG` = 'x', 
+  sheet = "DETAILS", skip = 8L, na = c('-', 'NULL'),
+  col_names = c(`ACCOUNT-ID` = "x", `BRT NUMBER` = "opa_no", 
+                `PROP ADDR` = "address", `PZIP5` = "x", 
+                `Y_LAT` = 'y', `X_LONG` = 'x', 
                 `TREATMENT` = 'x', `ENVELOPE TYPE` = 'x', `MESSAGE TYPE` = 'x',
                 `TOTAL DUE (MAY 2015)` = 'x', `PRE 2015 BALANCE` = 'x',
                 `CURRENT AMOUNT OWED` = "paid_full_sep",
@@ -69,9 +76,68 @@ full_sep = read_excel(
                 `AGREEMENT TYPE` = 'x', `AGREEMENT STATUS` = 'x',
                 `AGREEMENT START DATE` = 'x',
                 `AGREEMENT AMOUNT` = 'x', `ROW` = 'x'),
-  col_types = abbr_to_colClass("ststsns", "1192615"))
+  col_types = abbr_to_colClass("stsnstsns", "121252615"))
 
 setDT(full_sep)
+
+### join missing lat/lon geocoded in geocode_missing.R
+extra_xy = fread(wds['proj'] %+% 'geocoded_missing.csv',
+                 colClasses = list(character = 'opa_no'))
+full_sep[extra_xy, c('x', 'y') := .(i.x, i.y), on = 'opa_no']
+
+### get kernel density estimate using these hyperparameters:
+n_cells = 50 #number of cuts of x & y direction for grid
+kde.eta = 1 #fraction of cell width to use as KDE bandwidth
+
+### use census tracts shapefile to get a boundary file for
+###   Philadelphia as a single polygon -- use a very
+###   wide width to be sure we don't get any NA
+###   from spkernel2d. Probably should let the
+###   width depend on eta since I suspect that's what's
+###   causing some near-boundary cells to be
+###   forced missing (but not worth the extra effort)
+phl = gUnaryUnion(gBuffer(
+  readOGR('/media/data_drive/gis_data/PA', 
+          'PhiladelphiaCensusTracts2010'), 
+  width = 1000
+))
+
+### delinquent properties as SpatialPoints
+del = SpatialPoints(full_sep[ , cbind(x, y)], 
+                    proj4string = CRS('+init=epsg:4326'))
+### convert to the same CRS as the shapefile
+del = spTransform(del, proj4string(phl))
+
+### for spkernel2d, need matrix of boundary coordinates
+boundary = phl@polygons[[1L]]@Polygons[[1L]]@coords
+
+xrng = range(boundary[ , 1L])
+yrng = range(boundary[ , 2L])
+delx = diff(xrng)/n_cells
+dely = diff(yrng)/n_cells
+### the pixellate specification of a GridTopology
+###   is much more intuitive than that for
+###   specifying a GT directly
+grdtop <- as(as.SpatialGridDataFrame.im(
+  pixellate(ppp(xrange = xrng, yrange = yrng),
+            eps = c(delx, dely))), "GridTopology")
+### keep the GridTopology since it allows for much
+###   faster KDE estimation, but ultimately want
+###   to spatially join the delinquent property
+###   points to this, so convert to polygons
+grdSP = as.SpatialPolygons.GridTopology(grdtop)
+### for some reason, specifying this in the
+###   proj4string argument is an error
+proj4string(grdSP) = proj4string(phl)
+grdSPDF = SpatialPolygonsDataFrame(
+  grdSP, data = data.frame(ID = seq_len(length(grdSP))), match.ID = FALSE
+)
+grdSPDF$KDE = spkernel2d(del, boundary, kde.eta*mean(delx, dely), grdtop)
+
+### spatial join and assign each point's local KDE;
+###   del is guaranteed to have the same order as full_sep
+###   since it was created directly from it and then left in that order
+full_sep[ , kde := `$`(del %over% grdSPDF, KDE)]
 
 ###  **TO DO: INSERT E-MAIL META DATA FROM DOR CONFIRMATION**
 update_opas <- data.table(old = c("151102600", "884350465"),
@@ -252,6 +318,7 @@ owners <-
                total_due = sum(total_due),
                assessed_mv = sum(assessed_mv),
                tenure = median(tenure, na.rm = TRUE),
+               kde = median(kde),
                flag_holdout_overlap =
                  flag_holdout_overlap[1L], .N),
              by = owner_id]

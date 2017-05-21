@@ -409,9 +409,9 @@ cat(tbl, sep = "\n")
 
 
 # SANDBOX ####
-pdf('~/Desktop/ep_by_mv.pdf', 
-    width = 21, height = 21)
-par(mfrow = c(3, 3), oma = c(2, 0, 2, 0))
+pdf('~/Desktop/ep_by_quartiles.pdf', 
+    width = 21, height = 28)
+par(mfrow = c(4, 3), oma = c(2, 0, 2, 0))
 tn = levels(owners$treat8)
 cutoffs = 
   paste0('Q', 1:4, ': ', 
@@ -494,12 +494,37 @@ owners[tenure>0, .(ep1 = mean(ever_paid_jul),
                     main = 'Six Months', las = 1,
                     ylab = 'Proportion Ever Paid', ylim = c(0, 1))
           }]
+
+tn = levels(owners$treat8)
+
+owners[, .(ep1 = mean(ever_paid_jul),
+           ep3 = mean(ever_paid_sep),
+           ep6 = mean(ever_paid_dec)), 
+       keyby = .(treat8, Q = create_quantiles(kde, 4L))
+       ][ , dcast(.SD, Q ~ treat8, value.var = c('ep1', 'ep3', 'ep6'))
+          ][ , {
+            y = .SD[ , grep('ep1', names(.SD)), with = FALSE]
+            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
+                    main = 'One Month', las = 1,
+                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
+            y = .SD[ , grep('ep3', names(.SD)), with = FALSE]
+            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
+                    main = 'Three Months', las = 1,
+                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
+            mtext('Ever Paid by (Quartile of) Density of Tardy Taxpayers', 
+                  side = 3L, line = 3L)
+            y = .SD[ , grep('ep6', names(.SD)), with = FALSE]
+            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
+                    main = 'Six Months', las = 1,
+                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
+          }]
 dev.off()
 
 
 owners[unq_own & assessed_mv>0, mv_quartile := create_quantiles(assessed_mv, 4)]
 owners[(unq_own), debt_quartile := create_quantiles(total_due, 4)]
 owners[unq_own & tenure>0, tenure_quartile := create_quantiles(tenure, 4)]
+owners[(unq_own), kde_quartile := create_quantiles(kde, 4)]
 
 owners[unq_own & assessed_mv>0, 
        texreg(lapply(expression(`1 Month` = ever_paid_jul, 
@@ -518,3 +543,38 @@ owners[unq_own & tenure>0,
                                 `3 Months` = ever_paid_sep,
                                 `6 Months` = ever_paid_dec),
                      function(ep) lm(eval(ep) ~ tenure_quartile/treat8)))]
+
+
+owners[(unq_own), 
+       texreg(lapply(expression(`1 Month` = ever_paid_jul, 
+                                `3 Months` = ever_paid_sep,
+                                `6 Months` = ever_paid_dec),
+                     function(ep) lm(eval(ep) ~ kde_quartile/treat8)))]
+
+
+xrng = owners[(unq_own), {
+  l = log(total_due)
+  exp(seq(0, log(1e4), length.out = 100))
+}]
+
+mdpts = c(-Inf, xrng[-length(xrng)] + diff(xrng)/2, Inf)
+
+yy1 = sapply(seq_along(xrng), function(ii) {
+  owners[unq_own & total_due %between% mdpts[ii + 0:1],
+         mean(ever_paid_jul)]
+})
+yy2 = sapply(seq_along(xrng), function(ii) {
+  owners[unq_own & total_due %between% mdpts[ii + 0:1],
+         mean(ever_paid_sep)]
+})
+yy3 = sapply(seq_along(xrng), function(ii) {
+  owners[unq_own & total_due %between% mdpts[ii + 0:1],
+         mean(ever_paid_dec)]
+})
+
+pdf('~/Desktop/u_shaped.pdf', width = 21)
+par(mfrow = c(1, 3))
+plot(log(xrng), yy1)
+plot(log(xrng), yy2)
+plot(log(xrng), yy3)
+dev.off()

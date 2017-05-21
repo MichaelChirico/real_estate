@@ -1,4 +1,4 @@
-Package info for code run on 2017-05-17 20:44:44:
+Package info for code run on 2017-05-20 19:43:42:
 R version 3.3.2 (2016-10-31)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Ubuntu 14.04.3 LTS
@@ -12,7 +12,10 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] readxl_1.0.0      data.table_1.10.5 funchir_0.1.4    
+ [1] splancs_2.01-39   spatstat_1.50-0   rpart_4.1-10      nlme_3.1-131      maptools_0.9-2    rgeos_0.3-23     
+ [7] rgdal_1.2-6       sp_1.2-4          readxl_1.0.0      data.table_1.10.5 funchir_0.1.4    
 
 loaded via a namespace (and not attached):
-[1] tools_3.3.2      Rcpp_0.12.10     cellranger_1.1.0
+ [1] Rcpp_0.12.10         lattice_0.20-35      deldir_0.1-12        grid_3.3.2           cellranger_1.1.0    
+ [6] tensor_1.5           Matrix_1.2-8         goftest_1.1-1        spatstat.utils_1.4-1 tools_3.3.2         
+[11] foreign_0.8-67       polyclip_1.6-1       abind_1.4-5          mgcv_1.8-17         
