@@ -318,6 +318,8 @@ owners <-
                total_due = sum(total_due),
                assessed_mv = sum(assessed_mv),
                tenure = median(tenure, na.rm = TRUE),
+               #only valid for single-owner properties!
+               x_lon = x[1L], y_lat = y[1L],
                kde = median(kde),
                flag_holdout_overlap =
                  flag_holdout_overlap[1L], .N),

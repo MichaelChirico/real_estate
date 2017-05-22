@@ -578,3 +578,195 @@ plot(log(xrng), yy1)
 plot(log(xrng), yy2)
 plot(log(xrng), yy3)
 dev.off()
+
+
+n_cells = 50 
+kde.eta = 1 
+
+phl = gUnaryUnion(gBuffer(
+  readOGR('/media/data_drive/gis_data/PA', 
+          'PhiladelphiaCensusTracts2010'), 
+  width = 1000
+))
+
+del = SpatialPointsDataFrame(
+  owners[ , cbind(x_lon, y_lat)], data = owners,
+  proj4string = CRS('+init=epsg:4326'))
+del = spTransform(del, proj4string(phl))
+
+boundary = phl@polygons[[1L]]@Polygons[[1L]]@coords
+
+xrng = range(boundary[ , 1L])
+yrng = range(boundary[ , 2L])
+delx = diff(xrng)/n_cells
+dely = diff(yrng)/n_cells
+grdtop <- as(as.SpatialGridDataFrame.im(
+  pixellate(ppp(xrange = xrng, yrange = yrng),
+            eps = c(delx, dely))), "GridTopology")
+grdSP = as.SpatialPolygons.GridTopology(grdtop)
+proj4string(grdSP) = proj4string(phl)
+grdSPDF = SpatialPolygonsDataFrame(
+  grdSP, data = data.frame(ID = seq_len(length(grdSP))), match.ID = FALSE
+)
+grdSPDF$KDE = spkernel2d(del, boundary, kde.eta*mean(delx, dely), grdtop)
+grdSPDF$KDE_low_mv = 
+  spkernel2d(del[owners[mv_quartile == 1 & unq_own, which = TRUE], ], boundary, 
+             kde.eta*mean(delx, dely), grdtop)
+grdSPDF$KDE_low_due = 
+  spkernel2d(del[owners[debt_quartile == 1 & unq_own, which = TRUE], ], boundary, 
+             kde.eta*mean(delx, dely), grdtop)
+grdSPDF$KDE_low_tenure = 
+  spkernel2d(del[owners[tenure_quartile == 1 & unq_own, which = TRUE], ], boundary, 
+             kde.eta*mean(delx, dely), grdtop)
+grdSPDF$KDE_ep_jul = 
+  spkernel2d(del[owners[(ever_paid_jul & unq_own), which = TRUE], ], boundary, 
+             kde.eta*mean(delx, dely), grdtop)
+grdSPDF$KDE_ep_sep = 
+  spkernel2d(del[owners[(ever_paid_sep & unq_own), which = TRUE], ], boundary, 
+             kde.eta*mean(delx, dely), grdtop)
+grdSPDF$KDE_ep_dec = 
+  spkernel2d(del[owners[(ever_paid_dec & unq_own), which = TRUE], ], boundary, 
+             kde.eta*mean(delx, dely), grdtop)
+
+divide = function(x, n, na.rm = FALSE) {
+  r = range(x, na.rm = na.rm)
+  seq(r[1L], r[2L], length.out = n)
+}
+
+cols = colorRampPalette(c('white', 'red'))(10L)
+colorize = function(x) {
+  out = character(length(x))
+  idx = !is.na(x)
+  out[!idx] = NA_character_
+  x = x[idx]
+  out[idx] = cols[findInterval(x, divide(x, 10))]
+  out
+}
+
+pdf('~/Desktop/spatial_concentrations.pdf',
+    width = 21, height = 14)
+par(mfrow = c(2, 3))
+plot(grdSPDF, col = colorize(grdSPDF$KDE_low_mv),
+     main = 'Locations of Low-Value Properties')
+plot(phl, add = TRUE)
+
+plot(grdSPDF, col = colorize(grdSPDF$KDE_low_due),
+     main = 'Locations of Low-Debt Properties')
+plot(phl, add = TRUE)
+
+plot(grdSPDF, col = colorize(grdSPDF$KDE_low_tenure),
+     main = 'Locations of Low-Tenure Properties')
+plot(phl, add = TRUE)
+
+plot(grdSPDF, col = colorize(grdSPDF$KDE_ep_jul),
+     main = 'Locations of Ever-Paid Properties (One Month)')
+plot(phl, add = TRUE)
+
+plot(grdSPDF, col = colorize(grdSPDF$KDE_ep_sep),
+     main = 'Locations of Ever-Paid Properties (Three Months)')
+plot(phl, add = TRUE)
+
+plot(grdSPDF, col = colorize(grdSPDF$KDE_ep_dec),
+     main = 'Locations of Ever-Paid Properties (Six Months)')
+plot(phl, add = TRUE)
+dev.off()
+
+
+
+grdSPDF$KDE_low_mv = 
+  spkernel2d(del[owners[mv_quartile == 1 & unq_own & treat8 == 'Holdout', which = TRUE], ], boundary, 
+             kde.eta*mean(delx, dely), grdtop)
+grdSPDF$KDE_low_due = 
+  spkernel2d(del[owners[debt_quartile == 1 & unq_own & treat8 == 'Holdout', which = TRUE], ], boundary, 
+             kde.eta*mean(delx, dely), grdtop)
+grdSPDF$KDE_low_tenure = 
+  spkernel2d(del[owners[tenure_quartile == 1 & unq_own & treat8 == 'Holdout', which = TRUE], ], boundary, 
+             kde.eta*mean(delx, dely), grdtop)
+grdSPDF$KDE_ep_jul = 
+  spkernel2d(del[owners[(ever_paid_jul & unq_own & treat8 == 'Holdout'), which = TRUE], ], boundary, 
+             kde.eta*mean(delx, dely), grdtop)
+grdSPDF$KDE_ep_sep = 
+  spkernel2d(del[owners[(ever_paid_sep & unq_own & treat8 == 'Holdout'), which = TRUE], ], boundary, 
+             kde.eta*mean(delx, dely), grdtop)
+grdSPDF$KDE_ep_dec = 
+  spkernel2d(del[owners[(ever_paid_dec & unq_own & treat8 == 'Holdout'), which = TRUE], ], boundary, 
+             kde.eta*mean(delx, dely), grdtop)
+pdf('~/Desktop/spatial_concentrations_holdout.pdf',
+    width = 21, height = 14)
+par(mfrow = c(2, 3))
+cols = colorRampPalette(c('white', 'purple'))(10L)
+plot(grdSPDF, col = colorize(grdSPDF$KDE_low_mv),
+     main = 'Locations of Low-Value Properties')
+plot(phl, add = TRUE)
+
+plot(grdSPDF, col = colorize(grdSPDF$KDE_low_due),
+     main = 'Locations of Low-Debt Properties')
+plot(phl, add = TRUE)
+
+plot(grdSPDF, col = colorize(grdSPDF$KDE_low_tenure),
+     main = 'Locations of Low-Tenure Properties')
+plot(phl, add = TRUE)
+
+plot(grdSPDF, col = colorize(grdSPDF$KDE_ep_jul),
+     main = 'Locations of Ever-Paid Properties (One Month)')
+plot(phl, add = TRUE)
+
+plot(grdSPDF, col = colorize(grdSPDF$KDE_ep_sep),
+     main = 'Locations of Ever-Paid Properties (Three Months)')
+plot(phl, add = TRUE)
+
+plot(grdSPDF, col = colorize(grdSPDF$KDE_ep_dec),
+     main = 'Locations of Ever-Paid Properties (Six Months)')
+plot(phl, add = TRUE)
+dev.off()
+
+
+
+
+
+grdSPDF$KDE_low_mv = 
+  spkernel2d(del[owners[mv_quartile == 1 & unq_own & treat8 %in% c('Sheriff', 'Lien'), which = TRUE], ], boundary, 
+             kde.eta*mean(delx, dely), grdtop)
+grdSPDF$KDE_low_due = 
+  spkernel2d(del[owners[debt_quartile == 1 & unq_own & treat8 %in% c('Sheriff', 'Lien'), which = TRUE], ], boundary, 
+             kde.eta*mean(delx, dely), grdtop)
+grdSPDF$KDE_low_tenure = 
+  spkernel2d(del[owners[tenure_quartile == 1 & unq_own & treat8 %in% c('Sheriff', 'Lien'), which = TRUE], ], boundary, 
+             kde.eta*mean(delx, dely), grdtop)
+grdSPDF$KDE_ep_jul = 
+  spkernel2d(del[owners[(ever_paid_jul & unq_own & treat8 %in% c('Sheriff', 'Lien')), which = TRUE], ], boundary, 
+             kde.eta*mean(delx, dely), grdtop)
+grdSPDF$KDE_ep_sep = 
+  spkernel2d(del[owners[(ever_paid_sep & unq_own & treat8 %in% c('Sheriff', 'Lien')), which = TRUE], ], boundary, 
+             kde.eta*mean(delx, dely), grdtop)
+grdSPDF$KDE_ep_dec = 
+  spkernel2d(del[owners[(ever_paid_dec & unq_own & treat8 %in% c('Sheriff', 'Lien')), which = TRUE], ], boundary, 
+             kde.eta*mean(delx, dely), grdtop)
+pdf('~/Desktop/spatial_concentrations_threat.pdf',
+    width = 21, height = 14)
+par(mfrow = c(2, 3))
+cols = colorRampPalette(c('white', 'darkgreen'))(10L)
+plot(grdSPDF, col = colorize(grdSPDF$KDE_low_mv),
+     main = 'Locations of Low-Value Properties')
+plot(phl, add = TRUE)
+
+plot(grdSPDF, col = colorize(grdSPDF$KDE_low_due),
+     main = 'Locations of Low-Debt Properties')
+plot(phl, add = TRUE)
+
+plot(grdSPDF, col = colorize(grdSPDF$KDE_low_tenure),
+     main = 'Locations of Low-Tenure Properties')
+plot(phl, add = TRUE)
+
+plot(grdSPDF, col = colorize(grdSPDF$KDE_ep_jul),
+     main = 'Locations of Ever-Paid Properties (One Month)')
+plot(phl, add = TRUE)
+
+plot(grdSPDF, col = colorize(grdSPDF$KDE_ep_sep),
+     main = 'Locations of Ever-Paid Properties (Three Months)')
+plot(phl, add = TRUE)
+
+plot(grdSPDF, col = colorize(grdSPDF$KDE_ep_dec),
+     main = 'Locations of Ever-Paid Properties (Six Months)')
+plot(phl, add = TRUE)
+dev.off()
