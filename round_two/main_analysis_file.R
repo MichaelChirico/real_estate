@@ -60,7 +60,6 @@ owners <- fread(wds["data"] %+% "round_two_analysis_owners.csv")
 
 #exclude top 2 randomization blocks
 if (excludeTopBlocks) owners = owners[(holdout | rand_id > 2)]
-owners = owners[azavea_section != 'Center City']
 
 ##set factor levels (and, thereby, the reference group)
 owners[ , treat8 := 
