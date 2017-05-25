@@ -60,6 +60,7 @@ owners <- fread(wds["data"] %+% "round_two_analysis_owners.csv")
 
 #exclude top 2 randomization blocks
 if (excludeTopBlocks) owners = owners[(holdout | rand_id > 2)]
+owners = owners[azavea_section != 'Center City']
 
 ##set factor levels (and, thereby, the reference group)
 owners[ , treat8 := 
@@ -580,7 +581,13 @@ plot(log(xrng), yy3)
 dev.off()
 
 
-n_cells = 50 
+library(rgdal)
+library(rgeos)
+library(sp)
+library(maptools)
+library(spatstat)
+library(splancs)
+n_cells = 100 
 kde.eta = 1 
 
 phl = gUnaryUnion(gBuffer(
@@ -588,6 +595,9 @@ phl = gUnaryUnion(gBuffer(
           'PhiladelphiaCensusTracts2010'), 
   width = 1000
 ))
+
+azav = readOGR('/media/data_drive/gis_data/PA/',
+               'Neighborhoods_Philadelphia')
 
 del = SpatialPointsDataFrame(
   owners[ , cbind(x_lon, y_lat)], data = owners,
@@ -633,7 +643,7 @@ divide = function(x, n, na.rm = FALSE) {
   seq(r[1L], r[2L], length.out = n)
 }
 
-cols = colorRampPalette(c('white', 'red'))(10L)
+cols = paste0(colorRampPalette(c('white', 'red'))(10L), '80')
 colorize = function(x) {
   out = character(length(x))
   idx = !is.na(x)
