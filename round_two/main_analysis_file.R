@@ -14,12 +14,7 @@ library(funchir)
 library(data.table) #for everything
 library(xtable) #for table output
 library(texreg) #for regression output
-
-##Directories
-setwd(mn <- "~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
-wds <- c(log = mn %+% "logs/round_two/",
-         data = "/media/data_drive/real_estate/"); rm(mn)
-write.packages(wds["log"] %+% "analysis_session.txt")
+write.packages('logs/round_two/analysis_session.txt')
 
 ##Exclude the top two blocks?
 excludeTopBlocks = FALSE
@@ -56,7 +51,7 @@ rename_coef <- function(obj, nn){
 
 #Data import
 #  Importing directly from cleaned analysis files created with data_cleaning.R.
-owners <- fread(wds["data"] %+% "round_two_analysis_owners.csv")
+owners <- fread('data/round_two_analysis_owners.csv')
 
 #exclude top 2 randomization blocks
 if (excludeTopBlocks) owners = owners[(holdout | rand_id > 2)]

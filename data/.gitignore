@@ -1,0 +1,3 @@
+#selectively track data files
+*
+!.gitignore

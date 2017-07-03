@@ -15,33 +15,30 @@ library(sp)
 library(maptools)
 library(spatstat)
 library(splancs)
-setwd(mn <- "~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
-wds <- c(data = "/media/data_drive/real_estate/",
-         proj = mn %+% "round_two/", 
-         log = mn %+% "logs/round_two/")
-write.packages(wds["log"] %+% "cleaning_session.txt")
+write.packages('logs/round_two/cleaning_session.txt')
 
 #Data Import ####
 ##Block I: Main Sample, July Cross-Section
 ## * total_paid is the accrual between June 1, 2015 and July 22, 2015
 
 main_jul = read_excel(
-  wds["data"] %+% "Payments and Balance Penn Letter Experiment_150727.xlsx",
+  'data/Payments and Balance Penn Letter Experiment_150727.xlsx',
   sheet = 'DETAILS', skip = 9L, na = "-", 
   col_names = c('x', 'opa_no', 'x', 'x', 'treat15', 'x', 
                 'x', 'paid_full_jul', 'ever_paid_jul', rep('x', 6L)),
-  col_types = abbr_to_colClass('stststs', '1121226'))
+  col_types = abbr_to_colClass('stststs', '1121226')
+)
 
 setDT(main_jul)
 
 ##Block II: Holdout Sample, July Cross-Section
 holdout_jul = read_excel(
-  wds["data"] %+% "req20150709_PennLetterExperiment_"%+%
-    "v2_Commissioners Control Details.xlsx",
+  'data/req20150709_PennLetterExperiment_v2_Commissioners Control Details.xlsx',
   sheet = 'DETAILS', skip = 9L, na = "-", 
   col_names = c('x', 'opa_no', rep('x', 5L), 
                 'paid_full_jul', 'ever_paid_jul', rep('x', 5L)),
-  col_types = abbr_to_colClass('ststs', '11525'))
+  col_types = abbr_to_colClass('ststs', '11525')
+)
 
 setDT(holdout_jul)
 
@@ -60,8 +57,7 @@ full_jul = rbind(main_jul, holdout_jul)
 
 ##Block III: Full Sample, September Cross-Section
 full_sep = read_excel(
-  wds["data"] %+%
-    "req20150709_PennLetterExperiment (September 2015 update) v2.xlsx",
+  'data/req20150709_PennLetterExperiment (September 2015 update) v2.xlsx',
   sheet = "DETAILS", skip = 8L, na = c('-', 'NULL'),
   col_names = c(`ACCOUNT-ID` = "x", `BRT NUMBER` = "opa_no", 
                 `PROP ADDR` = "address", `PZIP5` = "x", 
@@ -76,12 +72,13 @@ full_sep = read_excel(
                 `AGREEMENT TYPE` = 'x', `AGREEMENT STATUS` = 'x',
                 `AGREEMENT START DATE` = 'x',
                 `AGREEMENT AMOUNT` = 'x', `ROW` = 'x'),
-  col_types = abbr_to_colClass("stsnstsns", "121252615"))
+  col_types = abbr_to_colClass("stsnstsns", "121252615")
+)
 
 setDT(full_sep)
 
 ### join missing lat/lon geocoded in geocode_missing.R
-extra_xy = fread(wds['proj'] %+% 'geocoded_missing.csv',
+extra_xy = fread('round_two/geocoded_missing.csv',
                  colClasses = list(character = 'opa_no'))
 full_sep[extra_xy, c('x', 'y') := .(i.x, i.y), on = 'opa_no']
 
@@ -146,14 +143,14 @@ full_sep[update_opas, opa_no := i.old, on = c(opa_no = "new")]
 
 ##Block IV: Full Sample, December Cross-Section
 full_dec = read_excel(
-  wds["data"] %+% 
-    "req20150709_PennLetterExperiment (December 2015 update) v2.xlsx",
+  'data/req20150709_PennLetterExperiment (December 2015 update) v2.xlsx',
   sheet = "DETAILS", skip = 8L, na = "-",
   col_names = c("account", "opa_no" , rep("x", 9L),
               "paid_full_dec", "ever_paid_dec", 
               rep("x", 5L), "earliest_pmt_dec",
               "total_paid_dec", rep("x", 5L)),
-  col_types = abbr_to_colClass("tstsdns", "2925115"))
+  col_types = abbr_to_colClass("tstsdns", "2925115")
+)
 
 setDT(full_dec)
 
@@ -168,17 +165,17 @@ full_dec[update_opas, opa_no := i.old, on = c(opa_no = "new")]
 ##Block V: Main Sample Background Data
 ## * total_due is pre-study balance
 bgvars <- c("opa_no", "owner1", "total_due", "rand_id")
-bg_main = fread(wds["proj"] %+% "round_2_full_data.csv",
+bg_main = fread('round_two/round_2_full_data.csv',
                 select = bgvars, colClasses = list(character = 'opa_no'))
 
 ##Block VI: Holdout Sample Background Data
-bg_holdout = fread(wds["proj"] %+% "holdout_sample.csv",
+bg_holdout = fread('round_two/holdout_sample.csv',
                    select = c("opa_no", "owner1", "total_due"),
                    colClasses = list(character = 'opa_no'))
 #Need fill since holdout_bg lacks rand_id
 bg = rbind(bg_main, bg_holdout, fill = TRUE)
 
-nbhds = fread("/media/data_drive/real_estate/round_two_property_file.csv",
+nbhds = fread('data/round_two_property_file.csv',
               select = c("BRT NUMBER", "AZAVEA NEIGHBORHOOD"),
               col.names = c("opa_no", "azavea"),
               colClasses = list(character = 'BRT NUMBER'))
@@ -192,7 +189,7 @@ nbhds =
                    azavea = c("Bustleton", "Morrell Park", "Logan Square")))
 
 #only focus on section of city
-nbhds[fread(wds["proj"] %+% "azavea_nbhd_quad_mapping.csv"),
+nbhds[fread('round_two/azavea_nbhd_quad_mapping.csv'),
       azavea_section := i.azavea_quad, on = c(azavea = "azavea_nbhd")]
 
 bg[nbhds, azavea_section := i.azavea_section, on = "opa_no"]
@@ -200,7 +197,7 @@ bg[nbhds, azavea_section := i.azavea_section, on = "opa_no"]
 ###Block VII: Other Background Data
 ###  From OPA-issued Property Data CD
 ###  (certified for 2015, received May 2014)
-opa_bg = fread(wds["data"] %+% "prop2015.txt",
+opa_bg = fread('data/prop2015.txt',
                select = c('PARCEL', 'MV', 'SALE DATE'),
                col.names = c('opa_no', 'assessed_mv', 'sale_date'),
                colClasses = list(character = c('PARCEL', 'SALE DATE'),
@@ -214,9 +211,8 @@ opa_bg[ , sale_date := NULL]
 
 ###Block VIII: One-Year Follow-Up Data
 followup <- read_excel(
-  wds["data"] %+%
-    "req20150709_PennLetterExperiment (July 2016 update with 2016 " %+% 
-    "delinquency, payments, and agreements).xlsx",
+  paste('data/req20150709_PennLetterExperiment (July 2016 update',
+        'with 2016 delinquency, payments, and agreements).xlsx'),
   sheet = "DETAILS", skip = 1L, na = "-",
   col_names = c("account", rep("x", 6L), 
                 "total_bill_2016", "x", "paid_full_jul16",
@@ -284,7 +280,7 @@ properties[sample(.N), owner_id := .GRP, by = owner1]
 
 ###Write out owner1-owner_id linkage
 fwrite(unique(properties[ , .(owner1, owner_id, opa_no)]),
-       wds["data"] %+% "round_two_anon_id_link.csv", quote = TRUE)
+       'data/round_two_anon_id_link.csv', quote = TRUE)
 
 properties[ , owner1 := NULL]
 owners <- 
@@ -329,4 +325,4 @@ owners <-
 owners[ , unq_own := N == 1]
 
 ### Write output
-fwrite(owners, wds["data"] %+% "round_two_analysis_owners.csv", quote = TRUE)
+fwrite(owners, 'data/round_two_analysis_owners.csv', quote = TRUE)

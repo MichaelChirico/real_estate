@@ -11,12 +11,7 @@ library(data.table)
 library(xlsx)
 library(foreign)
 library(maptools)
-setwd(mn <- "~/Desktop/research/Sieg_LMI_Real_Estate_Delinquency/")
-wds <- c(data = "/media/data_drive/real_estate/",
-         gis = "/media/data_drive/gis_data/PA/",
-         code = mn %+% "round_two/",
-         log = mn %+% "logs/round_two/")
-write.packages(wds["log"]%+%"randomization_code_session.txt")
+write.packages('logs/round_two/randomization_code_session.txt')
 
 ##Set Random Seed:
 ## Took current time as of this writing and appended the digits
@@ -24,16 +19,16 @@ write.packages(wds["log"]%+%"randomization_code_session.txt")
 set.seed(1820749)
 
 # Data Import ####
-data_final<-setnames(fread(wds["data"]%+%"2015 Delinquent.csv",
-                           colClasses=abbr_to_colClass("cnc","731"),
-                           drop=c("V8","V9")),
-                     c("opa_no","owner1","owner2",
-                       "mail_"%+%c("address","city","state","zip"),
-                       "total_due","property_address"))
+data_final = fread('data/2015 Delinquent.csv', drop = c('V8', 'V9'),
+                   colClasses = abbr_to_colClass("cnc", "731"))
+setnames(data_final,
+         c("opa_no", "owner1", "owner2",
+           "mail_" %+% c("address", "city", "state", "zip"),
+           "total_due", "property_address"))
 
-data_old<-setnames(fread(wds["data"]%+%"round_two_property_file.csv",
-                         select=c("BRT NUMBER","AZAVEA NEIGHBORHOOD","ZIP CODE")),
-                   c("opa_no","azavea_nbhd","zip"))
+data_old = fread('data/round_two_property_file.csv',
+                 select = c("BRT NUMBER", "AZAVEA NEIGHBORHOOD", "ZIP CODE"))
+setnames(data_old, c("opa_no", "azavea_nbhd", "zip"))
 
 data<-setkey(data_old,opa_no
              )[setkey(data_final,opa_no)
@@ -49,9 +44,11 @@ holdout_size<-3000L
 holdout<-sample(nrow(data),holdout_size)
 
 ## DoR wants XLSX format
-write.xlsx2(data[holdout],file=wds["code"]%+%"holdout_sample.xlsx",row.names=F)
+write.xlsx2(data[holdout], row.names = FALSE,
+            file = 'round_two/holdout_sample.xlsx')
 ## More useful for our own later use to have CSV
-write.csv(data[holdout],file=wds["code"]%+%"holdout_sample.csv",row.names=F)
+write.csv(data[holdout], row.names = FALSE,
+          file = 'round_two/holdout_sample.csv')
 
 data<-data[!holdout]; rm(holdout,holdout_size)
 
@@ -97,12 +94,12 @@ data[,paste0("owner",1:2,"_clean"):=
 
 ## Sheriff's Sales Info ####
 sheriffs_map_delinquent<-
-  readShapePoints(wds["gis"]%+%"delinquent_sold_year_to_may_15_nad.shp")
+  readShapePoints('data/delinquent_sold_year_to_may_15_nad.shp')
 phila_azav<-
-  readShapePoly(wds["gis"]%+%"Neighborhoods_Philadelphia_with_quadrants.shp")
+  readShapePoly('data/Neighborhoods_Philadelphia_with_quadrants.shp')
 
 sheriffs_sales<-setkey(setkey(setkey(fread(
-  wds["data"]%+%"sheriffs_sales/delinquent_sold_year_to_may_15.csv"
+  'data/sheriffs_sales/delinquent_sold_year_to_may_15.csv'
   ),opa_no)[.(as.character(sheriffs_map_delinquent@data$opa_no)),
             #Spatial join: assign Azavea neighborhood and quadrant to each sale
             `:=`(azavea_nbhd=(sheriffs_map_delinquent %over% phila_azav)[,"LISTNAME"],
@@ -133,9 +130,9 @@ azavea_quad_sample_ss<-setkey(setnames(dcast.data.table(
 
 ###Get Quadrant-Neighborhood mapping to assign in main data
 azavea_nbhd_quad_mapping<-
-  setkey(setkey(data.table(read.dbf(wds["gis"]%+%"Neighborhoods_Philadelphia_with_quadrants.dbf")
+  setkey(setkey(data.table(read.dbf('data/Neighborhoods_Philadelphia_with_quadrants.dbf')
                            )[,.(azavea_shp=LISTNAME,quadrant)],azavea_shp
-                )[fread("azaveas_mapping_dor_shp.csv"),
+                )[fread('data/azaveas_mapping_dor_shp.csv'),
                   azavea_nbhd:=i.azavea_dor][,azavea_shp:=NULL],azavea_nbhd)
 
 setkey(data,azavea_nbhd)[azavea_nbhd_quad_mapping,azavea_quad:=i.quadrant]; rm(azavea_nbhd_quad_mapping)
@@ -158,7 +155,7 @@ rm(sheriffs_sales,azavea_nbhd_sample_ss,azavea_quad_sample_ss)
 
 ## Amenities Info ####
 amenities_map<-
-  readShapePoints(wds["gis"]%+%"amenities_azav_for_geocoding_nad.shp")
+  readShapePoints('data/amenities_azav_for_geocoding_nad.shp')
 
 amenities_azav<-
   setkey(as.data.table(amenities_map)[,.(amenity,address,resource)],address
@@ -211,7 +208,7 @@ setkey(setkey(data,owner1)[data[,sum(total_due),by=owner1][order(-V1)][
   treatment)
 
 ## Output full data file for future analysis
-write.csv(data,file=wds["code"]%+%"round_2_full_data.csv",row.names=FALSE)
+write.csv(data,file='round_two/round_2_full_data.csv', row.names=FALSE)
 
 ## For pretty output, format total_due as a number with $ and commas:
 data[,total_due:=paste0("$",gsub("\\s","",formatC(total_due,format="f",big.mark=",",digits=2)))]
@@ -220,5 +217,5 @@ data[,total_due:=paste0("$",gsub("\\s","",formatC(total_due,format="f",big.mark=
 ##   sorting by mailing zip for pre-sorting purposes
 invisible(lapply(treatments,function(x){
   write.xlsx2(data[.(x)][order(mail_zip)],
-            file=paste0(wds["code"],"round_2_sample_",tolower(x),".xlsx"),
+            file=paste0('/data/round_2_sample_',tolower(x),'.xlsx'),
             row.names=F); gc()})); rm(treatments)

@@ -11,11 +11,11 @@ library(readxl)
 
 ##Geocode
 all_prop = read_excel(
-  paste0('/media/data_drive/real_estate/',
-         "req20150709_PennLetterExperiment (September 2015 update) v2.xlsx"),
+  'data/req20150709_PennLetterExperiment (September 2015 update) v2.xlsx',
   sheet = "DETAILS", skip = 8L, na = c('-', 'NULL'),
   col_names = c('x', 'opa_no', 'address', 'x', 'y', rep('x', 20L)),
-  col_types = abbr_to_colClass("stsnsss", "1212991"))
+  col_types = abbr_to_colClass("stsnsss", "1212991")
+)
 
 setDT(all_prop)
 
