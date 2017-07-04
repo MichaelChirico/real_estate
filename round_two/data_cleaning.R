@@ -94,8 +94,7 @@ kde.eta = 1 #fraction of cell width to use as KDE bandwidth
 ###   causing some near-boundary cells to be
 ###   forced missing (but not worth the extra effort)
 phl = gUnaryUnion(gBuffer(
-  readOGR('/media/data_drive/gis_data/PA', 
-          'PhiladelphiaCensusTracts2010'), 
+  readOGR('data', 'PhiladelphiaCensusTracts2010'), 
   width = 1000
 ))
 

@@ -8,8 +8,7 @@
 ##Packages
 rm(list = ls(all = TRUE))
 gc()
-###Michael Chirico's package of convenience functions;
-###  Available on GitHub @ MichaelChirico/funchir
+###Michael Chirico's package of convenience functions
 library(funchir)
 library(data.table) #for everything
 library(xtable) #for table output
@@ -78,48 +77,75 @@ owners[ , earliest_pmt_dec :=
     "\\begin{tabular}{lrrrrrrrrc}", 
     "\\hline", sep = "\n")
 
-print.xtable(xtable(cbind(t(
-  owners[(unq_own),
-         c(list(`Amount Due (June)` = dol.form(mean(total_due), tex = TRUE),
-                `Assessed Property Value` = 
-                  dol.form(mean(assessed_mv, na.rm = TRUE), tex = TRUE),
-                `Ownership Tenure (Years)` = round(mean(tenure, na.rm = TRUE), 1L)),
-           as.list(table(azavea_section)),
-           list(`\\# Owners` = prettyNum(.N, big.mark = ","))),
-         keyby = .(Variable = treat8)]), 
-  p_tex(c(sapply(c(
-    `Amount Due (June)` = "total_due",
-    `Assessed Property Value` = "assessed_mv",
-    `Ownership Tenure (Years)` = 'tenure'),
-    function(x) owners[(unq_own), lmfp(get(x) ~ treat8)]),
-    owners[(unq_own), c(round(chisq.test(table(
-      azavea_section, treat8))$p.value, 2L),
-      rep(NA, uniqueN(azavea_section) - 1L))],
-    #not targeting owners, so exclude
-    `\\# Owners` = NA)))),
-  include.colnames = FALSE, comment = FALSE, 
-  #setting sanitize.text.function prevents xtable from
-  #  commenting out the math markup (especially $). This
-  #  is also why we use tex = TRUE for dol.form.
-  sanitize.text.function = identity, only.contents = TRUE,
-  floating = TRUE, hline.after = c(0L, 1L, 3L, 9L))
+tbl = owners[(unq_own),
+              c(list(`Amount Due (June)` = 
+                       dol.form(mean(total_due), tex = TRUE),
+                     `Amount Due (June)` = 
+                       dol.form(sd(total_due), tex = TRUE),
+                    `Assessed Property Value` = 
+                      dol.form(mean(assessed_mv, na.rm = TRUE), tex = TRUE),
+                    `Assessed Property Value` = 
+                      dol.form(sd(assessed_mv, na.rm = TRUE), tex = TRUE),
+                    `Ownership Tenure (Years)` = 
+                      round(mean(tenure, na.rm = TRUE), 1L),
+                    `Ownership Tenure (Years)` = 
+                      round(sd(tenure, na.rm = TRUE), 1L)),
+               as.list(to.pct(table(azavea_section)/.N, dig = 0L)),
+               list(`\\# Owners` = prettyNum(.N, big.mark = ","))),
+             keyby = .(Variable = treat8)]
+
+tbl = cbind(t(tbl), 
+            p_tex(c(sapply(c(
+              `Amount Due (June)` = "total_due",
+              `Amount Due (June)` = "total_due",
+              `Assessed Property Value` = "assessed_mv",
+              `Assessed Property Value` = "assessed_mv",
+              `Ownership Tenure (Years)` = 'tenure',
+              `Ownership Tenure (Years)` = 'tenure'),
+              function(x) owners[(unq_own), lmfp(get(x) ~ treat8)]),
+              owners[(unq_own), c(round(chisq.test(table(
+                azavea_section, treat8))$p.value, 2L),
+                rep(NA, uniqueN(azavea_section) - 1L))],
+              #not targeting owners, so exclude
+              `\\# Owners` = NA)))
+
+sdrows = duplicated(rownames(tbl))
+pvcol = grep('$p$-value', tbl[1L, ], fixed = TRUE)
+pctrows = grepl('Philadelphia|City', rownames(tbl))
+tbl[sdrows, -pvcol] = paste0('(', tbl[sdrows, -pvcol], ')')
+tbl[pctrows, -pvcol] = paste0(tbl[pctrows, -pvcol], '\\%')
+tbl[sdrows, pvcol] = ''
+tbl = cbind(rownames(tbl), tbl)
+tbl[sdrows, 1L] = NA
+dimnames(tbl) = list(NULL, NULL)
+
+seprows = grep('Center City', rownames(tbl)) + c(-1L, 5L)
+print.xtable(xtable(tbl), include.rownames = FALSE,
+             include.colnames = FALSE, comment = FALSE, 
+             #setting sanitize.text.function prevents xtable from
+             #  commenting out the math markup (especially $). This
+             #  is also why we use tex = TRUE for dol.form.
+             sanitize.text.function = identity, only.contents = TRUE,
+             floating = TRUE, hline.after = c(0L, 1L, seprows))
 
 cat("\\hline",
     "\\multicolumn{10}{l}" %+% 
       "{\\scriptsize{$p$-values in rows 1-2 are " %+% 
       "$F$-test $p$-values from regressing each " %+% 
       "variable on treatment dummies. A $\\chi^2$ " %+% 
-      "test was used for the geographic distribution.}} \\\\",
+      "test was used for the geographic distribution. " %+% 
+      "Standard deviations in parentheses.}} \\\\",
     "\\end{tabular}",
     "\\end{sidewaystable}", sep = "\n")}
 
 # TABLE 2: Short-term Linear Probability Model Estimates ####
-tbl <- capture.output(texreg(lapply(lapply(expression(
+tbl <- capture.output(texreg(lapply(expression(
   `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
   `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
   #Multiply indicator by 100 so the units are in %ages already
-  function(x) owners[(unq_own), lm(I(100 * eval(x)) ~ treat8)]), 
-  rename_coef, nn = 8), stars = c(.01, .05, .1), 
+  function(x) 
+    rename_coef(owners[(unq_own), lm(I(100 * eval(x)) ~ treat8)], 8)), 
+  stars = c(.01, .05, .1), 
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, 
   label = "sh_lin", float.pos = 'htb',
@@ -405,8 +431,8 @@ cat(tbl, sep = "\n")
 
 # SANDBOX ####
 pdf('~/Desktop/ep_by_quartiles.pdf', 
-    width = 21, height = 28)
-par(mfrow = c(4, 3), oma = c(2, 0, 2, 0))
+    width = 21, height = 35)
+par(mfrow = c(5, 3), oma = c(2, 0, 2, 0))
 tn = levels(owners$treat8)
 cutoffs = 
   paste0('Q', 1:4, ': ', 
@@ -462,6 +488,37 @@ owners[ , .(ep1 = mean(ever_paid_jul),
                     main = 'Six Months', las = 1,
                     ylab = 'Proportion Ever Paid', ylim = c(0, 1))
           }]
+
+cutoffs = 
+  paste0('Q', 1:4, ': ', 
+         owners[assessed_mv > 0,
+                levels(create_quantiles(100*total_due/assessed_mv, 4L,
+                                        labels = NULL))])
+owners[assessed_mv>0,
+       .(ep1 = mean(ever_paid_jul),
+         ep3 = mean(ever_paid_sep),
+         ep6 = mean(ever_paid_dec)), 
+       keyby = .(treat8, Q = create_quantiles(total_due/assessed_mv, 4L))
+       ][ , dcast(.SD, Q ~ treat8, value.var = c('ep1', 'ep3', 'ep6'))
+          ][ , {
+            y = .SD[ , grep('ep1', names(.SD)), with = FALSE]
+            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
+                    main = 'One Month', las = 1,
+                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
+            legend('topleft', legend = cutoffs,
+                   title = 'Quartile Cutoffs (%)')
+            y = .SD[ , grep('ep3', names(.SD)), with = FALSE]
+            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
+                    main = 'Three Months', las = 1,
+                     ylab = 'Proportion Ever Paid', ylim = c(0, 1))
+             mtext('Ever Paid by (Quartile of) Total Due as % of Property Value', 
+                   side = 3L, line = 3L)
+             y = .SD[ , grep('ep6', names(.SD)), with = FALSE]
+             barplot(as.matrix(y), beside = TRUE, names.arg = tn,
+                     main = 'Six Months', las = 1,
+                     ylab = 'Proportion Ever Paid', ylim = c(0, 1))
+           }]
+
 
 cutoffs = 
   paste0('Q', 1:4, ': ', 
