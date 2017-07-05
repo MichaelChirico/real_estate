@@ -140,11 +140,12 @@ cat("\\hline",
 
 # TABLE 2: Short-term Linear Probability Model Estimates ####
 tbl <- capture.output(texreg(lapply(expression(
-  `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
-  `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
   #Multiply indicator by 100 so the units are in %ages already
+  `One Month` = 100*ever_paid_jul, `Three Months` = 100*ever_paid_sep,
+  `One Month` = 100*paid_full_jul, `Three Months` = 100*paid_full_sep,
+  `One Month` = total_paid_jul, `Three Months` = total_paid_sep),
   function(x) 
-    rename_coef(owners[(unq_own), lm(I(100 * eval(x)) ~ treat8)], 8)), 
+    rename_coef(owners[(unq_own), lm(eval(x) ~ treat8)], 8)), 
   stars = c(.01, .05, .1), 
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, 
@@ -162,19 +163,22 @@ tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
 
 tbl <- c(tbl[1L:(idx - 3L)],
          " & \\multicolumn{2}{c}{Ever Paid} & " %+% 
-           "\\multicolumn{2}{c}{Paid in Full} \\\\",
+           "\\multicolumn{2}{c}{Paid in Full} & " %+%
+           "\\multicolumn{2}{c}{Total Paid} \\\\",
          tbl[c(idx - 2L, idx)],
          "\\hline", tbl[(idx + 2L):length(tbl)])
 
 cat(tbl, sep = "\n")
 
 # TABLE 3: Short-term Reults: Relative to Generic Reminder ####
-tbl <- capture.output(texreg(lapply(lapply(expression(
-  `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
-  `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
+tbl <- capture.output(texreg(lapply(expression(
+  `One Month` = 100*ever_paid_jul, `Three Months` = 100*ever_paid_sep,
+  `One Month` = 100*paid_full_jul, `Three Months` = 100*paid_full_sep,
+  `One Month` = total_paid_jul, `Three Months` = total_paid_sep),
   #Multiply indicator by 100 so the units are in %ages already
-  function(x) owners[(!holdout & unq_own), lm(I(100 * eval(x)) ~ treat7)]), 
-  rename_coef, nn = 7), stars = c(.01, .05, .1), 
+  function(x) 
+    rename_coef(owners[(!holdout & unq_own), lm(eval(x) ~ treat7)], 7)), 
+  stars = c(.01, .05, .1), 
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, 
   label = "sh_lpm_rob", float.pos = 'htb',
@@ -191,22 +195,24 @@ tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
 
 tbl <- c(tbl[1L:(idx - 3L)],
          " & \\multicolumn{2}{c}{Ever Paid} & " %+% 
-           "\\multicolumn{2}{c}{Paid in Full} \\\\",
+           "\\multicolumn{2}{c}{Paid in Full} & " %+% 
+           "\\multicolumn{2}{c}{Total Paid} \\\\",
          tbl[c(idx - 2L, idx)],
          "\\hline", tbl[(idx + 2L):length(tbl)])
 
 cat(tbl, sep = "\n")
 
 # TABLE 4: Long-Term Linear Probability Model Estimates ####
-tbl <- capture.output(texreg(lapply(lapply(expression(
-  `Ever Paid` = ever_paid_dec, `Paid in Full` = paid_full_dec,
-  `Ever Paid` = ever_paid_jul16, `Paid in Full` = paid_full_jul16),
-  function(x) owners[(unq_own), lm(I(100 * eval(x)) ~ treat8)]),
-  rename_coef, nn = 8), stars = c(.01, .05, .1), 
+tbl <- capture.output(texreg(lapply(expression(
+  `Ever Paid` = 100*ever_paid_dec, `Paid in Full` = 100*paid_full_dec,
+  `Total Paid` = total_paid_dec, `Ever Paid` = 100*ever_paid_jul16,
+  `Paid in Full` = 100*paid_full_jul16, `Total Paid` = total_paid_jul16),
+  function(x) rename_coef(owners[(unq_own), lm(eval(x) ~ treat8)], 8)),
+  stars = c(.01, .05, .1), 
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L,
   label = "ltmpme", float.pos = 'htb',
-  caption = "Long-Term Linear Probability Model Estimates",
+  caption = "Long-Term Linear Model Estimates",
   custom.note = "%stars. Holdout values in levels; " %+% 
     "remaining figures relative to this"))
 
@@ -216,8 +222,8 @@ idx <- grep("^Holdout", tbl)
 tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
 
 tbl <- c(tbl[1L:(idx - 3L)],
-         " & \\multicolumn{2}{c}{Six Months} & " %+% 
-           "\\multicolumn{2}{c}{Subsequent Tax Cycle} \\\\",
+         " & \\multicolumn{3}{c}{Six Months} & " %+% 
+           "\\multicolumn{3}{c}{Subsequent Tax Cycle} \\\\",
          tbl[c(idx - 2L, idx)],
          "\\hline", tbl[(idx + 2L):length(tbl)])
 
