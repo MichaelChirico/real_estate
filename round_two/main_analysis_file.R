@@ -637,9 +637,10 @@ tbl = capture.output({
            digits = 1L, label = 'tbl:lpm_hetero',
            float.pos = 'htb',
            caption = 'Treatment Effect Heterogeneity by Debt Ratio Quantile',
-           custom.note = "%stars. Holdout values for first quartile in " %+% 
-             "levels; remaining figures are treatment effects for the " %+% 
-             "stated treatment vs. holdout owners in the same quartile.")]
+           custom.note = "\\parbox{.75\\linewidth}{%stars. Holdout values " %+% 
+             "for first quartile in levels; remaining figures are " %+% 
+             "treatment effects for the stated treatment vs. holdout " %+% 
+             "owners in the same quartile.}")]
 })
 
 ## Replace Holdout SEs with horizontal rule, add header for EP vs. PF
