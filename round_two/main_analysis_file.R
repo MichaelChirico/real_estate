@@ -581,6 +581,8 @@ dev.off()
 
 owners[unq_own & assessed_mv>0, mv_quartile := create_quantiles(assessed_mv, 4)]
 owners[(unq_own), debt_quartile := create_quantiles(total_due, 4)]
+owners[unq_own & assessed_mv>0, 
+       debt_ratio_quartile := create_quantiles(total_due/assessed_mv, 4)]
 owners[unq_own & tenure>0, tenure_quartile := create_quantiles(tenure, 4)]
 owners[(unq_own), kde_quartile := create_quantiles(kde, 4)]
 
@@ -608,6 +610,47 @@ owners[(unq_own),
                                 `3 Months` = ever_paid_sep,
                                 `6 Months` = ever_paid_dec),
                      function(ep) lm(eval(ep) ~ kde_quartile/treat8)))]
+
+rename_coef = function(obj) {
+  nm = names(obj$coefficients)
+  keep = grep('quartile.*(Lien|Sheriff)', nm)
+  int = grep('Intercept', nm)
+  nm[-c(int, keep)] = 'x'
+  nm[int] = 'Holdout in Quartile 1'
+  nm[keep] = gsub('.*quartile([1-4]):.*8(.*)$', 
+                  '\\2 in Quartile \\1', nm[keep])
+  names(obj$coefficients) = nm
+  obj
+}
+
+tbl = capture.output({
+  owners[unq_own & assessed_mv>0, 
+         texreg(lapply(expression(
+           `1 Month` = ever_paid_jul, 
+           `3 Months` = ever_paid_sep,
+           `6 Months` = ever_paid_dec),
+           function(ep) 
+             rename_coef(lm(100*eval(ep) ~ debt_ratio_quartile/treat8))),
+           omit.coef = 'x', stars = c(.01, .05, .1),
+           include.rsquared = FALSE, caption.above = TRUE,
+           include.adjrs = FALSE, include.rmse = FALSE,
+           digits = 1L, label = 'tbl:lpm_hetero',
+           float.pos = 'htb',
+           caption = 'Treatment Effect Heterogeneity by Debt Ratio Quantile',
+           custom.note = "%stars. Holdout values for first quartile in " %+% 
+             "levels; remaining figures are treatment effects for the " %+% 
+             "stated treatment vs. holdout owners in the same quartile.")]
+})
+
+## Replace Holdout SEs with horizontal rule, add header for EP vs. PF
+idx <- grep("^Holdout", tbl)
+
+tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
+
+tbl <- c(tbl[1L:idx], "\\hline",
+         tbl[(idx + 2L):length(tbl)])
+
+cat(tbl, sep = "\n")
 
 
 xrng = owners[(unq_own), {
