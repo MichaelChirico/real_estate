@@ -613,10 +613,13 @@ owners[(unq_own),
 
 rename_coef = function(obj) {
   nm = names(obj$coefficients)
-  keep = grep('quartile.*(Lien|Sheriff)', nm)
   int = grep('Intercept', nm)
-  nm[-c(int, keep)] = 'x'
+  qint = grep('.*quartile[1-4]$', nm)
+  keep = grep('quartile.*(Lien|Sheriff)', nm)
+  nm[-c(int, qint, keep)] = 'x'
   nm[int] = 'Holdout in Quartile 1'
+  nm[qint] = gsub('.*quartile([1-4])$', 
+                  'Holdout in Quartile \\1', nm[qint])
   nm[keep] = gsub('.*quartile([1-4]):.*8(.*)$', 
                   '\\2 in Quartile \\1', nm[keep])
   names(obj$coefficients) = nm
@@ -630,21 +633,22 @@ tbl = capture.output({
            `3 Months` = ever_paid_sep,
            `6 Months` = ever_paid_dec),
            function(ep) 
-             rename_coef(lm(100*eval(ep) ~ debt_ratio_quartile/treat8))),
+             rename_coef(lm(100*eval(ep) ~ debt_quartile/treat8))),
            omit.coef = 'x', stars = c(.01, .05, .1),
            include.rsquared = FALSE, caption.above = TRUE,
            include.adjrs = FALSE, include.rmse = FALSE,
            digits = 1L, label = 'tbl:lpm_hetero',
            float.pos = 'htb',
-           caption = 'Treatment Effect Heterogeneity by Debt Ratio Quantile',
+           caption = 'Treatment Effect Heterogeneity by Debt Quantile',
            custom.note = "\\parbox{.75\\linewidth}{%stars. Holdout values " %+% 
-             "for first quartile in levels; remaining figures are " %+% 
+             "for first quartile in levels; other holdout figures are " %+% 
+             "relative to this and remaining figures are " %+% 
              "treatment effects for the stated treatment vs. holdout " %+% 
              "owners in the same quartile.}")]
 })
 
 ## Replace Holdout SEs with horizontal rule, add header for EP vs. PF
-idx <- grep("^Holdout", tbl)
+idx <- grep("^Holdout.*Quartile\\s1", tbl)
 
 tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
 
