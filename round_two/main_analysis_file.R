@@ -8,11 +8,14 @@
 ##Packages
 rm(list = ls(all = TRUE))
 gc()
-###Michael Chirico's package of convenience functions
-library(funchir)
+library(funchir) #convenience functions
+library(plm) #for clustered SEs
+library(pglm) #for clustered logit SEs
 library(data.table) #for everything
 library(xtable) #for table output
 library(texreg) #for regression output
+library(sandwich) #for robust SEs
+library(lmtest) #for testing
 write.packages('logs/round_two/analysis_session.txt')
 
 ##Exclude the top two blocks?
@@ -139,20 +142,25 @@ cat("\\hline",
     "\\end{sidewaystable}", sep = "\n")}
 
 # TABLE 2: Short-term Linear Probability Model Estimates ####
-tbl <- capture.output(texreg(lapply(expression(
+regs = lapply(expression(
   #Multiply indicator by 100 so the units are in %ages already
   `One Month` = 100*ever_paid_jul, `Three Months` = 100*ever_paid_sep,
   `One Month` = 100*paid_full_jul, `Three Months` = 100*paid_full_sep,
   `One Month` = total_paid_jul, `Three Months` = total_paid_sep),
   function(x) 
-    rename_coef(owners[(unq_own), lm(eval(x) ~ treat8)], 8)), 
-  stars = c(.01, .05, .1), 
+    rename_coef(owners[(unq_own), lm(eval(x) ~ treat8)], 8))
+ses = lapply(regs, function(r) sqrt(diag(vcovHC(r))))
+pvals = lapply(regs, function(r)
+  coeftest(r, vcovHC(r))[ , 'Pr(>|t|)'])
+tbl <- capture.output(texreg(
+  regs, stars = c(.01, .05, .1), 
+  override.se = ses, override.pvalues = pvals,
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, 
   label = "sh_lin", float.pos = 'htb',
   caption = "Short-Term Linear Probability Model Estimates",
-  custom.note = "%stars. Holdout values in levels; " %+% 
-    "remaining figures relative to this"))
+  custom.note = "%stars. Robust standard errors. " %+% 
+    "Holdout values in levels; remaining figures relative to this"))
 
 ## Replace Holdout SEs with horizontal rule, 
 ##   eliminate significance for intercept,
@@ -171,20 +179,42 @@ tbl <- c(tbl[1L:(idx - 3L)],
 cat(tbl, sep = "\n")
 
 # TABLE 3: Short-term Reults: Relative to Generic Reminder ####
-tbl <- capture.output(texreg(lapply(expression(
+powners_unq_all = 
+  pdata.frame(owners[!holdout & unq_own], 
+              index = 'rand_id', drop.index = FALSE)
+regs = lapply(expression(
   `One Month` = 100*ever_paid_jul, `Three Months` = 100*ever_paid_sep,
   `One Month` = 100*paid_full_jul, `Three Months` = 100*paid_full_sep,
   `One Month` = total_paid_jul, `Three Months` = total_paid_sep),
   #Multiply indicator by 100 so the units are in %ages already
   function(x) 
-    rename_coef(owners[(!holdout & unq_own), lm(eval(x) ~ treat7)], 7)), 
-  stars = c(.01, .05, .1), 
+    plm(eval(x) ~ treat7, data = powners_unq_all, model = 'pooling'))
+# per the guide here:
+#  http://www.richard-bluhm.com/clustered-ses-in-r-and-stata-2/
+n_clust = uniqueN(powners_unq_all$rand_id)
+n_obs = nrow(powners_unq_all)
+#since all vs. treat7, there are 7 degrees of
+#  freedom lost in each regression (hence n_obs- 7)
+dof_adj = n_clust/(n_clust - 1) * (n_obs - 1)/(n_obs - 7)
+ses = lapply(regs, function(r) 
+  sqrt(diag(dof_adj * vcovHC(r, type = 'HC0', cluster = 'group', 
+                             adjust = TRUE))))
+pvals = lapply(regs, function(r)
+  coeftest(r, dof_adj * vcovHC(r, type = 'HC0', cluster = 'group', 
+                             adjust = TRUE))[ , 'Pr(>|t|)'])
+#rename now since vcovHC somehow recovers the
+#  original coefficient names, causing conflict
+#  and leading to empty p values
+regs = lapply(regs, rename_coef, 7L)
+tbl <- capture.output(texreg(
+  regs, stars = c(.01, .05, .1), 
+  override.se = ses, override.pvalues = pvals,
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, 
   label = "sh_lpm_rob", float.pos = 'htb',
   caption = "Short-term Results: Relative to Generic Reminder",
-  custom.note = "%stars. Reminder values in levels; " %+% 
-    "remaining figures relative to this"))
+  custom.note = "%stars. Standard errors clustered by block." %+% 
+    "Reminder values in levels; remaining figures relative to this"))
 
 ## Replace Reminder SEs with horizontal rule, 
 ##   eliminate significance for intercept,
@@ -203,18 +233,23 @@ tbl <- c(tbl[1L:(idx - 3L)],
 cat(tbl, sep = "\n")
 
 # TABLE 4: Long-Term Linear Probability Model Estimates ####
-tbl <- capture.output(texreg(lapply(expression(
+regs = lapply(expression(
   `Ever Paid` = 100*ever_paid_dec, `Paid in Full` = 100*paid_full_dec,
   `Total Paid` = total_paid_dec, `Ever Paid` = 100*ever_paid_jul16,
   `Paid in Full` = 100*paid_full_jul16, `Total Paid` = total_paid_jul16),
-  function(x) rename_coef(owners[(unq_own), lm(eval(x) ~ treat8)], 8)),
-  stars = c(.01, .05, .1), 
+  function(x) rename_coef(owners[(unq_own), lm(eval(x) ~ treat8)], 8))
+ses = lapply(regs, function(r) sqrt(diag(vcovHC(r))))
+pvals = lapply(regs, function(r)
+  coeftest(r, vcovHC(r))[ , 'Pr(>|t|)'])
+tbl <- capture.output(texreg(
+  regs, stars = c(.01, .05, .1), 
+  override.se = ses, override.pvalues = pvals,
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L,
   label = "ltmpme", float.pos = 'htb',
   caption = "Long-Term Linear Model Estimates",
-  custom.note = "%stars. Holdout values in levels; " %+% 
-    "remaining figures relative to this"))
+  custom.note = "%stars. Robust standard errors. " %+%
+    "Holdout values in levels; remaining figures relative to this"))
 
 ## Replace Holdout SEs with horizontal rule, add header for EP vs. PF
 idx <- grep("^Holdout", tbl)
@@ -286,18 +321,36 @@ print(xtable(
   comment = FALSE, caption.placement = "top")
 
 # TABLE A1: Robustness Analysis: Relative to Reminder (All Owners) ####
-tbl <- capture.output(texreg(lapply(lapply(expression(
-  `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
-  `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
+powners_all = 
+  pdata.frame(owners[(!holdout)], index = 'rand_id', drop.index = FALSE)
+regs = lapply(expression(
+  `One Month` = 100*ever_paid_jul, `Three Months` = 100*ever_paid_sep,
+  `One Month` = 100*paid_full_jul, `Three Months` = 100*paid_full_sep,
+  `One Month` = total_paid_jul, `Three Months` = total_paid_sep),
   #Multiply indicator by 100 so the units are in %ages already
-  function(x) owners[(!holdout), lm(I(100 * eval(x)) ~ treat7)]), 
-  rename_coef, nn = 7), stars = c(.01, .05, .1), 
+  function(x) 
+    plm(eval(x) ~ treat7, data = powners_all, model = 'pooling'))
+n_clust = uniqueN(powners_all$rand_id)
+n_obs = nrow(powners_all)
+#since all vs. treat7, there are 7 degrees of
+#  freedom lost in each regression (hence n_obs- 7)
+dof_adj = n_clust/(n_clust - 1) * (n_obs - 1)/(n_obs - 7)
+ses = lapply(regs, function(r) 
+  sqrt(diag(dof_adj * vcovHC(r, type = 'HC0', cluster = 'group', 
+                             adjust = TRUE))))
+pvals = lapply(regs, function(r)
+  coeftest(r, dof_adj * vcovHC(r, type = 'HC0', cluster = 'group', 
+                             adjust = TRUE))[ , 'Pr(>|t|)'])
+regs = lapply(regs, rename_coef, 7L)
+tbl <- capture.output(texreg(
+  regs, stars = c(.01, .05, .1), 
+  override.se = ses, override.pvalues = pvals,
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, 
   label = "sh_lpm_mult", float.pos = 'htbp',
   caption = "Robustness Analysis: Relative to Reminder (Multiple Owners)",
-  custom.note = "%stars. Reminder values in levels; " %+% 
-    "remaining figures relative to this"))
+  custom.note = "%stars. Standard errors clustered by block." %+% 
+    "Reminder values in levels; remaining figures relative to this"))
 
 ## Replace Reminder SEs with horizontal rule, 
 ##   eliminate significance for intercept,
@@ -308,7 +361,8 @@ tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
 
 tbl <- c(tbl[1L:(idx - 3L)],
          " & \\multicolumn{2}{c}{Ever Paid} & " %+% 
-           "\\multicolumn{2}{c}{Paid in Full} \\\\",
+           "\\multicolumn{2}{c}{Paid in Full} & " %+% 
+           "\\multicolumn{2}{c}{Total Paid} \\\\",
          tbl[c(idx - 2L, idx)],
          "\\hline", tbl[(idx + 2L):length(tbl)])
 
@@ -382,17 +436,23 @@ cat("\\hline",
     "\\end{sidewaystable}", sep = "\n")}
 
 # TABLE A3: Short-Term Logistic Model Estimates (Unary Owners) ####
-tbl <- capture.output(texreg(lapply(lapply(expression(
+regs = lapply(expression(
   `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
   `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
-  function(x) owners[(unq_own), glm(eval(x) ~ treat8, family = binomial)]), 
-  rename_coef, nn = 8), stars = c(.01, .05, .1), 
+  function(x) owners[(unq_own), glm(eval(x) ~ treat8, family = binomial)])
+ses = lapply(regs, function(r) sqrt(diag(vcovHC(r))))
+pvals = lapply(regs, function(r)
+  coeftest(r, vcovHC(r))[ , 'Pr(>|z|)'])
+regs = lapply(regs, rename_coef, 8L)
+tbl <- capture.output(texreg(
+  regs, stars = c(.01, .05, .1),
+  override.se = ses, override.pvalues = pvals,
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, 
   label = "sh_logit", float.pos = 'htbp',
   caption = "Short-Term Logistic Model Estimates (Unary Owners)",
-  custom.note = "%stars. Holdout values in levels; " %+% 
-    "remaining figures relative to this"))
+  custom.note = "%stars. Robust standard errors. " %+% 
+    "Holdout values in levels; remaining figures relative to this"))
 
 ## Replace Holdout SEs with horizontal rule, 
 ##   eliminate significance for intercept,
@@ -410,19 +470,50 @@ tbl <- c(tbl[1L:(idx - 3L)],
 cat(tbl, sep = "\n")
 
 # TABLE A4: Logit Estimates Including Multiple Owners ####
-tbl <- capture.output(texreg(lapply(
-  list(`One Month` = 
-         owners[ , glm(ever_paid_jul ~ treat7, family = binomial)],
-       `Three Months` = 
-         owners[ , glm(ever_paid_sep ~ treat7, family = binomial)],
-       `One Month` = 
-         owners[(unq_own), glm(ever_paid_jul ~ treat7, family = binomial)],
-       `Three Months` = 
-         owners[(unq_own), glm(ever_paid_sep ~ treat7, family = binomial)]),
-  rename_coef, nn = 7), stars = c(.01, .05, .1), 
+reg_nest = 
+  list(`One Month` = {
+    r = pglm(ever_paid_jul ~ treat7, data = powners_all,
+             family = binomial, model = 'pooling')
+    n_clust = uniqueN(powners_all$rand_id)
+    n_obs = nrow(powners_all)
+    dof_adj = n_clust/(n_clust - 1) * (n_obs - 1)/(n_obs - 7)
+    V = dof_adj * vcovHC(r, type = 'HC0', cluster = 'group', adjust = TRUE)
+    list(reg = r, se = sqrt(diag(V)), pval = coeftest(r, V)[ , 'Pr(>|t|)'])
+  }, `Three Months` = {
+    r = pglm(ever_paid_sep ~ treat7, data = powners_all,
+             family = binomial, model = 'pooling')
+    n_clust = uniqueN(powners_all$rand_id)
+    n_obs = nrow(powners_all)
+    dof_adj = n_clust/(n_clust - 1) * (n_obs - 1)/(n_obs - 7)
+    V = dof_adj * vcovHC(r, type = 'HC0', cluster = 'group', adjust = TRUE)
+    list(reg = r, se = sqrt(diag(V)), pval = coeftest(r, V)[ , 'Pr(>|t|)'])
+  }, `One Month` = {
+    r = pglm(ever_paid_jul ~ treat7, family = binomial,
+             data = powners_unq_all, model = 'pooling')
+    n_clust = uniqueN(powners_unq_all$rand_id)
+    n_obs = nrow(powners_unq_all)
+    dof_adj = n_clust/(n_clust - 1) * (n_obs - 1)/(n_obs - 7)
+    V = dof_adj * vcovHC(r, type = 'HC0', cluster = 'group', adjust = TRUE)
+    list(reg = r, se = sqrt(diag(V)), pval = coeftest(r, V)[ , 'Pr(>|t|)'])
+  }, `Three Months` = {
+    r = pglm(ever_paid_sep ~ treat7, family = binomial,
+             data = powners_unq_all, model = 'pooling')
+    n_clust = uniqueN(powners_unq_all$rand_id)
+    n_obs = nrow(powners_unq_all)
+    dof_adj = n_clust/(n_clust - 1) * (n_obs - 1)/(n_obs - 7)
+    V = dof_adj * vcovHC(r, type = 'HC0', cluster = 'group', adjust = TRUE)
+    list(reg = r, se = sqrt(diag(V)), pval = coeftest(r, V)[ , 'Pr(>|t|)'])
+  })
+regs = lapply(reg_nest, `[[`, 'reg')
+ses = lapply(reg_nest, `[[`, 'se')
+pvals = lapply(reg_nest, `[[`, 'pval')
+tbl <- capture.output(texreg(
+  regs, stars = c(.01, .05, .1), 
+  override.se = ses, override.pvalues = pvals,
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 2L, 
   label = "sh_logit_rob", float.pos = 'htbp', omit.coef = 'Reminder',
+  custom.note = '%stars. Standard errors clustered by block.',
   caption = "Logit Estimates Including Multiple Owners"))
 
 idx = grep('One Month', tbl, fixed = TRUE) - 1L
@@ -586,31 +677,6 @@ owners[unq_own & assessed_mv>0,
 owners[unq_own & tenure>0, tenure_quartile := create_quantiles(tenure, 4)]
 owners[(unq_own), kde_quartile := create_quantiles(kde, 4)]
 
-owners[unq_own & assessed_mv>0, 
-       texreg(lapply(expression(`1 Month` = ever_paid_jul, 
-                                `3 Months` = ever_paid_sep,
-                                `6 Months` = ever_paid_dec),
-                     function(ep) lm(eval(ep) ~ mv_quartile/treat8)))]
-
-owners[(unq_own), 
-       texreg(lapply(expression(`1 Month` = ever_paid_jul, 
-                                `3 Months` = ever_paid_sep,
-                                `6 Months` = ever_paid_dec),
-                     function(ep) lm(eval(ep) ~ debt_quartile/treat8)))]
-
-owners[unq_own & tenure>0, 
-       texreg(lapply(expression(`1 Month` = ever_paid_jul, 
-                                `3 Months` = ever_paid_sep,
-                                `6 Months` = ever_paid_dec),
-                     function(ep) lm(eval(ep) ~ tenure_quartile/treat8)))]
-
-
-owners[(unq_own), 
-       texreg(lapply(expression(`1 Month` = ever_paid_jul, 
-                                `3 Months` = ever_paid_sep,
-                                `6 Months` = ever_paid_dec),
-                     function(ep) lm(eval(ep) ~ kde_quartile/treat8)))]
-
 rename_coef = function(obj) {
   nm = names(obj$coefficients)
   int = grep('Intercept', nm)
@@ -627,14 +693,18 @@ rename_coef = function(obj) {
 }
 
 tbl = capture.output({
-  owners[unq_own & assessed_mv>0, 
-         texreg(lapply(expression(
-           `1 Month` = ever_paid_jul, 
-           `3 Months` = ever_paid_sep,
-           `6 Months` = ever_paid_dec),
-           function(ep) 
-             rename_coef(lm(100*eval(ep) ~ debt_quartile/treat8))),
-           omit.coef = 'x', stars = c(.01, .05, .1),
+  owners[unq_own & assessed_mv>0, {
+    regs = lapply(expression(
+      `1 Month` = ever_paid_jul, 
+      `3 Months` = ever_paid_sep,
+      `6 Months` = ever_paid_dec),
+      function(ep) 
+        rename_coef(lm(100*eval(ep) ~ debt_quartile/treat8)))
+    ses = lapply(regs, function(r) sqrt(diag(vcovHC(r))))
+    pvals = lapply(regs, function(r)
+      coeftest(r, vcovHC(r))[ , 'Pr(>|t|)'])
+    texreg(regs, omit.coef = 'x', stars = c(.01, .05, .1),
+           override.se = ses, override.pvalues = pvals,
            include.rsquared = FALSE, caption.above = TRUE,
            include.adjrs = FALSE, include.rmse = FALSE,
            digits = 1L, label = 'tbl:lpm_hetero',
@@ -644,7 +714,8 @@ tbl = capture.output({
              "for first quartile in levels; other holdout figures are " %+% 
              "relative to this and remaining figures are " %+% 
              "treatment effects for the stated treatment vs. holdout " %+% 
-             "owners in the same quartile.}")]
+             "owners in the same quartile.}")
+    }]
 })
 
 ## Replace Holdout SEs with horizontal rule, add header for EP vs. PF
