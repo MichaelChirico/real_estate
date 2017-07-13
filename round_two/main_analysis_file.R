@@ -470,50 +470,20 @@ tbl <- c(tbl[1L:(idx - 3L)],
 cat(tbl, sep = "\n")
 
 # TABLE A4: Logit Estimates Including Multiple Owners ####
-reg_nest = 
-  list(`One Month` = {
-    r = pglm(ever_paid_jul ~ treat7, data = powners_all,
-             family = binomial, model = 'pooling')
-    n_clust = uniqueN(powners_all$rand_id)
-    n_obs = nrow(powners_all)
-    dof_adj = n_clust/(n_clust - 1) * (n_obs - 1)/(n_obs - 7)
-    V = dof_adj * vcovHC(r, type = 'HC0', cluster = 'group', adjust = TRUE)
-    list(reg = r, se = sqrt(diag(V)), pval = coeftest(r, V)[ , 'Pr(>|t|)'])
-  }, `Three Months` = {
-    r = pglm(ever_paid_sep ~ treat7, data = powners_all,
-             family = binomial, model = 'pooling')
-    n_clust = uniqueN(powners_all$rand_id)
-    n_obs = nrow(powners_all)
-    dof_adj = n_clust/(n_clust - 1) * (n_obs - 1)/(n_obs - 7)
-    V = dof_adj * vcovHC(r, type = 'HC0', cluster = 'group', adjust = TRUE)
-    list(reg = r, se = sqrt(diag(V)), pval = coeftest(r, V)[ , 'Pr(>|t|)'])
-  }, `One Month` = {
-    r = pglm(ever_paid_jul ~ treat7, family = binomial,
-             data = powners_unq_all, model = 'pooling')
-    n_clust = uniqueN(powners_unq_all$rand_id)
-    n_obs = nrow(powners_unq_all)
-    dof_adj = n_clust/(n_clust - 1) * (n_obs - 1)/(n_obs - 7)
-    V = dof_adj * vcovHC(r, type = 'HC0', cluster = 'group', adjust = TRUE)
-    list(reg = r, se = sqrt(diag(V)), pval = coeftest(r, V)[ , 'Pr(>|t|)'])
-  }, `Three Months` = {
-    r = pglm(ever_paid_sep ~ treat7, family = binomial,
-             data = powners_unq_all, model = 'pooling')
-    n_clust = uniqueN(powners_unq_all$rand_id)
-    n_obs = nrow(powners_unq_all)
-    dof_adj = n_clust/(n_clust - 1) * (n_obs - 1)/(n_obs - 7)
-    V = dof_adj * vcovHC(r, type = 'HC0', cluster = 'group', adjust = TRUE)
-    list(reg = r, se = sqrt(diag(V)), pval = coeftest(r, V)[ , 'Pr(>|t|)'])
-  })
-regs = lapply(reg_nest, `[[`, 'reg')
-ses = lapply(reg_nest, `[[`, 'se')
-pvals = lapply(reg_nest, `[[`, 'pval')
-tbl <- capture.output(texreg(
-  regs, stars = c(.01, .05, .1), 
-  override.se = ses, override.pvalues = pvals,
+# TABLE A4: Logit Estimates Including Multiple Owners ####
+tbl <- capture.output(texreg(lapply(
+  list(`One Month` = 
+         owners[ , glm(ever_paid_jul ~ treat7, family = binomial)],
+       `Three Months` = 
+         owners[ , glm(ever_paid_sep ~ treat7, family = binomial)],
+       `One Month` = 
+         owners[(unq_own), glm(ever_paid_jul ~ treat7, family = binomial)],
+       `Three Months` = 
+         owners[(unq_own), glm(ever_paid_sep ~ treat7, family = binomial)]),
+  rename_coef, nn = 7), stars = c(.01, .05, .1), 
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 2L, 
   label = "sh_logit_rob", float.pos = 'htbp', omit.coef = 'Reminder',
-  custom.note = '%stars. Standard errors clustered by block.',
   caption = "Logit Estimates Including Multiple Owners"))
 
 idx = grep('One Month', tbl, fixed = TRUE) - 1L
@@ -524,7 +494,6 @@ tbl <- c(tbl[1L:idx],
          tbl[(idx + 1L):length(tbl)])
 
 cat(tbl, sep = "\n")
-
 
 # SANDBOX ####
 pdf('~/Desktop/ep_by_quartiles.pdf', 
