@@ -556,3 +556,42 @@ tbl <- c(tbl[1L:idx], "\\hline",
          tbl[(idx + 2L):length(tbl)])
 
 cat(tbl, sep = "\n", file = tf, append = TRUE)
+
+
+# now with total paid as the dep. var.
+tbl = capture.output({
+  owners[unq_own & assessed_mv>0, {
+    regs = lapply(expression(
+      `1 Month` = total_paid_jul, 
+      `3 Months` = total_paid_sep,
+      `6 Months` = total_paid_dec),
+      function(tp) 
+        rename_coef(lm(eval(tp) ~ debt_quartile/treat8)))
+    ses = lapply(regs, function(r) sqrt(diag(vcovHC(r))))
+    pvals = lapply(regs, function(r)
+      coeftest(r, vcovHC(r))[ , 'Pr(>|t|)'])
+    texreg(regs, omit.coef = 'x', stars = c(.01, .05, .1),
+           override.se = ses, override.pvalues = pvals,
+           include.rsquared = FALSE, caption.above = TRUE,
+           include.adjrs = FALSE, include.rmse = FALSE,
+           digits = 1L, label = 'tbl:lpm_hetero',
+           float.pos = 'htb',
+           caption = 'Treatment Effect Heterogeneity by Debt Quantile',
+           custom.note = "\\parbox{.75\\linewidth}{%stars. Holdout values " %+% 
+             "for first quartile in levels; other holdout figures are " %+% 
+             "relative to this and remaining figures are " %+% 
+             "treatment effects for the stated treatment vs. holdout " %+% 
+             "owners in the same quartile.}")
+    }]
+})
+
+## Replace Holdout SEs with horizontal rule, add header for EP vs. PF
+idx <- grep("^Holdout.*Quartile\\s1", tbl)
+
+tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
+
+tbl <- c(tbl[1L:idx], "\\hline",
+         tbl[(idx + 2L):length(tbl)])
+
+cat(tbl, sep = "\n", file = tf, append = TRUE)
+

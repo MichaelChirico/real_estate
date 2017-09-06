@@ -138,7 +138,7 @@ Lien & 2,432 & \$3.378 M & 223 & \$67.44 & \$164,010 & 48556.379 \\
    \hline
 Totals & 16,951 & \$24.866 M & 834 & - & \$613,188 & 24660.075 \\ 
    \hline
-\multicolumn{7}{p{1\textwidth}}{\scriptsize* Sample Size are the number of single property tax payers in the treatment group.  Total Taxes Owed is the  total taxes owed by single property tax payers in the treatment group. New Payers equals the new payers after three months computed as the estimated increase in rate of compliance of those receiving the letter over those in the holdout sample as reported in Table 2; for example, for the reminder letter the number of new payers equals 95 = .039 x2,419.  Revenue per letter for each treatment equals the median new revenue collected from those who received a treatment letter and made some payment (=$738/letter) times the three month increase in compliance from each treatment letter; for example for the reminder letter the median estimated revenue per letter equals $28.79 = .039x$738.  New revenues for each treatment equals the revenue/letter times the number of single owner properties receiving a treatment letter: for example, for the reminder letter the estimated total new revenues equals $69,643 = $28.79x2,419.  New % of Taxes Paid equals New Revenues Divided by Total Taxes Owed; for example, for the reminder letter .023 = $69,643/$3,038,000.}
+\multicolumn{7}{p{1\textwidth}}{\scriptsize* Sample Size are the number of single property tax payers in the treatment group.  Total Taxes Owed is the  total taxes owed by single property tax payers in the treatment group. New Payers equals the new payers after three months computed as the estimated increase in rate of compliance of those receiving the letter over those in the holdout sample as reported in Table 2; for example, for the reminder letter the number of new payers equals 95 = .039 x2,419.  Revenue per letter for each treatment equals the median new revenue collected from those who received a treatment letter and made some payment (=\$738/letter) times the three month increase in compliance from each treatment letter; for example for the reminder letter the median estimated revenue per letter equals \$28.79 = .039x\$738.  New revenues for each treatment equals the revenue/letter times the number of single owner properties receiving a treatment letter: for example, for the reminder letter the estimated total new revenues equals \$69,643 = \$28.79x2,419. New \% of Taxes Paid equals New Revenues Divided by Total Taxes Owed; for example, for the reminder letter .023 = \$69,643/\$3,038,000.}
 \end{tabular}
 \end{table}
 
@@ -302,6 +302,46 @@ Sheriff in Quartile 4 & $5.2^{*}$     & $6.4^{**}$    & $1.2$        \\
                       & $(2.8)$       & $(3.0)$       & $(2.5)$      \\
 \hline
 Num. obs.             & 18997         & 18997         & 18997        \\
+\hline
+\multicolumn{4}{l}{\scriptsize{\parbox{.75\linewidth}{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. Holdout values for first quartile in levels; other holdout figures are relative to this and remaining figures are treatment effects for the stated treatment vs. holdout owners in the same quartile.}}}
+\end{tabular}
+\label{tbl:lpm_hetero}
+\end{center}
+\end{table}
+
+\begin{table}[htb]
+\caption{Treatment Effect Heterogeneity by Debt Quantile}
+\begin{center}
+\begin{tabular}{l c c c }
+\hline
+ & 1 Month & 3 Months & 6 Months \\
+\hline
+Holdout in Quartile 1 & $118.2$ & $152.2$  & $185.2$  \\
+\hline
+Holdout in Quartile 2 & $20.1$        & $97.7^{***}$   & $216.3^{***}$  \\
+                      & $(32.4)$      & $(33.7)$       & $(33.5)$       \\
+Holdout in Quartile 3 & $134.4^{***}$ & $389.6^{***}$  & $655.3^{***}$  \\
+                      & $(38.6)$      & $(39.6)$       & $(39.2)$       \\
+Holdout in Quartile 4 & $690.9^{***}$ & $1493.8^{***}$ & $2193.5^{***}$ \\
+                      & $(92.1)$      & $(126.0)$      & $(129.1)$      \\
+Lien in Quartile 1    & $14.9$        & $13.7$         & $5.3$          \\
+                      & $(38.5)$      & $(39.0)$       & $(38.9)$       \\
+Lien in Quartile 2    & $52.4^{***}$  & $68.3^{***}$   & $53.3^{***}$   \\
+                      & $(16.4)$      & $(19.4)$       & $(19.0)$       \\
+Lien in Quartile 3    & $79.4^{**}$   & $66.3^{*}$     & $-2.3$         \\
+                      & $(33.2)$      & $(34.8)$       & $(34.3)$       \\
+Lien in Quartile 4    & $273.2^{*}$   & $271.8$        & $210.9$        \\
+                      & $(162.4)$     & $(199.2)$      & $(203.8)$      \\
+Sheriff in Quartile 1 & $3.3$         & $0.8$          & $-3.2$         \\
+                      & $(34.5)$      & $(34.7)$       & $(34.7)$       \\
+Sheriff in Quartile 2 & $38.4^{**}$   & $48.5^{**}$    & $29.0$         \\
+                      & $(16.2)$      & $(19.5)$       & $(19.2)$       \\
+Sheriff in Quartile 3 & $88.6^{***}$  & $64.6^{*}$     & $16.6$         \\
+                      & $(32.4)$      & $(35.2)$       & $(33.7)$       \\
+Sheriff in Quartile 4 & $117.6$       & $221.7$        & $192.0$        \\
+                      & $(123.7)$     & $(177.6)$      & $(192.0)$      \\
+\hline
+Num. obs.             & 18997         & 18997          & 18997          \\
 \hline
 \multicolumn{4}{l}{\scriptsize{\parbox{.75\linewidth}{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. Holdout values for first quartile in levels; other holdout figures are relative to this and remaining figures are treatment effects for the stated treatment vs. holdout owners in the same quartile.}}}
 \end{tabular}
