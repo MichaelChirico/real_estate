@@ -373,7 +373,7 @@ tbl <- c(tbl[1L:(idx - 3L)],
 cat(tbl, sep = "\n", file = tf, append = TRUE)
 
 # Table A2: Balance on Observables ####
-cat("\\begin{sidewaystable}[ht]",
+cat("\\begin{sidewaystable}[htbp]",
     "\\centering", 
     "\\caption{Balance on Observables}",
     "\\label{balance2}",
@@ -537,7 +537,7 @@ tbl = capture.output({
            include.rsquared = FALSE, caption.above = TRUE,
            include.adjrs = FALSE, include.rmse = FALSE,
            digits = 1L, label = 'tbl:lpm_hetero',
-           float.pos = 'htb',
+           float.pos = 'htbp',
            caption = 'Treatment Effect Heterogeneity by Debt Quantile',
            custom.note = "\\parbox{.75\\linewidth}{%stars. Holdout values " %+% 
              "for first quartile in levels; other holdout figures are " %+% 
