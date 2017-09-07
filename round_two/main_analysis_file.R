@@ -554,7 +554,8 @@ idx2 <- grep("^Holdout.*Quartile\\s1", tbl)
 tbl[idx2] <- gsub("\\^\\{[*]*\\}", "", tbl[idx2])
 
 tbl <- c(tbl[1L:idx1],
-         " & \\multicolumn{3}{c}{Ever Paid} & \\multicolumn{3}{c}{Total Paid}",
+         paste(" & \\multicolumn{3}{c}{Ever Paid} &",
+               "\\multicolumn{3}{c}{Total Paid}", "\\\\"),
          tbl[(idx1 + 1L):idx2], "\\hline",
          tbl[(idx2 + 2L):length(tbl)])
 
