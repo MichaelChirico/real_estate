@@ -522,7 +522,7 @@ rename_coef = function(obj) {
 }
 
 tbl = capture.output({
-  owners[unq_own & assessed_mv>0, {
+  owners[(unq_own), {
     regs = lapply(expression(
       `1 Month` = 100*ever_paid_jul, `3 Months` = 100*ever_paid_sep,
       `6 Months` = 100*ever_paid_dec, `1 Month` = total_paid_jul,
