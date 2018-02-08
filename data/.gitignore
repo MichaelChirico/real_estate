@@ -1,5 +1,6 @@
 #selectively track data files
 *
+!round_two_analysis_owners.csv
 !.gitignore
 # include shapefile
 !PhiladelphiaCensusTracts2010*

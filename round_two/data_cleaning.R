@@ -23,8 +23,9 @@ main_jul = read_excel(
   'data/Payments and Balance Penn Letter Experiment_150727.xlsx',
   sheet = 'DETAILS', skip = 9L, na = "-", 
   col_names = c('x', 'opa_no', 'x', 'x', 'treat15', 'x', 
-                'x', 'paid_full_jul', 'ever_paid_jul', rep('x', 6L)),
-  col_types = abbr_to_colClass('stststs', '1121226')
+                'x', 'paid_full_jul', 'ever_paid_jul', 
+                rep('x', 5L), 'total_paid_jul'),
+  col_types = abbr_to_colClass('stststsn', '11212251')
 )
 
 setDT(main_jul)
@@ -34,8 +35,9 @@ holdout_jul = read_excel(
   'data/req20150709_PennLetterExperiment_v2_Commissioners Control Details.xlsx',
   sheet = 'DETAILS', skip = 9L, na = "-", 
   col_names = c('x', 'opa_no', rep('x', 5L), 
-                'paid_full_jul', 'ever_paid_jul', rep('x', 5L)),
-  col_types = abbr_to_colClass('ststs', '11525')
+                'paid_full_jul', 'ever_paid_jul', 
+                rep('x', 4L), 'total_paid_jul'),
+  col_types = abbr_to_colClass('ststsn', '115241')
 )
 
 setDT(holdout_jul)
@@ -213,10 +215,11 @@ followup <- read_excel(
   sheet = "DETAILS", skip = 1L, na = "-",
   col_names = c("account", rep("x", 6L), 
                 "total_bill_2016", "x", "paid_full_jul16",
-                "ever_paid_jul16", rep("x", 6L),
-                "earliest_pmt_jul16", rep("x", 6L)),
-  col_types = abbr_to_colClass("tststsds",
-                               "16112616"))
+                "ever_paid_jul16", rep("x", 6L), 
+                "earliest_pmt_jul16", 'x',
+                'total_paid_jul16', rep("x", 4L)),
+  col_types = abbr_to_colClass("tststsdsns",
+                               "1611261114"))
 
 setDT(followup)
 
@@ -235,6 +238,7 @@ properties <-
 properties[followup[total_bill_2016 != "Consolidation/Subdivision"], 
            `:=`(ever_paid_jul16 = i.ever_paid_jul16,
                 paid_full_jul16 = i.paid_full_jul16,
+                total_paid_jul16 = i.total_paid_jul16,
                 earliest_pmt_jul16 = i.earliest_pmt_jul16), on = "account"]
 
 ##Data Clean-up
@@ -300,8 +304,10 @@ owners <-
                paid_full_sep = all(paid_full_sep),
                paid_full_dec = all(paid_full_dec),
                paid_full_jul16 = all(paid_full_jul16),
+               total_paid_jul = sum(total_paid_jul),
                total_paid_sep = sum(total_paid_sep),
                total_paid_dec = sum(total_paid_dec),
+               total_paid_jul16 = sum(total_paid_jul16),
                earliest_pmt_dec = {
                  if (all(is.na(earliest_pmt_dec))) D(NA)
                  else min(earliest_pmt_dec, na.rm = TRUE)},

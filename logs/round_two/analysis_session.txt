@@ -1,18 +1,30 @@
-Package info for code run on 2017-05-25 14:45:02:
-R version 3.3.2 (2016-10-31)
+Package info for code run on 2017-09-07 17:36:42:
+R version 3.4.0 (2017-04-21)
 Platform: x86_64-pc-linux-gnu (64-bit)
-Running under: Ubuntu 14.04.3 LTS
+Running under: Ubuntu 16.04.2 LTS
+
+Matrix products: default
+BLAS: /usr/lib/libblas/libblas.so.3.6.0
+LAPACK: /usr/lib/lapack/liblapack.so.3.6.0
 
 locale:
- [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C               LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
- [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8    LC_PAPER=en_US.UTF-8       LC_NAME=C                 
- [9] LC_ADDRESS=C               LC_TELEPHONE=C             LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C               LC_TIME=en_US.UTF-8       
+ [4] LC_COLLATE=en_US.UTF-8     LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                  LC_ADDRESS=C              
+[10] LC_TELEPHONE=C             LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
 
 attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] texreg_1.36.23    xtable_1.8-2      data.table_1.10.5 funchir_0.1.4    
+ [1] lmtest_0.9-35     zoo_1.8-0         sandwich_2.3-4    texreg_1.36.23   
+ [5] xtable_1.8-2      data.table_1.10.5 pglm_0.1-2        maxLik_1.3-4     
+ [9] miscTools_0.6-22  plm_1.6-5         Formula_1.2-2     funchir_0.1.4    
 
 loaded via a namespace (and not attached):
-[1] tools_3.3.2
+ [1] Rcpp_0.12.11       splines_3.4.0      MASS_7.3-47        statmod_1.4.30    
+ [5] lattice_0.20-35    minqa_1.2.4        car_2.1-5          tools_3.4.0       
+ [9] nnet_7.3-12        pbkrtest_0.4-7     parallel_3.4.0     grid_3.4.0        
+[13] nlme_3.1-131       mgcv_1.8-17        quantreg_5.33      MatrixModels_0.4-1
+[17] lme4_1.1-13        Matrix_1.2-10      bdsmatrix_1.3-2    nloptr_1.0.4      
+[21] compiler_3.4.0     SparseM_1.77      

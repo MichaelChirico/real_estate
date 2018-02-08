@@ -8,13 +8,17 @@
 ##Packages
 rm(list = ls(all = TRUE))
 gc()
-###Michael Chirico's package of convenience functions;
-###  Available on GitHub @ MichaelChirico/funchir
-library(funchir)
+library(funchir) #convenience functions
+library(plm) #for clustered SEs
+library(pglm) #for clustered logit SEs
 library(data.table) #for everything
 library(xtable) #for table output
 library(texreg) #for regression output
+library(sandwich) #for robust SEs
+library(lmtest) #for testing
 write.packages('logs/round_two/analysis_session.txt')
+
+tf = 'round_two/tables.tex'
 
 ##Exclude the top two blocks?
 excludeTopBlocks = FALSE
@@ -70,62 +74,96 @@ owners[ , earliest_pmt_dec :=
 # TABLE 1: Balance on Observables (Unary Owners) ####
 ##Print Table Header
 ### *surround with {} so the table all prints together*
-{cat("\\begin{sidewaystable}[ht]",
+cat("\\begin{sidewaystable}[ht]",
     "\\centering", 
     "\\caption{Balance on Observables (Unary Owners)}",
     "\\label{balance}",
     "\\vspace{10mm}",
     "\\begin{tabular}{lrrrrrrrrc}", 
-    "\\hline", sep = "\n")
+    "\\hline", sep = "\n", file = tf)
 
-print.xtable(xtable(cbind(t(
-  owners[(unq_own),
-         c(list(`Amount Due (June)` = dol.form(mean(total_due), tex = TRUE),
-                `Assessed Property Value` = 
-                  dol.form(mean(assessed_mv, na.rm = TRUE), tex = TRUE),
-                `Ownership Tenure (Years)` = round(mean(tenure, na.rm = TRUE), 1L)),
-           as.list(table(azavea_section)),
-           list(`\\# Owners` = prettyNum(.N, big.mark = ","))),
-         keyby = .(Variable = treat8)]), 
-  p_tex(c(sapply(c(
-    `Amount Due (June)` = "total_due",
-    `Assessed Property Value` = "assessed_mv",
-    `Ownership Tenure (Years)` = 'tenure'),
-    function(x) owners[(unq_own), lmfp(get(x) ~ treat8)]),
-    owners[(unq_own), c(round(chisq.test(table(
-      azavea_section, treat8))$p.value, 2L),
-      rep(NA, uniqueN(azavea_section) - 1L))],
-    #not targeting owners, so exclude
-    `\\# Owners` = NA)))),
-  include.colnames = FALSE, comment = FALSE, 
-  #setting sanitize.text.function prevents xtable from
-  #  commenting out the math markup (especially $). This
-  #  is also why we use tex = TRUE for dol.form.
-  sanitize.text.function = identity, only.contents = TRUE,
-  floating = TRUE, hline.after = c(0L, 1L, 3L, 9L))
+tbl = owners[(unq_own),
+              c(list(`Amount Due (June)` = 
+                       dol.form(mean(total_due), tex = TRUE),
+                     `Amount Due (June)` = 
+                       dol.form(sd(total_due), tex = TRUE),
+                    `Assessed Property Value` = 
+                      dol.form(mean(assessed_mv, na.rm = TRUE), tex = TRUE),
+                    `Assessed Property Value` = 
+                      dol.form(sd(assessed_mv, na.rm = TRUE), tex = TRUE),
+                    `Ownership Tenure (Years)` = 
+                      round(mean(tenure, na.rm = TRUE), 1L),
+                    `Ownership Tenure (Years)` = 
+                      round(sd(tenure, na.rm = TRUE), 1L)),
+               as.list(to.pct(table(azavea_section)/.N, dig = 0L)),
+               list(`\\# Owners` = prettyNum(.N, big.mark = ","))),
+             keyby = .(Variable = treat8)]
+
+tbl = cbind(t(tbl), 
+            p_tex(c(sapply(c(
+              `Amount Due (June)` = "total_due",
+              `Amount Due (June)` = "total_due",
+              `Assessed Property Value` = "assessed_mv",
+              `Assessed Property Value` = "assessed_mv",
+              `Ownership Tenure (Years)` = 'tenure',
+              `Ownership Tenure (Years)` = 'tenure'),
+              function(x) owners[(unq_own), lmfp(get(x) ~ treat8)]),
+              owners[(unq_own), c(round(chisq.test(table(
+                azavea_section, treat8))$p.value, 2L),
+                rep(NA, uniqueN(azavea_section) - 1L))],
+              #not targeting owners, so exclude
+              `\\# Owners` = NA)))
+
+sdrows = duplicated(rownames(tbl))
+pvcol = grep('$p$-value', tbl[1L, ], fixed = TRUE)
+pctrows = grepl('Philadelphia|City', rownames(tbl))
+tbl[sdrows, -pvcol] = paste0('(', tbl[sdrows, -pvcol], ')')
+tbl[pctrows, -pvcol] = paste0(tbl[pctrows, -pvcol], '\\%')
+tbl[sdrows, pvcol] = ''
+tbl = cbind(rownames(tbl), tbl)
+tbl[sdrows, 1L] = NA
+dimnames(tbl) = list(NULL, NULL)
+
+seprows = grep('Center City', rownames(tbl)) + c(-1L, 5L)
+print.xtable(xtable(tbl), include.rownames = FALSE,
+             include.colnames = FALSE, comment = FALSE, 
+             #setting sanitize.text.function prevents xtable from
+             #  commenting out the math markup (especially $). This
+             #  is also why we use tex = TRUE for dol.form.
+             sanitize.text.function = identity, only.contents = TRUE,
+             floating = TRUE, hline.after = c(0L, 1L, seprows),
+             file = tf, append = TRUE)
 
 cat("\\hline",
     "\\multicolumn{10}{l}" %+% 
       "{\\scriptsize{$p$-values in rows 1-2 are " %+% 
       "$F$-test $p$-values from regressing each " %+% 
       "variable on treatment dummies. A $\\chi^2$ " %+% 
-      "test was used for the geographic distribution.}} \\\\",
+      "test was used for the geographic distribution. " %+% 
+      "Standard deviations in parentheses.}} \\\\",
     "\\end{tabular}",
-    "\\end{sidewaystable}", sep = "\n")}
+    "\\end{sidewaystable}", sep = "\n", file = tf, append = TRUE)
 
 # TABLE 2: Short-term Linear Probability Model Estimates ####
-tbl <- capture.output(texreg(lapply(lapply(expression(
-  `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
-  `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
+regs = lapply(expression(
   #Multiply indicator by 100 so the units are in %ages already
-  function(x) owners[(unq_own), lm(I(100 * eval(x)) ~ treat8)]), 
-  rename_coef, nn = 8), stars = c(.01, .05, .1), 
+  `One Month` = 100*ever_paid_jul, `Three Months` = 100*ever_paid_sep,
+  `One Month` = 100*paid_full_jul, `Three Months` = 100*paid_full_sep,
+  `One Month` = total_paid_jul, `Three Months` = total_paid_sep),
+  function(x) 
+    rename_coef(owners[(unq_own), lm(eval(x) ~ treat8)], 8))
+ses = lapply(regs, function(r) sqrt(diag(vcovHC(r))))
+pvals = lapply(regs, function(r)
+  coeftest(r, vcovHC(r))[ , 'Pr(>|t|)'])
+tbl <- capture.output(texreg(
+  regs, stars = c(.01, .05, .1), 
+  override.se = ses, override.pvalues = pvals,
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, 
   label = "sh_lin", float.pos = 'htb',
   caption = "Short-Term Linear Probability Model Estimates",
-  custom.note = "%stars. Holdout values in levels; " %+% 
-    "remaining figures relative to this"))
+  custom.note = "%stars. Robust standard errors. " %+% 
+    "Holdout values in levels; remaining figures relative to this"))
 
 ## Replace Holdout SEs with horizontal rule, 
 ##   eliminate significance for intercept,
@@ -136,25 +174,50 @@ tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
 
 tbl <- c(tbl[1L:(idx - 3L)],
          " & \\multicolumn{2}{c}{Ever Paid} & " %+% 
-           "\\multicolumn{2}{c}{Paid in Full} \\\\",
+           "\\multicolumn{2}{c}{Paid in Full} & " %+%
+           "\\multicolumn{2}{c}{Total Paid} \\\\",
          tbl[c(idx - 2L, idx)],
          "\\hline", tbl[(idx + 2L):length(tbl)])
 
-cat(tbl, sep = "\n")
+cat(tbl, sep = "\n", file = tf, append = TRUE)
 
 # TABLE 3: Short-term Reults: Relative to Generic Reminder ####
-tbl <- capture.output(texreg(lapply(lapply(expression(
-  `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
-  `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
+powners_unq_all = 
+  pdata.frame(owners[!holdout & unq_own], 
+              index = 'rand_id', drop.index = FALSE)
+regs = lapply(expression(
+  `One Month` = 100*ever_paid_jul, `Three Months` = 100*ever_paid_sep,
+  `One Month` = 100*paid_full_jul, `Three Months` = 100*paid_full_sep,
+  `One Month` = total_paid_jul, `Three Months` = total_paid_sep),
   #Multiply indicator by 100 so the units are in %ages already
-  function(x) owners[(!holdout & unq_own), lm(I(100 * eval(x)) ~ treat7)]), 
-  rename_coef, nn = 7), stars = c(.01, .05, .1), 
+  function(x) 
+    plm(eval(x) ~ treat7, data = powners_unq_all, model = 'pooling'))
+# per the guide here:
+#  http://www.richard-bluhm.com/clustered-ses-in-r-and-stata-2/
+n_clust = uniqueN(powners_unq_all$rand_id)
+n_obs = nrow(powners_unq_all)
+#since all vs. treat7, there are 7 degrees of
+#  freedom lost in each regression (hence n_obs- 7)
+dof_adj = n_clust/(n_clust - 1) * (n_obs - 1)/(n_obs - 7)
+ses = lapply(regs, function(r) 
+  sqrt(diag(dof_adj * vcovHC(r, type = 'HC0', cluster = 'group', 
+                             adjust = TRUE))))
+pvals = lapply(regs, function(r)
+  coeftest(r, dof_adj * vcovHC(r, type = 'HC0', cluster = 'group', 
+                             adjust = TRUE))[ , 'Pr(>|t|)'])
+#rename now since vcovHC somehow recovers the
+#  original coefficient names, causing conflict
+#  and leading to empty p values
+regs = lapply(regs, rename_coef, 7L)
+tbl <- capture.output(texreg(
+  regs, stars = c(.01, .05, .1), 
+  override.se = ses, override.pvalues = pvals,
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, 
   label = "sh_lpm_rob", float.pos = 'htb',
   caption = "Short-term Results: Relative to Generic Reminder",
-  custom.note = "%stars. Reminder values in levels; " %+% 
-    "remaining figures relative to this"))
+  custom.note = "%stars. Standard errors clustered by block." %+% 
+    "Reminder values in levels; remaining figures relative to this"))
 
 ## Replace Reminder SEs with horizontal rule, 
 ##   eliminate significance for intercept,
@@ -165,24 +228,31 @@ tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
 
 tbl <- c(tbl[1L:(idx - 3L)],
          " & \\multicolumn{2}{c}{Ever Paid} & " %+% 
-           "\\multicolumn{2}{c}{Paid in Full} \\\\",
+           "\\multicolumn{2}{c}{Paid in Full} & " %+% 
+           "\\multicolumn{2}{c}{Total Paid} \\\\",
          tbl[c(idx - 2L, idx)],
          "\\hline", tbl[(idx + 2L):length(tbl)])
 
-cat(tbl, sep = "\n")
+cat(tbl, sep = "\n", file = tf, append = TRUE)
 
 # TABLE 4: Long-Term Linear Probability Model Estimates ####
-tbl <- capture.output(texreg(lapply(lapply(expression(
-  `Ever Paid` = ever_paid_dec, `Paid in Full` = paid_full_dec,
-  `Ever Paid` = ever_paid_jul16, `Paid in Full` = paid_full_jul16),
-  function(x) owners[(unq_own), lm(I(100 * eval(x)) ~ treat8)]),
-  rename_coef, nn = 8), stars = c(.01, .05, .1), 
+regs = lapply(expression(
+  `Ever Paid` = 100*ever_paid_dec, `Paid in Full` = 100*paid_full_dec,
+  `Total Paid` = total_paid_dec, `Ever Paid` = 100*ever_paid_jul16,
+  `Paid in Full` = 100*paid_full_jul16, `Total Paid` = total_paid_jul16),
+  function(x) rename_coef(owners[(unq_own), lm(eval(x) ~ treat8)], 8))
+ses = lapply(regs, function(r) sqrt(diag(vcovHC(r))))
+pvals = lapply(regs, function(r)
+  coeftest(r, vcovHC(r))[ , 'Pr(>|t|)'])
+tbl <- capture.output(texreg(
+  regs, stars = c(.01, .05, .1), 
+  override.se = ses, override.pvalues = pvals,
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L,
   label = "ltmpme", float.pos = 'htb',
-  caption = "Long-Term Linear Probability Model Estimates",
-  custom.note = "%stars. Holdout values in levels; " %+% 
-    "remaining figures relative to this"))
+  caption = "Long-Term Linear Model Estimates",
+  custom.note = "%stars. Robust standard errors. " %+%
+    "Holdout values in levels; remaining figures relative to this"))
 
 ## Replace Holdout SEs with horizontal rule, add header for EP vs. PF
 idx <- grep("^Holdout", tbl)
@@ -190,12 +260,12 @@ idx <- grep("^Holdout", tbl)
 tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
 
 tbl <- c(tbl[1L:(idx - 3L)],
-         " & \\multicolumn{2}{c}{Six Months} & " %+% 
-           "\\multicolumn{2}{c}{Subsequent Tax Cycle} \\\\",
+         " & \\multicolumn{3}{c}{Six Months} & " %+% 
+           "\\multicolumn{3}{c}{Subsequent Tax Cycle} \\\\",
          tbl[c(idx - 2L, idx)],
          "\\hline", tbl[(idx + 2L):length(tbl)])
 
-cat(tbl, sep = "\n")
+cat(tbl, sep = "\n", file = tf, append = TRUE)
 
 # TABLE 5: Three Month Impact of Collection ``Nudges"* ####
 note = 
@@ -208,16 +278,16 @@ note =
         'reported in Table 2; for example, for the reminder letter the number',
         'of new payers equals 95 = .039 x2,419.  Revenue per letter for each',
         'treatment equals the median new revenue collected from those who',
-        'received a treatment letter and made some payment (=$738/letter)',
+        'received a treatment letter and made some payment (=\\$738/letter)',
         'times the three month increase in compliance from each treatment',
         'letter; for example for the reminder letter the median estimated',
-        'revenue per letter equals $28.79 = .039x$738.  New revenues for',
+        'revenue per letter equals \\$28.79 = .039x\\$738.  New revenues for',
         'each treatment equals the revenue/letter times the number of single',
         'owner properties receiving a treatment letter: for example, for the',
-        'reminder letter the estimated total new revenues equals $69,643 =',
-        '$28.79x2,419.  New % of Taxes Paid equals New Revenues Divided by',
+        'reminder letter the estimated total new revenues equals \\$69,643 =',
+        '\\$28.79x2,419. New \\% of Taxes Paid equals New Revenues Divided by',
         'Total Taxes Owed; for example, for the reminder letter .023 =',
-        '$69,643/$3,038,000.')
+        '\\$69,643/\\$3,038,000.')
 print(xtable(
   #Use keyby to make sure the output is sorted and Holdout comes first
   owners[(unq_own), .(.N, ep = mean(ever_paid_sep), 
@@ -251,21 +321,40 @@ print(xtable(
                                        '\\multicolumn{7}{p{1\\textwidth}}{',
                                        note, '}\n'))),
   table.placement = 'htb', include.rownames = FALSE,
-  comment = FALSE, caption.placement = "top")
+  comment = FALSE, caption.placement = "top",
+  file = tf, append = TRUE)
 
 # TABLE A1: Robustness Analysis: Relative to Reminder (All Owners) ####
-tbl <- capture.output(texreg(lapply(lapply(expression(
-  `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
-  `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
+powners_all = 
+  pdata.frame(owners[(!holdout)], index = 'rand_id', drop.index = FALSE)
+regs = lapply(expression(
+  `One Month` = 100*ever_paid_jul, `Three Months` = 100*ever_paid_sep,
+  `One Month` = 100*paid_full_jul, `Three Months` = 100*paid_full_sep,
+  `One Month` = total_paid_jul, `Three Months` = total_paid_sep),
   #Multiply indicator by 100 so the units are in %ages already
-  function(x) owners[(!holdout), lm(I(100 * eval(x)) ~ treat7)]), 
-  rename_coef, nn = 7), stars = c(.01, .05, .1), 
+  function(x) 
+    plm(eval(x) ~ treat7, data = powners_all, model = 'pooling'))
+n_clust = uniqueN(powners_all$rand_id)
+n_obs = nrow(powners_all)
+#since all vs. treat7, there are 7 degrees of
+#  freedom lost in each regression (hence n_obs- 7)
+dof_adj = n_clust/(n_clust - 1) * (n_obs - 1)/(n_obs - 7)
+ses = lapply(regs, function(r) 
+  sqrt(diag(dof_adj * vcovHC(r, type = 'HC0', cluster = 'group', 
+                             adjust = TRUE))))
+pvals = lapply(regs, function(r)
+  coeftest(r, dof_adj * vcovHC(r, type = 'HC0', cluster = 'group', 
+                             adjust = TRUE))[ , 'Pr(>|t|)'])
+regs = lapply(regs, rename_coef, 7L)
+tbl <- capture.output(texreg(
+  regs, stars = c(.01, .05, .1), 
+  override.se = ses, override.pvalues = pvals,
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, 
   label = "sh_lpm_mult", float.pos = 'htbp',
   caption = "Robustness Analysis: Relative to Reminder (Multiple Owners)",
-  custom.note = "%stars. Reminder values in levels; " %+% 
-    "remaining figures relative to this"))
+  custom.note = "%stars. Standard errors clustered by block." %+% 
+    "Reminder values in levels; remaining figures relative to this"))
 
 ## Replace Reminder SEs with horizontal rule, 
 ##   eliminate significance for intercept,
@@ -276,20 +365,22 @@ tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
 
 tbl <- c(tbl[1L:(idx - 3L)],
          " & \\multicolumn{2}{c}{Ever Paid} & " %+% 
-           "\\multicolumn{2}{c}{Paid in Full} \\\\",
+           "\\multicolumn{2}{c}{Paid in Full} & " %+% 
+           "\\multicolumn{2}{c}{Total Paid} \\\\",
          tbl[c(idx - 2L, idx)],
          "\\hline", tbl[(idx + 2L):length(tbl)])
 
-cat(tbl, sep = "\n")
+cat(tbl, sep = "\n", file = tf, append = TRUE)
 
 # Table A2: Balance on Observables ####
-{cat("\\begin{sidewaystable}[ht]",
+cat("\\begin{sidewaystable}[htbp]",
     "\\centering", 
     "\\caption{Balance on Observables}",
     "\\label{balance2}",
     "\\begin{tabular}{lrrrrrrrc}", 
     "\\hline",
-    "\\multicolumn{9}{c}{Unary Owners} \\\\", sep = "\n")
+    "\\multicolumn{9}{c}{Unary Owners} \\\\", 
+    sep = "\n", file = tf, append = TRUE)
 
 ##Top Section: Unique Owners Only
 print.xtable(xtable(cbind(t(
@@ -311,11 +402,13 @@ print.xtable(xtable(cbind(t(
   #  commenting out the math markup (especially $). This
   #  is also why we use tex = TRUE for dol.form.
   sanitize.text.function = identity, only.contents = TRUE,
-  floating = TRUE, hline.after = c(0L, 1L))
+  floating = TRUE, hline.after = c(0L, 1L),
+  file = tf, append = TRUE)
 
 ##Bottom Section: Exclude Holdout Only
 cat("\\hline",
-    "\\multicolumn{9}{c}{Unary and Multiple Owners} \\\\", sep = "\n")
+    "\\multicolumn{9}{c}{Unary and Multiple Owners} \\\\", 
+    sep = "\n", file = tf, append = TRUE)
 
 print.xtable(xtable(cbind(t(
   owners[(!holdout),
@@ -338,7 +431,8 @@ print.xtable(xtable(cbind(t(
       owners[(!holdout), chisq.test(table(treat7))$p.value])))),
   include.colnames = FALSE, comment = FALSE, 
   sanitize.text.function = identity, 
-  only.contents = TRUE, hline.after = c(0L, 1L))
+  only.contents = TRUE, hline.after = c(0L, 1L),
+  file = tf, append = TRUE)
 
 cat("\\hline",
     "\\multicolumn{9}{l}" %+% 
@@ -347,20 +441,26 @@ cat("\\hline",
       "variable on treatment dummies. A $\\chi^2$ " %+% 
       "test was used for the count of owners.}} \\\\",
     "\\end{tabular}",
-    "\\end{sidewaystable}", sep = "\n")}
+    "\\end{sidewaystable}", sep = "\n", file = tf, append = TRUE)
 
 # TABLE A3: Short-Term Logistic Model Estimates (Unary Owners) ####
-tbl <- capture.output(texreg(lapply(lapply(expression(
+regs = lapply(expression(
   `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
   `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
-  function(x) owners[(unq_own), glm(eval(x) ~ treat8, family = binomial)]), 
-  rename_coef, nn = 8), stars = c(.01, .05, .1), 
+  function(x) owners[(unq_own), glm(eval(x) ~ treat8, family = binomial)])
+ses = lapply(regs, function(r) sqrt(diag(vcovHC(r))))
+pvals = lapply(regs, function(r)
+  coeftest(r, vcovHC(r))[ , 'Pr(>|z|)'])
+regs = lapply(regs, rename_coef, 8L)
+tbl <- capture.output(texreg(
+  regs, stars = c(.01, .05, .1),
+  override.se = ses, override.pvalues = pvals,
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, 
   label = "sh_logit", float.pos = 'htbp',
   caption = "Short-Term Logistic Model Estimates (Unary Owners)",
-  custom.note = "%stars. Holdout values in levels; " %+% 
-    "remaining figures relative to this"))
+  custom.note = "%stars. Robust standard errors. " %+% 
+    "Holdout values in levels; remaining figures relative to this"))
 
 ## Replace Holdout SEs with horizontal rule, 
 ##   eliminate significance for intercept,
@@ -375,8 +475,9 @@ tbl <- c(tbl[1L:(idx - 3L)],
          tbl[c(idx - 2L, idx)],
          "\\hline", tbl[(idx + 2L):length(tbl)])
 
-cat(tbl, sep = "\n")
+cat(tbl, sep = "\n", file = tf, append = TRUE)
 
+# TABLE A4: Logit Estimates Including Multiple Owners ####
 # TABLE A4: Logit Estimates Including Multiple Owners ####
 tbl <- capture.output(texreg(lapply(
   list(`One Month` = 
@@ -400,377 +501,62 @@ tbl <- c(tbl[1L:idx],
            "\\multicolumn{2}{c}{Unary Owners} \\\\",
          tbl[(idx + 1L):length(tbl)])
 
-cat(tbl, sep = "\n")
-
+cat(tbl, sep = "\n", file = tf, append = TRUE)
 
 # SANDBOX ####
-pdf('~/Desktop/ep_by_quartiles.pdf', 
-    width = 21, height = 28)
-par(mfrow = c(4, 3), oma = c(2, 0, 2, 0))
-tn = levels(owners$treat8)
-cutoffs = 
-  paste0('Q', 1:4, ': ', 
-         owners[assessed_mv>0, levels(create_quantiles(assessed_mv/1e5,
-                                                       4L, labels = NULL))])
-owners[assessed_mv>0, .(ep1 = mean(ever_paid_jul),
-                        ep3 = mean(ever_paid_sep),
-                        ep6 = mean(ever_paid_dec)), 
-       keyby = .(treat8, Q = create_quantiles(assessed_mv, 4L))
-       ][ , dcast(.SD, Q ~ treat8, value.var = c('ep1', 'ep3', 'ep6'))
-          ][ , {
-            y = .SD[ , grep('ep1', names(.SD)), with = FALSE]
-            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
-                    main = 'One Month', las = 1,
-                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
-            legend('topleft', legend = cutoffs,
-                   title = 'Quartile Cutoffs ($100k)')
-            y = .SD[ , grep('ep3', names(.SD)), with = FALSE]
-            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
-                    main = 'Three Months', las = 1,
-                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
-            mtext('Ever Paid by (Quartile of) Property Value', 
-                  side = 3L, line = 3L)
-            y = .SD[ , grep('ep6', names(.SD)), with = FALSE]
-            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
-                    main = 'Six Months', las = 1,
-                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
-          }]
-
-cutoffs = 
-  paste0('Q', 1:4, ': ', 
-         owners[ , levels(create_quantiles(total_due/1e3, 4L, labels = NULL))])
-owners[ , .(ep1 = mean(ever_paid_jul),
-            ep3 = mean(ever_paid_sep),
-            ep6 = mean(ever_paid_dec)), 
-       keyby = .(treat8, Q = create_quantiles(total_due, 4L))
-       ][ , dcast(.SD, Q ~ treat8, value.var = c('ep1', 'ep3', 'ep6'))
-          ][ , {
-            y = .SD[ , grep('ep1', names(.SD)), with = FALSE]
-            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
-                    main = 'One Month', las = 1,
-                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
-            legend('topleft', legend = cutoffs,
-                   title = 'Quartile Cutoffs ($1000)')
-            y = .SD[ , grep('ep3', names(.SD)), with = FALSE]
-            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
-                    main = 'Three Months', las = 1,
-                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
-            mtext('Ever Paid by (Quartile of) Total Due', 
-                  side = 3L, line = 3L)
-            y = .SD[ , grep('ep6', names(.SD)), with = FALSE]
-            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
-                    main = 'Six Months', las = 1,
-                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
-          }]
-
-cutoffs = 
-  paste0('Q', 1:4, ': ', 
-         owners[tenure>0, levels(create_quantiles(tenure, 4L, labels = NULL))])
-owners[tenure>0, .(ep1 = mean(ever_paid_jul),
-           ep3 = mean(ever_paid_sep),
-           ep6 = mean(ever_paid_dec)), 
-       keyby = .(treat8, Q = create_quantiles(tenure, 4L))
-       ][ , dcast(.SD, Q ~ treat8, value.var = c('ep1', 'ep3', 'ep6'))
-          ][ , {
-            y = .SD[ , grep('ep1', names(.SD)), with = FALSE]
-            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
-                    main = 'One Month', las = 1,
-                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
-            legend('topleft', legend = cutoffs,
-                   title = 'Quartile Cutoffs (Years)')
-            y = .SD[ , grep('ep3', names(.SD)), with = FALSE]
-            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
-                    main = 'Three Months', las = 1,
-                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
-            mtext('Ever Paid by (Quartile of) Ownership Tenure', 
-                  side = 3L, line = 3L)
-            y = .SD[ , grep('ep6', names(.SD)), with = FALSE]
-            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
-                    main = 'Six Months', las = 1,
-                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
-          }]
-
-tn = levels(owners$treat8)
-
-owners[, .(ep1 = mean(ever_paid_jul),
-           ep3 = mean(ever_paid_sep),
-           ep6 = mean(ever_paid_dec)), 
-       keyby = .(treat8, Q = create_quantiles(kde, 4L))
-       ][ , dcast(.SD, Q ~ treat8, value.var = c('ep1', 'ep3', 'ep6'))
-          ][ , {
-            y = .SD[ , grep('ep1', names(.SD)), with = FALSE]
-            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
-                    main = 'One Month', las = 1,
-                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
-            y = .SD[ , grep('ep3', names(.SD)), with = FALSE]
-            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
-                    main = 'Three Months', las = 1,
-                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
-            mtext('Ever Paid by (Quartile of) Density of Tardy Taxpayers', 
-                  side = 3L, line = 3L)
-            y = .SD[ , grep('ep6', names(.SD)), with = FALSE]
-            barplot(as.matrix(y), beside = TRUE, names.arg = tn,
-                    main = 'Six Months', las = 1,
-                    ylab = 'Proportion Ever Paid', ylim = c(0, 1))
-          }]
-dev.off()
-
-
-owners[unq_own & assessed_mv>0, mv_quartile := create_quantiles(assessed_mv, 4)]
 owners[(unq_own), debt_quartile := create_quantiles(total_due, 4)]
-owners[unq_own & tenure>0, tenure_quartile := create_quantiles(tenure, 4)]
-owners[(unq_own), kde_quartile := create_quantiles(kde, 4)]
 
-owners[unq_own & assessed_mv>0, 
-       texreg(lapply(expression(`1 Month` = ever_paid_jul, 
-                                `3 Months` = ever_paid_sep,
-                                `6 Months` = ever_paid_dec),
-                     function(ep) lm(eval(ep) ~ mv_quartile/treat8)))]
-
-owners[(unq_own), 
-       texreg(lapply(expression(`1 Month` = ever_paid_jul, 
-                                `3 Months` = ever_paid_sep,
-                                `6 Months` = ever_paid_dec),
-                     function(ep) lm(eval(ep) ~ debt_quartile/treat8)))]
-
-owners[unq_own & tenure>0, 
-       texreg(lapply(expression(`1 Month` = ever_paid_jul, 
-                                `3 Months` = ever_paid_sep,
-                                `6 Months` = ever_paid_dec),
-                     function(ep) lm(eval(ep) ~ tenure_quartile/treat8)))]
-
-
-owners[(unq_own), 
-       texreg(lapply(expression(`1 Month` = ever_paid_jul, 
-                                `3 Months` = ever_paid_sep,
-                                `6 Months` = ever_paid_dec),
-                     function(ep) lm(eval(ep) ~ kde_quartile/treat8)))]
-
-
-xrng = owners[(unq_own), {
-  l = log(total_due)
-  exp(seq(0, log(1e4), length.out = 100))
-}]
-
-mdpts = c(-Inf, xrng[-length(xrng)] + diff(xrng)/2, Inf)
-
-yy1 = sapply(seq_along(xrng), function(ii) {
-  owners[unq_own & total_due %between% mdpts[ii + 0:1],
-         mean(ever_paid_jul)]
-})
-yy2 = sapply(seq_along(xrng), function(ii) {
-  owners[unq_own & total_due %between% mdpts[ii + 0:1],
-         mean(ever_paid_sep)]
-})
-yy3 = sapply(seq_along(xrng), function(ii) {
-  owners[unq_own & total_due %between% mdpts[ii + 0:1],
-         mean(ever_paid_dec)]
-})
-
-pdf('~/Desktop/u_shaped.pdf', width = 21)
-par(mfrow = c(1, 3))
-plot(log(xrng), yy1)
-plot(log(xrng), yy2)
-plot(log(xrng), yy3)
-dev.off()
-
-
-library(rgdal)
-library(rgeos)
-library(sp)
-library(maptools)
-library(spatstat)
-library(splancs)
-n_cells = 100 
-kde.eta = 1 
-
-phl = gUnaryUnion(gBuffer(
-  readOGR('/media/data_drive/gis_data/PA', 
-          'PhiladelphiaCensusTracts2010'), 
-  width = 1000
-))
-
-azav = readOGR('/media/data_drive/gis_data/PA/',
-               'Neighborhoods_Philadelphia')
-
-del = SpatialPointsDataFrame(
-  owners[ , cbind(x_lon, y_lat)], data = owners,
-  proj4string = CRS('+init=epsg:4326'))
-del = spTransform(del, proj4string(phl))
-
-boundary = phl@polygons[[1L]]@Polygons[[1L]]@coords
-
-xrng = range(boundary[ , 1L])
-yrng = range(boundary[ , 2L])
-delx = diff(xrng)/n_cells
-dely = diff(yrng)/n_cells
-grdtop <- as(as.SpatialGridDataFrame.im(
-  pixellate(ppp(xrange = xrng, yrange = yrng),
-            eps = c(delx, dely))), "GridTopology")
-grdSP = as.SpatialPolygons.GridTopology(grdtop)
-proj4string(grdSP) = proj4string(phl)
-grdSPDF = SpatialPolygonsDataFrame(
-  grdSP, data = data.frame(ID = seq_len(length(grdSP))), match.ID = FALSE
-)
-grdSPDF$KDE = spkernel2d(del, boundary, kde.eta*mean(delx, dely), grdtop)
-grdSPDF$KDE_low_mv = 
-  spkernel2d(del[owners[mv_quartile == 1 & unq_own, which = TRUE], ], boundary, 
-             kde.eta*mean(delx, dely), grdtop)
-grdSPDF$KDE_low_due = 
-  spkernel2d(del[owners[debt_quartile == 1 & unq_own, which = TRUE], ], boundary, 
-             kde.eta*mean(delx, dely), grdtop)
-grdSPDF$KDE_low_tenure = 
-  spkernel2d(del[owners[tenure_quartile == 1 & unq_own, which = TRUE], ], boundary, 
-             kde.eta*mean(delx, dely), grdtop)
-grdSPDF$KDE_ep_jul = 
-  spkernel2d(del[owners[(ever_paid_jul & unq_own), which = TRUE], ], boundary, 
-             kde.eta*mean(delx, dely), grdtop)
-grdSPDF$KDE_ep_sep = 
-  spkernel2d(del[owners[(ever_paid_sep & unq_own), which = TRUE], ], boundary, 
-             kde.eta*mean(delx, dely), grdtop)
-grdSPDF$KDE_ep_dec = 
-  spkernel2d(del[owners[(ever_paid_dec & unq_own), which = TRUE], ], boundary, 
-             kde.eta*mean(delx, dely), grdtop)
-
-divide = function(x, n, na.rm = FALSE) {
-  r = range(x, na.rm = na.rm)
-  seq(r[1L], r[2L], length.out = n)
+rename_coef = function(obj) {
+  nm = names(obj$coefficients)
+  int = grep('Intercept', nm)
+  qint = grep('.*quartile[1-4]$', nm)
+  keep = grep('quartile.*(Lien|Sheriff)', nm)
+  nm[-c(int, qint, keep)] = 'x'
+  nm[int] = 'Holdout in Quartile 1'
+  nm[qint] = gsub('.*quartile([1-4])$', 
+                  'Holdout in Quartile \\1', nm[qint])
+  nm[keep] = gsub('.*quartile([1-4]):.*8(.*)$', 
+                  '\\2 in Quartile \\1', nm[keep])
+  names(obj$coefficients) = nm
+  obj
 }
 
-cols = paste0(colorRampPalette(c('white', 'red'))(10L), '80')
-colorize = function(x) {
-  out = character(length(x))
-  idx = !is.na(x)
-  out[!idx] = NA_character_
-  x = x[idx]
-  out[idx] = cols[findInterval(x, divide(x, 10))]
-  out
-}
+tbl = capture.output({
+  owners[(unq_own), {
+    regs = lapply(expression(
+      `1 Month` = 100*ever_paid_jul, `3 Months` = 100*ever_paid_sep,
+      `6 Months` = 100*ever_paid_dec, `1 Month` = total_paid_jul,
+      `3 Months` = total_paid_sep, `6 Months` = total_paid_dec),
+      function(dep_var) 
+        rename_coef(lm(eval(dep_var) ~ debt_quartile/treat8)))
+    ses = lapply(regs, function(r) sqrt(diag(vcovHC(r))))
+    pvals = lapply(regs, function(r)
+      coeftest(r, vcovHC(r))[ , 'Pr(>|t|)'])
+    texreg(regs, omit.coef = 'x', stars = c(.01, .05, .1),
+           override.se = ses, override.pvalues = pvals,
+           include.rsquared = FALSE, caption.above = TRUE,
+           include.adjrs = FALSE, include.rmse = FALSE,
+           digits = 1L, label = 'tbl:lpm_hetero',
+           float.pos = 'htbp',
+           caption = 'Treatment Effect Heterogeneity by Debt Quantile',
+           custom.note = "\\parbox{.75\\linewidth}{%stars. Holdout values " %+% 
+             "for first quartile in levels; other holdout figures are " %+% 
+             "relative to this and remaining figures are " %+% 
+             "treatment effects for the stated treatment vs. holdout " %+% 
+             "owners in the same quartile.}")
+    }]
+})
 
-pdf('~/Desktop/spatial_concentrations.pdf',
-    width = 21, height = 14)
-par(mfrow = c(2, 3))
-plot(grdSPDF, col = colorize(grdSPDF$KDE_low_mv),
-     main = 'Locations of Low-Value Properties')
-plot(phl, add = TRUE)
+## Replace Holdout SEs with horizontal rule, add header for EP vs. TP
+idx1 <- grep("Month", tbl) - 1L
+idx2 <- grep("^Holdout.*Quartile\\s1", tbl)
 
-plot(grdSPDF, col = colorize(grdSPDF$KDE_low_due),
-     main = 'Locations of Low-Debt Properties')
-plot(phl, add = TRUE)
+tbl[idx2] <- gsub("\\^\\{[*]*\\}", "", tbl[idx2])
 
-plot(grdSPDF, col = colorize(grdSPDF$KDE_low_tenure),
-     main = 'Locations of Low-Tenure Properties')
-plot(phl, add = TRUE)
+tbl <- c(tbl[1L:idx1],
+         paste(" & \\multicolumn{3}{c}{Ever Paid} &",
+               "\\multicolumn{3}{c}{Total Paid}", "\\\\"),
+         tbl[(idx1 + 1L):idx2], "\\hline",
+         tbl[(idx2 + 2L):length(tbl)])
 
-plot(grdSPDF, col = colorize(grdSPDF$KDE_ep_jul),
-     main = 'Locations of Ever-Paid Properties (One Month)')
-plot(phl, add = TRUE)
-
-plot(grdSPDF, col = colorize(grdSPDF$KDE_ep_sep),
-     main = 'Locations of Ever-Paid Properties (Three Months)')
-plot(phl, add = TRUE)
-
-plot(grdSPDF, col = colorize(grdSPDF$KDE_ep_dec),
-     main = 'Locations of Ever-Paid Properties (Six Months)')
-plot(phl, add = TRUE)
-dev.off()
-
-
-
-grdSPDF$KDE_low_mv = 
-  spkernel2d(del[owners[mv_quartile == 1 & unq_own & treat8 == 'Holdout', which = TRUE], ], boundary, 
-             kde.eta*mean(delx, dely), grdtop)
-grdSPDF$KDE_low_due = 
-  spkernel2d(del[owners[debt_quartile == 1 & unq_own & treat8 == 'Holdout', which = TRUE], ], boundary, 
-             kde.eta*mean(delx, dely), grdtop)
-grdSPDF$KDE_low_tenure = 
-  spkernel2d(del[owners[tenure_quartile == 1 & unq_own & treat8 == 'Holdout', which = TRUE], ], boundary, 
-             kde.eta*mean(delx, dely), grdtop)
-grdSPDF$KDE_ep_jul = 
-  spkernel2d(del[owners[(ever_paid_jul & unq_own & treat8 == 'Holdout'), which = TRUE], ], boundary, 
-             kde.eta*mean(delx, dely), grdtop)
-grdSPDF$KDE_ep_sep = 
-  spkernel2d(del[owners[(ever_paid_sep & unq_own & treat8 == 'Holdout'), which = TRUE], ], boundary, 
-             kde.eta*mean(delx, dely), grdtop)
-grdSPDF$KDE_ep_dec = 
-  spkernel2d(del[owners[(ever_paid_dec & unq_own & treat8 == 'Holdout'), which = TRUE], ], boundary, 
-             kde.eta*mean(delx, dely), grdtop)
-pdf('~/Desktop/spatial_concentrations_holdout.pdf',
-    width = 21, height = 14)
-par(mfrow = c(2, 3))
-cols = colorRampPalette(c('white', 'purple'))(10L)
-plot(grdSPDF, col = colorize(grdSPDF$KDE_low_mv),
-     main = 'Locations of Low-Value Properties')
-plot(phl, add = TRUE)
-
-plot(grdSPDF, col = colorize(grdSPDF$KDE_low_due),
-     main = 'Locations of Low-Debt Properties')
-plot(phl, add = TRUE)
-
-plot(grdSPDF, col = colorize(grdSPDF$KDE_low_tenure),
-     main = 'Locations of Low-Tenure Properties')
-plot(phl, add = TRUE)
-
-plot(grdSPDF, col = colorize(grdSPDF$KDE_ep_jul),
-     main = 'Locations of Ever-Paid Properties (One Month)')
-plot(phl, add = TRUE)
-
-plot(grdSPDF, col = colorize(grdSPDF$KDE_ep_sep),
-     main = 'Locations of Ever-Paid Properties (Three Months)')
-plot(phl, add = TRUE)
-
-plot(grdSPDF, col = colorize(grdSPDF$KDE_ep_dec),
-     main = 'Locations of Ever-Paid Properties (Six Months)')
-plot(phl, add = TRUE)
-dev.off()
-
-
-
-
-
-grdSPDF$KDE_low_mv = 
-  spkernel2d(del[owners[mv_quartile == 1 & unq_own & treat8 %in% c('Sheriff', 'Lien'), which = TRUE], ], boundary, 
-             kde.eta*mean(delx, dely), grdtop)
-grdSPDF$KDE_low_due = 
-  spkernel2d(del[owners[debt_quartile == 1 & unq_own & treat8 %in% c('Sheriff', 'Lien'), which = TRUE], ], boundary, 
-             kde.eta*mean(delx, dely), grdtop)
-grdSPDF$KDE_low_tenure = 
-  spkernel2d(del[owners[tenure_quartile == 1 & unq_own & treat8 %in% c('Sheriff', 'Lien'), which = TRUE], ], boundary, 
-             kde.eta*mean(delx, dely), grdtop)
-grdSPDF$KDE_ep_jul = 
-  spkernel2d(del[owners[(ever_paid_jul & unq_own & treat8 %in% c('Sheriff', 'Lien')), which = TRUE], ], boundary, 
-             kde.eta*mean(delx, dely), grdtop)
-grdSPDF$KDE_ep_sep = 
-  spkernel2d(del[owners[(ever_paid_sep & unq_own & treat8 %in% c('Sheriff', 'Lien')), which = TRUE], ], boundary, 
-             kde.eta*mean(delx, dely), grdtop)
-grdSPDF$KDE_ep_dec = 
-  spkernel2d(del[owners[(ever_paid_dec & unq_own & treat8 %in% c('Sheriff', 'Lien')), which = TRUE], ], boundary, 
-             kde.eta*mean(delx, dely), grdtop)
-pdf('~/Desktop/spatial_concentrations_threat.pdf',
-    width = 21, height = 14)
-par(mfrow = c(2, 3))
-cols = colorRampPalette(c('white', 'darkgreen'))(10L)
-plot(grdSPDF, col = colorize(grdSPDF$KDE_low_mv),
-     main = 'Locations of Low-Value Properties')
-plot(phl, add = TRUE)
-
-plot(grdSPDF, col = colorize(grdSPDF$KDE_low_due),
-     main = 'Locations of Low-Debt Properties')
-plot(phl, add = TRUE)
-
-plot(grdSPDF, col = colorize(grdSPDF$KDE_low_tenure),
-     main = 'Locations of Low-Tenure Properties')
-plot(phl, add = TRUE)
-
-plot(grdSPDF, col = colorize(grdSPDF$KDE_ep_jul),
-     main = 'Locations of Ever-Paid Properties (One Month)')
-plot(phl, add = TRUE)
-
-plot(grdSPDF, col = colorize(grdSPDF$KDE_ep_sep),
-     main = 'Locations of Ever-Paid Properties (Three Months)')
-plot(phl, add = TRUE)
-
-plot(grdSPDF, col = colorize(grdSPDF$KDE_ep_dec),
-     main = 'Locations of Ever-Paid Properties (Six Months)')
-plot(phl, add = TRUE)
-dev.off()
+cat(tbl, sep = "\n", file = tf, append = TRUE)
