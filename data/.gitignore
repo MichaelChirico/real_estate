@@ -1,3 +1,5 @@
 #selectively track data files
 *
 !.gitignore
+# include shapefile
+!PhiladelphiaCensusTracts2010*

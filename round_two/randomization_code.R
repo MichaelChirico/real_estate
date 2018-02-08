@@ -4,8 +4,6 @@
 
 # Setup: Working Directory, Packages,
 #   Convenient Functions, Set Random Seed ####
-rm(list=ls(all=T))
-gc()
 library(funchir)
 library(data.table)
 library(xlsx)
