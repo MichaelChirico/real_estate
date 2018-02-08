@@ -3,3 +3,5 @@
 !.gitignore
 # include shapefile
 !PhiladelphiaCensusTracts2010*
+# include analysis file
+!round_two_analysis_owners.csv
