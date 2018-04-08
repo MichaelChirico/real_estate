@@ -4,6 +4,8 @@
 #Michael Chirico
 
 ##Packages
+rm(list=ls(all = TRUE))
+gc()
 library(funchir)
 library(data.table)
 library(readxl)
@@ -13,31 +15,30 @@ library(sp)
 library(maptools)
 library(spatstat)
 library(splancs)
-write.packages('logs/round_two/cleaning_session.txt')
+
 
 #Data Import ####
 ##Block I: Main Sample, July Cross-Section
 ## * total_paid is the accrual between June 1, 2015 and July 22, 2015
-
+setwd(mn <- "C:/Users/cloef/Documents/R")
 main_jul = read_excel(
-  'data/Payments and Balance Penn Letter Experiment_150727.xlsx',
-  sheet = 'DETAILS', skip = 9L, na = "-", 
+  'real_estate_data/Payments and Balance Penn Letter Experiment_150727.xlsx',
+  sheet = 'DETAILS', skip = 9L, na = "-",
   col_names = c('x', 'opa_no', 'x', 'x', 'treat15', 'x', 
-                'x', 'paid_full_jul', 'ever_paid_jul', 
-                rep('x', 5L), 'total_paid_jul'),
-  col_types = abbr_to_colClass('stststsn', '11212251')
+                'x', 'paid_full_jul', 'ever_paid_jul', rep('x', 6L)),
+  col_types = abbr_to_colClass( 'ttt','555')
 )
+
 
 setDT(main_jul)
 
 ##Block II: Holdout Sample, July Cross-Section
 holdout_jul = read_excel(
-  'data/req20150709_PennLetterExperiment_v2_Commissioners Control Details.xlsx',
+  'real_estate_data/req20150709_PennLetterExperiment_v2_Commissioners Control Details.xlsx',
   sheet = 'DETAILS', skip = 9L, na = "-", 
   col_names = c('x', 'opa_no', rep('x', 5L), 
-                'paid_full_jul', 'ever_paid_jul', 
-                rep('x', 4L), 'total_paid_jul'),
-  col_types = abbr_to_colClass('ststsn', '115241')
+                'paid_full_jul', 'ever_paid_jul', rep('x', 5L)),
+  col_types = abbr_to_colClass('tt', '77')
 )
 
 setDT(holdout_jul)
@@ -57,7 +58,7 @@ full_jul = rbind(main_jul, holdout_jul)
 
 ##Block III: Full Sample, September Cross-Section
 full_sep = read_excel(
-  'data/req20150709_PennLetterExperiment (September 2015 update) v2.xlsx',
+  'real_estate_data/req20150709_PennLetterExperiment (September 2015 update) v2.xlsx',
   sheet = "DETAILS", skip = 8L, na = c('-', 'NULL'),
   col_names = c(`ACCOUNT-ID` = "x", `BRT NUMBER` = "opa_no", 
                 `PROP ADDR` = "address", `PZIP5` = "x", 
@@ -72,13 +73,13 @@ full_sep = read_excel(
                 `AGREEMENT TYPE` = 'x', `AGREEMENT STATUS` = 'x',
                 `AGREEMENT START DATE` = 'x',
                 `AGREEMENT AMOUNT` = 'x', `ROW` = 'x'),
-  col_types = abbr_to_colClass("stsnstsns", "121252615")
+  col_types = abbr_to_colClass("tttntttnt", "121252615")
 )
 
 setDT(full_sep)
 
 ### join missing lat/lon geocoded in geocode_missing.R
-extra_xy = fread('round_two/geocoded_missing.csv',
+extra_xy = fread('real_estate_data/geocoded_missing.csv',
                  colClasses = list(character = 'opa_no'))
 full_sep[extra_xy, c('x', 'y') := .(i.x, i.y), on = 'opa_no']
 
@@ -94,7 +95,7 @@ kde.eta = 1 #fraction of cell width to use as KDE bandwidth
 ###   causing some near-boundary cells to be
 ###   forced missing (but not worth the extra effort)
 phl = gUnaryUnion(gBuffer(
-  readOGR('data', 'PhiladelphiaCensusTracts2010'), 
+  readOGR('real_estate_data', 'Census_Tracts_2010'), 
   width = 1000
 ))
 
@@ -142,13 +143,13 @@ full_sep[update_opas, opa_no := i.old, on = c(opa_no = "new")]
 
 ##Block IV: Full Sample, December Cross-Section
 full_dec = read_excel(
-  'data/req20150709_PennLetterExperiment (December 2015 update) v2.xlsx',
+  'real_estate_data/req20150709_PennLetterExperiment (December 2015 update) v2.xlsx',
   sheet = "DETAILS", skip = 8L, na = "-",
   col_names = c("account", "opa_no" , rep("x", 9L),
-              "paid_full_dec", "ever_paid_dec", 
-              rep("x", 5L), "earliest_pmt_dec",
+              "paid_full_dec", "ever_paid_dec", "agreement",
+              rep("x", 4L), "earliest_pmt_dec",
               "total_paid_dec", rep("x", 5L)),
-  col_types = abbr_to_colClass("tstsdns", "2925115")
+  col_types = abbr_to_colClass("ttttdnt", "2925115")
 )
 
 setDT(full_dec)
@@ -161,20 +162,25 @@ update_opas <-
              new = c("151102610", "881577275", "882932476", "881081460"))
 full_dec[update_opas, opa_no := i.old, on = c(opa_no = "new")]
 
+##Block IV_2: Water Data
+water_dec = fread('real_estate_data/water_wopa.csv',
+                             colClasses = list(character = 'opa_no'))
+full_dec[water_dec, c('waterdel') := .(i.waterdel), on = 'opa_no']
+
 ##Block V: Main Sample Background Data
 ## * total_due is pre-study balance
 bgvars <- c("opa_no", "owner1", "total_due", "rand_id")
-bg_main = fread('round_two/round_2_full_data.csv',
+bg_main = fread('real_estate_data/round_2_full_data.csv',
                 select = bgvars, colClasses = list(character = 'opa_no'))
 
 ##Block VI: Holdout Sample Background Data
-bg_holdout = fread('round_two/holdout_sample.csv',
+bg_holdout = fread('real_estate_data/holdout_sample.csv',
                    select = c("opa_no", "owner1", "total_due"),
                    colClasses = list(character = 'opa_no'))
 #Need fill since holdout_bg lacks rand_id
 bg = rbind(bg_main, bg_holdout, fill = TRUE)
 
-nbhds = fread('data/round_two_property_file.csv',
+nbhds = fread('real_estate_data/prop2015.txt',
               select = c("BRT NUMBER", "AZAVEA NEIGHBORHOOD"),
               col.names = c("opa_no", "azavea"),
               colClasses = list(character = 'BRT NUMBER'))
@@ -196,30 +202,31 @@ bg[nbhds, azavea_section := i.azavea_section, on = "opa_no"]
 ###Block VII: Other Background Data
 ###  From OPA-issued Property Data CD
 ###  (certified for 2015, received May 2014)
-opa_bg = fread('data/prop2015.txt',
+opa_bg = fread('real_estate_data/prop2015.txt',
                select = c('PARCEL', 'MV', 'SALE DATE'),
                col.names = c('opa_no', 'assessed_mv', 'sale_date'),
                colClasses = list(character = c('PARCEL', 'SALE DATE'),
-                                 numeric = 'MV'))
+                              numeric = 'MV'))
 opa_bg[ , sale_date := as.Date.character(sale_date, format = '%Y%m%d')]
 opa_bg[ , tenure := 
           #difftime doesn't have units = 'years' for some reason...
           round(unclass(difftime(as.Date('2015-06-01'), sale_date,
                                  units = 'weeks')/52))]
 opa_bg[ , sale_date := NULL]
+opa_bg[ , assessed_mv :=
+          round(as.numeric(assessed_mv))]
 
 ###Block VIII: One-Year Follow-Up Data
 followup <- read_excel(
-  paste('data/req20150709_PennLetterExperiment (July 2016 update',
+  paste('real_estate_data/req20150709_PennLetterExperiment (July 2016 update',
         'with 2016 delinquency, payments, and agreements).xlsx'),
   sheet = "DETAILS", skip = 1L, na = "-",
   col_names = c("account", rep("x", 6L), 
                 "total_bill_2016", "x", "paid_full_jul16",
-                "ever_paid_jul16", rep("x", 6L), 
-                "earliest_pmt_jul16", 'x',
-                'total_paid_jul16', rep("x", 4L)),
-  col_types = abbr_to_colClass("tststsdsns",
-                               "1611261114"))
+                "ever_paid_jul16", rep("x", 6L),
+                "earliest_pmt_jul16", rep("x", 6L)),
+  col_types = abbr_to_colClass("ttttttdt",
+                               "16112616"))
 
 setDT(followup)
 
@@ -238,7 +245,6 @@ properties <-
 properties[followup[total_bill_2016 != "Consolidation/Subdivision"], 
            `:=`(ever_paid_jul16 = i.ever_paid_jul16,
                 paid_full_jul16 = i.paid_full_jul16,
-                total_paid_jul16 = i.total_paid_jul16,
                 earliest_pmt_jul16 = i.earliest_pmt_jul16), on = "account"]
 
 ##Data Clean-up
@@ -251,6 +257,10 @@ properties[ , (ep) := lapply(.SD, `==`, "Y"), .SDcols = ep]
 ###  question in data is: "Does this property have a balance?"
 pf <- "paid_full_" %+% c("jul", "sep", "dec", "jul16")
 properties[ , (pf) := lapply(.SD, `==`, "N"), .SDcols = pf]
+ag <- "agreement"
+properties[ ,(ag) := lapply(.SD, `==`, "Y"), .SDcols = ag]
+wt <- "waterdel"
+properties[ ,(wt) := lapply(.SD, `==`, "Y"), .SDcols = wt]
 
 ##Define some flags
 ### Is this a holdout property?
@@ -281,7 +291,7 @@ properties[sample(.N), owner_id := .GRP, by = owner1]
 
 ###Write out owner1-owner_id linkage
 fwrite(unique(properties[ , .(owner1, owner_id, opa_no)]),
-       'data/round_two_anon_id_link.csv', quote = TRUE)
+       'real_estate_data/round_two_anon_id_link.csv', quote = TRUE)
 
 properties[ , owner1 := NULL]
 owners <- 
@@ -295,7 +305,7 @@ owners <-
                holdout = all(holdout),
                #only really meaningful at the
                #  owner level for unary owners
-               azavea_section = azavea_section[1L],
+               #azavea_section = azavea_section[1L],
                ever_paid_jul = any(ever_paid_jul),
                ever_paid_sep = any(ever_paid_sep),
                ever_paid_dec = any(ever_paid_dec),
@@ -304,10 +314,10 @@ owners <-
                paid_full_sep = all(paid_full_sep),
                paid_full_dec = all(paid_full_dec),
                paid_full_jul16 = all(paid_full_jul16),
-               total_paid_jul = sum(total_paid_jul),
                total_paid_sep = sum(total_paid_sep),
                total_paid_dec = sum(total_paid_dec),
-               total_paid_jul16 = sum(total_paid_jul16),
+               agreement = any(agreement),
+               waterdel = any(waterdel),
                earliest_pmt_dec = {
                  if (all(is.na(earliest_pmt_dec))) D(NA)
                  else min(earliest_pmt_dec, na.rm = TRUE)},
@@ -319,7 +329,7 @@ owners <-
                tenure = median(tenure, na.rm = TRUE),
                #only valid for single-owner properties!
                x_lon = x[1L], y_lat = y[1L],
-               kde = median(kde),
+               #kde = median(kde),
                flag_holdout_overlap =
                  flag_holdout_overlap[1L], .N),
              by = owner_id]
@@ -328,4 +338,4 @@ owners <-
 owners[ , unq_own := N == 1]
 
 ### Write output
-fwrite(owners, 'data/round_two_analysis_owners.csv', quote = TRUE)
+fwrite(owners, 'real_estate_data/round_two_analysis_owners_charles.csv', quote = TRUE)
