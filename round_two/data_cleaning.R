@@ -5,14 +5,8 @@
 
 ##Packages
 library(funchir)
-library(data.table)
 library(readxl)
-library(rgdal)
-library(rgeos)
-library(sp)
-library(maptools)
-library(spatstat)
-library(splancs)
+library(data.table)
 write.packages('logs/round_two/cleaning_session.txt')
 
 #Data Import ####
@@ -107,7 +101,7 @@ update_opas <-
 full_dec[update_opas, opa_no := i.old, on = c(opa_no = "new")]
 
 ##Block IV_2: Water Data
-water_dec = fread('real_estate_data/water_wopa.csv',
+water_dec = fread('data/water_wopa.csv',
                   colClasses = list(character = 'opa_no'))
 full_dec[water_dec, c('waterdel') := .(i.waterdel), on = 'opa_no']
 
