@@ -237,6 +237,7 @@ owners <-
                treat8 = treat8[1L],
                rand_id = rand_id[1L],
                holdout = all(holdout),
+               azavea_section = azavea_section[1L],
                ever_paid_jul = any(ever_paid_jul),
                ever_paid_sep = any(ever_paid_sep),
                ever_paid_dec = any(ever_paid_dec),
