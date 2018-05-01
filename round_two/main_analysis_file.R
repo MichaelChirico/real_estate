@@ -7,11 +7,14 @@
 
 ##Packages
 library(funchir)    # convenience functions
+library(plm)        # for cluster-robust SEs
+library(pglm)       # for clustered logit SEs
 library(data.table) # for everything
 library(xtable)     # for table output
 library(texreg)     # for regression output
 library(sandwich)   # for robust SEs
 library(lmtest)     # for testing using robust SEs
+
 write.packages('logs/round_two/analysis_session.txt')
 
 tf = 'round_two/tables.tex'
@@ -39,12 +42,13 @@ lmfp <- function(formula){rename_coef <- function(obj){
 p_tex <- function(x) c("$p$-value", round(x, 2L))
 
 ###Specially tailor the lm object for pretty printing
-rename_coef <- function(obj, nn){
+rename_coef <- function(obj, nn, name_only = FALSE){
   nms <- names(obj$coefficients)
   nms[nms == "(Intercept)"] <- if (nn == 7) "Reminder" else "Holdout"
   #treatment dummies take the form treat8Reminder, etc -- 
   #  eliminate the treat8 part for digestibility
   nms <- gsub("treat" %+% nn, "", nms)
+  if (name_only) return(nms)
   names(obj$coefficients) <- nms
   obj
 }
@@ -206,18 +210,47 @@ tbl = c(tbl[1:(idx - 2L)],
 cat(tbl, sep = "\n", file = tf, append = TRUE)
 
 # TABLE 3: Short-term Reults: Relative to Generic Reminder ####
-tbl <- capture.output(texreg(lapply(lapply(expression(
-  `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
-  `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
+powners_unq_all = 
+  pdata.frame(owners[!holdout & unq_own], 
+              index = 'rand_id', drop.index = FALSE)
+regs = lapply(expression(
+  `One Month` = 100*ever_paid_jul, `Three Months` = 100*ever_paid_sep,
+  `One Month` = 100*paid_full_jul, `Three Months` = 100*paid_full_sep,
+  `One Month` = total_paid_jul, `Three Months` = total_paid_sep),
   #Multiply indicator by 100 so the units are in %ages already
-  function(x) owners[(!holdout & unq_own), lm(I(100 * eval(x)) ~ treat7)]), 
-  rename_coef, nn = 7), stars = c(.01, .05, .1), 
+  function(x) 
+    plm(eval(x) ~ treat7, data = powners_unq_all, model = 'pooling'))
+# per the guide here:
+#  http://www.richard-bluhm.com/clustered-ses-in-r-and-stata-2/
+n_clust = uniqueN(powners_unq_all$rand_id)
+n_obs = nrow(powners_unq_all)
+#since all vs. treat7, there are 7 degrees of
+#  freedom lost in each regression (hence n_obs - 7)
+dof_adj = n_clust/(n_clust - 1) * (n_obs - 1)/(n_obs - 7)
+ses = lapply(regs, function(r) 
+  sqrt(diag(dof_adj * vcovHC(r, type = 'HC0', cluster = 'group', 
+                             adjust = TRUE))))
+pvals = lapply(regs, function(r)
+  coeftest(r, dof_adj * vcovHC(r, type = 'HC0', cluster = 'group', 
+                             adjust = TRUE))[ , 'Pr(>|t|)'])
+#rename now since vcovHC somehow recovers the
+#  original coefficient names, causing conflict
+#  and leading to empty p values
+tbl <- capture.output(texreg(
+  regs, stars = c(.01, .05, .1), 
+  override.se = ses, override.pvalues = pvals,
+  custom.coef.names = rename_coef(regs[[1L]], 7L, name_only = TRUE),
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, 
-  label = "sh_lpm_rob", float.pos = 'htb',
+  label = "sh_lpm_rob", float.pos = 'htbp',
   caption = "Short-term Results: Relative to Generic Reminder",
-  custom.note = "%stars. Reminder values in levels; " %+% 
-    "remaining figures relative to this"))
+  custom.note = "%stars. Standard errors clustered by block."))
+
+## add quantifier row (split for horizontal brevity)
+idx = grep('One.*Three', tbl)
+tbl = c(tbl[1:idx], 
+        ' & Month & Months & Month & Months & Month & Months \\\\',
+        tbl[(idx + 1):length(tbl)])
 
 ## Replace Reminder SEs with horizontal rule, 
 ##   eliminate significance for intercept,
@@ -226,11 +259,24 @@ idx <- grep("^Reminder", tbl)
 
 tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
 
-tbl <- c(tbl[1L:(idx - 3L)],
+tbl <- c(tbl[1L:(idx - 4L)],
          " & \\multicolumn{2}{c}{Ever Paid} & " %+% 
-           "\\multicolumn{2}{c}{Paid in Full} \\\\",
-         tbl[c(idx - 2L, idx)],
+           "\\multicolumn{2}{c}{Paid in Full} & " %+% 
+           "\\multicolumn{2}{c}{Total Paid} \\\\",
+         tbl[c((idx - 3L):idx)],
          "\\hline", tbl[(idx + 2L):length(tbl)])
+
+## add second row to custom note
+
+idx = grep("end{tabular}", tbl, fixed = TRUE)
+
+tbl = c(tbl[1:(idx - 2L)],
+        paste(tbl[idx - 1L], '\\\\'),
+        sprintf("\\multicolumn{7}{l}{\\scriptsize{%s}}",
+                paste("Reminder values in levels;",
+                      "remaining figures relative to this.")),
+        tbl[idx:length(tbl)])
+
 
 cat(tbl, sep = "\n", file = tf, append = TRUE)
 
