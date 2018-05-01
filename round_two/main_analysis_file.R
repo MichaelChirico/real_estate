@@ -68,39 +68,42 @@ owners[ , earliest_pmt_dec :=
 # TABLE 1: Balance on Observables (Unary Owners) ####
 ##Print Table Header
 ### *surround with {} so the table all prints together*
-{cat("\\begin{sidewaystable}[ht]",
+cat("\\begin{sidewaystable}[htbp]",
     "\\centering", 
     "\\caption{Balance on Observables (Unary Owners)}",
     "\\label{balance}",
     "\\vspace{10mm}",
     "\\begin{tabular}{lrrrrrrrrc}", 
-    "\\hline", sep = "\n", file = tf)
+    sep = "\n", file = tf)
 
-tbl = owners[(unq_own),
-              c(list(`Amount Due (June)` = 
-                       dol.form(mean(total_due), tex = TRUE),
-                     `Amount Due (June)` = 
-                       dol.form(sd(total_due), tex = TRUE),
-                    `Assessed Property Value` = 
-                      dol.form(mean(assessed_mv, na.rm = TRUE), tex = TRUE),
-                    `Assessed Property Value` = 
-                      dol.form(sd(assessed_mv, na.rm = TRUE), tex = TRUE),
-                    `Ownership Tenure (Years)` = 
-                      round(mean(tenure, na.rm = TRUE), 1L),
-                    `Ownership Tenure (Years)` = 
-                      round(sd(tenure, na.rm = TRUE), 1L)),
-               as.list(to.pct(table(azavea_section)/.N, dig = 0L)),
-               list(`\\# Owners` = prettyNum(.N, big.mark = ","))),
-             keyby = .(Variable = treat8)]
-
+tbl = owners[(unq_own), {
+  c(list(`Amount Due` = 
+           dol.form(mean(total_due), tex = TRUE),
+         `Amount Due` = 
+           dol.form(sd(total_due), tex = TRUE),
+         `Assessed Property` = 
+           dol.form(floor(mean(assessed_mv, na.rm = TRUE)/1000), tex = TRUE),
+         `Assessed Property` = 
+           dol.form(floor(sd(assessed_mv, na.rm = TRUE)/1000), tex = TRUE),
+         `Ownership Tenure` = 
+           round(mean(tenure, na.rm = TRUE), 1L),
+         `Ownership Tenure` = 
+           round(sd(tenure, na.rm = TRUE), 1L)),
+    as.list(to.pct(table(azavea_section)/.N, dig = 0L)),
+    list(`\\# Owners` = prettyNum(.N, big.mark = ",")))
+  }, keyby = .(Variable = treat8)]
+#relegate treatment names to footnote for brevity
+v = tbl$Variable
+tbl[ , Variable := seq_along(Variable)]
+  
 tbl = cbind(t(tbl), 
             p_tex(c(sapply(c(
               `Amount Due (June)` = "total_due",
               `Amount Due (June)` = "total_due",
-              `Assessed Property Value` = "assessed_mv",
-              `Assessed Property Value` = "assessed_mv",
-              `Ownership Tenure (Years)` = 'tenure',
-              `Ownership Tenure (Years)` = 'tenure'),
+              `Assessed Property` = "assessed_mv",
+              `Assessed Property` = "assessed_mv",
+              `Ownership Tenure` = 'tenure',
+              `Ownership Tenure` = 'tenure'),
               function(x) owners[(unq_own), lmfp(get(x) ~ treat8)]),
               owners[(unq_own), c(round(chisq.test(table(
                 azavea_section, treat8))$p.value, 2L),
@@ -108,14 +111,16 @@ tbl = cbind(t(tbl),
               #not targeting owners, so exclude
               `\\# Owners` = NA)))
 
-sdrows = duplicated(rownames(tbl))
+sdrows = which(duplicated(rownames(tbl)))
 pvcol = grep('$p$-value', tbl[1L, ], fixed = TRUE)
 pctrows = grepl('Philadelphia|City', rownames(tbl))
-tbl[sdrows, -pvcol] = paste0('(', tbl[sdrows, -pvcol], ')')
+tbl[sdrows, -pvcol] = sprintf('(%s)', tbl[sdrows, -pvcol])
 tbl[pctrows, -pvcol] = paste0(tbl[pctrows, -pvcol], '\\%')
 tbl[sdrows, pvcol] = ''
-tbl = cbind(rownames(tbl), tbl)
+tbl = cbind(gsub('Philadelphia', 'Philly', 
+                 rownames(tbl), fixed = TRUE), tbl)
 tbl[sdrows, 1L] = NA
+tbl[sdrows[1:3], 1L] = c('(June)', 'Value (\\$1,000)', '(Years)')
 dimnames(tbl) = list(NULL, NULL)
 
 seprows = grep('Center City', rownames(tbl)) + c(-1L, 5L)
@@ -129,14 +134,15 @@ print.xtable(xtable(tbl), include.rownames = FALSE,
              file = tf, append = TRUE)
 
 cat("\\hline",
-    "\\multicolumn{10}{l}" %+% 
-      "{\\scriptsize{$p$-values in rows 1-2 are " %+% 
-      "$F$-test $p$-values from regressing each " %+% 
-      "variable on treatment dummies. A $\\chi^2$ " %+% 
-      "test was used for the geographic distribution. " %+% 
-      "Standard deviations in parentheses.}} \\\\",
+    "\\multicolumn{10}{l}{\\scriptsize{$p$-values in rows 1-2 are $F$-test",
+    "    $p$-values from regressing each variable on treatment dummies. A",
+    "    $\\chi^2$ test was used for the geographic distribution. }} \\\\",
+    sprintf("\\multicolumn{10}{l}{\\scriptsize{ %s }} \\\\",
+            "Standard deviations in parentheses."),
+    sprintf("\\multicolumn{10}{l}{\\scriptsize{%s}} \\\\",
+            paste(paste(unclass(v), v, sep = ': '), collapse = ', ')),
     "\\end{tabular}",
-    "\\end{sidewaystable}", sep = "\n", file = tf, append = TRUE)}
+    "\\end{sidewaystable}", sep = "\n", file = tf, append = TRUE)
 
 # TABLE 2: Short-term Linear Probability Model Estimates ####
 regs = lapply(expression(
