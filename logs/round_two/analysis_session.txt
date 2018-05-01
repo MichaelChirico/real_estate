@@ -1,4 +1,4 @@
-Package info for code run on 2018-04-12 00:30:58:
+Package info for code run on 2018-05-01 15:50:39:
 R version 3.4.3 (2017-11-30)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Ubuntu 14.04.3 LTS
@@ -19,9 +19,10 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] texreg_1.36.23    xtable_1.8-2      data.table_1.10.5 readxl_1.0.0     
-[5] funchir_0.1.4    
+[1] lmtest_0.9-35     zoo_1.8-1         sandwich_2.4-0   
+[4] texreg_1.36.23    xtable_1.8-2      data.table_1.10.5
+[7] funchir_0.1.4    
 
 loaded via a namespace (and not attached):
-[1] compiler_3.4.3   tools_3.4.3      pillar_1.2.1     tibble_1.4.2    
-[5] yaml_2.1.18      Rcpp_0.12.16     cellranger_1.1.0 rlang_0.2.0     
+[1] compiler_3.4.3  tools_3.4.3     yaml_2.1.18     grid_3.4.3     
+[5] lattice_0.20-35

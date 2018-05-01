@@ -6,10 +6,12 @@
 # Setup: Packages, Directories, Data Import ####
 
 ##Packages
-library(funchir) # convenience functions
-library(data.table) #for everything
-library(xtable) #for table output
-library(texreg) #for regression output
+library(funchir)    # convenience functions
+library(data.table) # for everything
+library(xtable)     # for table output
+library(texreg)     # for regression output
+library(sandwich)   # for robust SEs
+library(lmtest)     # for testing using robust SEs
 write.packages('logs/round_two/analysis_session.txt')
 
 tf = 'round_two/tables.tex'
@@ -146,32 +148,60 @@ cat("\\hline",
 
 # TABLE 2: Short-term Linear Probability Model Estimates ####
 regs = lapply(expression(
-  `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
-  `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
   #Multiply indicator by 100 so the units are in %ages already
+  `One` = 100*ever_paid_jul, `Three` = 100*ever_paid_sep,
+  `One` = 100*paid_full_jul, `Three` = 100*paid_full_sep,
+  `One` = total_paid_jul, `Three` = total_paid_sep),
   function(x) 
-    rename_coef(owners[(unq_own), lm(I(100 * eval(x)) ~ treat8)], 8))
+    rename_coef(owners[(unq_own), lm(eval(x) ~ treat8)], 8))
+ses = lapply(regs, function(r) sqrt(diag(vcovHC(r))))
+pvals = lapply(regs, function(r)
+  coeftest(r, vcovHC(r))[ , 'Pr(>|t|)'])
 tbl <- capture.output(texreg(
   regs, stars = c(.01, .05, .1), 
+  override.se = ses, override.pvalues = pvals,
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, 
-  label = "sh_lin", float.pos = 'htb',
+  label = "sh_lin", float.pos = 'htbp',
   caption = "Short-Term Linear Probability Model Estimates",
-  custom.note = "%stars. Holdout values in levels; " %+% 
-    "remaining figures relative to this"))
+  custom.note = "%stars. Robust standard errors."))
+
+## add quantifier row (split for horizontal brevity)
+idx = grep('One.*Three', tbl)
+tbl = c(tbl[1:idx], 
+        ' & Month & Months & Month & Months & Month & Months \\\\',
+        tbl[(idx + 1):length(tbl)])
 
 ## Replace Holdout SEs with horizontal rule, 
+##   add $ symbol to denote currency in total paid Holdout,
 ##   eliminate significance for intercept,
 ##   add header for Ever Paid vs. Paid in Full
 idx <- grep("^Holdout", tbl)
 
 tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
+row = strsplit(tbl[idx], ' & ')[[1L]]
+row[6:7] = paste0('\\$', row[6:7])
+tbl[idx] = paste(row, collapse = ' & ')
 
-tbl <- c(tbl[1L:(idx - 3L)],
+tbl <- c(tbl[1L:(idx - 4L)],
          " & \\multicolumn{2}{c}{Ever Paid} & " %+% 
-           "\\multicolumn{2}{c}{Paid in Full} \\\\",
-         tbl[c(idx - 2L, idx)],
-         "\\hline", tbl[(idx + 2L):length(tbl)])
+           "\\multicolumn{2}{c}{Paid in Full} & " %+% 
+           "\\multicolumn{2}{c}{Total Paid} \\\\",
+         "\\hline", tbl[(idx - 3L):idx],
+         "\\hline", 
+         gsub("Neighborhood", "Neighbor.", 
+              tbl[(idx + 2L):length(tbl)], fixed = TRUE))
+
+## add second row to custom note
+
+idx = grep("end{tabular}", tbl, fixed = TRUE)
+
+tbl = c(tbl[1:(idx - 2L)],
+        paste(tbl[idx - 1L], '\\\\'),
+        sprintf("\\multicolumn{7}{l}{\\scriptsize{%s}}",
+                paste("Holdout values in levels;",
+                      "remaining figures relative to this.")),
+        tbl[idx:length(tbl)])
 
 cat(tbl, sep = "\n", file = tf, append = TRUE)
 
