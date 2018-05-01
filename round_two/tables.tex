@@ -1,4 +1,4 @@
-\begin{sidewaystable}[ht]
+\begin{sidewaystable}[htbp]
 \centering
 \caption{Balance on Observables (Unary Owners)}
 \label{balance}
@@ -6,12 +6,12 @@
 \begin{tabular}{lrrrrrrrrc}
 \hline
   \hline
-Variable & Holdout & Reminder & Lien & Sheriff & Neighborhood & Community & Peer & Duty & $p$-value \\ 
+Variable & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & $p$-value \\ 
    \hline
-Amount Due (June) & \$1,233 & \$1,383 & \$1,389 & \$1,613 & \$1,950 & \$1,290 & \$1,338 & \$1,316 & 0.32 \\ 
-   & (\$1,840) & (\$6,510) & (\$4,130) & (\$13,118) & (\$25,290) & (\$2,021) & (\$3,413) & (\$2,158) &  \\ 
+Amount Due & \$1,233 & \$1,383 & \$1,389 & \$1,613 & \$1,950 & \$1,290 & \$1,338 & \$1,316 & 0.32 \\ 
+  (June) & (\$1,840) & (\$6,510) & (\$4,130) & (\$13,118) & (\$25,290) & (\$2,021) & (\$3,413) & (\$2,158) &  \\ 
   Assessed Property Value & \$142,630 & \$163,084 & \$147,573 & \$155,597 & \$206,214 & \$130,265 & \$130,936 & \$166,791 & 0.29 \\ 
-   & (\$509,738) & (\$1,316,580) & (\$699,574) & (\$966,870) & (\$2,035,732) & (\$181,107) & (\$181,940) & (\$1,336,669) &  \\ 
+  Value & (\$509,738) & (\$1,316,580) & (\$699,574) & (\$966,870) & (\$2,035,732) & (\$181,107) & (\$181,940) & (\$1,336,669) &  \\ 
   Ownership Tenure (Years) & 18.7 & 18.7 & 19.0 & 18.6 & 18.5 & 18.8 & 18.9 & 18.9 & 0.96 \\ 
    & (15.6) & (15.2) & (15.7) & (15.5) & (15.7) & (15.6) & (15.6) & (16.0) &  \\ 
   Center City & 5\% & 5\% & 5\% & 5\% & 5\% & 4\% & 5\% & 5\% & 0.66 \\ 
@@ -22,7 +22,13 @@ Amount Due (June) & \$1,233 & \$1,383 & \$1,389 & \$1,613 & \$1,950 & \$1,290 & 
   West Philadelphia & 21\% & 23\% & 21\% & 21\% & 22\% & 23\% & 20\% & 22\% &  \\ 
   \# Owners & 2,088 & 2,420 & 2,432 & 2,419 & 2,389 & 2,441 & 2,417 & 2,433 &  \\ 
   \hline
-\multicolumn{10}{l}{\scriptsize{$p$-values in rows 1-2 are $F$-test $p$-values from regressing each variable on treatment dummies. A $\chi^2$ test was used for the geographic distribution. Standard deviations in parentheses.}} \\
+\multicolumn{10}{l}{\scriptsize{$p$-values in rows 1-2 are $F$-test
+    $p$-values from regressing each variable on treatment dummies. A
+    $\chi^2$ test was used for the geographic distribution. }} \\
+}} \\
+\multicolumn{10}{l}{\scriptsize{ Standard deviations in parentheses.
+    Property values are reported in \$1000. }} \\
+\multicolumn{10}{l}{\scriptsize{1: Holdout, 2: Reminder, 3: Lien, 4: Sheriff, 5: Neighborhood, 6: Community, 7: Peer, 8: Duty}} \\
 \end{tabular}
 \end{sidewaystable}
 
