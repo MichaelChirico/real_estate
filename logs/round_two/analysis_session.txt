@@ -1,4 +1,4 @@
-Package info for code run on 2018-05-02 01:03:51:
+Package info for code run on 2018-05-04 00:14:23:
 R version 3.4.3 (2017-11-30)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Ubuntu 14.04.3 LTS
@@ -26,5 +26,4 @@ other attached packages:
 
 loaded via a namespace (and not attached):
 [1] bdsmatrix_1.3-3 lattice_0.20-35 MASS_7.3-49     grid_3.4.3     
-[5] nlme_3.1-131.1  statmod_1.4.30  tools_3.4.3     yaml_2.1.18    
-[9] compiler_3.4.3 
+[5] nlme_3.1-131.1  statmod_1.4.30  tools_3.4.3     compiler_3.4.3 

@@ -162,9 +162,10 @@ followup <- read_excel(
   col_names = c("account", rep("x", 6L), 
                 "total_bill_2016", "x", "paid_full_jul16",
                 "ever_paid_jul16", rep("x", 6L),
-                "earliest_pmt_jul16", rep("x", 6L)),
-  col_types = abbr_to_colClass("tststsds",
-                               "16112616")
+                "earliest_pmt_jul16", "x",
+                'total_paid_jul16', rep("x", 4L)),
+  col_types = abbr_to_colClass("tststsdsns",
+                               "1611261114")
 )
 
 setDT(followup)
@@ -184,7 +185,9 @@ properties <-
 properties[followup[total_bill_2016 != "Consolidation/Subdivision"], 
            `:=`(ever_paid_jul16 = i.ever_paid_jul16,
                 paid_full_jul16 = i.paid_full_jul16,
-                earliest_pmt_jul16 = i.earliest_pmt_jul16), on = "account"]
+                total_paid_jul16 = i.total_paid_jul16,
+                earliest_pmt_jul16 = i.earliest_pmt_jul16), 
+           on = "account"]
 
 ##Data Clean-up
 ###Account ID with extra whitespace
@@ -251,6 +254,7 @@ owners <-
                total_paid_jul = sum(total_paid_jul),
                total_paid_sep = sum(total_paid_sep),
                total_paid_dec = sum(total_paid_dec),
+               total_paid_jul16 = sum(total_paid_jul16),
                agreement = any(agreement),
                waterdel = any(waterdel),
                earliest_pmt_dec = {

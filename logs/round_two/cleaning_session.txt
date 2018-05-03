@@ -1,4 +1,4 @@
-Package info for code run on 2018-05-01 15:11:02:
+Package info for code run on 2018-05-03 23:29:55:
 R version 3.4.3 (2017-11-30)
 Platform: x86_64-pc-linux-gnu (64-bit)
 Running under: Ubuntu 14.04.3 LTS
@@ -22,5 +22,5 @@ other attached packages:
 [1] data.table_1.10.5 readxl_1.0.0      funchir_0.1.4    
 
 loaded via a namespace (and not attached):
-[1] compiler_3.4.3   tools_3.4.3      pillar_1.2.1     yaml_2.1.18     
-[5] tibble_1.4.2     Rcpp_0.12.16     cellranger_1.1.0 rlang_0.2.0     
+[1] compiler_3.4.3   tools_3.4.3      yaml_2.1.18      Rcpp_0.12.16    
+[5] cellranger_1.1.0
