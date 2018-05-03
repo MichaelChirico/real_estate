@@ -1,29 +1,252 @@
-Package info for code run on 2018-05-04 00:14:23:
-R version 3.4.3 (2017-11-30)
-Platform: x86_64-pc-linux-gnu (64-bit)
-Running under: Ubuntu 14.04.3 LTS
-
-Matrix products: default
-BLAS: /usr/lib/openblas-base/libblas.so.3
-LAPACK: /usr/lib/lapack/liblapack.so.3.0
-
-locale:
- [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
- [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
- [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
- [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
- [9] LC_ADDRESS=C               LC_TELEPHONE=C            
-[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
-
-attached base packages:
-[1] stats     graphics  grDevices utils     datasets  methods   base     
-
-other attached packages:
- [1] lmtest_0.9-35     zoo_1.8-1         sandwich_2.4-0   
- [4] texreg_1.36.23    xtable_1.8-2      data.table_1.10.5
- [7] pglm_0.2-1        maxLik_1.3-4      miscTools_0.6-22 
-[10] plm_1.6-6         Formula_1.2-2     funchir_0.1.4    
-
-loaded via a namespace (and not attached):
-[1] bdsmatrix_1.3-3 lattice_0.20-35 MASS_7.3-49     grid_3.4.3     
-[5] nlme_3.1-131.1  statmod_1.4.30  tools_3.4.3     compiler_3.4.3 
+{
+  "r_version": {
+    "platform": "x86_64-pc-linux-gnu (64-bit)",
+    "version.string": "R version 3.4.3 (2017-11-30)"
+  },
+  "locale": {
+    "LC_CTYPE": "en_US.UTF-8",
+    "LC_NUMERIC": "C",
+    "LC_TIME": "en_US.UTF-8",
+    "LC_COLLATE": "en_US.UTF-8",
+    "LC_MONETARY": "en_US.UTF-8",
+    "LC_MESSAGES": "en_US.UTF-8",
+    "LC_PAPER": "en_US.UTF-8",
+    "LC_NAME": "C",
+    "LC_ADDRESS": "C",
+    "LC_TELEPHONE": "C",
+    "LC_MEASUREMENT": "en_US.UTF-8",
+    "LC_IDENTIFICATION": "C"
+  },
+  "running": "Ubuntu 14.04.3 LTS",
+  "linear_algebra": {
+    "matrix_products": "default",
+    "blas": "/usr/lib/openblas-base/libblas.so.3",
+    "lapack": "/usr/lib/lapack/liblapack.so.3.0"
+  },
+  "base_packages": ["stats", "graphics", "grDevices", "utils", "datasets", "methods", "base"],
+  "other_packages": {
+    "lmtest": {
+      "Version": "0.9-35",
+      "Depends": "R (>= 2.10.0), stats, zoo",
+      "Imports": "graphics",
+      "Suggests": "car, strucchange, sandwich, dynlm, stats4, survival, AER",
+      "License": "GPL-2 | GPL-3",
+      "URL": {},
+      "Packaged": "2017-02-11 09:30:28 UTC; zeileis",
+      "Built": "R 3.3.2; x86_64-pc-linux-gnu; 2017-04-06 18:57:12 UTC; unix"
+    },
+    "zoo": {
+      "Version": "1.8-1",
+      "Depends": "R (>= 2.10.0), stats",
+      "Imports": "utils, graphics, grDevices, lattice (>= 0.20-27)",
+      "Suggests": "coda, chron, DAAG, fts, ggplot2, mondate, scales,\nstrucchange, timeDate, timeSeries, tis, tseries, xts",
+      "License": "GPL-2 | GPL-3",
+      "URL": "http://zoo.R-Forge.R-project.org/",
+      "Packaged": "2018-01-08 09:22:51 UTC; zeileis",
+      "Built": "R 3.4.3; x86_64-pc-linux-gnu; 2018-02-08 01:04:37 UTC; unix"
+    },
+    "sandwich": {
+      "Version": "2.4-0",
+      "Depends": "R (>= 2.10.0)",
+      "Imports": "stats, utils, zoo",
+      "Suggests": "AER, car, geepack, lattice, lmtest, MASS, multiwayvcov, pcse,\nplm, pscl, scatterplot3d, stats4, strucchange, survival",
+      "License": "GPL-2 | GPL-3",
+      "URL": {},
+      "Packaged": "2017-07-26 19:08:36 UTC; zeileis",
+      "Built": "R 3.4.3; ; 2018-02-08 01:09:07 UTC; unix"
+    },
+    "texreg": {
+      "Version": "1.36.23",
+      "Depends": "R (>= 2.15.0)",
+      "Imports": "methods, grDevices, graphics, stats",
+      "Suggests": "nlme, survival, network, ergm, lme4 (>= 1.0), btergm, Zelig\n(>= 5.0-16)",
+      "License": "GPL-2 | GPL-3",
+      "URL": "http://github.com/leifeld/texreg/",
+      "Packaged": "2017-03-03 17:23:30 UTC; philip",
+      "Built": "R 3.3.2; ; 2017-04-06 18:58:09 UTC; unix"
+    },
+    "xtable": {
+      "Version": "1.8-2",
+      "Depends": "R (>= 2.10.0)",
+      "Imports": "stats, utils",
+      "Suggests": "knitr, lsmeans, spdep, splm, sphet, plm, zoo, survival",
+      "License": "GPL (>= 2)",
+      "URL": "http://xtable.r-forge.r-project.org/",
+      "Packaged": "2016-02-02 02:58:02 UTC; dsco036",
+      "Built": "R 3.3.2; ; 2017-03-04 04:15:28 UTC; unix"
+    },
+    "data.table": {
+      "Version": "1.10.5",
+      "Depends": "R (>= 3.1.0)",
+      "Imports": "methods",
+      "Suggests": "bit64, curl, knitr, xts, nanotime, zoo, chron, reshape2,\ntestthat (>= 0.4), GenomicRanges",
+      "License": "MPL-2.0 | file LICENSE",
+      "URL": "http://r-datatable.com",
+      "Packaged": "2018-04-11 00:35:29 UTC; travis",
+      "Built": "R 3.4.3; x86_64-pc-linux-gnu; 2018-04-11 16:30:16 UTC; unix"
+    },
+    "pglm": {
+      "Version": "0.2-1",
+      "Depends": "R (>= 2.10), maxLik, plm",
+      "Imports": "statmod",
+      "Suggests": "lmtest, car",
+      "License": "GPL (>= 2)",
+      "URL": "https://cran.r-project.org/package=pglm",
+      "Packaged": "2017-10-30 07:45:08 UTC; rforge",
+      "Built": "R 3.4.3; ; 2018-05-01 15:46:52 UTC; unix"
+    },
+    "maxLik": {
+      "Version": "1.3-4",
+      "Depends": "R (>= 2.4.0), miscTools (>= 0.6-8), methods",
+      "Imports": "sandwich",
+      "Suggests": {},
+      "License": "GPL (>= 2)",
+      "URL": "http://www.maxLik.org",
+      "Packaged": "2015-11-09 03:33:54 UTC; siim",
+      "Built": "R 3.3.2; ; 2017-03-24 21:47:04 UTC; unix"
+    },
+    "miscTools": {
+      "Version": "0.6-22",
+      "Depends": "R (>= 2.14.0)",
+      "Imports": {},
+      "Suggests": "Ecdat (>= 0.1-5)",
+      "License": "GPL (>= 2)",
+      "URL": "http://www.micEcon.org",
+      "Packaged": "2016-11-25 07:44:12 UTC; arne",
+      "Built": "R 3.3.2; ; 2017-03-24 21:47:02 UTC; unix"
+    },
+    "plm": {
+      "Version": "1.6-6",
+      "Depends": "R (>= 3.1.0), Formula (>= 0.2-0), stats",
+      "Imports": "MASS, bdsmatrix, zoo, nlme, sandwich, lattice, lmtest, maxLik",
+      "Suggests": "AER, car, pcse, clusterSEs, clubSandwich, pglm, spdep, splm,\nstatmod, Ecdat, pder, stargazer, texreg, foreign",
+      "License": "GPL (>= 2)",
+      "URL": "https://cran.r-project.org/package=plm,\nhttps://r-forge.r-project.org/projects/plm/",
+      "Packaged": "2017-11-07 04:25:28 UTC; rforge",
+      "Built": "R 3.4.3; ; 2018-05-01 15:39:04 UTC; unix"
+    },
+    "Formula": {
+      "Version": "1.2-2",
+      "Depends": "R (>= 2.0.0), stats",
+      "Imports": {},
+      "Suggests": {},
+      "License": "GPL-2 | GPL-3",
+      "URL": {},
+      "Packaged": "2017-07-10 23:09:07 UTC; zeileis",
+      "Built": "R 3.4.3; ; 2018-02-08 01:01:29 UTC; unix"
+    },
+    "funchir": {
+      "Version": "0.1.6",
+      "Depends": "R (>= 3.2.2)",
+      "Imports": "data.table, jsonlite",
+      "Suggests": {},
+      "License": "GPL (>= 2)",
+      "URL": "https://github.com/MichaelChirico/funchir",
+      "Packaged": {},
+      "Built": "R 3.4.3; ; 2018-05-03 17:36:12 UTC; unix"
+    }
+  },
+  "loaded_via_namespace": {
+    "bdsmatrix": {
+      "Version": "1.3-3",
+      "Depends": "methods, R (>= 2.0.0)",
+      "Imports": {},
+      "Suggests": {},
+      "License": "LGPL-2",
+      "URL": {},
+      "Packaged": "2017-12-21 15:52:14 UTC; therneau",
+      "Built": "R 3.4.3; x86_64-pc-linux-gnu; 2018-05-01 15:39:02 UTC; unix"
+    },
+    "lattice": {
+      "Version": "0.20-35",
+      "Depends": "R (>= 3.0.0)",
+      "Imports": "grid, grDevices, graphics, stats, utils",
+      "Suggests": "KernSmooth, MASS, latticeExtra",
+      "License": "GPL (>= 2)",
+      "URL": "http://lattice.r-forge.r-project.org/",
+      "Packaged": "2017-03-25 11:25:40 UTC; deepayan",
+      "Built": "R 3.3.2; x86_64-pc-linux-gnu; 2017-04-06 18:57:09 UTC; unix"
+    },
+    "MASS": {
+      "Version": "7.3-49",
+      "Depends": "R (>= 3.1.0), grDevices, graphics, stats, utils",
+      "Imports": "methods",
+      "Suggests": "lattice, nlme, nnet, survival",
+      "License": "GPL-2 | GPL-3",
+      "URL": "http://www.stats.ox.ac.uk/pub/MASS4/",
+      "Packaged": "2018-02-23 05:49:55 UTC; ripley",
+      "Built": "R 3.4.3; x86_64-pc-linux-gnu; 2018-03-17 11:54:42 UTC; unix"
+    },
+    "grid": {
+      "Version": "3.4.3",
+      "Depends": {},
+      "Imports": "grDevices, utils",
+      "Suggests": "lattice",
+      "License": "Part of R 3.4.3",
+      "URL": {},
+      "Packaged": {},
+      "Built": "R 3.4.3; x86_64-pc-linux-gnu; 2017-12-01 04:19:01 UTC; unix"
+    },
+    "jsonlite": {
+      "Version": "1.5",
+      "Depends": "methods",
+      "Imports": {},
+      "Suggests": "httr, curl, plyr, testthat, knitr, rmarkdown, R.rsp, sp",
+      "License": "MIT + file LICENSE",
+      "URL": "https://arxiv.org/abs/1403.2805,\nhttps://www.opencpu.org/posts/jsonlite-a-smarter-json-encoder",
+      "Packaged": "2017-05-31 14:03:43 UTC; jeroen",
+      "Built": "R 3.4.3; x86_64-pc-linux-gnu; 2018-02-08 01:02:02 UTC; unix"
+    },
+    "nlme": {
+      "Version": "3.1-131.1",
+      "Depends": "R (>= 3.3.0)",
+      "Imports": "graphics, stats, utils, lattice",
+      "Suggests": "Hmisc, MASS",
+      "License": "GPL (>= 2) | file LICENCE",
+      "URL": {},
+      "Packaged": "2018-02-16 16:42:40 UTC; ripley",
+      "Built": "R 3.4.3; x86_64-pc-linux-gnu; 2018-03-17 11:54:47 UTC; unix"
+    },
+    "statmod": {
+      "Version": "1.4.30",
+      "Depends": "R (>= 1.6.1)",
+      "Imports": "stats, graphics",
+      "Suggests": "MASS, tweedie",
+      "License": "GPL-2 | GPL-3",
+      "URL": {},
+      "Packaged": "2017-06-17 23:53:15 UTC; smyth",
+      "Built": "R 3.4.3; x86_64-pc-linux-gnu; 2018-02-08 01:03:56 UTC; unix"
+    },
+    "tools": {
+      "Version": "3.4.3",
+      "Depends": {},
+      "Imports": {},
+      "Suggests": "codetools, methods, xml2, curl",
+      "License": "Part of R 3.4.3",
+      "URL": {},
+      "Packaged": {},
+      "Built": "R 3.4.3; x86_64-pc-linux-gnu; 2017-12-01 04:18:57 UTC; unix"
+    },
+    "yaml": {
+      "Version": "2.1.18",
+      "Depends": {},
+      "Imports": {},
+      "Suggests": "testthat",
+      "License": "BSD_3_clause + file LICENSE",
+      "URL": "https://github.com/viking/r-yaml/",
+      "Packaged": "2018-03-08 17:16:23 UTC; stephej1",
+      "Built": "R 3.4.3; x86_64-pc-linux-gnu; 2018-03-17 11:56:15 UTC; unix"
+    },
+    "compiler": {
+      "Version": "3.4.3",
+      "Depends": {},
+      "Imports": {},
+      "Suggests": {},
+      "License": "Part of R 3.4.3",
+      "URL": {},
+      "Packaged": {},
+      "Built": "R 3.4.3; ; 2017-12-01 04:18:57 UTC; unix"
+    }
+  },
+  "write_package_time": "2018-05-03 17:42:08 UTC"
+}
