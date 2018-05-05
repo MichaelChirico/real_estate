@@ -409,6 +409,71 @@ tbl <- c(tbl[c(1L:(idx - 2L), idx)], "\\hline",
 
 cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 
+# TABLE 7: Three Month Impact of Collection ``Nudges"* ####
+note = 
+  paste('\\scriptsize* Sample Size are the number of single property',
+        'tax payers in the treatment group.  Total Taxes Owed is the',
+        ' total taxes owed by single property tax payers in the',
+        'treatment group. New Payers equals the new payers after three',
+        'months computed as the estimated increase in rate of compliance of',
+        'those receiving the letter over those in the holdout sample as',
+        'reported in Table 2; for example, for the reminder letter the number',
+        'of new payers equals 95 = .039 x2,419.  Revenue per letter for each',
+        'treatment equals the median new revenue collected from those who',
+        'received a treatment letter and made some payment (=\\$738/letter)',
+        'times the three month increase in compliance from each treatment',
+        'letter; for example for the reminder letter the median estimated',
+        'revenue per letter equals \\$28.79 = .039x\\$738.  New revenues for',
+        'each treatment equals the revenue/letter times the number of single',
+        'owner properties receiving a treatment letter: for example, for the',
+        'reminder letter the estimated total new revenues equals \\$69,643 =',
+        '\\$28.79x2,419.  New \\% of Taxes Paid equals New Revenues Divided by',
+        'Total Taxes Owed; for example, for the reminder letter .023 =',
+        '\\$69,643/\\$3,038,000.')
+tbl = capture.output(print(xtable(
+  #Use keyby to make sure the output is sorted and Holdout comes first
+  owners[(unq_own), keyby = treat8,
+         .(N = .N, ep = mean(ever_paid_sep), owed = sum(total_due)/1e6), 
+         #Express relative to Holdout
+         ][ , {
+           ep_holdout = .SD[1L, ep]
+           .SD[-1L, {
+             #treatment delta
+             delta = ep - ep_holdout
+             new_payers = round(delta*N)
+             #Get median positive payment by December
+             median_pos_pmt = owners[(unq_own & total_paid_sep > 0), 
+                                     median(total_paid_sep)]
+             rev_per_letter = delta * median_pos_pmt
+             new_revenue = N * rev_per_letter / 1e6
+             NEW_REVENUE = sum(new_revenue)
+             OWED = sum(owed)
+             .(Treatment = c(as.character(treat8), 'Totals'), 
+                `Sample` = prettyNum(c(N, sum(N)), big.mark = ','),
+                `Total Taxes` = sprintf('$%.3f M', c(owed, OWED)),
+                `New` = c(new_payers, sum(new_payers)),
+                `Revenue/` = c(dol.form(rev_per_letter,  dig = 2L), '-'), 
+                `New` = dol.form(c(new_revenue, NEW_REVENUE)),
+                `New % of Taxes` = 
+                  round(c(new_revenue/owed, NEW_REVENUE/OWED), 3L))}]}],
+  caption = "Three Month Impact of Collection ``Nudges''*",
+  label = "sh_rev", align = "rlcccccc",
+  digits = c(rep(0L, 7L), 3L)), hline.after = c(-1L, 0L, 7L, 8L),
+  table.placement = 'htbp', include.rownames = FALSE,
+  comment = FALSE, caption.placement = "top"))
+
+# add second header row from saving horizontal space
+idx1 = grep('Treatment.*Total Taxes', tbl)
+idx2 = grep('end{tabular}', tbl, fixed = TRUE)
+
+tbl = c(tbl[1:idx1], 
+        ' & Size & Owed & Payers & Letters & Revenues & Paid \\\\',
+        tbl[(idx1 + 1L):(idx2 - 1L)], 
+        sprintf('\\multicolumn{7}{p{1\\textwidth}}{%s}', note),
+        tbl[idx:length(tbl)])
+
+cat(tbl, sep = '\n', file = tex_file, append = TRUE)
+
 # TABLE 3: Short-term Reults: Relative to Generic Reminder ####
 tbl <- capture.output(texreg(lapply(lapply(expression(
   `Payment Agreement` = agreement,`Water Delinquency` = waterdel),
@@ -436,64 +501,6 @@ tbl <- c(tbl[1L:(idx - 3L)],
          "\\hline", tbl[(idx + 2L):length(tbl)])
 
 cat(tbl, sep = "\n")
-
-
-# TABLE 5: Three Month Impact of Collection ``Nudges"* ####
-note = 
-  paste('\\scriptsize* Sample Size are the number of single property',
-        'tax payers in the treatment group.  Total Taxes Owed is the',
-        ' total taxes owed by single property tax payers in the',
-        'treatment group. New Payers equals the new payers after three',
-        'months computed as the estimated increase in rate of compliance of',
-        'those receiving the letter over those in the holdout sample as',
-        'reported in Table 2; for example, for the reminder letter the number',
-        'of new payers equals 95 = .039 x2,419.  Revenue per letter for each',
-        'treatment equals the median new revenue collected from those who',
-        'received a treatment letter and made some payment (=\\$738/letter)',
-        'times the three month increase in compliance from each treatment',
-        'letter; for example for the reminder letter the median estimated',
-        'revenue per letter equals \\$28.79 = .039x\\$738.  New revenues for',
-        'each treatment equals the revenue/letter times the number of single',
-        'owner properties receiving a treatment letter: for example, for the',
-        'reminder letter the estimated total new revenues equals \\$69,643 =',
-        '\\$28.79x2,419.  New \\% of Taxes Paid equals New Revenues Divided by',
-        'Total Taxes Owed; for example, for the reminder letter .023 =',
-        '\\$69,643/\\$3,038,000.')
-print(xtable(
-  #Use keyby to make sure the output is sorted and Holdout comes first
-  owners[(unq_own), .(.N, ep = mean(ever_paid_sep), 
-                      owed = sum(total_due)/1e6), keyby = treat8
-         #Express relative to Holdout
-         ][ , {
-           hld = .SD[1L]
-           .SD[-1L, {
-             #treatment delta
-             delta = ep - hld$ep
-             np = round(delta*N)
-             #Get median positive payment by December
-             mpp = owners[(unq_own & total_paid_sep > 0), 
-                          median(total_paid_sep)]
-             rev_per = delta * mpp
-             newrev = N * rev_per
-             .(Treatment = c(paste0(treat8), 'Totals'), 
-                `Sample Size` = prettyNum(c(N, sum(N)), big.mark = ','),
-                `Total Taxes Owed` = sprintf('$%.3f M', c(owed, sum(owed))),
-                `New Payers` = c(np, sum(np)),
-                `Revenue/Letters` = c(dol.form(rev_per,  dig = 2L), '-'), 
-                `New Revenues` = dol.form(c(newrev, sum(newrev))),
-                `New % of Taxes Paid` = 
-                  round(c(newrev/owed, sum(newrev)/sum(owed)), 3L))}]}],
-  caption = "Three Month Impact of Collection ``Nudges''*",
-  label = "sh_rev", align = "rlcccccc",
-  digits = c(0, 0, 0, 0, 0, 0, 0, 3)), hline.after = c(0L, 1L),
-  add.to.row = list(pos = list(7L, 8L),
-                    command = c('\\hline\n   \\hline\n',
-                                paste0('\\hline\n',
-                                       '\\multicolumn{7}{p{1\\textwidth}}{',
-                                       note, '}\n'))),
-  table.placement = 'htb', include.rownames = FALSE,
-  comment = FALSE, caption.placement = "top",
-  file = tex_file, append = TRUE)
 
 # TABLE A1: Robustness Analysis: Relative to Reminder (All Owners) ####
 tbl <- capture.output(texreg(lapply(lapply(expression(
