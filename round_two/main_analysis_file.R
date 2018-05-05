@@ -17,7 +17,7 @@ library(lmtest)     # for testing using robust SEs
 
 write.packages('logs/round_two/analysis_session.txt')
 
-tf = 'round_two/tables.tex'
+tex_file = 'round_two/tables.tex'
 
 ##Exclude the top two blocks?
 excludeTopBlocks = FALSE
@@ -80,7 +80,7 @@ cat("\\begin{sidewaystable}[htbp]",
     "\\label{balance}",
     "\\vspace{10mm}",
     "\\begin{tabular}{lrrrrrrrrc}", 
-    sep = "\n", file = tf)
+    sep = "\n", file = tex_file)
 
 tbl = owners[(unq_own), {
   c(list(`Amount Due` = 
@@ -137,7 +137,7 @@ print.xtable(xtable(tbl), include.rownames = FALSE,
              #  is also why we use tex = TRUE for dol.form.
              sanitize.text.function = identity, only.contents = TRUE,
              floating = TRUE, hline.after = c(0L, 1L, seprows),
-             file = tf, append = TRUE)
+             file = tex_file, append = TRUE)
 
 cat("\\hline",
     "\\multicolumn{10}{l}{\\scriptsize{$p$-values in rows 1-2 are $F$-test",
@@ -148,7 +148,7 @@ cat("\\hline",
     sprintf("\\multicolumn{10}{l}{\\scriptsize{%s}} \\\\",
             paste(paste(unclass(v), v, sep = ': '), collapse = ', ')),
     "\\end{tabular}",
-    "\\end{sidewaystable}", sep = "\n", file = tf, append = TRUE)
+    "\\end{sidewaystable}", sep = "\n", file = tex_file, append = TRUE)
 
 # TABLE 2: Short-term Linear Probability Model Estimates ####
 regs = lapply(expression(
@@ -206,7 +206,7 @@ tbl = c(tbl[1:(idx - 2L)],
                       "remaining figures relative to this.")),
         tbl[idx:length(tbl)])
 
-cat(tbl, sep = "\n", file = tf, append = TRUE)
+cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 
 # TABLE 3: Short-term Reults: Relative to Generic Reminder ####
 powners_unq_all = 
@@ -276,7 +276,7 @@ tbl = c(tbl[1:(idx - 2L)],
         tbl[idx:length(tbl)])
 
 
-cat(tbl, sep = "\n", file = tf, append = TRUE)
+cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 
 # TABLE 4: Long-Term Linear Probability Model Estimates ####
 regs = lapply(expression(
@@ -319,9 +319,9 @@ tbl = c(tbl[1:(idx - 2L)],
                       "property dissolution for three properties.")),
         tbl[idx:length(tbl)])
 
-cat(tbl, sep = "\n", file = tf, append = TRUE)
+cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 
-# TABLE 5: Treatment Effect Heterogeneity by Debt Quantile
+# TABLE 5: Treatment Effect Heterogeneity by Debt Quantile #### 
 ## ** note -- the SEs in this table are robust,
 ##            even though this is not mentioned in the footnote **
 owners[(unq_own), debt_quartile := create_quantiles(total_due, 4L)]
@@ -385,16 +385,16 @@ tbl <- c(tbl[1L:idx1],
          "\\hline", tbl[(idx1 + 1L):idx2], "\\hline",
          tbl[(idx2 + 2L):length(tbl)])
 
-cat(tbl, sep = "\n", file = tf, append = TRUE)
+cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 
-# TABLE 4.5: Long-Term Linear Probability Model Estimates ####
+# TABLE 6: Liquidity Linear Probability Model Estimates ####
 tbl <- capture.output(texreg(lapply(lapply(expression(
-  `Payment Agreement` = agreement,`Water Delinquency` = waterdel),
+  `Payment Agreement` = agreement, `Water Delinquency` = waterdel),
   function(x) owners[(unq_own), lm(I(100 * eval(x)) ~ treat8)]),
   rename_coef, nn = 8), stars = c(.01, .05, .1), 
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L,
-  label = "ltmpme", float.pos = 'htb',
+  label = "waterrelholdout", float.pos = 'htb',
   caption = "Liquidity Linear Probability Model Estimates",
   custom.note = "%stars. Holdout values in levels; " %+% 
     "remaining figures relative to this"))
@@ -404,14 +404,10 @@ idx <- grep("^Holdout", tbl)
 
 tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
 
-tbl <- c(tbl[1L:(idx - 3L)],
-         " & \\multicolumn{2}{c}{Payment Agreement} & " %+% 
-           "\\multicolumn{2}{c}{Water Delinquency} \\\\",
-         tbl[c(idx - 2L, idx)],
-         "\\hline", tbl[(idx + 2L):length(tbl)])
+tbl <- c(tbl[c(1L:(idx - 2L), idx)], "\\hline", 
+         tbl[(idx + 2L):length(tbl)])
 
-cat(tbl, sep = "\n")
-
+cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 
 # TABLE 3: Short-term Reults: Relative to Generic Reminder ####
 tbl <- capture.output(texreg(lapply(lapply(expression(
@@ -497,7 +493,7 @@ print(xtable(
                                        note, '}\n'))),
   table.placement = 'htb', include.rownames = FALSE,
   comment = FALSE, caption.placement = "top",
-  file = tf, append = TRUE)
+  file = tex_file, append = TRUE)
 
 # TABLE A1: Robustness Analysis: Relative to Reminder (All Owners) ####
 tbl <- capture.output(texreg(lapply(lapply(expression(
@@ -526,7 +522,7 @@ tbl <- c(tbl[1L:(idx - 3L)],
          tbl[c(idx - 2L, idx)],
          "\\hline", tbl[(idx + 2L):length(tbl)])
 
-cat(tbl, sep = "\n", file = tf, append = TRUE)
+cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 
 # Table A2: Balance on Observables ####
 {cat("\\begin{sidewaystable}[ht]",
@@ -536,7 +532,7 @@ cat(tbl, sep = "\n", file = tf, append = TRUE)
     "\\begin{tabular}{lrrrrrrrc}", 
     "\\hline",
     "\\multicolumn{9}{c}{Unary Owners} \\\\", 
-    sep = "\n", file = tf, append = TRUE)
+    sep = "\n", file = tex_file, append = TRUE)
 
 ##Top Section: Unique Owners Only
 print.xtable(xtable(cbind(t(
@@ -559,12 +555,12 @@ print.xtable(xtable(cbind(t(
   #  is also why we use tex = TRUE for dol.form.
   sanitize.text.function = identity, only.contents = TRUE,
   floating = TRUE, hline.after = c(0L, 1L),
-  file = tf, append = TRUE)
+  file = tex_file, append = TRUE)
 
 ##Bottom Section: Exclude Holdout Only
 cat("\\hline",
     "\\multicolumn{9}{c}{Unary and Multiple Owners} \\\\", 
-    sep = "\n", file = tf, append = TRUE)
+    sep = "\n", file = tex_file, append = TRUE)
 
 print.xtable(xtable(cbind(t(
   owners[(!holdout),
@@ -588,7 +584,7 @@ print.xtable(xtable(cbind(t(
   include.colnames = FALSE, comment = FALSE, 
   sanitize.text.function = identity, 
   only.contents = TRUE, hline.after = c(0L, 1L),
-  file = tf, append = TRUE)
+  file = tex_file, append = TRUE)
 
 cat("\\hline",
     "\\multicolumn{9}{l}" %+% 
@@ -597,7 +593,7 @@ cat("\\hline",
       "variable on treatment dummies. A $\\chi^2$ " %+% 
       "test was used for the count of owners.}} \\\\",
     "\\end{tabular}",
-    "\\end{sidewaystable}", sep = "\n", file = tf, append = TRUE)}
+    "\\end{sidewaystable}", sep = "\n", file = tex_file, append = TRUE)}
 
 # TABLE A3: Short-Term Logistic Model Estimates (Unary Owners) ####
 tbl <- capture.output(texreg(lapply(lapply(expression(
@@ -625,7 +621,7 @@ tbl <- c(tbl[1L:(idx - 3L)],
          tbl[c(idx - 2L, idx)],
          "\\hline", tbl[(idx + 2L):length(tbl)])
 
-cat(tbl, sep = "\n", file = tf, append = TRUE)
+cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 
 # TABLE A4: Logit Estimates Including Multiple Owners ####
 tbl <- capture.output(texreg(lapply(
@@ -650,4 +646,4 @@ tbl <- c(tbl[1L:idx],
            "\\multicolumn{2}{c}{Unary Owners} \\\\",
          tbl[(idx + 1L):length(tbl)])
 
-cat(tbl, sep = "\n",file = tf, append = TRUE)
+cat(tbl, sep = "\n",file = tex_file, append = TRUE)
