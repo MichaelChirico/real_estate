@@ -14,6 +14,7 @@ library(xtable)     # for table output
 library(texreg)     # for regression output
 library(sandwich)   # for robust SEs
 library(lmtest)     # for testing using robust SEs
+library(magrittr)   # for beautifying hyperfunctional code
 
 write.packages('logs/round_two/analysis_session.txt')
 
@@ -24,15 +25,9 @@ excludeTopBlocks = FALSE
 
 ##Specialized Functions
 ###Get the p-value on the full-regression F-test of an OLS call
-lmfp <- function(formula){rename_coef <- function(obj){
-  nms <- names(obj$coefficients)
-  nms[nms == "(Intercept)"] <- "Reminder"
-  nms <- gsub("treat7", "", nms)
-  names(obj$coefficients) <- nms
-  obj
-}
+lmfp <- function(formula){
   #extract F-statistic & Degrees of Freedom from LM call
-  mdf <- summary.lm(do.call("lm", list(formula = formula)))$fstatistic
+  mdf <- summary.lm(do.call(lm, list(formula = formula)))$fstatistic
   #copied (ported) from print.summary.lm
   unname(pf(mdf[1L], df1 = mdf[2L], df2 = mdf[3L], lower.tail = FALSE))
 }
@@ -52,6 +47,23 @@ rename_coef <- function(obj, nn, name_only = FALSE){
   names(obj$coefficients) <- nms
   obj
 }
+
+rename_coef_qtl = function(obj) {
+  nm = names(obj$coefficients)
+  int = grep('Intercept', nm)
+  qint = grep('.*quartile[1-4]$', nm)
+  # for brevity only keep lien/sheriff entries
+  keep = grep('quartile.*(Lien|Sheriff)', nm)
+  nm[-c(int, qint, keep)] = 'x'
+  nm[int] = 'Holdout in Quartile 1'
+  nm[qint] = gsub('.*quartile([1-4])$', 
+                  'Holdout in Quartile \\1', nm[qint])
+  nm[keep] = gsub('.*quartile([1-4]):.*8(.*)$', 
+                  '\\2 in Quartile \\1', nm[keep])
+  names(obj$coefficients) = nm
+  obj
+}
+
 
 #Data import
 #  Importing directly from cleaned analysis files created with data_cleaning.R.
@@ -111,9 +123,11 @@ tbl = cbind(t(tbl),
               `Ownership Tenure` = 'tenure',
               `Ownership Tenure` = 'tenure'),
               function(x) owners[(unq_own), lmfp(get(x) ~ treat8)]),
-              owners[(unq_own), c(round(chisq.test(table(
-                azavea_section, treat8))$p.value, 2L),
-                rep(NA, uniqueN(azavea_section) - 1L))],
+              owners[(unq_own), {
+                pv = table(azavea_section, treat8) %>% 
+                  chisq.test %>% extract2('p.value') %>% round(2L)
+                c(pv, rep(NA, uniqueN(azavea_section) - 1L))
+              }],
               #not targeting owners, so exclude
               `\\# Owners` = NA)))
 
@@ -325,22 +339,6 @@ cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 ## ** note -- the SEs in this table are robust,
 ##            even though this is not mentioned in the footnote **
 owners[(unq_own), debt_quartile := create_quantiles(total_due, 4L)]
-
-rename_coef_qtl = function(obj) {
-  nm = names(obj$coefficients)
-  int = grep('Intercept', nm)
-  qint = grep('.*quartile[1-4]$', nm)
-  # for brevity only keep lien/sheriff entries
-  keep = grep('quartile.*(Lien|Sheriff)', nm)
-  nm[-c(int, qint, keep)] = 'x'
-  nm[int] = 'Holdout in Quartile 1'
-  nm[qint] = gsub('.*quartile([1-4])$', 
-                  'Holdout in Quartile \\1', nm[qint])
-  nm[keep] = gsub('.*quartile([1-4]):.*8(.*)$', 
-                  '\\2 in Quartile \\1', nm[keep])
-  names(obj$coefficients) = nm
-  obj
-}
 
 tbl = capture.output({
   owners[(unq_own), {
