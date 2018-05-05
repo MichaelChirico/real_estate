@@ -321,6 +321,72 @@ tbl = c(tbl[1:(idx - 2L)],
 
 cat(tbl, sep = "\n", file = tf, append = TRUE)
 
+# TABLE 5: Treatment Effect Heterogeneity by Debt Quantile
+## ** note -- the SEs in this table are robust,
+##            even though this is not mentioned in the footnote **
+owners[(unq_own), debt_quartile := create_quantiles(total_due, 4L)]
+
+rename_coef_qtl = function(obj) {
+  nm = names(obj$coefficients)
+  int = grep('Intercept', nm)
+  qint = grep('.*quartile[1-4]$', nm)
+  # for brevity only keep lien/sheriff entries
+  keep = grep('quartile.*(Lien|Sheriff)', nm)
+  nm[-c(int, qint, keep)] = 'x'
+  nm[int] = 'Holdout in Quartile 1'
+  nm[qint] = gsub('.*quartile([1-4])$', 
+                  'Holdout in Quartile \\1', nm[qint])
+  nm[keep] = gsub('.*quartile([1-4]):.*8(.*)$', 
+                  '\\2 in Quartile \\1', nm[keep])
+  names(obj$coefficients) = nm
+  obj
+}
+
+tbl = capture.output({
+  owners[(unq_own), {
+    regs = lapply(expression(
+      `One` = 100*ever_paid_jul, `Three` = 100*ever_paid_sep,
+      `Six` = 100*ever_paid_dec, `One` = total_paid_jul,
+      `Three` = total_paid_sep, `Six` = total_paid_dec),
+      function(outcome) 
+        rename_coef_qtl(lm(eval(outcome) ~ debt_quartile/treat8)))
+    ses = lapply(regs, function(r) sqrt(diag(vcovHC(r))))
+    pvals = lapply(regs, function(r)
+      coeftest(r, vcovHC(r))[ , 'Pr(>|t|)'])
+    texreg(regs, omit.coef = 'x', stars = c(.01, .05, .1),
+           override.se = ses, override.pvalues = pvals,
+           include.rsquared = FALSE, caption.above = TRUE,
+           include.adjrs = FALSE, include.rmse = FALSE,
+           digits = 1L, label = 'lpm_hetero', float.pos = 'htbp',
+           caption = 'Treatment Effect Heterogeneity by Debt Quantile',
+           custom.note = "\\parbox{.75\\linewidth}{%stars. Holdout values " %+% 
+             "for first quartile in levels; other holdout figures are " %+% 
+             "relative to this and remaining figures are " %+% 
+             "treatment effects for the stated treatment vs. holdout " %+% 
+             "owners in the same quartile.}")
+    }]
+})
+
+## add quantifier row (split for horizontal brevity)
+idx = grep('One.*Three', tbl)
+tbl = c(tbl[1:idx], 
+        ' & Month & Months & Months & Month & Months & Months \\\\',
+        tbl[(idx + 1):length(tbl)])
+
+## Replace Holdout SEs with horizontal rule, add header for EP vs. TP
+idx1 <- grep("Month", tbl) - 2L
+idx2 <- grep("^Holdout.*Quartile\\s1", tbl)
+
+tbl[idx2] <- gsub("\\^\\{[*]*\\}", "", tbl[idx2])
+
+tbl <- c(tbl[1L:idx1],
+         paste(" & \\multicolumn{3}{c}{Ever Paid} &",
+               "\\multicolumn{3}{c}{Total Paid} \\\\"),
+         "\\hline", tbl[(idx1 + 1L):idx2], "\\hline",
+         tbl[(idx2 + 2L):length(tbl)])
+
+cat(tbl, sep = "\n", file = tf, append = TRUE)
+
 # TABLE 4.5: Long-Term Linear Probability Model Estimates ####
 tbl <- capture.output(texreg(lapply(lapply(expression(
   `Payment Agreement` = agreement,`Water Delinquency` = waterdel),

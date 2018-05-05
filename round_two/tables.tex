@@ -130,6 +130,49 @@ Num. obs.    & 19039        & 19039        & 19039         & 19036        & 1903
 \label{ltmpme}
 \end{center}
 \end{table}
+
+\begin{table}[htbp]
+\caption{Treatment Effect Heterogeneity by Debt Quantile}
+\begin{center}
+\begin{tabular}{l c c c c c c }
+\hline
+ & \multicolumn{3}{c}{Ever Paid} & \multicolumn{3}{c}{Total Paid} \\
+\hline
+ & One & Three & Six & One & Three & Six \\
+ & Month & Months & Months & Month & Months & Months \\
+\hline
+Holdout in Quartile 1 & $38.1$  & $56.4$  & $74.7$ & $118.0$ & $152.0$  & $184.9$  \\
+\hline
+Holdout in Quartile 2 & $-9.8^{***}$  & $-11.8^{***}$ & $-7.4^{***}$ & $20.1$        & $97.5^{***}$   & $217.4^{***}$  \\
+                      & $(2.9)$       & $(3.1)$       & $(2.8)$      & $(32.3)$      & $(33.6)$       & $(33.5)$       \\
+Holdout in Quartile 3 & $-9.9^{***}$  & $-5.2^{*}$    & $-0.1$       & $134.1^{***}$ & $388.8^{***}$  & $658.5^{***}$  \\
+                      & $(2.9)$       & $(3.1)$       & $(2.7)$      & $(38.6)$      & $(39.5)$       & $(39.3)$       \\
+Holdout in Quartile 4 & $-10.7^{***}$ & $-2.5$        & $2.2$        & $691.1^{***}$ & $1494.0^{***}$ & $2193.8^{***}$ \\
+                      & $(2.9)$       & $(3.1)$       & $(2.7)$      & $(92.1)$      & $(126.0)$      & $(129.1)$      \\
+Lien in Quartile 1    & $13.5^{***}$  & $9.9^{***}$   & $3.4$        & $14.6$        & $13.4$         & $5.3$          \\
+                      & $(2.9)$       & $(2.9)$       & $(2.5)$      & $(38.4)$      & $(38.9)$       & $(38.8)$       \\
+Lien in Quartile 2    & $8.9^{***}$   & $13.0^{***}$  & $8.0^{***}$  & $52.7^{***}$  & $68.8^{***}$   & $52.5^{***}$   \\
+                      & $(2.8)$       & $(2.9)$       & $(2.7)$      & $(16.4)$      & $(19.4)$       & $(19.0)$       \\
+Lien in Quartile 3    & $6.4^{**}$    & $7.2^{**}$    & $-0.3$       & $79.9^{**}$   & $67.3^{*}$     & $-5.2$         \\
+                      & $(2.8)$       & $(3.0)$       & $(2.6)$      & $(33.1)$      & $(34.8)$       & $(34.4)$       \\
+Lien in Quartile 4    & $7.0^{**}$    & $6.2^{**}$    & $3.5$        & $293.6^{*}$   & $289.4$        & $226.9$        \\
+                      & $(2.8)$       & $(3.0)$       & $(2.5)$      & $(163.5)$     & $(199.9)$      & $(204.4)$      \\
+Sheriff in Quartile 1 & $10.7^{***}$  & $10.7^{***}$  & $4.9^{*}$    & $3.7$         & $1.2$          & $-2.9$         \\
+                      & $(3.0)$       & $(2.9)$       & $(2.5)$      & $(34.4)$      & $(34.6)$       & $(34.7)$       \\
+Sheriff in Quartile 2 & $7.4^{***}$   & $10.0^{***}$  & $5.4^{**}$   & $39.2^{**}$   & $50.2^{**}$    & $28.5$         \\
+                      & $(2.8)$       & $(3.0)$       & $(2.7)$      & $(16.2)$      & $(19.5)$       & $(19.2)$       \\
+Sheriff in Quartile 3 & $5.8^{**}$    & $7.7^{***}$   & $3.0$        & $89.0^{***}$  & $65.6^{*}$     & $13.8$         \\
+                      & $(2.8)$       & $(3.0)$       & $(2.5)$      & $(32.4)$      & $(35.1)$       & $(33.8)$       \\
+Sheriff in Quartile 4 & $5.1^{*}$     & $6.2^{**}$    & $1.1$        & $114.6$       & $215.6$        & $184.3$        \\
+                      & $(2.8)$       & $(3.0)$       & $(2.5)$      & $(123.6)$     & $(177.4)$      & $(191.7)$      \\
+\hline
+Num. obs.             & 19039         & 19039         & 19039        & 19039         & 19039          & 19039          \\
+\hline
+\multicolumn{7}{l}{\scriptsize{\parbox{.75\linewidth}{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. Holdout values for first quartile in levels; other holdout figures are relative to this and remaining figures are treatment effects for the stated treatment vs. holdout owners in the same quartile.}}}
+\end{tabular}
+\label{lpm_hetero}
+\end{center}
+\end{table}
 \begin{table}[htb]
 \centering
 \caption{Three Month Impact of Collection ``Nudges''*} 
