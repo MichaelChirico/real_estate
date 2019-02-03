@@ -140,7 +140,7 @@ tbl[sdrows, pvcol] = ''
 tbl = cbind(gsub('Philadelphia', 'Philly', 
                  rownames(tbl), fixed = TRUE), tbl)
 tbl[sdrows, 1L] = NA
-tbl[sdrows[1:3], 1L] = c('(June)', 'Value (\\$1,000)', '(Years)')
+tbl[sdrows[1:3], 1L] = c('(June)', 'Value', 'Years')
 dimnames(tbl) = list(NULL, NULL)
 
 seprows = grep('Center City', rownames(tbl)) + c(-1L, 5L)
@@ -157,8 +157,9 @@ cat("\\hline",
     "\\multicolumn{10}{l}{\\scriptsize{$p$-values in rows 1-2 are $F$-test",
     "    $p$-values from regressing each variable on treatment dummies. A",
     "    $\\chi^2$ test was used for the geographic distribution. }} \\\\",
-    sprintf("\\multicolumn{10}{l}{\\scriptsize{ %s }} \\\\",
-            "Standard deviations in parentheses."),
+    sprintf("\\multicolumn{10}{l}{\\scriptsize{ %s. %s }} \\\\",
+            "Standard deviations in parentheses",
+            "Property values are reported in \\$1000"),
     sprintf("\\multicolumn{10}{l}{\\scriptsize{%s}} \\\\",
             paste(paste(unclass(v), v, sep = ': '), collapse = ', ')),
     "\\end{tabular}",

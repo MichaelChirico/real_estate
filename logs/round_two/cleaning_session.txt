@@ -1,7 +1,7 @@
 {
   "r_version": {
     "platform": "x86_64-pc-linux-gnu (64-bit)",
-    "version.string": "R version 3.4.3 (2017-11-30)"
+    "version.string": "R version 3.5.2 (2018-12-20)"
   },
   "locale": {
     "LC_CTYPE": "en_US.UTF-8",
@@ -11,13 +11,13 @@
     "LC_MONETARY": "en_US.UTF-8",
     "LC_MESSAGES": "en_US.UTF-8",
     "LC_PAPER": "en_US.UTF-8",
-    "LC_NAME": "C",
-    "LC_ADDRESS": "C",
-    "LC_TELEPHONE": "C",
+    "LC_NAME": "",
+    "LC_ADDRESS": "",
+    "LC_TELEPHONE": "",
     "LC_MEASUREMENT": "en_US.UTF-8",
-    "LC_IDENTIFICATION": "C"
+    "LC_IDENTIFICATION": ""
   },
-  "running": "Ubuntu 14.04.3 LTS",
+  "running": "Ubuntu 14.04.5 LTS",
   "linear_algebra": {
     "matrix_products": "default",
     "blas": "/usr/lib/openblas-base/libblas.so.3",
@@ -26,76 +26,66 @@
   "base_packages": ["stats", "graphics", "grDevices", "utils", "datasets", "methods", "base"],
   "other_packages": {
     "data.table": {
-      "Version": "1.10.5",
+      "Version": "1.12.0",
       "Depends": "R (>= 3.1.0)",
       "Imports": "methods",
-      "Suggests": "bit64, curl, knitr, xts, nanotime, zoo, chron, reshape2,\ntestthat (>= 0.4), GenomicRanges",
+      "Suggests": "bit64, curl, R.utils, knitr, xts, nanotime, zoo",
       "License": "MPL-2.0 | file LICENSE",
       "URL": "http://r-datatable.com",
-      "Packaged": "2018-04-11 00:35:29 UTC; travis",
-      "Built": "R 3.4.3; x86_64-pc-linux-gnu; 2018-04-11 16:30:16 UTC; unix"
+      "Packaged": "2019-01-12 04:09:37.913 UTC; mdowle",
+      "Built": "R 3.5.2; x86_64-pc-linux-gnu; 2019-02-03 15:30:11 UTC; unix"
     },
     "readxl": {
-      "Version": "1.0.0",
+      "Version": "1.2.0",
       "Depends": {},
-      "Imports": "cellranger, Rcpp (>= 0.11.6), tibble (>= 1.1)",
+      "Imports": "cellranger, progress, Rcpp (>= 0.12.18), tibble (>= 1.3.1),\nutils",
       "Suggests": "covr, knitr, rmarkdown, rprojroot (>= 1.1), testthat",
       "License": "GPL-3",
       "URL": "http://readxl.tidyverse.org, https://github.com/tidyverse/readxl",
-      "Packaged": "2017-04-18 06:15:07 UTC; jenny",
-      "Built": "R 3.3.2; x86_64-pc-linux-gnu; 2017-04-21 18:39:41 UTC; unix"
+      "Packaged": "2018-12-19 21:54:40 UTC; jenny",
+      "Built": "R 3.5.2; x86_64-pc-linux-gnu; 2019-02-03 15:32:49 UTC; unix"
     },
     "funchir": {
-      "Version": "0.1.6",
+      "Version": "0.1.8",
       "Depends": "R (>= 3.2.2)",
       "Imports": "data.table, jsonlite",
       "Suggests": {},
       "License": "GPL (>= 2)",
       "URL": "https://github.com/MichaelChirico/funchir",
-      "Packaged": {},
-      "Built": "R 3.4.3; ; 2018-05-03 17:36:12 UTC; unix"
+      "Packaged": "2019-02-03 15:41:22 UTC; michael",
+      "Built": "R 3.5.2; ; 2019-02-03 15:41:29 UTC; unix"
     }
   },
   "loaded_via_namespace": {
     "compiler": {
-      "Version": "3.4.3",
+      "Version": "3.5.2",
       "Depends": {},
       "Imports": {},
       "Suggests": {},
-      "License": "Part of R 3.4.3",
+      "License": "Part of R 3.5.2",
       "URL": {},
       "Packaged": {},
-      "Built": "R 3.4.3; ; 2017-12-01 04:18:57 UTC; unix"
+      "Built": "R 3.5.2; ; 2018-12-20 17:08:24 UTC; unix"
     },
     "tools": {
-      "Version": "3.4.3",
+      "Version": "3.5.2",
       "Depends": {},
       "Imports": {},
       "Suggests": "codetools, methods, xml2, curl",
-      "License": "Part of R 3.4.3",
+      "License": "Part of R 3.5.2",
       "URL": {},
       "Packaged": {},
-      "Built": "R 3.4.3; x86_64-pc-linux-gnu; 2017-12-01 04:18:57 UTC; unix"
-    },
-    "yaml": {
-      "Version": "2.1.18",
-      "Depends": {},
-      "Imports": {},
-      "Suggests": "testthat",
-      "License": "BSD_3_clause + file LICENSE",
-      "URL": "https://github.com/viking/r-yaml/",
-      "Packaged": "2018-03-08 17:16:23 UTC; stephej1",
-      "Built": "R 3.4.3; x86_64-pc-linux-gnu; 2018-03-17 11:56:15 UTC; unix"
+      "Built": "R 3.5.2; x86_64-pc-linux-gnu; 2018-12-20 17:08:24 UTC; unix"
     },
     "Rcpp": {
-      "Version": "0.12.16",
+      "Version": "1.0.0",
       "Depends": "R (>= 3.0.0)",
       "Imports": "methods, utils",
       "Suggests": "RUnit, inline, rbenchmark, knitr, rmarkdown, pinp, pkgKitten\n(>= 0.1.2)",
       "License": "GPL (>= 2)",
       "URL": "http://www.rcpp.org, http://dirk.eddelbuettel.com/code/rcpp.html,\nhttps://github.com/RcppCore/Rcpp",
-      "Packaged": "2018-03-08 17:04:51.131351 UTC; edd",
-      "Built": "R 3.4.3; x86_64-pc-linux-gnu; 2018-03-17 11:55:04 UTC; unix"
+      "Packaged": "2018-11-06 03:02:42.98448 UTC; edd",
+      "Built": "R 3.5.2; x86_64-pc-linux-gnu; 2019-02-03 15:29:53 UTC; unix"
     },
     "cellranger": {
       "Version": "1.1.0",
@@ -105,18 +95,18 @@
       "License": "MIT + file LICENSE",
       "URL": "https://github.com/rsheets/cellranger",
       "Packaged": "2016-07-26 06:50:00 UTC; jenny",
-      "Built": "R 3.3.1; ; 2016-10-28 21:34:34 UTC; unix"
+      "Built": "R 3.5.2; ; 2019-02-03 15:32:44 UTC; unix"
     },
     "jsonlite": {
-      "Version": "1.5",
+      "Version": "1.6",
       "Depends": "methods",
       "Imports": {},
       "Suggests": "httr, curl, plyr, testthat, knitr, rmarkdown, R.rsp, sp",
       "License": "MIT + file LICENSE",
       "URL": "https://arxiv.org/abs/1403.2805,\nhttps://www.opencpu.org/posts/jsonlite-a-smarter-json-encoder",
-      "Packaged": "2017-05-31 14:03:43 UTC; jeroen",
-      "Built": "R 3.4.3; x86_64-pc-linux-gnu; 2018-02-08 01:02:02 UTC; unix"
+      "Packaged": "2018-12-07 11:22:02 UTC; jeroen",
+      "Built": "R 3.5.2; x86_64-pc-linux-gnu; 2019-02-03 15:38:00 UTC; unix"
     }
   },
-  "write_package_time": "2018-05-03 17:41:54 UTC"
+  "write_package_time": "2019-02-03 15:41:54 UTC"
 }
