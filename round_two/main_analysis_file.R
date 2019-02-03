@@ -228,9 +228,9 @@ powners_unq_all =
   pdata.frame(owners[!holdout & unq_own], 
               index = 'rand_id', drop.index = FALSE)
 regs = lapply(expression(
-  `One Month` = 100*ever_paid_jul, `Three Months` = 100*ever_paid_sep,
-  `One Month` = 100*paid_full_jul, `Three Months` = 100*paid_full_sep,
-  `One Month` = total_paid_jul, `Three Months` = total_paid_sep),
+  `One` = 100*ever_paid_jul, `Three` = 100*ever_paid_sep,
+  `One` = 100*paid_full_jul, `Three` = 100*paid_full_sep,
+  `One` = total_paid_jul, `Three` = total_paid_sep),
   #Multiply indicator by 100 so the units are in %ages already
   function(x) 
     plm(eval(x) ~ treat7, data = powners_unq_all, model = 'pooling'))
@@ -277,8 +277,10 @@ tbl <- c(tbl[1L:(idx - 4L)],
          " & \\multicolumn{2}{c}{Ever Paid} & " %+% 
            "\\multicolumn{2}{c}{Paid in Full} & " %+% 
            "\\multicolumn{2}{c}{Total Paid} \\\\",
-         tbl[c((idx - 3L):idx)],
-         "\\hline", tbl[(idx + 2L):length(tbl)])
+         "\\hline",
+         tbl[(idx - 3L):idx],
+         "\\hline", 
+         tbl[(idx + 2L):length(tbl)])
 
 ## add second row to custom note
 idx = grep("end{tabular}", tbl, fixed = TRUE)
