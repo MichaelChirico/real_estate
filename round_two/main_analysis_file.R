@@ -411,7 +411,7 @@ cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 note = 
   paste('\\scriptsize* Sample Size are the number of single property',
         'tax payers in the treatment group.  Total Taxes Owed is the',
-        ' total taxes owed by single property tax payers in the',
+        'total taxes owed by single property tax payers in the',
         'treatment group. New Payers equals the new payers after three',
         'months computed as the estimated increase in rate of compliance of',
         'those receiving the letter over those in the holdout sample as',
