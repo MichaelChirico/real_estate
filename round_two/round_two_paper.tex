@@ -473,28 +473,32 @@ property owners, are reported in Table \ref{balance2} in the appendix.
 \label{balance}
 \vspace{10mm}
 \begin{tabular}{lrrrrrrrrc}
-  \hline
+\hline
 Variable & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & $p$-value \\
-   \hline
-Amount Due & \$1,233 & \$1,383 & \$1,389 & \$1,613 & \$1,950 & \$1,290 & \$1,338 & \$1,316 & 0.32 \\
-  (June) & (\$1,840) & (\$6,510) & (\$4,130) & (\$13,118) & (\$25,290) & (\$2,021) & (\$3,413) & (\$2,158) &  \\
-  Assessed Property & \$142 & \$163 & \$147 & \$155 & \$206 & \$130 & \$130 & \$166 & 0.29 \\
-  Value (\$1,000) & (\$509) & (\$1,316) & (\$699) & (\$966) & (\$2,035) & (\$181) & (\$181) & (\$1,336) &  \\
-  Ownership Tenure & 18.7 & 18.7 & 19.0 & 18.6 & 18.5 & 18.8 & 18.9 & 18.9 & 0.96 \\
-  (Years) & (15.6) & (15.2) & (15.7) & (15.5) & (15.7) & (15.6) & (15.6) & (16.0) &  \\
-  Center City & 5\% & 5\% & 5\% & 5\% & 5\% & 4\% & 5\% & 5\% & 0.66 \\
-  Northeast Philly & 17\% & 18\% & 16\% & 15\% & 17\% & 16\% & 18\% & 16\% &  \\
-  North Philly & 22\% & 21\% & 22\% & 22\% & 21\% & 20\% & 22\% & 22\% &  \\
-  Northwest Philly & 26\% & 25\% & 27\% & 28\% & 26\% & 27\% & 25\% & 25\% &  \\
-  South Philly & 10\% &  9\% & 10\% & 10\% & 10\% & 10\% & 10\% & 10\% &  \\
-  West Philly & 21\% & 23\% & 21\% & 21\% & 22\% & 23\% & 20\% & 22\% &  \\
-  \# Owners & 2,088 & 2,420 & 2,432 & 2,419 & 2,389 & 2,441 & 2,417 & 2,433 &  \\
-  \hline
+ \hline
+ Amount Due & \$1,233 & \$1,383 & \$1,389 & \$1,613 & \$1,950 & \$1,290 & \$1,338 & \$1,316 & 0.32 \\
+(June) & (\$1,840) & (\$6,510) & (\$4,130) & (\$13,118) & (\$25,290) & (\$2,021) & (\$3,413) & (\$2,158) & \\
+Assessed Property & \$142 & \$163 & \$147 &
+\$155 & \$206 & \$130 & \$130 & \$166 & 0.29 \\
+Value & (\$509) & (\$1,316) & (\$699) & (\$966) & (\$2,035) & (\$181) & (\$181) & (\$1,336) & \\
+Ownership Tenure & 18.7 & 18.7 & 19.0 & 18.6 & 18.5 & 18.8 & 18.9 & 18.9 & 0.96 \\
+Years & (15.6) & (15.2) & (15.7) & (15.5) & (15.7) & (15.6) & (15.6) & (16.0) & \\
+ Center City & 5\% & 5\% & 5\% & 5\% &
+5\% & 4\% & 5\% & 5\% & 0.66 \\ Northeast Philly & 17\% & 18\% &
+16\% & 15\% & 17\% & 16\% & 18\% & 16\% & \\ North Philly & 22\%
+& 21\% & 22\% & 22\% & 21\% & 20\% & 22\% & 22\% & \\ Northwest
+Philly & 26\% & 25\% & 27\% & 28\% & 26\% & 27\% & 25\% & 25\% &
+\\ South Philly & 10\% & 9\% & 10\% & 10\% & 10\% & 10\% & 10\%
+& 10\% & \\
+West Philly & 21\% & 23\% & 21\% & 21\% & 22\% &
+23\% & 20\% & 22\% & \\ \# Owners & 2,088 & 2,420 & 2,432 & 2,419 &
+2,389 & 2,441 & 2,417 & 2,433 & \\ \hline
 \multicolumn{10}{l}{\scriptsize{$p$-values in rows 1-2 are $F$-test
     $p$-values from regressing each variable on treatment dummies. A
-    $\chi^2$ test was used for the geographic distribution. }} \\
-\multicolumn{10}{l}{\scriptsize{ Standard deviations in parentheses. }} \\
-\multicolumn{10}{l}{\scriptsize{1: Holdout, 2: Reminder, 3: Lien, 4: Sheriff, 5: Neighborhood, 6: Community, 7: Peer, 8: Duty}} \\
+    $\chi^2$ test was used for the geographic distribution.}} \\
+    \multicolumn{10}{l}{\scriptsize{ Standard deviations in parentheses. Property values are reported in \$1000. }} \\
+ \multicolumn{10}{l}{\scriptsize{1: Holdout, 2 : Reminder, 3: Lien, 4:  Sheriff,
+5: Neighborhood,  6: Community, 7: Peer, 8:  Duty}} \\
 \end{tabular}
 \end{sidewaystable}
 
@@ -508,8 +512,7 @@ measures of tax compliance behavior. First, did the taxpayer make any
 contribution at all towards their tax bill; this is the
 \textit{ever-paid} response. Second, did the taxpayer make a full
 payment of their tax bill; this is the \textit{paid-in-full}
-response. Third, what was the total amount paid by the taxpayer; this is the \textit{total-paid}.
- The sample in Table 2  includes only the 19,028 taxpayers
+response. Third, what was the total amount paid by the taxpayer; this is the \textit{total-paid}.  The sample in Table 2  includes only the 19,028 taxpayers
 who own a single property.\footnote{We have repeated our analysis for
   the sample of taxpayers, including multi-property owning
   taxpayers. Results for the full sample are identical to those
@@ -539,11 +542,11 @@ percent after three months.
 \begin{tabular}{l c c c c c c }
 \hline
  & \multicolumn{2}{c}{Ever Paid} & \multicolumn{2}{c}{Paid in Full} & \multicolumn{2}{c}{Total Paid} \\
-\hline
- & One & Three & One & Three & One & Three \\
+  \hline
+ & One  & Three  & One & Three  & One & Three \\
  & Month & Months & Month & Months & Month & Months \\
-\hline
-Holdout      & $30.5$ & $51.4$ & $23.5$ & $40.8$ & \$$324.0$ & \$$636.6$ \\
+ \hline
+ Holdout      & $30.5$ & $51.4$ & $23.5$ & $40.8$ & \$$324.0$ & \$$636.6$ \\
 \hline
 Reminder     & $3.7^{***}$  & $3.9^{***}$  & $2.2^{*}$    & $3.0^{**}$   & $36.6$        & $15.2$        \\
              & $(1.4)$      & $(1.5)$      & $(1.3)$      & $(1.5)$      & $(31.6)$      & $(43.1)$      \\
@@ -562,7 +565,7 @@ Duty         & $2.4^{*}$    & $3.6^{**}$   & $0.7$        & $2.3$        & $35.8
 \hline
 Num. obs.    & 19039        & 19039        & 19039        & 19039        & 19039         & 19039         \\
 \hline
-\multicolumn{7}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. Robust standard errors.}} \\
+\multicolumn{7}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. Robust standard errors.}}  \\
 \multicolumn{7}{l}{\scriptsize{Holdout values in levels; remaining figures relative to this.}}
 \end{tabular}
 \label{sh_lin}
@@ -634,9 +637,10 @@ percent after three months.
 \begin{tabular}{l c c c c c c }
 \hline
  & \multicolumn{2}{c}{Ever Paid} & \multicolumn{2}{c}{Paid in Full} & \multicolumn{2}{c}{Total Paid} \\
- & One Month & Three Months & One Month & Three Months & One Month & Three Months \\
+ \hline
+  & One  & Three  & One & Three  & One & Three \\
  & Month & Months & Month & Months & Month & Months \\
-\hline
+ \hline
 Reminder     & $34.3$ & $55.3$ & $25.7$ & $43.8$ & $360.6$ & $651.8$ \\
 \hline
 Lien         & $5.3^{***}$  & $5.3^{***}$  & $3.5^{***}$  & $4.2^{***}$  & $80.4^{*}$    & $107.5^{**}$  \\
@@ -654,7 +658,7 @@ Duty         & $-1.3$       & $-0.3$       & $-1.6$       & $-0.8$       & $-0.8
 \hline
 Num. obs.    & 16951        & 16951        & 16951        & 16951        & 16951         & 16951         \\
 \hline
-\multicolumn{7}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. Standard errors clustered by block.}} \\
+\multicolumn{7}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. Standard errors clustered by block.}}\\
 \multicolumn{7}{l}{\scriptsize{Reminder values in levels; remaining figures relative to this.}}
 \end{tabular}
 \label{sh_lpm_rob}
@@ -718,8 +722,7 @@ therefore consisted of the ``most-tardy'' of tardy taxpayers.  Of
 these ``nearly delinquent'' taxpayers who did make a contribution in our
 pilot study, the contributions were typically only partial payments of
 \$50 to \$150, suggesting these very tardy households may be seriously cash
-constrained.  One might then imagine that for this sample of taxpayers
-penalties are irrelevant; they cannot pay in full in any case.
+constrained.  One might then imagine that for this sample of taxpayers penalties are irrelevant; they cannot pay in full in any case.
 But a morale nudge might induce some payment in the spirit of a
 ``charitable contribution.''  Consistent with this possible
 explanation is the fact that the average rate of compliance of this
@@ -818,11 +821,11 @@ reminders.
 \begin{tabular}{l c c c c c c }
 \hline
  & \multicolumn{3}{c}{Ever Paid} & \multicolumn{3}{c}{Total Paid} \\
-\hline
- & One & Three & Six & One & Three & Six \\
- & Month & Months & Months & Month & Months & Months \\
-\hline
-Holdout in Quartile 1 & $38.1$  & $56.4$  & $74.7$ & $118.0$ & $152.0$  & $184.9$  \\
+   \hline
+   & One  & Three  & Six & One & Three  & Six \\
+ & Month & Months & Month & Months & Month & Months \\
+ \hline
+ Holdout in Quartile 1 & $38.1$  & $56.4$  & $74.7$ & $118.0$ & $152.0$  & $184.9$  \\
 \hline
 Holdout in Quartile 2 & $-9.8^{***}$  & $-11.8^{***}$ & $-7.4^{***}$ & $20.1$        & $97.5^{***}$   & $217.4^{***}$  \\
                       & $(2.9)$       & $(3.1)$       & $(2.8)$      & $(32.3)$      & $(33.6)$       & $(33.5)$       \\
@@ -888,25 +891,26 @@ quartile 4.
 Our results also shed light on the importance of liquidity constraints as a motivation for tardy tax payments. If liquidity constraints are important, then nudges may be insufficient unless accompanied by a way to smooth payments of the original tax obligation. Taxpayer agreements that spread payments over several months (typically, three to six months) without penalty provide for payment smoothing. Each reminder letter included a sentence stressing the availability of taxpayer agreements to help with payments. The results in Tables 2 and 5 suggest, however, that liquidity constraints are not binding for most of our tardy taxpayers and that nudges have a valuable role to play in eliciting full payment. First, from Table 2, most taxpayers who respond positively to a tax nudge after one and three months and who make some payment will pay in full. For all statistically significant nudges, including simple reminder, the percent increase in the ``ever paid'' taxpayers that ``paid in full'' is never less than 60 perent (1 month, simple reminder), typically 75 to 80 percent, and as high as 97 percent (three month, peer reminder). Second, from Table 5, taxpayers in the 1st quartile, who owe the least in taxes, have the highest rate of payment, even without the nudge. Further  when taxpayers respond to a nudge, again the share who ``pay in full'' (not shown in Table 5) is over 70 percent of those who ``ever paid'' for the two strongest nudges, the lien and sheriff letters.
 
 Still approximately thirty percent of those tardy taxpayers who respond to a nudge do not, or cannot, make full payment. One likely explanation for these taxpayers is a liquidity constraint. Offering these incomplete taxpayers a tax payment agreement can ease this constraint. Table \ref{waterrelholdout} shows what fraction of taxpayers signed such an agreement during the tax year of the experiment. All recipients of reminder letters were more likely to
-be in payment agreements than non-recipients (1.3\% versus 0.9\%). However, recipients
-of the sheriff's letter were slightly more likely (2.5\% versus 1.3\%)
-to be in an agreement (See Table A5). As a further check on the role of liquidity constraints, we
-examined whether there was any evidence of substitution from other
-municipal bills towards the property tax payment. We did this by
-calculating the probability that individuals would fail to pay their
-water bills and end up past due on these separate accounts. Receipt
-of any letter slightly increased the odds that recipients would be
-past due on their water bills by the end of six months (1.7\% versus
-1.1\%). However, conditional on receiving a reminder letter (of any
-kind) there was no difference in the probability of being past
-due except for a marginally significant difference for the peer letter.
-We interpret these results as suggesting that while most of those who respond to the reminder and extrinsic message letters within the first and third months of our experiment pay in full and do not appear liquidity constrained, those who do not pay in full do appear to benefit from the availability of tax agreements.
+  be in payment agreements than non-recipients (1.3\% versus 0.9\%). However, recipients
+  of the sheriff's letter were slightly more likely (2.5\% versus 1.3\%)
+  to be in an agreement (See Table A5). As a further check on the role of liquidity constraints, we
+  examined whether there was any evidence of substitution from other
+  municipal bills towards the property tax payment. We did this by
+  calculating the probability that individuals would fail to pay their
+  water bills and end up past due on these separate accounts. Receipt
+  of any letter slightly increased the odds that recipients would be
+  past due on their water bills by the end of six months (1.7\% versus
+  1.1\%). However, conditional on receiving a reminder letter (of any
+  kind) there was no difference in the probability of being past
+  due except for a marginally significant difference for the peer letter.
+  We interpret these results as suggesting that while most of those who respond to the reminder and extrinsic message letters within the first and third months of our experiment pay in full and do not appear liquidity constrained, those who do not pay in full do appear to benefit from the availability of tax agreements.
 
 \begin{table}[htb]
 \caption{Liquidity Linear Probability Model Estimates}
 \begin{center}
 \begin{tabular}{l c c }
 \hline
+ & \multicolumn{1}{c}{Payment Agreement} & \multicolumn{1}{c}{Water Delinquency} \\
  & Payment Agreement & Water Delinquency \\
 Holdout      & $0.9$ & $1.1$ \\
 \hline
