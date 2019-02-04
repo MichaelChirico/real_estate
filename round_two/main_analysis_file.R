@@ -533,13 +533,13 @@ tbl <- c(tbl[1L:(idx - 3L)],
 cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 
 # TABLE A2: Balance on Observables ####
-{cat("\\begin{sidewaystable}[ht]",
+{cat("\\begin{sidewaystable}[htbp]",
     "\\centering", 
     "\\caption{Balance on Observables}",
     "\\label{balance2}",
     "\\begin{tabular}{lrrrrrrrc}", 
     "\\hline",
-    "\\multicolumn{9}{c}{Unary Owners} \\\\", 
+    "\\multicolumn{9}{c}{Single Property Owners} \\\\", 
     sep = "\n", file = tex_file, append = TRUE)
 
 ##Top Section: Unique Owners Only
@@ -567,7 +567,7 @@ print.xtable(xtable(cbind(t(
 
 ##Bottom Section: Exclude Holdout Only
 cat("\\hline",
-    "\\multicolumn{9}{c}{Unary and Multiple Owners} \\\\", 
+    "\\multicolumn{9}{c}{Single and Multiple Property Owners} \\\\", 
     sep = "\n", file = tex_file, append = TRUE)
 
 print.xtable(xtable(cbind(t(
@@ -575,7 +575,7 @@ print.xtable(xtable(cbind(t(
          .(`Amount Due (June)` = dol.form(mean(total_due), tex = TRUE),
            `Assessed Property Value` = 
              dol.form(mean(assessed_mv, na.rm = TRUE), tex = TRUE),
-           `\\% with Unary Owner` = to.pct(mean(unq_own), 1L),
+           `\\% with Single Property Owner` = to.pct(mean(unq_own), 1L),
            `\\% Overlap with Holdout` = to.pct(mean(flag_holdout_overlap), 2L),
            `\\# Properties per Owner` = round(mean(N), 2L),
            `\\# Owners` = prettyNum(.N, big.mark = ",")),
