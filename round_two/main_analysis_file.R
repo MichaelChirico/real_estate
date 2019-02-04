@@ -656,31 +656,3 @@ tbl <- c(tbl[1L:idx],
 
 cat(tbl, sep = "\n",file = tex_file, append = TRUE)
 
-# TABLE 3: Short-term Reults: Relative to Generic Reminder ####
-tbl <- capture.output(texreg(lapply(lapply(expression(
-  `Payment Agreement` = agreement,`Water Delinquency` = waterdel),
-  #Multiply indicator by 100 so the units are in %ages already
-  function(x) owners[(!holdout & unq_own), lm(I(100 * eval(x)) ~ treat7)]), 
-  rename_coef, nn = 7), stars = c(.01, .05, .1), 
-  include.rsquared = FALSE, caption.above = TRUE,
-  include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, 
-  label = "waterrelcontrol", float.pos = 'htb',
-  caption = "Liquidity Linear Probability Model Estimates",
-  custom.note = "%stars. Reminder values in levels; " %+% 
-    "remaining figures relative to this"))
-
-## Replace Reminder SEs with horizontal rule, 
-##   eliminate significance for intercept,
-##   add header for Ever Paid vs. Paid in Full
-idx <- grep("^Reminder", tbl)
-
-tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
-
-tbl <- c(tbl[1L:(idx - 3L)],
-         " & \\multicolumn{1}{c}{Ever Paid} & " %+% 
-           "\\multicolumn{1}{c}{Paid in Full} \\\\",
-         tbl[c(idx - 2L, idx)],
-         "\\hline", tbl[(idx + 2L):length(tbl)])
-
-cat(tbl, sep = "\n")
-
