@@ -444,7 +444,7 @@ MEDIAN_POSITIVE_PAYMENT =
 tbl = capture.output(print(xtable(
   #Use keyby to make sure the output is sorted and Holdout comes first
   owners[(unq_own), keyby = treat8,
-         .(N = .N, ep = mean(ever_paid_sep), owed = sum(total_due)), 
+         .(N = .N, ep = mean(ever_paid_dec), owed = sum(total_due)), 
          #Express relative to Holdout
          ][ , {
            ep_holdout = .SD[1L, ep]

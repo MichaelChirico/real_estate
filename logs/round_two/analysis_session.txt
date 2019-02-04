@@ -248,5 +248,5 @@
       "Built": "R 3.5.2; ; 2018-12-20 17:08:24 UTC; unix"
     }
   },
-  "write_package_time": "2019-02-04 10:11:19 UTC"
+  "write_package_time": "2019-02-04 10:15:18 UTC"
 }
