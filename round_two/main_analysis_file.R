@@ -295,7 +295,7 @@ tbl = c(tbl[1:(idx - 2L)],
 
 cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 
-# TABLE 4: Long-Term Linear Probability Model Estimates ####
+# TABLE 4: Long-Term Linear Model Estimates ####
 regs = lapply(expression(
   `Ever Paid` = 100*ever_paid_dec, `Paid in Full` = 100*paid_full_dec,
   `Total Paid` = total_paid_dec, `Ever Paid` = 100*ever_paid_jul16,
@@ -411,30 +411,40 @@ tbl <- c(tbl[c(1L:(idx - 2L), idx)], "\\hline",
 cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 
 # TABLE 7: Three Month Impact of Collection ``Nudges"* ####
-note = 
-  paste('\\scriptsize* Sample Size are the number of single property',
+## use a format to be fed to sprintf with actual values, since some of
+##   these exact numbers depend on the data specification
+note_fmt = 
+  paste('\\scriptsize* Sample Size is the number of single property',
         'tax payers in the treatment group.  Total Taxes Owed is the',
         'total taxes owed by single property tax payers in the',
         'treatment group. New Payers equals the new payers after three',
         'months computed as the estimated increase in rate of compliance of',
         'those receiving the letter over those in the holdout sample as',
         'reported in Table 2; for example, for the reminder letter the number',
-        'of new payers equals 95 = .039 x2,419.  Revenue per letter for each',
+        # {new_payers} / {delta} / {sample_size}
+        'of new payers equals %d = %.3f x %s.  Revenue per letter for each',
         'treatment equals the median new revenue collected from those who',
-        'received a treatment letter and made some payment (=\\$738/letter)',
+        # {payment}
+        'received a treatment letter and made some payment (=\\$%.0f/letter)',
         'times the three month increase in compliance from each treatment',
         'letter; for example for the reminder letter the median estimated',
-        'revenue per letter equals \\$28.79 = .039x\\$738.  New revenues for',
+        # {per_letter} / {delta} / {payment}
+        'revenue per letter equals \\$%.2f = %.3f x \\$%.0f.  New revenues for',
         'each treatment equals the revenue/letter times the number of single',
         'owner properties receiving a treatment letter: for example, for the',
-        'reminder letter the estimated total new revenues equals \\$69,643 =',
-        '\\$28.79x2,419.  New \\% of Taxes Paid equals New Revenues Divided by',
-        'Total Taxes Owed; for example, for the reminder letter .023 =',
-        '\\$69,643/\\$3,038,000.')
+        'reminder letter the estimated total new revenues equals',
+        # {new_rev} / {per_letter} / {sample_size}
+        '\\$%s = \\$%.2f x %s.  New \\%% of Taxes Paid equals New Revenues',
+        'divided by Total Taxes Owed; for example, for the reminder letter',
+        # {pct_tax} / {new_rev} / {owed}
+        '%.1f = \\$%s / \\$%s.')
+#Get median positive payment by December
+MEDIAN_POSITIVE_PAYMENT = 
+  owners[(unq_own & total_paid_sep > 0), median(total_paid_sep)]
 tbl = capture.output(print(xtable(
   #Use keyby to make sure the output is sorted and Holdout comes first
   owners[(unq_own), keyby = treat8,
-         .(N = .N, ep = mean(ever_paid_sep), owed = sum(total_due)/1e6), 
+         .(N = .N, ep = mean(ever_paid_sep), owed = sum(total_due)), 
          #Express relative to Holdout
          ][ , {
            ep_holdout = .SD[1L, ep]
@@ -442,21 +452,33 @@ tbl = capture.output(print(xtable(
              #treatment delta
              delta = ep - ep_holdout
              new_payers = round(delta*N)
-             #Get median positive payment by December
-             median_pos_pmt = owners[(unq_own & total_paid_sep > 0), 
-                                     median(total_paid_sep)]
-             rev_per_letter = delta * median_pos_pmt
-             new_revenue = N * rev_per_letter / 1e6
+             rev_per_letter = delta * MEDIAN_POSITIVE_PAYMENT
+             new_revenue = N * rev_per_letter
              NEW_REVENUE = sum(new_revenue)
              OWED = sum(owed)
-             .(Treatment = c(as.character(treat8), 'Totals'), 
-                `Sample` = prettyNum(c(N, sum(N)), big.mark = ','),
-                `Total Taxes` = sprintf('$%.3f M', c(owed, OWED)),
-                `New` = c(new_payers, sum(new_payers)),
-                `Revenue/` = c(dol.form(rev_per_letter,  dig = 2L), '-'), 
-                `New` = dol.form(c(new_revenue, NEW_REVENUE)),
-                `New % of Taxes` = 
-                  round(c(new_revenue/owed, NEW_REVENUE/OWED), 3L))}]}],
+             # store these parameters for the footnote
+             REMINDER_PARAMS <<- list(
+               sample_size = prettyNum(N[1L], big.mark = ','),
+               delta = delta[1L],
+               new_payers = new_payers[1L],
+               payment = MEDIAN_POSITIVE_PAYMENT,
+               per_letter = rev_per_letter[1L],
+               new_rev = prettyNum(round(new_revenue[1L]), big.mark = ','),
+               owed = prettyNum(round(owed[1L]), big.mark = ','),
+               pct_tax = 100*new_revenue[1L]/owed[1L]
+             )
+             .(
+               Treatment = c(as.character(treat8), 'Totals'), 
+               `Sample` = prettyNum(c(N, sum(N)), big.mark = ','),
+               `Total Taxes` = sprintf('$%.3f M', c(owed, OWED)/1e6),
+               `New` = c(new_payers, sum(new_payers)),
+               `Revenue/` = c(dol.form(rev_per_letter,  dig = 2L), '-'), 
+               `New` = dol.form(c(new_revenue, NEW_REVENUE)),
+               `New % of Taxes` = 
+                 round(100*c(new_revenue/owed, NEW_REVENUE/OWED), 1L)
+             )
+           }]
+         }],
   caption = "Three Month Impact of Collection ``Nudges''*",
   label = "sh_rev", align = "rlcccccc",
   digits = c(rep(0L, 7L), 3L)), hline.after = c(-1L, 0L, 7L, 8L),
@@ -467,41 +489,19 @@ tbl = capture.output(print(xtable(
 idx1 = grep('Treatment.*Total Taxes', tbl)
 idx2 = grep('end{tabular}', tbl, fixed = TRUE)
 
+REMINDER_PARAMS$fmt = 
+  sprintf('\\multicolumn{7}{p{1\\textwidth}}{%s}', note_fmt)
 tbl = c(tbl[1:idx1], 
         ' & Size & Owed & Payers & Letters & Revenues & Paid \\\\',
         tbl[(idx1 + 1L):(idx2 - 1L)], 
-        sprintf('\\multicolumn{7}{p{1\\textwidth}}{%s}', note),
-        tbl[idx:length(tbl)])
+        do.call(sprintf, REMINDER_PARAMS[c(
+          'fmt', 'new_payers', 'delta', 'sample_size', 'payment',
+          'per_letter', 'delta', 'payment', 'new_rev', 'per_letter', 
+          'sample_size', 'pct_tax', 'new_rev', 'owed'
+        )]),
+        tbl[idx2:length(tbl)])
 
 cat(tbl, sep = '\n', file = tex_file, append = TRUE)
-
-# TABLE 3: Short-term Reults: Relative to Generic Reminder ####
-tbl <- capture.output(texreg(lapply(lapply(expression(
-  `Payment Agreement` = agreement,`Water Delinquency` = waterdel),
-  #Multiply indicator by 100 so the units are in %ages already
-  function(x) owners[(!holdout & unq_own), lm(I(100 * eval(x)) ~ treat7)]), 
-  rename_coef, nn = 7), stars = c(.01, .05, .1), 
-  include.rsquared = FALSE, caption.above = TRUE,
-  include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, 
-  label = "waterrelcontrol", float.pos = 'htb',
-  caption = "Liquidity Linear Probability Model Estimates",
-  custom.note = "%stars. Reminder values in levels; " %+% 
-    "remaining figures relative to this"))
-
-## Replace Reminder SEs with horizontal rule, 
-##   eliminate significance for intercept,
-##   add header for Ever Paid vs. Paid in Full
-idx <- grep("^Reminder", tbl)
-
-tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
-
-tbl <- c(tbl[1L:(idx - 3L)],
-         " & \\multicolumn{1}{c}{Ever Paid} & " %+% 
-           "\\multicolumn{1}{c}{Paid in Full} \\\\",
-         tbl[c(idx - 2L, idx)],
-         "\\hline", tbl[(idx + 2L):length(tbl)])
-
-cat(tbl, sep = "\n")
 
 # TABLE A1: Robustness Analysis: Relative to Reminder (All Owners) ####
 tbl <- capture.output(texreg(lapply(lapply(expression(
@@ -532,7 +532,7 @@ tbl <- c(tbl[1L:(idx - 3L)],
 
 cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 
-# Table A2: Balance on Observables ####
+# TABLE A2: Balance on Observables ####
 {cat("\\begin{sidewaystable}[ht]",
     "\\centering", 
     "\\caption{Balance on Observables}",
@@ -655,3 +655,32 @@ tbl <- c(tbl[1L:idx],
          tbl[(idx + 1L):length(tbl)])
 
 cat(tbl, sep = "\n",file = tex_file, append = TRUE)
+
+# TABLE 3: Short-term Reults: Relative to Generic Reminder ####
+tbl <- capture.output(texreg(lapply(lapply(expression(
+  `Payment Agreement` = agreement,`Water Delinquency` = waterdel),
+  #Multiply indicator by 100 so the units are in %ages already
+  function(x) owners[(!holdout & unq_own), lm(I(100 * eval(x)) ~ treat7)]), 
+  rename_coef, nn = 7), stars = c(.01, .05, .1), 
+  include.rsquared = FALSE, caption.above = TRUE,
+  include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, 
+  label = "waterrelcontrol", float.pos = 'htb',
+  caption = "Liquidity Linear Probability Model Estimates",
+  custom.note = "%stars. Reminder values in levels; " %+% 
+    "remaining figures relative to this"))
+
+## Replace Reminder SEs with horizontal rule, 
+##   eliminate significance for intercept,
+##   add header for Ever Paid vs. Paid in Full
+idx <- grep("^Reminder", tbl)
+
+tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
+
+tbl <- c(tbl[1L:(idx - 3L)],
+         " & \\multicolumn{1}{c}{Ever Paid} & " %+% 
+           "\\multicolumn{1}{c}{Paid in Full} \\\\",
+         tbl[c(idx - 2L, idx)],
+         "\\hline", tbl[(idx + 2L):length(tbl)])
+
+cat(tbl, sep = "\n")
+
