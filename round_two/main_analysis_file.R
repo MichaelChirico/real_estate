@@ -651,7 +651,7 @@ idx = grep('One Month', tbl, fixed = TRUE) - 1L
 
 tbl <- c(tbl[1L:idx],
          " & \\multicolumn{2}{c}{All Owners} & " %+% 
-           "\\multicolumn{2}{c}{Unary Owners} \\\\",
+           "\\multicolumn{2}{c}{Single Property Owners} \\\\",
          tbl[(idx + 1L):length(tbl)])
 
 cat(tbl, sep = "\n",file = tex_file, append = TRUE)
