@@ -513,9 +513,9 @@ tbl <- capture.output(texreg(lapply(lapply(expression(
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, 
   label = "sh_lpm_mult", float.pos = 'htbp',
-  caption = "Robustness Analysis: Relative to Reminder (Multiple Owners)",
+  caption = "Robustness Analysis: Relative to Reminder (All Owners)",
   custom.note = "%stars. Reminder values in levels; " %+% 
-    "remaining figures relative to this"))
+    "remaining figures relative to this."))
 
 ## Replace Reminder SEs with horizontal rule, 
 ##   eliminate significance for intercept,
