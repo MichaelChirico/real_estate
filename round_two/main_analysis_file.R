@@ -603,7 +603,7 @@ cat("\\hline",
     "\\end{tabular}",
     "\\end{sidewaystable}", sep = "\n", file = tex_file, append = TRUE)}
 
-# TABLE A3: Short-Term Logistic Model Estimates (Unary Owners) ####
+# TABLE A3: Short-Term Logistic Model Estimates (Single Property Owners) ####
 tbl <- capture.output(texreg(lapply(lapply(expression(
   `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
   `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
@@ -612,7 +612,7 @@ tbl <- capture.output(texreg(lapply(lapply(expression(
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, 
   label = "sh_logit", float.pos = 'htbp',
-  caption = "Short-Term Logistic Model Estimates (Unary Owners)",
+  caption = "Short-Term Logistic Model Estimates (Single Property Owners)",
   custom.note = "%stars. Holdout values in levels; " %+% 
     "remaining figures relative to this"))
 
