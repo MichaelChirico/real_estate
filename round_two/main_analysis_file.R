@@ -52,14 +52,12 @@ rename_coef_qtl = function(obj) {
   nm = names(obj$coefficients)
   int = grep('Intercept', nm)
   qint = grep('.*quartile[1-4]$', nm)
-  # for brevity only keep lien/sheriff entries
-  keep = grep('quartile.*(Lien|Sheriff)', nm)
-  nm[-c(int, qint, keep)] = 'x'
+  treat = grep('treat8', nm)
   nm[int] = 'Holdout in Quartile 1'
   nm[qint] = gsub('.*quartile([1-4])$', 
                   'Holdout in Quartile \\1', nm[qint])
-  nm[keep] = gsub('.*quartile([1-4]):.*8(.*)$', 
-                  '\\2 in Quartile \\1', nm[keep])
+  nm[treat] = gsub('.*quartile([1-4]):.*8(.*)$', 
+                  '\\2 in Quartile \\1', nm[treat])
   names(obj$coefficients) = nm
   obj
 }
@@ -184,6 +182,12 @@ tbl <- capture.output(texreg(
   label = "sh_lin", float.pos = 'htbp',
   caption = "Short-Term Linear Probability Model Estimates",
   custom.note = "%stars. Robust standard errors."))
+
+## move label to the top of the table
+lbl_idx = grep('\\label', tbl, fixed = TRUE)
+cap_idx = grep('\\caption', tbl, fixed = TRUE)
+tbl[cap_idx] = paste0(tbl[cap_idx], tbl[lbl_idx])
+tbl = tbl[-lbl_idx]
 
 ## add quantifier row (split for horizontal brevity)
 idx = grep('One.*Three', tbl)
