@@ -276,6 +276,80 @@ tbl = c(tbl[1:(idx - 2L)],
 
 cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 
+# TABLE 4: Treatment Effect Heterogeneity by Debt Quantile #### 
+## ** note -- the SEs in this table are robust,
+##            even though this is not mentioned in the footnote **
+owners[(unq_own), debt_quartile := create_quantiles(total_due, 4L)]
+
+tbl = capture.output({
+  owners[(unq_own), {
+    regs = lapply(expression(
+      `One` = 100*ever_paid_jul, `Three` = 100*ever_paid_sep,
+      `Six` = 100*ever_paid_dec, `One` = total_paid_jul,
+      `Three` = total_paid_sep, `Six` = total_paid_dec),
+      function(outcome) 
+        rename_coef_qtl(lm(eval(outcome) ~ debt_quartile/treat8)))
+    ses = lapply(regs, function(r) sqrt(diag(vcovHC(r))))
+    pvals = lapply(regs, function(r)
+      coeftest(r, vcovHC(r))[ , 'Pr(>|t|)'])
+    texreg(regs, omit.coef = 'x', stars = c(.01, .05, .1),
+           override.se = ses, override.pvalues = pvals,
+           include.rsquared = FALSE, caption.above = TRUE,
+           include.adjrs = FALSE, include.rmse = FALSE, 
+           longtable = TRUE, use.packages = FALSE,
+           digits = 1L, label = 'lpm_hetero',
+           caption = 'Treatment Effect Heterogeneity by Debt Quantile',
+           custom.note = "\\parbox{.75\\linewidth}{%stars. Holdout values " %+% 
+             "for first quartile in levels; other holdout figures are " %+% 
+             "relative to this and remaining figures are " %+% 
+             "treatment effects for the stated treatment vs. holdout " %+% 
+             "owners in the same quartile.}")
+    }]
+})
+
+## add quantifier row (split for horizontal brevity), add header for EP vs. TP
+### jacknife the info into one element here because it's a bit manual otherwise
+idx = grep('One.*Three', tbl)
+tbl[idx] = paste(sep = '\n', tbl[idx],
+                 ' & Month & Months & Months & Month & Months & Months \\\\',
+                 '\\hline',
+                 paste(" & \\multicolumn{3}{c}{Ever Paid} &",
+                       "\\multicolumn{3}{c}{Total Paid} \\\\"))
+
+## continuation text for multi-page split
+idx1 = grep('\\endfirsthead', tbl, fixed = TRUE)
+tbl = c(head(tbl, idx1),
+        paste('\\multicolumn{7}{c}{\\tablename\\',
+              '\\thetable\\ -- \\textit{Continued from previous page}} \\\\'),
+        tail(tbl, -idx1))
+
+idx2 = grep('\\endhead', tbl, fixed = TRUE) + 1L
+tbl[idx2] = 
+  paste(tbl[idx2], '\\multicolumn{7}{r}{\\textit{Continued on next page}} \\\\')
+
+idx3 = grep('\\endfoot', tbl, fixed = TRUE)
+tbl = c(head(tbl, idx3),
+        '\\hline', '\\endlastfoot',
+        tail(tbl, -idx3))
+
+## Replace Holdout SEs with horizontal rule
+idx <- grep("^Holdout.*Quartile\\s1", tbl)
+
+tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
+
+tbl <- c(head(tbl, idx - 1L), 
+         "\\hline", tbl[idx], "\\hline",
+         tail(tbl, -(idx + 1L)))
+
+## Move footer
+idx1 = grep("$^{***}p<0.01$", tbl, fixed = TRUE)
+idx2 = grep("\\end{longtable}", tbl, fixed = TRUE) - 1L
+tbl = c(head(tbl, idx1 - 1L),
+        tbl[(idx + 1L):idx2],
+        '\\hline', tbl[idx1], tail(tbl, -idx2))
+
+cat(tbl, sep = "\n", file = tex_file, append = TRUE)
+
 # TABLE 3: Short-term Reults: Relative to Generic Reminder ####
 powners_unq_all = 
   pdata.frame(owners[!holdout & unq_own], 
@@ -345,57 +419,6 @@ tbl = c(tbl[1:(idx - 2L)],
                       "remaining figures relative to this.")),
         tbl[idx:length(tbl)])
 
-
-cat(tbl, sep = "\n", file = tex_file, append = TRUE)
-
-
-# TABLE 5: Treatment Effect Heterogeneity by Debt Quantile #### 
-## ** note -- the SEs in this table are robust,
-##            even though this is not mentioned in the footnote **
-owners[(unq_own), debt_quartile := create_quantiles(total_due, 4L)]
-
-tbl = capture.output({
-  owners[(unq_own), {
-    regs = lapply(expression(
-      `One` = 100*ever_paid_jul, `Three` = 100*ever_paid_sep,
-      `Six` = 100*ever_paid_dec, `One` = total_paid_jul,
-      `Three` = total_paid_sep, `Six` = total_paid_dec),
-      function(outcome) 
-        rename_coef_qtl(lm(eval(outcome) ~ debt_quartile/treat8)))
-    ses = lapply(regs, function(r) sqrt(diag(vcovHC(r))))
-    pvals = lapply(regs, function(r)
-      coeftest(r, vcovHC(r))[ , 'Pr(>|t|)'])
-    texreg(regs, omit.coef = 'x', stars = c(.01, .05, .1),
-           override.se = ses, override.pvalues = pvals,
-           include.rsquared = FALSE, caption.above = TRUE,
-           include.adjrs = FALSE, include.rmse = FALSE,
-           digits = 1L, label = 'lpm_hetero', float.pos = 'htbp',
-           caption = 'Treatment Effect Heterogeneity by Debt Quantile',
-           custom.note = "\\parbox{.75\\linewidth}{%stars. Holdout values " %+% 
-             "for first quartile in levels; other holdout figures are " %+% 
-             "relative to this and remaining figures are " %+% 
-             "treatment effects for the stated treatment vs. holdout " %+% 
-             "owners in the same quartile.}")
-    }]
-})
-
-## add quantifier row (split for horizontal brevity)
-idx = grep('One.*Three', tbl)
-tbl = c(tbl[1:idx], 
-        ' & Month & Months & Months & Month & Months & Months \\\\',
-        tbl[(idx + 1):length(tbl)])
-
-## Replace Holdout SEs with horizontal rule, add header for EP vs. TP
-idx1 <- grep("Month", tbl) - 2L
-idx2 <- grep("^Holdout.*Quartile\\s1", tbl)
-
-tbl[idx2] <- gsub("\\^\\{[*]*\\}", "", tbl[idx2])
-
-tbl <- c(tbl[1L:idx1],
-         paste(" & \\multicolumn{3}{c}{Ever Paid} &",
-               "\\multicolumn{3}{c}{Total Paid} \\\\"),
-         "\\hline", tbl[(idx1 + 1L):idx2], "\\hline",
-         tbl[(idx2 + 2L):length(tbl)])
 
 cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 
