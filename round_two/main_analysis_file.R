@@ -350,7 +350,47 @@ tbl = c(head(tbl, idx1 - 1L),
 
 cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 
-# TABLE 3: Short-term Reults: Relative to Generic Reminder ####
+# TABLE 5: Liquidity Constraints and Payment Agreements ####
+tbl <- owners[(unq_own), {
+  capture.output(texreg(
+    rename_coef(lm(I(100 * agreement) ~ treat8), 8L),
+    stars = c(.01, .05, .1), 
+    include.rsquared = FALSE, caption.above = TRUE,
+    include.adjrs = FALSE, include.rmse = FALSE, digits = 1L,
+    label = "payment", float.pos = 'htbp',
+    caption = "Liquidity Constraints and Payment Agreements"))
+}]
+
+# float label to the top
+lbl_idx = grep('\\label', tbl, fixed = TRUE)
+cap_idx = grep('\\caption', tbl, fixed = TRUE)
+tbl[cap_idx] = paste0(tbl[cap_idx], tbl[lbl_idx])
+tbl = tbl[-lbl_idx]
+
+## drop the dummy model name
+idx = grep('Model 1', tbl, fixed = TRUE) + 1L
+tbl = c(head(tbl, idx - 2L), tail(tbl, -idx))
+
+## non-\scriptsize note -- continue on next line
+idx = grep('scriptsize', tbl, fixed = TRUE)
+tbl[idx] = gsub('\\scriptsize{', '', tbl[idx], fixed = TRUE)
+tbl[idx] = gsub('}}', '. } \\\\', tbl[idx], fixed = TRUE)
+tbl = c(head(tbl, idx),
+        sprintf('\\multicolumn{2}{l}{%s}',
+                'Holdout values in levels; remaining figures relative to this'),
+        tail(tbl, -idx))
+
+## Replace Holdout SEs with horizontal rule, add header for EP vs. PF
+idx <- grep("^Holdout", tbl)
+
+tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
+
+tbl <- c(head(tbl, idx), "\\hline", 
+         tail(tbl, -(idx + 1L)))
+
+cat(tbl, sep = "\n", file = tex_file, append = TRUE)
+
+# TABLE 3: Short-term Results: Relative to Generic Reminder ####
 powners_unq_all = 
   pdata.frame(owners[!holdout & unq_own], 
               index = 'rand_id', drop.index = FALSE)
@@ -419,28 +459,6 @@ tbl = c(tbl[1:(idx - 2L)],
                       "remaining figures relative to this.")),
         tbl[idx:length(tbl)])
 
-
-cat(tbl, sep = "\n", file = tex_file, append = TRUE)
-
-# TABLE 6: Liquidity Linear Probability Model Estimates ####
-tbl <- capture.output(texreg(lapply(lapply(expression(
-  `Payment Agreement` = agreement, `Water Delinquency` = waterdel),
-  function(x) owners[(unq_own), lm(I(100 * eval(x)) ~ treat8)]),
-  rename_coef, nn = 8), stars = c(.01, .05, .1), 
-  include.rsquared = FALSE, caption.above = TRUE,
-  include.adjrs = FALSE, include.rmse = FALSE, digits = 1L,
-  label = "waterrelholdout", float.pos = 'htb',
-  caption = "Liquidity Linear Probability Model Estimates",
-  custom.note = "%stars. Holdout values in levels; " %+% 
-    "remaining figures relative to this"))
-
-## Replace Holdout SEs with horizontal rule, add header for EP vs. PF
-idx <- grep("^Holdout", tbl)
-
-tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
-
-tbl <- c(tbl[c(1L:(idx - 2L), idx)], "\\hline", 
-         tbl[(idx + 2L):length(tbl)])
 
 cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 
