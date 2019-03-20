@@ -424,61 +424,81 @@ MEDIAN_POSITIVE_PAYMENT =
 tbl = capture.output(print(xtable(
   #Use keyby to make sure the output is sorted and Holdout comes first
   owners[(unq_own), keyby = treat8,
-         .(N = .N, ep = mean(ever_paid_dec), owed = sum(total_due)), 
+         .(N = .N, ep3 = mean(ever_paid_sep),
+           ep6 = mean(ever_paid_dec), owed = sum(total_due)), 
          #Express relative to Holdout
-         ][ , {
-           ep_holdout = .SD[1L, ep]
-           .SD[-1L, {
-             #treatment delta
-             delta = ep - ep_holdout
-             new_payers = round(delta*N)
-             rev_per_letter = delta * MEDIAN_POSITIVE_PAYMENT
-             new_revenue = N * rev_per_letter
-             NEW_REVENUE = sum(new_revenue)
-             OWED = sum(owed)
-             # store these parameters for the footnote
-             REMINDER_PARAMS <<- list(
-               sample_size = prettyNum(N[1L], big.mark = ','),
-               delta = delta[1L],
-               new_payers = new_payers[1L],
-               payment = MEDIAN_POSITIVE_PAYMENT,
-               per_letter = rev_per_letter[1L],
-               new_rev = prettyNum(round(new_revenue[1L]), big.mark = ','),
-               owed = prettyNum(round(owed[1L]), big.mark = ','),
-               pct_tax = 100*new_revenue[1L]/owed[1L]
-             )
-             .(
-               Treatment = c(as.character(treat8), 'Totals'), 
-               `Sample` = prettyNum(c(N, sum(N)), big.mark = ','),
-               `Total Taxes` = sprintf('$%.3f M', c(owed, OWED)/1e6),
-               `New` = c(new_payers, sum(new_payers)),
-               `Revenue/` = c(dol.form(rev_per_letter,  dig = 2L), '-'), 
-               `New` = dol.form(c(new_revenue, NEW_REVENUE)),
-               `New % of Taxes` = 
-                 round(100*c(new_revenue/owed, NEW_REVENUE/OWED), 1L)
-             )
-           }]
-         }],
+         ][ , melt(.SD, id.vars = c('treat8', 'N', 'owed'), value.name = 'ep')
+            ][ , keyby = variable, {
+              ep_holdout = .SD[1L, ep]
+              param_env = environment()
+              jval = .SD[-1L, {
+                #treatment delta
+                delta = ep - ep_holdout
+                new_payers = round(delta*N)
+                rev_per_letter = delta * MEDIAN_POSITIVE_PAYMENT
+                new_revenue = N * rev_per_letter
+                NEW_REVENUE = sum(new_revenue)
+                OWED = sum(owed)
+                # store these parameters for the footnote
+                param_env$params = list(
+                  sample_size = prettyNum(N[1L], big.mark = ','),
+                  delta = delta[1L],
+                  new_payers = new_payers[1L],
+                  payment = MEDIAN_POSITIVE_PAYMENT,
+                  per_letter = rev_per_letter[1L],
+                  new_rev = prettyNum(round(new_revenue[1L]), big.mark = ','),
+                  owed = prettyNum(round(owed[1L]), big.mark = ','),
+                  pct_tax = 100*new_revenue[1L]/owed[1L]
+                )
+                .(
+                  Treatment = c(as.character(treat8), 'Totals'), 
+                  `Sample` = prettyNum(c(N, sum(N)), big.mark = ','),
+                  `Total Taxes` = sprintf('$%.3f M', c(owed, OWED)/1e6),
+                  `New` = c(new_payers, sum(new_payers)),
+                  `Revenue/` = c(dol.form(rev_per_letter,  dig = 2L), '-'), 
+                  `New` = dol.form(c(new_revenue, NEW_REVENUE)),
+                  `New % of Taxes` = 
+                    round(100*c(new_revenue/owed, NEW_REVENUE/OWED), 1L)
+                )
+              }]
+              # only use the parameter values
+              #   from 3 month estimates to illustrate
+              if (.BY$variable == 'ep3') REMINDER_PARAMS <<- param_env$params
+              jval
+            }][ , !'variable'],
   caption = "Revenue Implications",
-  label = "rev", align = "rlcccccc",
-  digits = c(rep(0L, 7L), 3L)), hline.after = c(-1L, 0L, 7L, 8L),
+  label = "rev", align = "rlcccccc", only.contents = TRUE,
+  digits = c(rep(0L, 7L), 1L)), hline.after = c(-1L, 0L, 7L, 8L),
   table.placement = 'htbp', include.rownames = FALSE,
   comment = FALSE, caption.placement = "top"))
 
+# float label to the top
+lbl_idx = grep('\\label', tbl, fixed = TRUE)
+cap_idx = grep('\\caption', tbl, fixed = TRUE)
+tbl[cap_idx] = paste0(tbl[cap_idx], tbl[lbl_idx])
+tbl = tbl[-lbl_idx]
+
 # add second header row from saving horizontal space
 idx1 = grep('Treatment.*Total Taxes', tbl)
-idx2 = grep('end{tabular}', tbl, fixed = TRUE)
+idx2 = grep('Reminder', tbl, fixed = TRUE)[2L] - 1L
+idx3 = grep('end{tabular}', tbl, fixed = TRUE) - 1L
 
 REMINDER_PARAMS$fmt = 
   sprintf('\\multicolumn{7}{p{1\\textwidth}}{%s}', note_fmt)
-tbl = c(tbl[1:idx1], 
-        ' & Size & Owed & Payers & Letters & Revenues & Paid \\\\',
-        tbl[(idx1 + 1L):(idx2 - 1L)], 
+header_continue = ' & Size & Owed & Payers & Letters & Revenues & Paid \\\\'
+tbl = c(head(tbl, idx1 - 1L), 
+        '\\multicolumn{7}{c}{Based on 3 Months Estimates} \\\\', '\\hline',
+        tbl[idx1], header_continue,
+        tbl[(idx1 + 1L):idx2], 
+        # duplicate header here
+        '\\multicolumn{7}{c}{Based on 6 Months Estimates} \\\\', '\\hline',
+        tbl[idx1], header_continue, '\\hline',
+        tbl[(idx2 + 1L):idx3], 
         do.call(sprintf, REMINDER_PARAMS[c(
           'fmt', 'new_payers', 'delta', 'sample_size', 'payment',
           'per_letter', 'delta', 'payment', 'new_rev', 'per_letter', 
           'sample_size', 'pct_tax', 'new_rev', 'owed'
         )]),
-        tbl[idx2:length(tbl)])
+        tail(tbl, -idx3))
 
 cat(tbl, sep = '\n', file = tex_file, append = TRUE)
