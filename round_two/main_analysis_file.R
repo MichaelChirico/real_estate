@@ -227,6 +227,55 @@ tbl = c(tbl[1:(idx - 2L)],
 
 cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 
+# TABLE 3: Long-Term Linear Model Estimates ####
+regs = lapply(expression(
+  `Ever Paid` = 100*ever_paid_dec, `Paid in Full` = 100*paid_full_dec,
+  `Total Paid` = total_paid_dec, `Ever Paid` = 100*ever_paid_jul16,
+  `Paid in Full` = 100*paid_full_jul16, `Total Paid` = total_paid_jul16),
+  function(x) rename_coef(owners[(unq_own), lm(eval(x) ~ treat8)], 8))
+ses = lapply(regs, function(r) sqrt(diag(vcovHC(r))))
+pvals = lapply(regs, function(r)
+  coeftest(r, vcovHC(r))[ , 'Pr(>|t|)'])
+tbl <- capture.output(texreg(
+  regs, stars = c(.01, .05, .1), 
+  override.se = ses, override.pvalues = pvals,
+  include.rsquared = FALSE, caption.above = TRUE,
+  include.adjrs = FALSE, include.rmse = FALSE, digits = 1L,
+  label = "lt_lin", float.pos = 'htbp',
+  caption = "Long-Term Linear Model Estimates",
+  custom.note = "%stars. Robust standard errors. " %+%
+    "Holdout values in levels; remaining figures relative to this."))
+
+# float label to the top
+lbl_idx = grep('\\label', tbl, fixed = TRUE)
+cap_idx = grep('\\caption', tbl, fixed = TRUE)
+tbl[cap_idx] = paste0(tbl[cap_idx], tbl[lbl_idx])
+tbl = tbl[-lbl_idx]
+
+## Replace Holdout SEs with horizontal rule, add header for EP vs. PF
+idx <- grep("^Holdout", tbl)
+
+tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
+
+tbl <- c(tbl[1L:(idx - 3L)],
+         " & \\multicolumn{3}{c}{Six Months} & " %+% 
+           "\\multicolumn{3}{c}{Subsequent Tax Cycle} \\\\",
+         tbl[c(idx - 2L, idx)],
+         "\\hline", tbl[(idx + 2L):length(tbl)])
+
+## add second row to custom note
+idx = grep("end{tabular}", tbl, fixed = TRUE)
+
+tbl = c(tbl[1:(idx - 2L)],
+        paste(tbl[idx - 1L], '\\\\'),
+        sprintf("\\multicolumn{7}{l}{\\scriptsize{%s}}",
+                paste("Change in sample size between long-term",
+                      "and subsequent year results reflects",
+                      "property dissolution for three properties.")),
+        tbl[idx:length(tbl)])
+
+cat(tbl, sep = "\n", file = tex_file, append = TRUE)
+
 # TABLE 3: Short-term Reults: Relative to Generic Reminder ####
 powners_unq_all = 
   pdata.frame(owners[!holdout & unq_own], 
@@ -299,48 +348,6 @@ tbl = c(tbl[1:(idx - 2L)],
 
 cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 
-# TABLE 4: Long-Term Linear Model Estimates ####
-regs = lapply(expression(
-  `Ever Paid` = 100*ever_paid_dec, `Paid in Full` = 100*paid_full_dec,
-  `Total Paid` = total_paid_dec, `Ever Paid` = 100*ever_paid_jul16,
-  `Paid in Full` = 100*paid_full_jul16, `Total Paid` = total_paid_jul16),
-  function(x) rename_coef(owners[(unq_own), lm(eval(x) ~ treat8)], 8))
-ses = lapply(regs, function(r) sqrt(diag(vcovHC(r))))
-pvals = lapply(regs, function(r)
-  coeftest(r, vcovHC(r))[ , 'Pr(>|t|)'])
-tbl <- capture.output(texreg(
-  regs, stars = c(.01, .05, .1), 
-  override.se = ses, override.pvalues = pvals,
-  include.rsquared = FALSE, caption.above = TRUE,
-  include.adjrs = FALSE, include.rmse = FALSE, digits = 1L,
-  label = "ltmpme", float.pos = 'htbp',
-  caption = "Long-Term Linear Model Estimates",
-  custom.note = "%stars. Robust standard errors. " %+%
-    "Holdout values in levels; remaining figures relative to this."))
-
-## Replace Holdout SEs with horizontal rule, add header for EP vs. PF
-idx <- grep("^Holdout", tbl)
-
-tbl[idx] <- gsub("\\^\\{[*]*\\}", "", tbl[idx])
-
-tbl <- c(tbl[1L:(idx - 3L)],
-         " & \\multicolumn{3}{c}{Six Months} & " %+% 
-           "\\multicolumn{3}{c}{Subsequent Tax Cycle} \\\\",
-         tbl[c(idx - 2L, idx)],
-         "\\hline", tbl[(idx + 2L):length(tbl)])
-
-## add second row to custom note
-idx = grep("end{tabular}", tbl, fixed = TRUE)
-
-tbl = c(tbl[1:(idx - 2L)],
-        paste(tbl[idx - 1L], '\\\\'),
-        sprintf("\\multicolumn{7}{l}{\\scriptsize{%s}}",
-                paste("Change in sample size between long-term",
-                      "and subsequent year results reflects",
-                      "property dissolution for three properties.")),
-        tbl[idx:length(tbl)])
-
-cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 
 # TABLE 5: Treatment Effect Heterogeneity by Debt Quantile #### 
 ## ** note -- the SEs in this table are robust,
@@ -512,8 +519,8 @@ tbl <- capture.output(texreg(lapply(lapply(expression(
   `One Month` = ever_paid_jul, `Three Months` = ever_paid_sep,
   `One Month` = paid_full_jul, `Three Months` = paid_full_sep),
   #Multiply indicator by 100 so the units are in %ages already
-  function(x) owners[(!holdout), lm(I(100 * eval(x)) ~ treat7)]), 
-  rename_coef, nn = 7), stars = c(.01, .05, .1), 
+  function(x) owners[ , lm(I(100 * eval(x)) ~ treat8)]), 
+  rename_coef, nn = 8), stars = c(.01, .05, .1), 
   include.rsquared = FALSE, caption.above = TRUE,
   include.adjrs = FALSE, include.rmse = FALSE, digits = 1L, 
   label = "sh_lpm_mult", float.pos = 'htbp',
@@ -548,18 +555,18 @@ cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 
 ##Top Section: Unique Owners Only
 print.xtable(xtable(cbind(t(
-  owners[(!holdout & unq_own),
+  owners[(unq_own),
          .(`Amount Due (June)` = dol.form(mean(total_due), tex = TRUE),
            `Assessed Property Value` = 
              dol.form(mean(assessed_mv, na.rm = TRUE), tex = TRUE),
            `\\# Owners` = prettyNum(.N, big.mark = ",")),
-         keyby = .(Variable = treat7)]), 
+         keyby = .(Variable = treat8)]), 
   p_tex(c(sapply(c(
     `Amount Due (June)` = "total_due",
     `Assessed Property Value` = "assessed_mv"),
-    function(x) owners[(!holdout & unq_own), lmfp(get(x) ~ treat7)]),
+    function(x) owners[(unq_own), lmfp(get(x) ~ treat8)]),
     `\\# Owners` =
-      owners[(!holdout & unq_own), chisq.test(table(treat7))$p.value])))),
+      owners[(unq_own), chisq.test(table(treat7))$p.value])))),
   include.colnames = FALSE, comment = FALSE, 
   #exclude table header since we're combining two tables;
   #  setting sanitize.text.function prevents xtable from
@@ -575,7 +582,7 @@ cat("\\hline",
     sep = "\n", file = tex_file, append = TRUE)
 
 print.xtable(xtable(cbind(t(
-  owners[(!holdout),
+  owners[ ,
          .(`Amount Due (June)` = dol.form(mean(total_due), tex = TRUE),
            `Assessed Property Value` = 
              dol.form(mean(assessed_mv, na.rm = TRUE), tex = TRUE),
@@ -583,16 +590,16 @@ print.xtable(xtable(cbind(t(
            `\\% Overlap with Holdout` = to.pct(mean(flag_holdout_overlap), 2L),
            `\\# Properties per Owner` = round(mean(N), 2L),
            `\\# Owners` = prettyNum(.N, big.mark = ",")),
-         keyby = .(Variable = treat7)]), 
+         keyby = .(Variable = treat8)]), 
   p_tex(c(sapply(c(
     `Amount Due (June)` = "total_due",
     `Assessed Property Value` = "assessed_mv",
     `\\% with Unary Owner` = "unq_own",
     `\\% Overlap with Holdout` = "flag_holdout_overlap",
     `\\# Properties per Owner` = "N"),
-    function(x) owners[(!holdout), lmfp(get(x) ~ treat7)]),
+    function(x) owners[ , lmfp(get(x) ~ treat8)]),
     `\\# Owners` =
-      owners[(!holdout), chisq.test(table(treat7))$p.value])))),
+      owners[ , chisq.test(table(treat8))$p.value])))),
   include.colnames = FALSE, comment = FALSE, 
   sanitize.text.function = identity, 
   only.contents = TRUE, hline.after = c(0L, 1L),
