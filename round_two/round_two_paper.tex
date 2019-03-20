@@ -20,13 +20,15 @@
 \usepackage{csquotes}
 \usepackage{textcomp}
 \usepackage{indentfirst}
+\usepackage{longtable}
+
 
 \renewcommand{\baselinestretch}{1.5}
 \parindent=.2in
-\evensidemargin=.05in 
-\oddsidemargin=-.05in 
+\evensidemargin=.05in
+\oddsidemargin=-.05in
 \topmargin=-0.05in
-\textwidth=6.5in 
+\textwidth=6.5in
 \textheight=8in
 
 \newtheorem{fact}{Stylized Fact}
@@ -43,22 +45,24 @@
 
 \begin{document}
 
-\title{Deterring Tax Delinquency in Philadelphia}
+\title{Deterring Property Tax Delinquency in Philadelphia: \\
+An Experimental Evaluation of Nudge Strategies}
 
-\author{Michael Chirico, Robert Inman, Charles Loeffler, \\ 
-John MacDonald, and Holger Sieg\thanks{We would like to thank Rob
-  Dubow, Clarena Tolson, Marisa Waxman, and Darryl Watson in the
-  Department of Revenue of the City of Philadelphia for their help and
-  support. The authors have received financial support for this research from
-   the Wharton Initiative for Public Policy. We would also like
-  to thank Jeff Brown, Stefano DellaVigna, Kai Konrad, Robert Moffitt,
-  Jim Poterba, Chris Sanchirico, Wolfgang Sch\"on, Reed Shuldiner and
-  participants of numerous seminars for comments and suggestions. The
-  views expressed here are those of the authors and do not necessarily
-  represent or reflect the views of the City of Philadelphia.}
-\\ 
-University of Pennsylvania}
-	
+\author{Michael Chirico, Robert Inman, Charles Loeffler, \\ John
+  MacDonald, and Holger Sieg\thanks{We would like to thank Rob Dubow,
+    Clarena Tolson, Marisa Waxman, and Darryl Watson in the Department
+    of Revenue of the City of Philadelphia for their help and
+    support. We would also like to thank the editor of the journal,
+    Stacy Dickert-Conlin, two anonymous referees, Jeff Brown, Judd
+    Kessler, Kai Konrad, Robert Moffitt, Jim Poterba, Chris
+    Sanchirico, Wolfgang Sch\"on, Reed Shuldiner, and participants of
+    numerous seminars for comments and suggestions.  The authors have
+    received financial support for this research from the Wharton
+    Initiative for Public Policy. The views expressed here are those
+    of the authors and do not necessarily represent or reflect the
+    views of the City of Philadelphia.}  \\ University of
+  Pennsylvania}
+
 \date{\today}
 
 \maketitle
@@ -66,13 +70,13 @@ University of Pennsylvania}
 \begin{abstract}
 
 Municipal governments commonly confront the problem of tardy or
-delinquent property tax payments.  We implement an experiment in tax
-collection for tardy taxpayers in the City of
+delinquent property tax payments.  We implement an experiment in
+property tax collection for tardy taxpayers in the City of
 Philadelphia for the fiscal year, 2016.  The experiment sent one of
 seven reminder letters to the tardy taxpayers, testing the efficacy of
 a simple reminder, two alternative reminders stressing economic
 sanctions, and four alternative reminders emphasizing either that
-taxpayers’ receive neighborhood services or city-wide services for
+taxpayers√ï receive neighborhood services or city-wide services for
 their tax payments, that most of their neighbors pay their taxes on
 time, or that as a citizen in a democracy it is a civic duty to pay
 taxes on time.  Compliance behaviors were compared to a holdout sample
@@ -98,8 +102,9 @@ Experiment, Deterrence, Public Service Appeal, Appeal to Civic Duty.
 
 \section{Introduction}
 
+
 Property taxation is the primary tax for most U.S. cities.  In fiscal
-year 2013, 30 percent of all local government revenues and over 73
+year 2016, 47 percent of all local government revenues and over 72
 percent of local taxes came from the property tax
 \cite{barnett2013state}.  Yet collection of the tax has, in many
 cities, been problematic.  While some U.S. cities do an excellent job
@@ -107,25 +112,21 @@ in collecting the tax and receive over 95 percent of assessed revenues
 the year the tax is due, other cities have over the last ten years
 done significantly worse -- notably Flint (78\%), Cleveland (84\%),
 Pittsburgh (86\%), Milwaukee (87\%), Philadelphia (88\%), Detroit
-(89\%), and St. Louis (89\%).\footnote{For details, see Chirico et
-  al., \citeyear{CILMS-16}.}  While Flint, Detroit, Cleveland and
-Milwaukee are relatively poor cities, Philadelphia and Pittsburgh are
-not.  Among the list of cities with outstanding tax collection records
-are Buffalo, Birmingham, Houston, and New Orleans.  While city poverty
-is important, it cannot be the whole explanation for low rates of
-collection.  Poor tax administration is likely to be an important
-contributing factor.
+(89\%), and St. Louis (89\%).\footnote{For more details, see
+  \citeA{CILMS-16}.}  In this paper, we explore some low-cost
+strategies that may help cities improve the compliance of taxpayers.
 
 This failure to collect the property tax on time creates budget
 uncertainty at best and budget deficits at worst. Late payments are
 costly to the city. If not enforced, delinquent taxpayers may become
 permanent tax evaders. Furthermore, significant rates of delinquency
 today may become a signal to other taxpayers that avoidance is
-possible, encouraging further delinquency.\footnote{See \citeA{besley2015norms} study of local property taxation
-  in England following imposition of a local head tax as a replacement
-  for the local property tax. In response to widespread citizen
+possible, encouraging further delinquency.\footnote{
+  \citeA{besley2015norms} study local property taxation in England
+  following the imposition of a local head tax as a replacement for
+  the local property tax. In response to widespread citizen
   resistance, the poll tax was removed two years later and the
-  property tax restored. But compliance rates for the reinstated
+  property tax restored. However, compliance rates for the reinstated
   property tax fell by 14 percent. Though efforts to improve
   compliance emphasized high penalties it has taken nearly eighteen
   years to return to the original levels of tax compliance.} Yet
@@ -133,148 +134,177 @@ collecting the property tax should be straightforward.  In contrast to
 collecting self-reported taxes on income, profits, and sales, property
 tax obligations equal the city's assigned assessed value of the
 property times the city chosen tax rate, and are known by both the
-city and the taxpayer.  There is no uncertainty as to what is due, or
-when. Property tax payment is a matter of enforcement.
+city and the taxpayer.\footnote{Modern tax systems make widespread use
+  of third-party reporting from firms and the financial sector which
+  makes income tax evasion more difficult than in the past.
+  \citeA{Hallsworth-14}, \citeA{slemrod2017}, and \citeA{Alm-19}
+  provide reviews of tax compliance behavior.}  There is no
+uncertainty as to what is due, or when. Property tax payment is a
+matter of enforcement.
 
-Following the prescriptions of the economic theory of tax enforcement
-as outlined in \citeA{Allingham-Sandmo-72}, the most common
-enforcement strategy is the economic stick: fines and penalties.
-Failure to pay property taxes in time leads to interest penalties
-sufficiently large that there is no arbitrage advantage to waiting,
-and perhaps to a significant late fine as well.  When a delinquent
-taxpayer does not respond to penalties and fines, the city can issue a
-tax lien on the property equal to the value of the taxes owed and
-accrued interest and penalties.  A lien does not impose an immediate
-direct cost on the taxpayer since payment to the holder of the tax
-lien will not occur until the sale of the property.\footnote{A city
-  can sell a tax lien to a private firm to increase the city's current
-  revenue collections from delinquent taxes. Selling liens to
-  ``vulture investors,'' however, can be politically costly.} The
-owner of the lien, typically the city, can start forced sale of the
-property through a foreclosure process. The home is then sold at
-auction with proceeds of the sale used to pay taxes, interest, and
-penalties due with any remaining proceeds from the sale returned to
-the property owner.  It is only possible to avoid payment by
-abandoning the property, a costly option for most homeowners.
+The most common property tax enforcement strategy is the economic
+stick: fines and penalties.  When a delinquent taxpayer does not
+respond to penalties and fines, the city can issue a tax lien on the
+property equal to the value of the taxes owed and accrued interest and
+penalties.  Alternatively, the city may appeal to an intrinsic motive
+for tax payments, perhaps to encourage a sense of community or to
+foster a more positive view of elected officials responsible for
+collecting taxes and providing city services.  Intrinsic motives for
+paying taxes may include a desire to contribute when others
+contribute, to pay a fair share of the cost of services received, or
+to fulfill one's civic obligation as a citizen of the community.
 
-Despite the significant penalties associated with late payments many
-taxpayers do not pay on time.  Understanding why taxpayers may be
-tardy has policy implications for the design and implementation of
-property tax administration.  Taxpayer motivation for late payments
-may be simply economic -- the homeowner could be cash constrained -- or
-behavioral.  Cash constrained households can be helped by offering
-payment plans.  Those who do not pay on time for behavioral reasons,
-however, may need a ``nudge."  The nudge can be a simple reminder, a
-reminder that also stresses the fines and penalties associated with
-late payments, or a reminder that appeals to an intrinsic motive for
-tax payment such as ``most of your neighbors pay their taxes on time,"
-``taxes provide valuable city services," or ``with citizenship comes
-an obligation to pay one's taxes."  Reminders that work can be
-implemented to improve city tax collection, and if collected revenues
-exceed the cost of the reminder provide a valuable additional tool for
-efficient tax administration \cite{keen2016optimal}.
+To explore each of these motivations, we implemented an experiment in
+property tax collection from tardy taxpayers in the City of
+Philadelphia for the fiscal year 2016.  In addition, we test for a
+possibly simpler explanation.  Perhaps tardy taxpayers are just
+forgetful \cite{Akerlof-91} or procrastinators \cite{DR-99}?  If so, a
+simple reminder letter may suffice.  Our experiment sent one of seven
+different reminder letters to the tardy taxpayers. Compliance
+behaviors of those receiving a reminder letter were compared to a
+holdout sample that received no reminder letter.  One letter was a
+simple reminder. Two letters stressed that continued non-payment leads
+to fines and penalties and may lead to a lien on their home with the
+possibility of a sheriff's sale of the property.  The final four
+letters explored the possibility of an intrinsic, or tax morale, motive
+for tax payment: that others are contributing, taxes pay for
+neighborhood services, taxes pay for city-wide services, and finally,
+that citizens bear a civic duty to contribute to the costs of
+democratic government.
 
-Recent empirical research on the use of nudges to improve tax
-collections have shown targeted reminders can be effective motivators
-for increased taxpayer compliance. But success depends upon the action
-being nudged and the exact wording of the reminder.  Most successful
-nudges have been applied to truthful reporting of the taxpayer's tax
-base, with the reminders stressing the likelihood of a taxpayer audit
-and associated economic fines on unreported income or sales; see
-\citeA{Kleven-11} and \citeA{Pomeranz-15} specifically, and
-\citeA{Alm-92}, \citeA{Hallsworth-14}, and \citeA{slemrod2017} for
-general reviews.  Less successful have been reminders that stress an
-intrinsic or ``tax morale'' motive for tax reporting or payment; see
-\citeA{slemrod2001taxpayer} and \citeA{Luttmer-14} for a review.  That
-said, well-targeted tax morale messages have worked, in particular
-those that stress compliance behavior by the taxpayers' peers; see
-\citeA{dwenger-17} and \citeA{Hallsworth-17}.
+Each letter cost one dollar to send and over all seven letters,
+returned on average \$37 in increased city tax revenues.  The two
+letters stressing economic sanctions were the most effective,
+returning \$65 in extra revenues for each letter sent.  In contrast,
+adding an intrinsic message to the reminder did not increase
+compliance over receiving only the simple reminder.  We do not find
+any evidence that those receiving a reminder for fiscal year 2016
+improved their tax compliance behavior in fiscal year 2017.
 
-Only four published studies have directly evaluated the impact of
+Our experimental design closely follows that used by
+\citeA{Hallsworth-17} in their analysis of reminder letters to UK
+citizens to encourage timely payment of income taxes already declared.
+Their objective, like ours, is to improve both the speed and rate of compliance.
+Like us, they find reminders that stress financial penalties encourage
+greater compliance, but unlike our results, stressing to the tardy
+taxpayer they are now one of a minority of all taxpayers also improves
+compliance.
+
+Beyond providing assistance to Philadelphia's Department of Revenue,
+our study contributes to the growing literature on the use of
+``nudges'' to encourage taxpayer compliance.  Reminders as nudges are
+typically inexpensive to implement and, if successful, provide a
+valuable additional tool for tax administration
+\cite{keen2016optimal}.  Recent empirical research on the use of
+nudges to improve tax collections have shown targeted reminders can be
+effective motivators for increased compliance.  But success depends
+upon the action being nudged and the exact wording of the reminder.
+Most successful nudges have been applied to truthful reporting of the
+taxpayer's tax base, with the reminders stressing the likelihood of a
+taxpayer audit and associated economic fines on unreported income or
+sales; see \citeA{Kleven-11} and \citeA{Pomeranz-15} specifically.
+Less successful have been reminders that stress an intrinsic or ``tax
+morale'' motive for tax reporting or payment. An exception is
+\citeA{dwenger-17} who study local church tax compliance in
+Bavaria. They report that a significant fraction of individuals comply
+in the zero deterrence baseline where compliance should be zero absent
+intrinsic motivations. Around 20 percent of individuals pay the true
+taxes owed, while the remaining 80 percent of individuals evade taxes
+and most of them fully evade.\footnote{See, also,
+  \citeA{slemrod2001taxpayer} and \citeA{Luttmer-14} for a review.}
+
+Four other published studies have directly evaluated the impact of
 nudges on taxpayer compliance for the paying of local government
 taxes.  \citeA{Torgler2004moral} finds no increased compliance
 associated with tax morale messages for the payment of income taxes to
-Swiss local governments. \citeA{dwenger-17} find increased compliance
-associated with tax morale messages stressing peer behavior in the
-payment of the local church tax in Germany.  \citeA{meiselman-18} finds
-improved compliance by ``ghost" filers of Detroit's local income tax
-for reminders that stress economic penalties but no improved
-compliance for reminders that stress taxes are essential for Detroit's
-economic future.  \citeA{castro} study of the payment of local
-property tax to Argentine municipalities finds significantly increased
-compliance for those receiving reminders stressing economic sanctions.
-There were only mixed results for those receiving a tax morale
-message, however.  On average, the intrinsic messages stressing peer
-behaviors or the public service benefits of paying taxes had no impact
-on payment, but behavior differed by whether one had paid taxes in the
-past or owned property in, but lived outside, the city.
-Interestingly, being reminded that 30 percent of taxpayers did not pay
-their taxes reduced the rate of compliance among those who usually pay
-their taxes.  But, taxpayers who live outside the city and had
-initially lower average rates of compliance increased their rates of
-payment in response to both the peer and public service reminders.
+Swiss local governments.  \citeA{meiselman-18} finds improved
+compliance by ``ghost" filers of Detroit's local income tax for
+reminders that stress economic penalties but no improved compliance
+for reminders that stress taxes are essential for Detroit's economic
+future.  \citeA{Miller-Nikaj-16} examine the impact of tax lien sales
+on collected city tax revenues in Ohio.  While the sales generate
+direct revenue to cover past taxes owed, they also encourage
+additional tax payments by other taxpayers.  They estimate that tax
+lien sales increase property tax collection by 5.6 percent above what
+had been generated by the sales alone, a result strikingly similar to
+what we have found for our reminder letter threatening lien sales.
+Finally, in the study closest to ours, \citeA{castro} examine the
+payment of local property taxes to Argentine municipalities and find,
+as do we, there is significantly greater compliance for those
+receiving reminders stressing economic sanctions. There were only
+mixed results for those receiving a tax morale message, however.  On
+average, the messages stressing peer behaviors or the public service
+benefits of paying taxes had no impact on payment.  But there was
+significant heterogeneity in responses.  Taxpayers living inside the
+city and who had previously paid their taxes reduced their rate of
+payments after being reminded that 30 percent of other city taxpayers
+do not pay their taxes.  Taxpayers living outside the city and who as
+a group have a low rate of compliance increased their rates of payment
+in response to both reminders stressing peer rates of payment and the
+value of city public services.
 
-The mixed results for the impact of nudges on taxpayer compliance is
-an important reminder that context matters.  Nudges that work for one
-tax and for one government may not work in other settings.  This fact
-is nowhere more clearly evident than in the careful decomposition by
-Castro and Scartascini (2015) of the impact of nudges on compliance
-for property taxpayers in Argentina.  That there are no general
-lessons beyond that that nudges, in some form and in some settings,
-can improve compliance is perhaps the empirical literature's most
-important lesson.  The implied recommendation is that nudges can be a
-useful policy tool for efficient tax administration, but each nudge
-must be evaluated and compared in a specific setting of tax
-compliance.  
+These mixed results for the impact of nudges on taxpayer compliance
+provide an important reminder that context matters.  Nudges that work
+for one tax and for one government may not work in other
+settings. There is no general lesson beyond the one that nudges,
+in some form and in some settings, can improve compliance.  As a
+strategy, nudges can be a useful policy tool for efficient tax
+administration, but each nudge must be evaluated and each compared in
+a specific setting of tax compliance.
 
-With this conclusion in mind, we report the results for
-our evaluation of a policy experiment to increase tax compliance in
-Philadelphia for the payment of fiscal year 2016 property taxes.  The
-initial sample included all 21,468 taxpayers who were tardy in their tax
-payments for that fiscal year.  Taxpayers who received a reminder
-letter were mailed one of seven letters: a simple reminder, either of
-two reminders stressing either a ``gentle'' or ``strong'' economic
-sanction, and one of four reminders stressing a role of taxes in
-paying for neighborhood or city-wide services, the payment behavior of
-their neighbors, or a civic duty of citizens to pay their taxes. Finally,
-a last set of taxpayers received no reminder and served as
-our control group. Our main evaluation is based on the sub-sample
-of single property owners, i.e. we exclude taxpayers that owned 
-multiple properties. There are 19,039 single-property owners in our sample.
-2,088 of these taxpayers were assigned to the holdout sample, while 16,951 
-were assigned to one of the seven treatment groups.
+With this conclusion in mind, we report the results for our evaluation
+of a policy experiment to increase tax compliance in Philadelphia for
+the payment of fiscal year 2016 property taxes.  The initial sample
+included all taxpayers who were tardy in their tax payments for that
+fiscal year.  After eliminating multiple-property owners, we obtained
+a sample of 19,039 single property owners. We assigned 2,088 of these
+taxpayers to the holdout sample receiving no reminder.  The remaining
+16,951 tardy taxpayers received one of our seven treatment messages: a
+simple reminder, either of two reminders stressing either a ``gentle''
+or a ``strong'' economic sanction, and one of four reminders stressing
+the payment behavior of their neighbors, the role of local taxes in
+paying for neighborhood or city-wide services, that with citizenship
+comes a civic duty to pay their taxes.
 
-The evaluation reached six conclusions.  First, a simple reminder
-letter had a statistically significant effect on compliance when
-compared to our control group who received no reminder.  Second, the
-content of the reminder letter matters.  The two letters that stress
-the likely economic sanctions of continued tardy payment led to faster
-and higher levels compliance than the simple reminder.  Third, adding
-an intrinsic message to the reminder, one that stressed the value of
-public services, neighbors' compliance, or civic duty did not increase
-compliance over receiving only the simple reminder.  Fourth, most of
-the taxpayers who did respond with payments, paid their full tax
-obligation.  Fifth, reminders were very cost effective on the margin.
-Each letter cost one dollar to send and returned on average \$37 in
-increased city tax revenues.  The two letters stressing economic
-sanctions were the most effective, returning \$65 in extra revenues
-for each letter sent.  Sixth, reminders had no staying power.  Having
-received a 2016 reminder letter had no effect on the taxpayer’s
-likelihood of paying their 2017 property taxes on time.
+Overall, we find that that all reminder letters are more effective
+than doing nothing.  Moreover, the two letters that stress economic
+sanctions are more effective than the other five reminder letters. Our
+findings do not imply that tax morale is not of primary importance for
+property tax compliance. Given the low collection rates in cities such
+as Philadelphia, tax morale is clearly a major concern. The only
+conclusion that can be drawn from our experiment is that reminder
+messages that tried to appeal to the duty to pay taxes or emphasized
+the fact that most neighbors pay property taxes did not yield higher
+tax collection rates than simple reminders. Our experiment does not
+allow us to estimate the impact of changes in tax morale on tax
+compliance behavior.
 
-The rest of the paper is organized as follows. Section 2 discusses
-details of our field experiment including a description of the
-treatments and the randomization procedure. Section 3 discusses our
-randomization procedure.  Section 4 reports the main empirical
-findings. Section 5 discusses the urban fiscal policy implications of
-our experiment. Section 6 discusses the effectiveness of nudges. Section
-7 offers conclusions.
+There are primarily three competing explanations for tardiness in
+property tax payments: procrastination or forgetfulness, lack of
+enforcement, and credit constraints. We find that 70 percent of all
+tardy taxpayers fully comply with the tax laws by the end of the
+fiscal year.  For the remaining 30 percent we consider the possibility
+that they be constrained by their lack of credit to pay their full tax
+bill.  If so, access to a tax payment plan that smooths out payments
+over the fiscal year may be helpful.  The city offers such a plan.  We
+find, however, that no more than 3 to 4 percent of those potentially
+credit constrained taxpayers actually use the tax payment program.
+Liquidity constraints may bind, but the main barrier to payment is the
+taxpayer's inclination to do so.
+
+The paper is organized as follows. Section 2 discusses details of our
+field experiment including a description of the treatments. Section 3
+discusses our randomization procedure.  Section 4 reports the main
+empirical findings. Section 5 discusses the urban fiscal policy implications of our
+experiment. Section 6 discusses the effectiveness of nudges. Section 7
+offers conclusions.
+
 
 
 \section{A Field Experiment }
 
 The research setting for the experiment is the City of Philadelphia
-for calendar year, 2015, for the payment of property taxes for fiscal 
+for calendar year, 2015, for the payment of property taxes for fiscal
 year 2016.  Notices of property tax payments are sent on
 January 1, and the full balance of taxes are due by March 31.  If
 payment has not been received by that date, or the taxpayer has not
@@ -294,19 +324,56 @@ agencies. For the purposes of our experiment the City of Philadelphia
 agreed to delay sending any of the tardy accounts to the collection
 agencies until August 15, 2015.
 
-Our experiment was implemented with those taxpayers newly tardy on
-March 31, 2015. Of the 579,828 properties in the city receiving 2015
-tax bills, approximately 100,000 or 17 percent were late in payment as
-of April 1. Of these 100,000 properties, 27,264 (owned by 21,468
-taxpayers) had tax obligations of more than \$10 as of May 15, 2015,
-but had not owed property taxes from prior years. Our experiment
-excludes all chronically delinquent taxpayers who owed taxes from
-prior years. Of the 21,468 tardy taxpayers, 2,429 taxpayers owned more
-than one property. While all 21,468 taxpayers were included in our
-experiment, we focus our empirical work on the 19,039 taxpayers who
-owned only one property.\footnote{As a robustness check we repeated
-  our empirical analysis for the full sample of 21,468 and the results
-  are similar those we report in Sections IV and V below.}
+Our sample for the experiment began with all taxpayers tardy as of
+April 1, 2015, equal to approximately 17 percent of all taxpayers who
+received tax bills for the fiscal year.  From the list of all
+tardy taxpayers, we first eliminated chronically delinquent taxpayers
+from our sample and those who owed less than \$10 in taxes. This
+reduced the sample to 21,468 taxpayers. Of these 21,468 tardy
+taxpayers, 2,429 taxpayers owned more than one property.\footnote{Tax
+  compliance is by taxpayers, not properties.  It is, therefore,
+  necessary to assign an owner to each property. Lacking an objective
+  identifier of the owner of each property such as a social security
+  or taxpayer identification number, we used the owner names attached
+  to properties.  We found no instances in which property owners had
+  the same legal name.} There is much heterogeneity within the
+subsample of multiple property owners by the amount of taxes owed
+making it difficult to achieve balance with a handful of debtors owing
+substantial and substantially different amounts. We chose, therefore,
+to exclude multiple property owners from the analysis reported here.
+Our final sample consists of 19,039 taxpayers who owned only one
+property. Overall, this sample is less affluent than the overall
+sample of all property holders in Philadelphia.
+
+Our intervention sent reminder letters to seven randomly assigned
+groups of tardy taxpayers: one letter that is a simple reminder, one
+sanction reminder that stresses tax liens at the time of home sale and
+a second sanction reminder that threatens a sheriff's sale to pay back
+taxes, and four tax morale reminders that note first, taxes pay for
+neighborhood services, second, that taxes pay for city-wide services,
+third, that nine of ten Philadelphians pay their taxes on time, and
+fourth, that citizens have a civic duty to pay their taxes.  Reminders
+are low cost interventions and take as given taxpayer preferences and
+information regarding the benefits and costs of compliance.  Each
+reminder is meant to trigger an immediate awareness, called saliency,
+of those benefits and costs.\footnote{See Akerlof (1991) and
+  O'Donoghue and Rabin (1999).}  More expensive experimental
+treatments to educate taxpayers as to the possible long-run private
+and wider public benefits of payment can also be imagined and have
+been effective in many settings.\footnote{Effectiveness often depends
+  crucially upon a preexisting social or cultural environment, in
+  particular a community with homogenous values and a prior trust in
+  government; see \citeA{Alm-19} for a review.  For example, the
+  long-standing tradition in poorer communities of not paying utility
+  bills as a protest against South Africa's apartheid regime continues
+  to today, despite an extensive public message campaign featuring
+  leading entertainers, sports figures, and respected public officials
+  stressing this is now ``our South Africa" and that all citizens have an
+  obligation to pay for public services.  Distrust of government in
+  poor neighborhoods remains a significant barrier to the payment of
+  fees; see Reuters News Service, November 19, 2014, ``South Africa's
+  Latest Power Struggle: Unpaid Bills.'' } Our interventions were more
+modest.
 
 Our experiment began with the mailing of our experimental reminder
 letters in mid-June, 2015 and continued to December 31, 2015.  Of the
@@ -319,13 +386,12 @@ not under our control, the DoR agreed to postpone all other
 enforcement activities until August 15.  In particular, the outside
 collection agencies were not allowed to begin their collection efforts
 until after that date.  The likely earliest date that those efforts
-led to any contact with a taxpayer is September 1.
+led to any contact with a taxpayer was September 15.
 
-Each reminder letter was approved by City's DoR to ensure that it
-could be understood by a taxpayer with at least a fourth or fifth
-grade level of English reading comprehension.  Each letter also
+Each reminder letter was approved by the City's DoR to ensure that it
+could be easily understood by all taxpayers.  Each letter also
 provided contact information for assistance for non-English speaking
-taxpayers.  Translation were available for a number of different
+taxpayers.  Translations were available for a number of different
 languages.\footnote{Templates of the ``reminder only'' and ``lien''
   letters are attached in the appendix.  The full template for the
   other letters are available as an online appendix.}
@@ -334,32 +400,25 @@ Each reminder letter in our experiment was drafted to identify a
 potential channel that may affect taxpayers compliance. For brevity
 we present here the important distinguishing feature of each letter.
 
-\bigskip
-
-\noindent \textit{Reminder-only}: \textbf{Our records indicate 
-that you have a balance due of \textit{balance. }} If you have 
-already paid, thank you.  If not, please pay now or contact us 
-to arrange a payment plan.  The fastest and easiest way to pay is 
-online at  www.phila.gov/pay. Paying by E-check only costs 35 cent 
+\noindent \textit{Reminder-only}: \textbf{Our records indicate
+that you have a balance due of \textit{balance. }} If you have
+already paid, thank you.  If not, please pay now or contact us
+to arrange a payment plan.  The fastest and easiest way to pay is
+online at  www.phila.gov/pay. Paying by E-check only costs 35 cent
 -- less than the cost of a stamp!
 
-\bigskip
-
 The reminder-only letter allows us to identify the potential
-importance of tax saliency to taxpayer compliance.\footnote{ On the
-  potential importance of saliency for individual choices, see
-  \cite{DR-99} and \cite{gabaix_2017}.  Our experimental design
-  identifies the effect of saliency alone as a trigger for tax
-  compliance by estimating the difference in the rate of compliance
-  for our holdout sample receiving no letter compared to the sample
-  receiving the simple reminder letter only.  Our reminders were
-  mailed six months after the initial notification of taxes due, and
-  thus could estimate the loss of saliency for this period
+importance of tax saliency to taxpayer compliance or, in simpler terms,
+the effect of being reminded of the tax balance due.\footnote{ Our
+  experimental design identifies the effect of saliency alone as a
+  trigger for tax compliance by estimating the difference in the rate
+  of compliance for our holdout sample receiving no letter compared to
+  the sample receiving the simple reminder letter only.  Our reminders
+  were mailed six months after the initial notification of taxes due,
+  and thus could estimate the loss of saliency for this period
   only. Staggered mailings of the simple reminder letter could
   identify the rate of decline in saliency, but this was not possible
-  in our experiment because of time constraints imposed by DoR. }
-   
-\bigskip
+  in our experiment because of time constraints imposed by DoR.}
 
 \noindent \textit{Reminder plus Tax Lien}: Failure to pay your Real
 Estate Taxes may result in a tax lien on your property in an amount
@@ -370,9 +429,7 @@ penalties and interest.  Properties near you in your neighborhood that
 have liens placed on them include: $<$ List Three Properties and Sale
 Dates $>$ \textbf{Pay your taxes now to avoid a lien being placed on
   your property.  Our records indicate that you have a balance due of
-  \textit{balance}.  }
-
-\bigskip
+  \textit{balance}.}
 
 \noindent \textit{Reminder plus Lien and Sheriff's Sale}: Failure to
 pay your Real Estate Taxes may result in the sale of your property by
@@ -383,52 +440,56 @@ near you: $<$List Three Properties and Sale Dates$>$ \textbf{Pay your
   taxes now to prevent the sale of your property.  Our records
   indicate that you have a balance due of \textit{balance}.}
 
-\bigskip
-
 The reminder letter coupled with the threat of a lien, or a lien plus
-a sheriff's sale of the taxpayer's home, increase the expected
-interest and penalties to the costs of delay -- that is, an increase
-in penalties.  Both letters make clear that interest and
-penalties are not an empty threat and will be collected by listing
-neighborhood properties where these added enforcement measures have
-been implemented.  A taxpayer lien for all interest and penalties will
-be collected at the future date of home sale, which may be a very
-large obligation if the home is sold significantly in the future.  A
-lien coupled with a sheriff's sale may occur sooner and thus have
-lower accumulated interest and penalties, but the forced sale of one's
-home is likely to have very high psychic costs.  Which of the two
-added penalties is larger, and therefore likely to have a stronger
-impact on compliance, will depend upon the circumstances of the
-individual tardy taxpayer.  However, both letters should increase
-compliance over the holdout cohort from (i) the reminder effect on
-saliency and (ii) from the added expected penalty, and both letters should
-increase compliance over the reminder-only letter from the added
-expected penalty.
+a sheriff's sale of the taxpayer's home, increase the recognized
+interest and penalties with delay -- that is, an increase in
+penalties.  A taxpayer lien for all interest and penalties will be
+collected at the future date of home sale, which may be a very large
+obligation if the home is sold significantly in the future.  A lien
+coupled with a sheriff's sale may occur sooner and thus have lower
+accumulated interest and penalties, but the forced sale of one's home
+is likely to have very high psychic costs.  Which of the two added
+penalties is larger, and therefore likely to have a stronger impact on
+compliance, will depend upon the circumstances of the individual tardy
+taxpayer. To make clear these sanctions are not empty threats, both
+letters list three neighborhood properties where these added
+enforcement measures have been implemented.  If penalties are
+perceived as significant and likely to be enforced then both letters
+should increase compliance over that observed for the simple
+reminder.\footnote{The point of listing neighborhood properties was to
+  make it clear from locally available evidence that the City
+  sanctions will be enforced. A referee suggested, however, that
+  taxpayers may interpret the three listed properties as the only
+  sanctioned properties and thus that while there is enforcement it is
+  only rarely used.  We cannot rule out this possibility. In addition,
+  our letters did not communicate when the enforcement will
+  happen. which may have created some uncertainty about enforcement
+  strategies. See \citeA{Alm-Jackson-McKee-92} for an experimental
+  study for how institutional uncertainty may affect taxpayers
+  compliance.}
 
 Our final four reminder letters test for the potential role of ``tax
 morale'' motives for compliance.  An appeal to a tax morale is meant
-to cue a possible benefit from having paid one's taxes.  In
-contrast to user fees, property tax payments are not tied to the
-citizen's receipt of particular services during our experimental
-period.  In effect, each delinquent taxpayer is a potential free
-rider, and the appeal to a tax morale for payment is meant to overcome
-such self-interest. 
+to cue a possible benefit from having paid one's taxes.  In contrast
+to user fees, property tax payments are not tied to the citizen's
+receipt of particular services during our experimental period.  In
+effect, each delinquent taxpayer is a potential free rider, and the
+appeal to a tax morale for payment is meant to overcome such
+self-interest.
 
 We test for the importance of four such motives: 1) the value of
 knowing one is a contributor to the immediate services of one's
-neighborhood; 2) the value of knowing one is a contributor to
-the wider services that benefit the city as a whole; 3) the
-value of knowing one is part of a collective effort with other
-taxpayers or ``peers'' in paying for city services; and 4)
-the value of knowing one has meet one's obligations as a citizen in a
-democracy.  Each of these benefits may motivate taxpayer
-compliance, and our reminder letters are meant to trigger a possible
-recognition of the importance of each motive.  Some tardy
-taxpayers may respond to one motive, some to another, and perhaps
-others to none at all if the free-rider motive is decisive.  The four
-tax morale reminder letters are:
-
-\bigskip
+neighborhood; 2) the value of knowing one is a contributor to the
+wider services that benefit the city as a whole; 3) the value of
+knowing one is part of a collective effort with other taxpayers or
+``peers'' in paying for city services; and 4) the value of knowing one
+has meet one's obligations as a citizen in a democracy.  Each of these
+benefits may motivate taxpayer compliance, and our reminder letters
+are meant to trigger a possible recognition of the importance to the
+taxpayer of each motive.  Some tardy taxpayers may respond to one
+motive, some to another, and perhaps others to none at all if the
+free-rider motive is decisive.  The four tax morale reminder letters
+are:
 
 \noindent \textit{Reminder Plus Appeal to Neighborhood Services}: We
 want to remind you that your taxes pay for essential public services
@@ -439,8 +500,6 @@ removal, street repairs, and trash collection.  \textbf{Please pay
   neighborhood.} \textbf{Our records indicate that you have a balance
   due of \textit{balance}.}
 
-\bigskip
-
 \noindent \textit{Reminder Plus Appeal to City-Wide Services}: Your
 taxes pay for important services that make a city great. Your tax
 dollars are essential for ensuring all Philadelphia's children receive
@@ -449,8 +508,6 @@ neighborhoods.  \textbf{Please pay your taxes as soon as you can to
   help us pay for these important services.  Our records indicate that
   you have a balance due of \textit{balance}.}
 
-\bigskip
-
 \noindent \textit{Reminder Plus Appeal to Peer Behavior}: You have not
 paid your Real Estate Taxes.  Almost all of your neighbors pay their
 fair share: 9 out of 10 Philadelphians do so.  \textbf{By failing to
@@ -458,76 +515,35 @@ fair share: 9 out of 10 Philadelphians do so.  \textbf{By failing to
   Our records indicate that you have a balance due of
   \textit{balance}.}
 
-\bigskip
-
 \noindent \textit{Reminder Plus Appeal to Civic Duty}: For democracy
 to work, all citizens need to pay their fair share of taxes for
 community services.  \textbf{By failing to do so, you are not meeting
   your duty as a citizen of Philadelphia.  Our records indicate that
   you have a balance due of \textit{balance}.}
 
-\bigskip
+We take as evidence that a tax morale message increases the likelihood
+of tax compliance when the tax morale reminder increases the rate of
+compliance above that of the reminder-only letter.  If tax morale
+letters have the same impact on compliance as a reminder-only letter
+then not much is gained by appealing to tax morale.
 
-We take as evidence that an increase in tax morale increases the
-likelihood of tax compliance when a tax morale reminder letter
-increases the rate of compliance above that of those receiving a
-reminder-only letter.  If none of the tax morale letters impact
-compliance above a reminder-only letter then, at least on the margin
-for paying the property tax, the free-rider motivation is decisive for
-tardy Philadelphia taxpayers.  In this case, increased enforcement
-will need to appeal to reminders and penalties.
 
-  
 \section{Randomization Procedure}
 
-Randomization took place in two stages.  As a baseline control, we
-randomly removed 3,000 out of 27,264 tardy properties from the possibility of
-receiving any reminder letter at all.  Taxpayers that owned one
-of these properties  became our holdout sample. Hence, we can
-estimate the efficacy of simply communicating with the
-taxpayer after the date that taxes are due. We next grouped all
-remaining properties by owner and randomized all owners to treatments
-based on the total amount of property taxes owed on all of their
-properties.
+We begin our analysis with 19,039 first-time tardy taxpayers owning
+only a single property in Philadelphia.  As a baseline control we then
+randomly removed 2,088 taxpayers from receiving any reminder letter at
+all.  These taxpayers became our holdout sample.  We, therefore, have
+16,951 taxpayers in the treatment groups and 2,088 taxpayers in the
+holdout or control group. We next randomized all remaining owners by
+treatments based on the total amount of property taxes owed.
 
-While the vast majority of properties in the city of Philadelphia are
-owned by those with just one property, approximately 10 percent of the
-properties are owned by individuals or firms that own two or more
-properties. Since we are interested in taxpayer compliance and not
-property compliance, we identified owners of multiple properties by
-their legal name and randomly assigned each owner to a treatment
-group.\footnote{We lacked an objective identifier such as a social
-  security number.  There is some possibility that two or more different
-  owners have the same name, but inspection by the authors found this
-  to be very rare.  To the extent that it occurs, we consider this
-  random noise to the experiment.} Any tardy taxpayer holding multiple
-properties within each treatment group received the same letter for
-each of those properties.  Given the high correlation between the
-propensity to pay taxes and total debt owed, randomization blocks were
-defined according to owner-level total debt to assure uniformity of
-samples along the dimension of debt owed. Each property assigned to
-receive a reminder letter was equally likely to receive each of the
-seven treatments. 
+Given the high correlation between the propensity to pay taxes and
+total debt owed, randomization blocks were defined according to
+owner-level total debt to assure uniformity of samples along the
+dimension of debt owed.  Each owner assigned to receive a reminder
+letter was equally likely to receive each of the seven treatments.
 
-Since most tardy property owners own only one
-property, our main interest in this study will be households that only
-own one property in the city. Once we restrict attention to the 19,039 
-single property owners. We have 16,951 taxpayers in the treatment group and 2,088
-taxpayers in the holdout sample.
-
-Table \ref{balance} checks whether the
-treatment and holdout groups are balanced based on the two most
-important variables, taxes due and assessed property value.
-Table \ref{balance} shows that randomization was successful in the
-single property owner sample.  The average debt owed by each owner was
-\$1,287 in the treatment group and \$1,233 in the holdout sample. The
-average assessed property value is \$144,145 in the treatment group
-and \$142,630 in the holdout group. The average tenure was 15 years
-across all groups.  As a further test of our randomization procedure,
-we also checked to see whether randomization achieved spatial
-uniformity throughout the geographic expanse of the city. As reported
-in Table \ref{balance} geographic balance was achieved. Overall, we find no evidence
-that would suggest any problems with randomization.
 
 \begin{sidewaystable}[htbp]
 \centering
@@ -535,15 +551,15 @@ that would suggest any problems with randomization.
 \label{balance}
 \vspace{10mm}
 \begin{tabular}{lrrrrrrrrc}
-\hline 
+\hline
 Variable & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 & $p$-value \\
- \hline 
- Amount Due & \$1,233 & \$1,383 & \$1,389 & \$1,613 & \$1,950 & \$1,290 & \$1,338 & \$1,316 & 0.32 \\ 
- & (\$1,840) & (\$6,510) & (\$4,130) & (\$13,118) & (\$25,290) & (\$2,021) & (\$3,413) & (\$2,158) & \\ 
+ \hline
+ Amount Due & \$1,233 & \$1,383 & \$1,389 & \$1,613 & \$1,950 & \$1,290 & \$1,338 & \$1,316 & 0.32 \\
+ & (\$1,840) & (\$6,510) & (\$4,130) & (\$13,118) & (\$25,290) & (\$2,021) & (\$3,413) & (\$2,158) & \\
 Prop. Value & \$142 & \$163 & \$147 &
-\$155 & \$206 & \$130 & \$130 & \$166 & 0.29 \\ 
- & (\$509) & (\$1,316) & (\$699) & (\$966) & (\$2,035) & (\$181) & (\$181) & (\$1,336) & \\ 
-Years Tenure & 18.7 & 18.7 & 19.0 & 18.6 & 18.5 & 18.8 & 18.9 & 18.9 & 0.96 \\  
+\$155 & \$206 & \$130 & \$130 & \$166 & 0.29 \\
+ & (\$509) & (\$1,316) & (\$699) & (\$966) & (\$2,035) & (\$181) & (\$181) & (\$1,336) & \\
+Years Tenure & 18.7 & 18.7 & 19.0 & 18.6 & 18.5 & 18.8 & 18.9 & 18.9 & 0.96 \\
 & (15.6) & (15.2) & (15.7) & (15.5) & (15.7) & (15.6) & (15.6) & (16.0) & \\
  Center City & 5\% & 5\% & 5\% & 5\% &
 5\% & 4\% & 5\% & 5\% & 0.66 \\ Northeast Philly & 17\% & 18\% &
@@ -551,46 +567,72 @@ Years Tenure & 18.7 & 18.7 & 19.0 & 18.6 & 18.5 & 18.8 & 18.9 & 18.9 & 0.96 \\
 & 21\% & 22\% & 22\% & 21\% & 20\% & 22\% & 22\% & \\ Northwest
 Philly & 26\% & 25\% & 27\% & 28\% & 26\% & 27\% & 25\% & 25\% &
 \\ South Philly & 10\% & 9\% & 10\% & 10\% & 10\% & 10\% & 10\%
-& 10\% & \\ 
+& 10\% & \\
 West Philly & 21\% & 23\% & 21\% & 21\% & 22\% &
 23\% & 20\% & 22\% & \\ \# Owners & 2,088 & 2,420 & 2,432 & 2,419 &
 2,389 & 2,441 & 2,417 & 2,433 & \\ \hline
 \multicolumn{10}{l}{\scriptsize{$p$-values in rows 1-2 are $F$-test
     $p$-values from regressing each variable on treatment dummies. A
     $\chi^2$ test was used for the geographic distribution.}} \\
-    \multicolumn{10}{l}{\scriptsize{ Standard deviations in parentheses. Property values are reported in \$1000. }} \\
- \multicolumn{10}{l}{\scriptsize{1: Holdout, 2 : Reminder, 3: Lien, 4:  Sheriff,
-5: Neighborhood,  6: Community, 7: Peer, 8:  Duty}} \\
+\multicolumn{10}{l}{\scriptsize{ Standard deviations in
+    parentheses. Property values are reported in \$1000. }}\\
+\multicolumn{10}{l}{\scriptsize{1: Holdout, 2 : Reminder, 3: Lien, 4:
+    Sheriff, 5: Neighborhood, 6: Community, 7: Peer, 8: Duty}} \\
 \end{tabular}
 \end{sidewaystable}
+
+Table \ref{balance} checks whether the treatment and holdout groups
+are balanced based on the two most important variables, taxes due and
+assessed property value.  Table \ref{balance} shows that randomization
+was successful in the single property owner sample.  The average debt
+owed by each owner is \$1,287 in the seven treatment groups and \$1,233 in
+the holdout sample. The average assessed property value is \$144,145
+in the treatment group and \$142,630 in the holdout group. The average
+tenure for property ownership was 15 years across all groups.  As a
+further test of our randomization procedure, we also checked to see
+whether randomization achieved spatial uniformity throughout the
+geographic expanse of the city. As reported in Table \ref{balance}
+geographic balance was achieved. Overall, we find no evidence that
+would suggest any problems with randomization.
 
 
 \section{Empirical Results}
 
-Table \ref{sh_lin} presents our core results for the three month
-period of our experiment unaffected by the intervention of the two
-outside collection agencies hired by the City to begin their own
-enforcement efforts in September, 2015. We consider three distinct
-measures of tax compliance behavior. First, did the taxpayer make any
-contribution at all towards their tax bill; this is the
-\textit{ever-paid} response. Second, did the taxpayer make a full
-payment of their tax bill; this is the \textit{paid-in-full}
-response. Third, what was the total amount paid by the taxpayer; this
-is the \textit{total-paid}.  The sample in Table 2 includes only the
-19,039 taxpayers who own a single property. For ease of interpretation, Table
-\ref{sh_lin} presents OLS estimates for the linear probability model.\footnote{
-logit estimates are available upon request and are identical in significance
-and interpretation to the OLS results reported here.}
+Table \ref{sh_lin} presents our core results for the one-month and
+three-months period of our experiment. Our experiment started on June
+15, 2015.  The one-month and three-months results are compelling since they
+are not ``contaminated" by the activities of the collection
+agencies. Recall that the City typically employs these collection
+agencies in May of each year to improve the property tax revenue
+collection, but delayed their notification activities until the end of
+August in 2015 with enforcement efforts beginning in mid-September,
+2015.  The difference between the one-month and three-months
+illustrates some important timing issues and highlight the benefits of
+being patient.  One important lesson from this study is that nudges
+may be a cheaper technology to collect revenues than outsourcing the
+problem to collection agencies that charge six-percent contingency
+fees.
 
-The top line of Table \ref{sh_lin} reports the mean rate of compliance
-of our holdout sample for \textit{ever-paid} or \textit{paid-in-full}
-one month from the starting date of the experiment (July 15) and for
-the three months to the ending date of the experiment (September
-15). The rate of \textit{ever-paid} compliance for taxpayers in the
-holdout sample rises from 30.5 percent after one month to 51.4 percent
-after three months; the rate of \textit{paid-in-full} compliance for
-the holdout sample raises from 23.5 percent after one month to 40.8
-percent after three months. 
+We consider three distinct outcome measures for tax compliance
+behavior. First, did the taxpayer make any contribution at all towards
+their tax bill; this is the \textit{ever-paid} response. Second, did
+the taxpayer make a full payment of their tax bill; this is the
+\textit{paid-in-full} response. Third, what was the total amount paid
+by the taxpayer; this is the \textit{total-paid}.  For ease of
+interpretation, Table \ref{sh_lin} presents OLS estimates for the
+linear probability model.\footnote{Logit estimates are identical
+in significance and interpretation to the OLS results reported here.}
+
+The top line of Table \ref{sh_lin} reports the mean rates of
+compliance for our holdout sample measured by the fraction of tardy
+taxpayers by \textit{ever-paid} or \textit{paid-in-full} and the mean
+payments.  We report these rates one month from the starting date of
+the experiment (July 15) and three months from the starting date of
+the experiment (September 15). The rate of \textit{ever-paid}
+compliance for taxpayers in the holdout sample rises from 30.5 percent
+after one month to 51.4 percent after three months; the rate of
+\textit{paid-in-full} compliance for the holdout sample raises from
+23.5 percent after one month to 40.8 percent after three months.
 
 \begin{table}[htbp]
 \caption{Short-Term Linear Probability Model Estimates}\label{sh_lin}
@@ -627,46 +669,133 @@ Num. obs.    & 19039        & 19039        & 19039        & 19039        & 19039
 \end{center}
 \end{table}
 
-The next seven rows report the additional impact on compliance from
-our seven treatment letters: Reminder-only, Reminder/Lien,
-Reminder/Sheriff, Reminder/Neighborhood, Reminder/Community,
-Reminder/Peer, and Reminder/Duty.  Receiving the reminder-only letter
-increases the rate of compliance after one month for an
-\textit{ever-paid} tax payment by 3.7 percent above the holdout's rate
-of compliance and by 3.9 percent after three months.  Both effects are
-statistically significant at the 99 percent level of confidence.
-These estimates for the reminder-only letter indicate the relative
-importance of salience and the benefit of simple notification
+The next seven rows report the additional impact on rates of
+compliance and mean payments from our seven treatment letters: Reminder-only,
+Reminder/Lien, Reminder/Sheriff, Reminder/Neighborhood,
+Reminder/Community, Reminder/Peer, and Reminder/Duty.  Receiving the
+reminder-only letter increases the rate of compliance after one month
+for an \textit{ever-paid} tax payment by 3.7 percent above the
+holdout's rate of compliance and by 3.9 percent after three months.
+Both effects are statistically significant at the 99 percent level of
+confidence.  These estimates for the reminder-only letter indicate the
+relative importance of salience and the benefit of simple notification
 strategies to taxpayer compliance behavior.\footnote{For evidence from
   other settings that saliency matters and reminders have significant
   impacts in inducing appropriate behaviors, see
-  \citeA{Thaler-Sunstein-03} and \citeA{Karlan-16}. For evidence that
-  simple reminders matter for the payment of local taxes, see
-  \citeA{DelCarpio-13} and for the payment of local fines see
-  \citeA{Heffetz-16}.}
+  \citeA{Thaler-Sunstein-03}, \citeA{Karlan-16}, and
+  \citeA{Kessler-Zhang-15}. For evidence that simple reminders matter
+  for the payment of local taxes, see \citeA{DelCarpio-13} and for the
+  payment of local fines see \citeA{Heffetz-16}.}
 
-Our letter is particularly effective early in our experiment, where
-the pure effect of a reminder increases the rate of compliance after
-one month by approximately 12 percent (= 3.7/30.5).  While receipt of
-the reminder letter is still effective after three months, its
-relative impact on compliance behavior is less, adding an additional 8
-percent (= 3.9/51.4) to the rate of \textit{ever-paid}.  The same
-statistical significance and declining rate of impact of reminder-only
-on compliance is observed for the outcome, \textit{paid-in-full}.
-Here the reminder-only letter increases the one month rate of
-compliance over the holdout sample by 2.2 percent on a mean rate of
-holdout compliance of 23.5 percent (9.4 percent improvement) and the
-three month rate of compliance over the holdout sample by 3.0 percent
-on a mean rate of 40.8 percent (7.4 percent improvement). While most
-of the new taxpayers paid in full -- 3 percent compared to the 3.9
-percent of all new payers after three months -- the additional
-revenues raised by the reminder letters over that paid by those with
-no letter is never significant and is quantitatively very small, on
-average only \$15.20 more than the amount paid by the holdout sample
-after three months.
+The simple reminder letter is particularly effective early in our
+experiment, where the pure effect of a reminder increases the rate of
+compliance after one month by approximately 12 percent (= 3.7/30.5).
+While receipt of the reminder letter is still effective after three
+months, its overall impact on compliance behavior is relatively less,
+adding an additional 8 percent (= 3.9/51.4) to the rate of
+\textit{ever-paid}.  The same statistical significance and declining
+rate of overall impact of reminder-only on compliance is observed for
+the outcome, \textit{paid-in-full}.  Here the reminder-only letter
+increases the one-month rate of compliance over the holdout sample by
+2.2 percent on a mean rate of holdout compliance of 23.5 percent (9.4
+percent relative improvement) and the three-months rate of compliance
+over the holdout sample by 3.0 percent on a mean rate of 40.8 percent
+(7.4 percent relative improvement). While most of the taxpayers paid
+in full -- 3 percent compared to the 3.9 percent of all taxpayers
+after three months -- the additional revenues raised by the reminder
+letters over that paid by those with no letter is never significant
+and is quantitatively very small, on average only \$15.20 more than
+the amount paid by the holdout sample after three months. The reminder
+only letter had its greatest impact on taxpayers who owed the least.
 
+Similar to results from other tax compliance studies, the impact of
+adding a more substantive message to the reminder letter had mixed
+results on taxpayer compliance, depending on the content of the
+message.  Of the six supplemental messages, only the reminder/lien and
+the reminder/sheriff letters had a statistically significant added
+impact on compliance above the simple reminder.  After one month, the
+sample receiving the reminder/lien letter had an additional 9.0
+percent rate of \textit{ever-paid} compliance over the hold-out
+sample's rate of compliance of 30.5 percent (30 percent relative
+improvement) and after three months an additional 9.2 percent rate of
+\textit{ever-paid} compliance over the hold-out sample's compliance
+rate of 51.4 percent (18 percent relative improvement).  The impacts
+are statistically significant at the 99 percent level of confidence.
+The results for \textit{paid-in-full} compliance for the reminder/lien
+letter are also statistically significant and add 5.7 to the rate of
+compliance over the holdout sample after one month and 7.3 percent to
+the rate of compliance after three months.  Importantly, the impact of
+the reminder/lien letter on total taxes paid over that for the holdout
+sample is statistically significant and shows increased payments of
+from \$117 per letter (36 percent relative improvement) to \$122.7 per
+letter (19 percent relative improvement) after one month and three months,
+respectively. Though with slightly smaller impacts on compliance and
+taxes paid, the reminder/sheriff letter also yields significantly
+higher compliance rates and tax payments above the holdout
+sample. Letters stressing sanctions have their greatest impact on
+tardy taxpayers who owe more taxes.\footnote{ Left unanswered by these
+  results is the question of why taxpayers respond to extrinsic
+  messages that communicate pre-existing penalty information.  One
+  possible explanation is that taxpayers interpret the threat of
+  enforcement as new information rather than a reiteration of existing
+  information. \citeA{bergolo2017tax} report evidence consistent with
+  the idea that this new threat information is used to update the
+  recipients perceived risk of enforcement and punishment.}  The
+four tax morale letters stressing the payment's benefits for the
+neighborhood (\textit{neighbor}) and city (\textit{community})
+services, compliance behavior by other Philadelphians (\textit{peer}),
+or civic duty (\textit{duty}) to pay ones taxes have the same effect
+as a reminder-only on compliance behaviors.  There is no statistically
+significant added compliance to the tax morale reminders, on average,
+above that obtained from just the simple reminder letter.  Overall,
+results are similar in statistical significance and impact to those in
+Castro and Scartascini's (2015) study of property tax payments in
+Junan, Argentina, the other major field experiment seeking to improve
+property tax collection.
 
-\noindent WHY ARE WE LOSING 3 OBSERVATIONS WHEN WE LOOK AT THE SUBSEQUENT TAX CYCLE? NEED TO EXPLAIN!
+We need to mention here that our results in Table \ref{sh_lin} showing
+the significance of reminding taxpayers of sanctions but no
+significant impacts for tax morale messages stands in contrast to
+results we obtained from our 2014 pilot study for this experiment,
+reported in Chirico, et. al. (2016).  In the Fall, 2014, were were
+asked by the City's DoR to design an experiment to test alternative
+reminder letters for tardy taxpayers.  We did so, and ran a pilot
+study in November, 2014 to test both the administrative feasibility of
+a larger experiment and our experimental design.  The pilot sent
+reminder letters to the 4,749 tardy taxpayers who had not yet paid
+their 2014 Philadelphia property taxes by November 1, 2014.  It is
+important to note that these taxpayers had already received a series
+of simple reminder letters from the City beginning in the Spring, 2014
+and had been contacted over the summer and fall by the law firms hired
+by DoR to collect tardy payments.  By November, they still had not
+paid.  We used three letters in our pilot, one threatening
+enforcement without mentioning specifics, one stressing taxes pay for
+city services, and a third stressing that it is oneÔøΩs civic duty to
+pay one's taxes and that 9 out 10 city taxpayers do so on time.
+
+We focused our analysis on the 3,888 of these ``very" tardy taxpayers
+owning only a single property. As a group they owed \$14.73 million
+dollars, an average of \$3,790 per taxpayer. The results from our
+analysis of this pilot sample of very tardy taxpayers showed no
+statistically significant effect for a reminder threatening
+enforcement or for that appealing to civic duty, but a strong and
+significant impact on the rate of payment from those receiving the
+reminder appealing to taxation to pay for quality schools and public
+safety.  The impact of the public service reminder on revenues
+collected was very modest, however, collecting on average only \$238
+dollars towards the average amount owed of \$4,012 for those receiving
+the public service reminder.  Of the 16 percent who paid, only half
+paid their tax bill in full.  In the end, we concluded that most of
+the very tardy taxpayers will continue to owe significant taxes by the
+end of the tax year and beginning in January, 2015 will be subject to
+tax liens on their homes.  In contrast to the positive impact of
+sanction reminders on compliance by the tardy taxpayers in this study,
+reminders of imminent sanctions had no effect on the very tardy
+taxpayers in our pilot.  These contrasting behaviors are another
+reminder as to the importance of heterogeneity in taxpayers' responses
+to nudges for compliance.  Meeting directly with, and offering tax
+payment plans, may be required for these very tardy taxpayers.
+
 
 \begin{table}[htbp]
 \caption{Long-Term Linear Model Estimates}\label{lt_lin}
@@ -705,175 +834,226 @@ Num. obs.    & 19039        & 19039        & 19039         & 19036        & 1903
 \end{table}
 
 Table \ref{lt_lin} estimates the longer run impacts of our seven nudge
-interventions on compliance.  Our reminder letters were sent on June
-15th and received soon thereafter.  The first three columns of Table
+interventions on compliance.  The first three columns of Table
 \ref{lt_lin} show the estimated effects of having received a letter on
-compliance six months later, again compared to compliance behavior in
-our holdout sample.  Six month responses for those in the holdout
-sample and in our seven treatment groups now include the possible
-influence of the outside collection agencies on still delinquent
-taxpayers. We do not know their ``treatment'' strategies. The effects
-observed for the six month window therefore predict the impact of our
-``pure'' treatments from our June letters interacted with the unknown
-treatments by the outside agencies. Since all tardy taxpayers
-including our holdout sample now receive some form of a reminder, it
-is not surprising that our original reminder letter no longer has a
-differential impact on payment behavior. What does continue to impact
-behavior, however, is our original reminders that stressed the risk of
-liens and sheriff's sales. The effects of our lien and sheriff
-reminders are now slightly smaller in percentage terms, though not
-significantly so. Again, none of the tax morale intrinsic nudges show
-a statistically significant impact on compliance behaviors.  Those
-taxpayers are now receiving extrinsic reminders for the first time,
-just like those in the holdout sample. They appear to respond
-identically, resulting in no significant behavioral differences
-between those in the original holdout sample and in the tax morale
-intrinsic motivation samples.\footnote{It is our understanding from
-  DOR that their treatments are a combination of simple reminders and
-  reminders coupled with extrinsic messages stressing penalties,
-  liens, and perhaps sheriff sales.}  This provides further evidence
-that extrinsic (penalties) messages are the only effective messages for
-converting non-payers to payers.
+compliance six months after the start of the experiment, again
+compared to compliance behavior in our holdout sample.  Six-months
+responses for those in the holdout sample and in our seven treatment
+groups now include the possible influence of the outside collection
+agencies on still delinquent taxpayers. We do not know their
+``treatment'' strategies, although we conjecture that they primarily
+rely on enforcement threats. The effects observed for the six-months
+window, therefore, predict the impact of our treatments from our June
+letters interacted with the unknown treatments by the outside
+agencies.
 
-Left unanswered by these results is the question of why taxpayers
-respond to extrinsic messages that communicate pre-existing penalty
-information.  One possible explanation is that taxpayers interpret the
-threat of enforcement as new information rather than a reiteration of
-existing information. The best evidence to date of this possibility is
-provided by a survey of risk perception accompanying Bergolo et
-al. \citeyear{bergolo2017tax}. They report evidence consistent with
-the idea that this new threat information is used to update the
-recipients perceived risk of enforcement and punishment.
+Since all tardy taxpayers including our holdout sample now receive
+some form of an enforcement threat reminder, it is not surprising that
+our original reminder letter no longer has a differential impact on
+payment behavior. What does continue to impact behavior, however, is
+our original reminders that stressed the risk of liens and sheriff's
+sales. The effects of our lien and sheriff reminders are now slightly
+smaller in percentage terms, though not significantly so. Again, none
+of the tax morale intrinsic nudges show a statistically significant
+impact on compliance behaviors.  These taxpayers are now receiving
+extrinsic reminders for the first time, just like those in the holdout
+sample. They appear to respond identically, resulting in no
+significant behavioral differences between those in the original
+holdout sample and in the tax morale intrinsic motivation
+samples.\footnote{It is our understanding from DOR that their
+  treatments are a combination of simple reminders and reminders
+  coupled with extrinsic messages stressing penalties, liens, and
+  perhaps sheriff sales.}  This provides further evidence that
+extrinsic or penalties messages are effective messages for converting
+non-payers to payers.
+
+In summary, Table \ref{lt_lin} shows that the lien and sheriff letters
+still work at the extensive margin after six months, but not
+necessarily at the intensive margin on amount paid.  Table
+\ref{lt_lin} suggests that the duty letter may work at the intensive
+margin after six months. It is the only letter that generated
+significantly positive revenues after six months. This follows from
+the fact that this letter was particularly effective among the top
+quartile of taxpayers as shown in Table
+\ref{lpm_hetero}.\footnote{Note that this effect is not significant at
+  the 99 percent level of confidence which is a conservative level
+  commonly used in hypothesis testing.}
 
 The last three columns of Table \ref{lt_lin} carry our sample into the
 next tax year, beginning with the receipt of a new property tax bill
-in early January, 2016, and asks if having received a reminder letter
-in June, 2015 improves compliance behavior for the payment of the 2016
-taxes by June of 2016.  Consistent with the importance of saliency,
-none of the 2015 reminder letters appear to have ``staying power''
-into the next tax year.  Tardy Philadelphians need constant
-reminders. 
+in early January, 2016. We now study if having received a reminder
+letter in June, 2015 improves compliance behavior for the payment of
+the 2016 taxes by June of 2016.  Consistent with the importance of
+saliency, none of the 2015 reminder letters appear to have ``staying
+power'' into the next tax year.  Tardy Philadelphians need constant
+reminders.\footnote{The new property tax bill, which is sent out at
+  the beginning of the new year, may also serve as a reminder for
+  tardy taxpayers to pay the bill for the previous year.}
 
-\noindent TABLE \ref{lpm_hetero}  NEEDS TO BE UPDATED TO INCLUDE OTHER 5 TREATMENTS
 
-\begin{table}[htbp]
-\caption{Treatment Effect Heterogeneity by Debt Quantile}
+
 \begin{center}
-\begin{tabular}{l c c c c c c }
+\begin{longtable}{l c c c c c c }
+\caption{Treatment Effect Heterogeneity by Debt Quantile}
+\label{lpm_hetero} \\
+\hline
+& One & Three & Six & One & Three & Six \\
+ & Month & Months & Months & Month & Months & Months \\
 \hline
  & \multicolumn{3}{c}{Ever Paid} & \multicolumn{3}{c}{Total Paid} \\
-   \hline
-   & One  & Three  & Six & One & Three  & Six \\
- & Month & Months & Month & Months & Month & Months \\
+\hline
+\endfirsthead
+\multicolumn{7}{c}{\tablename\ \thetable\ -- \textit{Continued from previous page}} \\
+\hline
+& One & Three & Six & One & Three & Six \\
+& Month & Months & Months & Month & Months & Months \\
+\hline
+ & \multicolumn{3}{c}{Ever Paid} & \multicolumn{3}{c}{Total Paid} \\
  \hline
- Holdout in Quartile 1 & $38.1$  & $56.4$  & $74.7$ & $118.0$ & $152.0$  & $184.9$  \\
+\endhead
+\hline \multicolumn{7}{r}{\textit{Continued on next page}} \\
+\endfoot
 \hline
-Holdout in Quartile 2 & $-9.8^{***}$  & $-11.8^{***}$ & $-7.4^{***}$ & $20.1$        & $97.5^{***}$   & $217.4^{***}$  \\
-                      & $(2.9)$       & $(3.1)$       & $(2.8)$      & $(32.3)$      & $(33.6)$       & $(33.5)$       \\
-Holdout in Quartile 3 & $-9.9^{***}$  & $-5.2^{*}$    & $-0.1$       & $134.1^{***}$ & $388.8^{***}$  & $658.5^{***}$  \\
-                      & $(2.9)$       & $(3.1)$       & $(2.7)$      & $(38.6)$      & $(39.5)$       & $(39.3)$       \\
-Holdout in Quartile 4 & $-10.7^{***}$ & $-2.5$        & $2.2$        & $691.1^{***}$ & $1494.0^{***}$ & $2193.8^{***}$ \\
-                      & $(2.9)$       & $(3.1)$       & $(2.7)$      & $(92.1)$      & $(126.0)$      & $(129.1)$      \\
-Lien in Quartile 1    & $13.5^{***}$  & $9.9^{***}$   & $3.4$        & $14.6$        & $13.4$         & $5.3$          \\
-                      & $(2.9)$       & $(2.9)$       & $(2.5)$      & $(38.4)$      & $(38.9)$       & $(38.8)$       \\
-Lien in Quartile 2    & $8.9^{***}$   & $13.0^{***}$  & $8.0^{***}$  & $52.7^{***}$  & $68.8^{***}$   & $52.5^{***}$   \\
-                      & $(2.8)$       & $(2.9)$       & $(2.7)$      & $(16.4)$      & $(19.4)$       & $(19.0)$       \\
-Lien in Quartile 3    & $6.4^{**}$    & $7.2^{**}$    & $-0.3$       & $79.9^{**}$   & $67.3^{*}$     & $-5.2$         \\
-                      & $(2.8)$       & $(3.0)$       & $(2.6)$      & $(33.1)$      & $(34.8)$       & $(34.4)$       \\
-Lien in Quartile 4    & $7.0^{**}$    & $6.2^{**}$    & $3.5$        & $293.6^{*}$   & $289.4$        & $226.9$        \\
-                      & $(2.8)$       & $(3.0)$       & $(2.5)$      & $(163.5)$     & $(199.9)$      & $(204.4)$      \\
-Sheriff in Quartile 1 & $10.7^{***}$  & $10.7^{***}$  & $4.9^{*}$    & $3.7$         & $1.2$          & $-2.9$         \\
-                      & $(3.0)$       & $(2.9)$       & $(2.5)$      & $(34.4)$      & $(34.6)$       & $(34.7)$       \\
-Sheriff in Quartile 2 & $7.4^{***}$   & $10.0^{***}$  & $5.4^{**}$   & $39.2^{**}$   & $50.2^{**}$    & $28.5$         \\
-                      & $(2.8)$       & $(3.0)$       & $(2.7)$      & $(16.2)$      & $(19.5)$       & $(19.2)$       \\
-Sheriff in Quartile 3 & $5.8^{**}$    & $7.7^{***}$   & $3.0$        & $89.0^{***}$  & $65.6^{*}$     & $13.8$         \\
-                      & $(2.8)$       & $(3.0)$       & $(2.5)$      & $(32.4)$      & $(35.1)$       & $(33.8)$       \\
-Sheriff in Quartile 4 & $5.1^{*}$     & $6.2^{**}$    & $1.1$        & $114.6$       & $215.6$        & $184.3$        \\
-                      & $(2.8)$       & $(3.0)$       & $(2.5)$      & $(123.6)$     & $(177.4)$      & $(191.7)$      \\
+\endlastfoot
 \hline
-Num. obs.             & 19039         & 19039         & 19039        & 19039         & 19039          & 19039          \\
+ Holdout in Quartile 1      & $38.1$  & $56.4$  & $74.7$ & $118.0$ & $152.0$  & $184.9$  \\
+\hline
+Holdout in Quartile 2      & $-9.8^{***}$  & $-11.8^{***}$ & $-7.4^{***}$ & $20.1$        & $97.5^{***}$   & $217.4^{***}$  \\
+                           & $(2.9)$       & $(3.1)$       & $(2.8)$      & $(32.3)$      & $(33.6)$       & $(33.5)$       \\
+Holdout in Quartile 3      & $-9.9^{***}$  & $-5.2^{*}$    & $-0.1$       & $134.1^{***}$ & $388.8^{***}$  & $658.5^{***}$  \\
+                           & $(2.9)$       & $(3.1)$       & $(2.7)$      & $(38.6)$      & $(39.5)$       & $(39.3)$       \\
+Holdout in Quartile 4      & $-10.7^{***}$ & $-2.5$        & $2.2$        & $691.1^{***}$ & $1494.0^{***}$ & $2193.8^{***}$ \\
+                           & $(2.9)$       & $(3.1)$       & $(2.7)$      & $(92.1)$      & $(126.0)$      & $(129.1)$      \\
+Reminder in Quartile 1     & $5.4^{*}$     & $2.5$         & $0.2$        & $-6.3$        & $-12.8$        & $-12.7$        \\
+                           & $(2.9)$       & $(3.0)$       & $(2.6)$      & $(33.8)$      & $(34.0)$       & $(34.0)$       \\
+Reminder in Quartile 2     & $1.7$         & $5.3^{*}$     & $4.8^{*}$    & $10.3$        & $26.8$         & $31.6$         \\
+                           & $(2.7)$       & $(3.0)$       & $(2.7)$      & $(15.9)$      & $(19.4)$       & $(22.0)$       \\
+Reminder in Quartile 3     & $0.6$         & $1.7$         & $-1.1$       & $21.0$        & $10.5$         & $-33.4$        \\
+                           & $(2.7)$       & $(3.0)$       & $(2.6)$      & $(30.9)$      & $(34.8)$       & $(33.9)$       \\
+Reminder in Quartile 4     & $7.2^{***}$   & $5.7^{*}$     & $0.8$        & $102.2$       & $-2.3$         & $46.8$         \\
+                           & $(2.8)$       & $(3.0)$       & $(2.5)$      & $(113.8)$     & $(152.4)$      & $(167.0)$      \\
+Lien in Quartile 1         & $13.5^{***}$  & $9.9^{***}$   & $3.4$        & $14.6$        & $13.4$         & $5.3$          \\
+                           & $(2.9)$       & $(2.9)$       & $(2.5)$      & $(38.4)$      & $(38.9)$       & $(38.8)$       \\
+Lien in Quartile 2         & $8.9^{***}$   & $13.0^{***}$  & $8.0^{***}$  & $52.7^{***}$  & $68.8^{***}$   & $52.5^{***}$   \\
+                           & $(2.8)$       & $(2.9)$       & $(2.7)$      & $(16.4)$      & $(19.4)$       & $(19.0)$       \\
+Lien in Quartile 3         & $6.4^{**}$    & $7.2^{**}$    & $-0.3$       & $79.9^{**}$   & $67.3^{*}$     & $-5.2$         \\
+                           & $(2.8)$       & $(3.0)$       & $(2.6)$      & $(33.1)$      & $(34.8)$       & $(34.4)$       \\
+Lien in Quartile 4         & $7.0^{**}$    & $6.2^{**}$    & $3.5$        & $293.6^{*}$   & $289.4$        & $226.9$        \\
+                           & $(2.8)$       & $(3.0)$       & $(2.5)$      & $(163.5)$     & $(199.9)$      & $(204.4)$      \\
+Sheriff in Quartile 1      & $10.7^{***}$  & $10.7^{***}$  & $4.9^{*}$    & $3.7$         & $1.2$          & $-2.9$         \\
+                           & $(3.0)$       & $(2.9)$       & $(2.5)$      & $(34.4)$      & $(34.6)$       & $(34.7)$       \\
+Sheriff in Quartile 2      & $7.4^{***}$   & $10.0^{***}$  & $5.4^{**}$   & $39.2^{**}$   & $50.2^{**}$    & $28.5$         \\
+                           & $(2.8)$       & $(3.0)$       & $(2.7)$      & $(16.2)$      & $(19.5)$       & $(19.2)$       \\
+Sheriff in Quartile 3      & $5.8^{**}$    & $7.7^{***}$   & $3.0$        & $89.0^{***}$  & $65.6^{*}$     & $13.8$         \\
+                           & $(2.8)$       & $(3.0)$       & $(2.5)$      & $(32.4)$      & $(35.1)$       & $(33.8)$       \\
+Sheriff in Quartile 4      & $5.1^{*}$     & $6.2^{**}$    & $1.1$        & $114.6$       & $215.6$        & $184.3$        \\
+                           & $(2.8)$       & $(3.0)$       & $(2.5)$      & $(123.6)$     & $(177.4)$      & $(191.7)$      \\
+Neighborhood in Quartile 1 & $3.8$         & $3.0$         & $-2.3$       & $-26.9$       & $-31.3$        & $-32.0$        \\
+                           & $(3.0)$       & $(3.0)$       & $(2.7)$      & $(32.2)$      & $(32.5)$       & $(33.2)$       \\
+Neighborhood in Quartile 2 & $1.4$         & $5.9^{**}$    & $2.2$        & $12.1$        & $34.5^{*}$     & $21.2$         \\
+                           & $(2.7)$       & $(3.0)$       & $(2.8)$      & $(15.8)$      & $(19.5)$       & $(19.4)$       \\
+Neighborhood in Quartile 3 & $-0.2$        & $0.8$         & $-1.4$       & $21.1$        & $-4.3$         & $-28.9$        \\
+                           & $(2.7)$       & $(3.0)$       & $(2.6)$      & $(31.8)$      & $(34.9)$       & $(34.0)$       \\
+Neighborhood in Quartile 4 & $1.6$         & $0.5$         & $0.4$        & $174.8$       & $116.3$        & $168.2$        \\
+                           & $(2.7)$       & $(3.0)$       & $(2.5)$      & $(139.2)$     & $(176.3)$      & $(190.1)$      \\
+Community in Quartile 1    & $5.9^{**}$    & $5.9^{**}$    & $2.7$        & $-20.2$       & $-21.2$        & $-23.4$        \\
+                           & $(2.9)$       & $(2.9)$       & $(2.6)$      & $(33.1)$      & $(33.4)$       & $(33.3)$       \\
+Community in Quartile 2    & $3.9$         & $3.8$         & $1.2$        & $22.3$        & $25.9$         & $17.7$         \\
+                           & $(2.7)$       & $(3.0)$       & $(2.8)$      & $(16.0)$      & $(19.7)$       & $(20.4)$       \\
+Community in Quartile 3    & $1.3$         & $0.8$         & $-1.5$       & $33.7$        & $2.1$          & $-28.8$        \\
+                           & $(2.7)$       & $(3.0)$       & $(2.6)$      & $(31.2)$      & $(34.8)$       & $(34.1)$       \\
+Community in Quartile 4    & $3.9$         & $0.5$         & $0.7$        & $105.5$       & $21.5$         & $193.0$        \\
+                           & $(2.7)$       & $(3.0)$       & $(2.5)$      & $(117.9)$     & $(160.7)$      & $(181.9)$      \\
+Peer in Quartile 1         & $6.2^{**}$    & $3.9$         & $-0.2$       & $-3.1$        & $-6.5$         & $2.2$          \\
+                           & $(2.9)$       & $(3.0)$       & $(2.6)$      & $(33.9)$      & $(34.2)$       & $(34.9)$       \\
+Peer in Quartile 2         & $2.9$         & $4.2$         & $2.4$        & $79.2$        & $80.7$         & $78.9$         \\
+                           & $(2.7)$       & $(3.0)$       & $(2.8)$      & $(64.6)$      & $(66.2)$       & $(66.0)$       \\
+Peer in Quartile 3         & $3.1$         & $3.6$         & $1.3$        & $57.4^{*}$    & $41.1$         & $6.6$          \\
+                           & $(2.7)$       & $(3.0)$       & $(2.6)$      & $(31.7)$      & $(35.1)$       & $(33.9)$       \\
+Peer in Quartile 4         & $3.2$         & $2.0$         & $1.6$        & $79.1$        & $315.5$        & $367.2$        \\
+                           & $(2.7)$       & $(3.0)$       & $(2.5)$      & $(120.1)$     & $(283.8)$      & $(288.2)$      \\
+Duty in Quartile 1         & $6.6^{**}$    & $6.8^{**}$    & $1.7$        & $-3.5$        & $8.2$          & $-1.8$         \\
+                           & $(2.9)$       & $(2.9)$       & $(2.6)$      & $(41.0)$      & $(38.5)$       & $(38.3)$       \\
+Duty in Quartile 2         & $-0.5$        & $3.1$         & $0.6$        & $1.0$         & $12.6$         & $-1.4$         \\
+                           & $(2.7)$       & $(3.0)$       & $(2.8)$      & $(15.7)$      & $(19.4)$       & $(19.1)$       \\
+Duty in Quartile 3         & $1.6$         & $1.5$         & $2.5$        & $42.5$        & $23.7$         & $34.6$         \\
+                           & $(2.7)$       & $(3.0)$       & $(2.5)$      & $(31.5)$      & $(35.0)$       & $(34.4)$       \\
+Duty in Quartile 4         & $1.9$         & $2.6$         & $3.2$        & $70.3$        & $171.5$        & $354.9^{*}$    \\
+                           & $(2.7)$       & $(3.0)$       & $(2.5)$      & $(128.1)$     & $(175.4)$      & $(196.1)$      \\
+\hline
+Num. obs.                  & 19039         & 19039         & 19039        & 19039         & 19039          & 19039          \\
 \hline
 \multicolumn{7}{l}{\scriptsize{\parbox{.75\linewidth}{$^{***}p<0.01$,
       $^{**}p<0.05$, $^*p<0.1$. Holdout values for first quartile in
       levels; other holdout figures are relative to this and remaining
       figures are treatment effects for the stated treatment
       vs. holdout owners in the same quartile.}}}
-\end{tabular}
-\label{lpm_hetero}
+\end{longtable}
 \end{center}
-\end{table}
 
 Table \ref{lpm_hetero} shows the compliance behavior of tardy
-taxpayers by the size of their tax bill.  Tardy taxpayers are divided
+taxpayers by the size of their tax bills.  Tardy taxpayers are divided
 into four quartiles by taxes owed: Quartile 1 (mean owed = \$149);
 Quartile 2 (mean owed = \$597), Quartile 3 (mean owed = \$1,133), and
 Quartile 4 (mean owed = \$3,885).  All comparisons are for the
-outcomes \textit{ever-paid} and total (taxes) paid relative to those in the
-holdout sample in Quartile 1.  Three conclusions follow.  First, tardy
-taxpayers in Quartile 1 owing the least in taxes are the most likely
-to make a tax payment, whether they receive a reminder letter or not;
-note the significant negative effect of being in Quartiles 2-4 of the
-holdout sample.  Second, receiving a reminder/lien and
-reminder/sheriff letter improves \textit{ever-paid} compliance for all four
-Quartiles, but the effects are greatest for those in the lowest two
-Quartiles.  Third, if resources are limited and the objective is to
-maximize additional revenue collected, then from the results for
-total-(taxes)-paid the City should send the reminder/lien letter to
-taxpayers in Quartile 4, those who the most.\footnote{From Table 5,
-  the expected average revenue after six months for each quartile will
-  be the sum of payments by the holdout sample in that quartile plus
-  the impact of each letter on payment for that quartile.  For
-  example, payments after six months by taxpayers in quartile 1
-  receiving the lien letter will be \$184.90 + \$5.30 = \$190.20.  For
-  all quartiles, returns after six months for the lien (sheriff)
-  letter will be \$190.20 (\$182) for tardy taxpayers in quartile 1,
-  \$269.90 (\$245.90) for tardy taxpayers in quartile 2, \$652.80
-  (\$672.30) for tardy taxpayers in quartile 3, and \$2,419.90
-  (\$2377.3) for those in quartile 4.}
+outcomes \textit{ever-paid} and total taxes paid relative to those
+in the holdout sample in Quartile 1.  Three conclusions follow.
+First, tardy taxpayers in Quartile 1 owing the least in taxes are the
+most likely to make a tax payment, whether they receive a reminder
+letter or not; note the significant negative effect of being in
+Quartiles 2-4 of the holdout sample.  Second, receiving a
+reminder/lien and reminder/sheriff letter improves \textit{ever-paid}
+compliance for all four Quartiles, but the effects are greatest for
+those in the lowest two Quartiles.  Third, while there is no
+significant effect of the reminder/duty letter on taxpayers in
+quartile 4 on their rate of compliance, there is a strong effect on
+their amount paid.  If resources are limited and the objective is to
+maximize additional revenue collected, then from the six-month results
+for total taxes paid, the City should send the reminder/duty letter to
+taxpayers in quartile 4. This finding is the strongest support for tax
+morale letters in our experiment.\footnote{From Table 5, the expected
+  average revenue after six months for each quartile will be the sum
+  of payments by the holdout sample in that quartile plus the impact
+  of each letter on payment for that quartile.  For example, payments
+  after six months by taxpayers in quartile 1 receiving the lien
+  letter will be \$184.90 + \$5.30 = \$190.20.  For all quartiles,
+  returns after six months for the lien (sheriff) letter will be
+  \$190.20 (\$182) for tardy taxpayers in quartile 1, \$269.90
+  (\$245.90) for tardy taxpayers in quartile 2, \$652.80 (\$672.30)
+  for tardy taxpayers in quartile 3, and \$2,419.90 (\$2377.3) for
+  those in quartile 4.}
 
 Finally, our results shed light on the importance of liquidity
 constraints as a motivation for tardy tax payments. If liquidity
 constraints are important, then nudges may be insufficient unless
 accompanied by a way to smooth payments of the original tax
 obligation. Taxpayer agreements that spread payments over several
-months (typically, three to six months) without penalty provide for
-payment smoothing. Each reminder letter included a sentence stressing
-the availability of taxpayer agreements to help with payments. The
-results in Tables 2 and 5 suggest, however, that liquidity constraints
-are not binding for most of our tardy taxpayers. First, from Table 2,
-most taxpayers who respond positively to a tax nudge after one and
-three months and who make some payment will pay in full. For all
-statistically significant nudges, including simple reminder, the
-percent increase in the ``ever paid'' taxpayers that ``paid in full''
-is never less than 60 percent (1 month, simple reminder), typically 75
-to 80 percent, and as high as 97 percent (three month, peer
-reminder). Second, from Table 5, taxpayers in the 1st quartile, who
-owe the least in taxes, have the highest rate of payment, even without
-the nudge. Further when taxpayers respond to a nudge, again the share
-who ``pay in full'' (not shown in Table 5) is over 70 percent of those
-who ``ever paid'' for the two strongest nudges, the lien and sheriff
-letters.
+months without penalty is one policy. Each reminder letter included a
+sentence stressing the availability of taxpayer agreements to help
+with payments. The results in Tables \ref{sh_lin} - \ref{lpm_hetero}
+suggest, however, that liquidity constraints are not binding for most
+of our tardy taxpayers (on average, 70 percent). First, from Tables
+\ref{sh_lin} and \ref{lt_lin}, most taxpayers, who respond positively
+to a tax nudge after one month and three months, will pay in full.
+For all statistically significant nudges,
+including simple reminder, the percent increase in the ``ever paid''
+taxpayers that ``paid in full'' is never less than 60 percent (one
+month, simple reminder), typically 75 to 80 percent, and as high as 97
+percent (three months, peer reminder).
 
-Still approximately thirty percent of those tardy taxpayers who
-respond to a nudge do not, or cannot, make full payment. One likely
-explanation for these taxpayers is a liquidity constraint. Offering
-these incomplete taxpayers a tax payment agreement can ease this
-constraint. Table \ref{waterrelholdout} shows what fraction of tardy
-taxpayers are in a tax payment agreement by the end of our experiment.
-Recipients of the reminder/lien and reminder/sheriff letters are a bit
-more likely to have chosen payment agreements than those in our holdout
-sample as are those who receive the reminder/peer and reminder/duty
-letters.  That said, agreements are only being used by about 1 percent
-of the initial 19,039 tardy taxpayers (approximately 200 taxpayers)
-and only about 3 to 4 percent of all tardy taxpayers who have not yet
-made a full tax payment.
-  
-\begin{table}[htb]
-\caption{Liquidity Linear Probability Model Estimates}\label{waterrelholdout}
+Note that Table \ref{lt_lin} suggests that compliance rates exceeded 50 percent in 2016 and were
+approximately as high as the rate at the three-months point of
+2015 (Table \ref{sh_lin}). This finding suggests that a large fraction of taxpayers that
+were tardy in 2015 are compliers in 2016. However, 34.5 percent of
+tarty taxpayers are also in non-compliance in 2016 indicating
+that liquidity or cash constraints may be a serious problem for, at
+most, a third of our population of tardy taxpayers.
+
+\begin{table}[htbp]
+\caption{Liquidity Constraints and Payment Agreements}\label{payment}
 \begin{center}
 \begin{tabular}{l c}
 \hline
- & \multicolumn{1}{c}{Payment Agreement}  \\
 Holdout      & $0.9$ \\
 \hline
 Reminder     & $0.4$     \\
@@ -893,344 +1073,467 @@ Duty         & $0.8^{**}$    \\
 \hline
 Num. obs.    & 19039            \\
 \hline
-\multicolumn{2}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. 
-Holdout values in levels; remaining figures relative to this}}
+\multicolumn{2}{l}{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. } \\
+\multicolumn{2}{l}{Holdout values in levels; remaining figures relative to this}
 \end{tabular}
 \end{center}
 \end{table}
 
+While a liquidity constraint is not binding for the 70 percent of the
+City's tardy taxpayers who make payments, it may still be a constraint
+for the other 30 percent who cannot.  Offering these tardy taxpayers a
+tax payment agreement to smooth their payments may be valuable.  The
+City does offer such a program.  Table \ref{payment} shows what
+fraction of tardy taxpayers have agreed to enroll in the program by
+end of our experiment.  The share of the holdout sample that uses the
+tax payment option is less than 1 percent.  Use by the recipients of
+the reminder letters is never greater than an additional 1.6 percent
+(reminder/sheriff).  On average, tax payer agreements are only being
+used by about 1 percent of the original 19,039 tardy taxpayers or 200
+taxpayers and only about 3 to 4 percent of all tardy taxpayers who
+have not yet made a full tax payment.  Liquidity constraints may bind,
+but the main barrier to payment is an inclination to do so.
+
 \section{Tax Revenue Implications}
 
 While of interest as a specification and test of a behavioral theory
-of tax compliance, our results are directly relevant for city tax
+of tax compliance, our results are also directly relevant for city tax
 collection policies.  As a strategy for improving collection from
 tardy taxpayers, our analysis informs two important policy issues.
 First, cities need revenues: Do reminders improve collection, and then
 do reminders with a message raise more money than a simple reminder?
-Second, in light of recent municipal fiscal crises and the
-potential for an unraveling of citizen commitment to local governance:
-Do reminders with a message, and then which message, improve tax
-collection as a ``nudge'' to citizen engagement? Table \ref{sh_rev}
+Second, in light of recent municipal fiscal crises and the potential
+for an unraveling of citizen commitment to local governance: Do
+reminders with a message, and then which message, improve tax
+collection as a ``nudge'' to citizen engagement? Table \ref{rev}
 provides answers to these two questions.
-
 
 \begin{table}[htbp]
 \centering
-\caption{Three Month Impact of Collection ``Nudges''*: NEEDS TO BE UPDATED} 
-\label{sh_rev}
+\caption{Revenue Implications}\label{rev}
 \begin{tabular}{lcccccc}
-  \hline
-Treatment & Sample & Total Taxes & New  & Revenue/ & New  & New \% of Taxes 
-\\ 
+\hline
+\multicolumn{7}{c}{Based on 3 Months Estimates} \\
+\hline
+Treatment & Sample & Total Taxes & New  & Revenue/ & New  & New \% of Taxes
+\\
 & Size & Owed & Payers & Letters & Revenues & Paid\\
 \hline
-Reminder & 2,420 & \$3.346 M & & & & \\
-Lien & 2,432 & \$3.378 M &  & & & \\
-Sheriff & 2,419 & \$3.902 M &  & & & \\
-Neighborhood & 2,389 & \$4.658 M &  & & & \\
-Community & 2,441 & \$3.148 M &  & & & \\
-Peer & 2,417 & \$3.233 M &  & & & \\
-Duty & 2,433 & \$3.201 M &  & & & \\
+Reminder & 2,420 & \$3.346 M & 94	& 28.78 & 69,647	& 2.1  \\
+Lien & 2,432 & \$3.378 M &  224 & 67.90	& 165,132	& 4.9 \\
+Sheriff & 2,419 & \$3.902 M & 213 & 64.94 & 157,089 & 4.0  \\
+Neighborhood & 2,389 & \$4.658 M & 62 & 19.19 & 45,844 & 1.0  \\
+Community & 2,441 & \$3.148 M & 68 & 20.66 & 50,431 & 1.6  \\
+Peer & 2,417 & \$3.233 M & 85	& 25.83 & 62,431 & 1.9  \\
+Duty & 2,433 & \$3.201 M & 88	& 26.57 & 64,644	& 2.0  \\
 \hline
-Totals & 16,951 & \$24.866 M &  & & & \\
+Totals & 16,951 & \$24.866 M & 834	& 36.27 & 615,222 & 2.5  \\
+\hline
+\multicolumn{7}{c}{Based on 6 Months Estimates} \\
+\hline
+Treatment & Sample & Total Taxes & New & Revenue/ & New & New \% of Taxes \\
+ & Size & Owed & Payers & Letters & Revenues & Paid \\
   \hline
+Reminder & 2,420 & \$3.346 M & 31 & \$9.29 & \$22,474 & 0.7 \\
+  Lien & 2,432 & \$3.378 M & 91 & \$27.44 & \$66,739 & 2.0 \\
+  Sheriff & 2,419 & \$3.902 M & 89 & \$27.14 & \$65,659 & 1.7 \\
+  Neighborhood & 2,389 & \$4.658 M & -6 & -\$1.76 & -\$4,194 & -0.1 \\
+  Community & 2,441 & \$3.148 M & 21 & \$6.38 & \$15,564 & 0.5 \\
+  Peer & 2,417 & \$3.233 M & 33 & \$9.97 & \$24,091 & 0.7 \\
+  Duty & 2,433 & \$3.201 M & 51 & \$15.42 & \$37,524 & 1.2 \\
+   \hline
+Totals & 16,951 & \$24.866 M & 310 & \$13.44 & \$227,856 & 0.9 \\
+   \hline
+\multicolumn{7}{p{1\textwidth}}{\scriptsize* Sample Size is the number
+  of single property tax payers in the treatment group.  Total Taxes
+  Owed is the total taxes owed by single property tax payers in the
+  treatment group. New Payers equals the new payers after three months
+  computed as the estimated increase in rate of compliance of those
+  receiving the letter over those in the holdout sample as reported in
+  upper panel of Table 2; for example, for the reminder letter the number of new
+  payers equals 94 = 0.039 x 2,420.  Revenue per letter for each
+  treatment equals the median new revenue collected from those who
+  received a treatment letter and made some payment (=\$738/letter)
+  times the three month increase in compliance from each treatment
+  letter; for example for the reminder letter the median estimated
+  revenue per letter equals \$28.78 = 0.039 x \$738.  New revenues for
+  each treatment equals the revenue/letter times the number of single
+  owner properties receiving a treatment letter: for example, for the
+  reminder letter the estimated total new revenues equals \$69,647 =
+  \$28.78 x 2,420.  New \% of Taxes Paid equals New Revenues divided by
+  Total Taxes Owed; for example, for the reminder letter 2.0 =
+  \$69,647 / \$3,345,846.}
 \end{tabular}
 \end{table}
 
-Listed in Table \ref{sh_rev} are our seven treatments, the sample size
-to which each treatment applied and total taxes owed, and then
-estimates of the impact of each treatment on the number new payers
-three months after receipt of the treatment letter, the average new
-revenue received per letter sent, total new revenues collected from
-each treatment letter above that paid by the holdout sample, and
-finally, the percent of owed taxes paid because of each treatment.
+Listed in Table \ref{rev} are our seven treatments, the sample size to
+which each treatment applied and total taxes owed, and then estimates
+of the impact of each treatment on the number new payers three months
+after receipt of the treatment letter, the average additional revenue
+received per letter sent, total additional revenues collected from each
+treatment letter above that paid by the holdout sample, and finally,
+the percent of owed taxes paid because of each treatment.  The upper
+panel of Table \ref{rev} is based on the three-months estimates, while
+the lower panel of Table \ref{rev} is based on the six-months results.
 
-For single property owners, the total number of new taxpayers above
-the holdout sample from all reminder letters is 838, an average
-increase in the overall rate of compliance from receiving one our
-treatment letters of 4.9 percent (838/16,940).  Table \ref{sh_rev}
-also provides an estimate of additional revenues raised by each of our
-treatment letters and then the total revenue raised from each
-treatment group.  From the perspective of the City's Department of
-Revenue, our experiment was a good investment of Department resources.
-Each letter cost about \$1 to process and send and raised on average
-over all letters \$37.34.  The estimated benefit to cost ratios for
-the seven treatments ranged from a low of \$19.77 (the Neighborhood
-letter) to a high of \$67.67 (the Lien letter).  The approximately
-\$17,000 spent on our experiment to mail the 16,940 treatment letters
-raised \$615,752 in additional city revenues: an average benefit to
-cost ratio of 36.3.
+Note that we base our results in Table \ref{rev} on the median
+estimated additional revenues per letter. These estimates of median
+revenues are significantly lower than the estimates reported in Table
+\ref{sh_lin}, which are estimates of mean additional revenues per
+letter.  In that sense, we view our analysis  as providing
+conservative estimates of the revenue implications of the different
+reminder letters.
+
+Since the three-months estimates are not contaminated by the activities
+of the collection agencies we start the analysis by focusing on those
+results.  For single property owners, the total number of additional
+taxpayers above the holdout sample from all reminder letters is 834,
+an average increase in the overall rate of compliance from receiving
+one our treatment letters of 4.9 percent (834/16,951).  Table
+\ref{rev} also provides an estimate of additional revenues raised by
+each of our treatment letters and then the total revenue raised from
+each treatment group.  From the perspective of the City's Department
+of Revenue, our experiment was a good investment of resources.\footnote{
+Since the costs of the experiment were financed by a grant from the
+Wharton Public Policy Initiative, the City actually had zero additional
+expenditures during our experiment.} Each letter cost about \$1 to process and send and raised
+on average over all letters \$36.27.  The estimated benefit to cost
+ratios for the seven treatments ranged from a low of \$19.19 (the
+Neighborhood letter) to a high of \$67.90 (the Lien letter).  The
+approximately \$17,000 spent on our experiment to mail the 16,951
+treatment letters raised \$615,222 in additional city revenues: an
+average benefit to cost ratio of 36.2.
 
 Among our seven treatments, our experimental results clearly show the
 power of the lien and sheriff letters compared to a simple reminder or
-the tax morale nudges.  The number of new taxpayers above the holdout
+the tax morale nudges.  The number of taxpayers above the holdout
 sample is three to four times larger and the revenue/letter is two to
 three times larger with the letters stressing penalties.  As a
-consequence, total new revenues (above the holdout sample) from the
+consequence, total additional revenues above the holdout sample from the
 penalty letters and new revenues as a share of all taxes owed are
 three to four times larger as well.  If we had sent only the lien or
-sheriff's letter to the 16,940 taxpayers in our treatment groups we
-would have raised \$1.15 million in new revenues rather than \$616,752
+sheriff's letter to the 16,951 taxpayers in our treatment groups we
+would have raised \$1.15 million in additional revenues rather than \$615,222
 -- nearly twice as much.  The paid share of taxes owed would have
-risen from our experiment's average of .028 to that of the lien letter only of
-.053.
+risen from our experiment's average of .025 to that of the lien letter
+only of .046.
 
+The lower panel in Table \ref{rev} repeats this exercise using the
+six-months estimates.  Using these results, we find qualitatively
+similar effects. However, the quantitative magnitude of the relevant
+effects is approximately one-third of the effects based on the three-months
+estimates.  The impact of the reminders at the six-months date represent
+aggregate new taxpayers and new revenues over the tax year made
+possible by the experiment.  The difference between new payers and the
+new revenues at the three-months and six-months dates measures the
+number of taxpayers who have paid early, rather than have waited until
+December to have paid.\footnote{New taxpayers and revenues at each
+  date are cumulative.  Compared to the holdout sample, 94 new
+  taxpayers were induced to pay their taxes after three months. After six
+  months and again compared to the holdout sample, 31 new taxpayers
+  were induced to pay their taxes.  This means that 63 taxpayers had
+  moved from paying over the window from months four to six to paying
+  by month three.  These are the taxpayers induced by the reminder to
+  pay earlier.  If no taxpayers had been induced to pay earlier by the
+  reminder, then the number of new taxpayers at the three-months date
+  above the holdout sample would be zero while new taxpayers above
+  holdout at the 6 month date would be 94. The 94 taxpayers at the end
+  of our experiment would represent new taxpayers and new revenues for
+  the full tax year and a net reduction of 94 taxpayers moving to tax
+  delinquency because of the simple reminder.  In fact there were only
+  31 new taxpayers above the holdout sample after 6 months and thus a
+  net reduction in tax delinquency of 31 taxpayers because of the
+  reminder.}  Additional taxpayers and revenues above the holdout sample
+at the six-months date represent net gain -- not just early payments --
+for the tax year ending December 31, 2015.  The revenue/letter ratio
+is thus the net benefit/cost ratio measured as new, excluding early
+revenues, and equals \$13.44 per letter averaged over all our letters;
+see Table \ref{rev}.  Interest earnings from the early payments might
+add an additional \$.50 per letter.\footnote{Early payments do provide
+  benefit in the form of interest earnings over the months of early
+  payment.  Assuming an 8 percent annual rate of return on city
+  investments, this will add roughly .2 percent additional revenues
+  from the early payments from 6 month to 3 months.  For the early
+  revenues from the reminder only letter, this works out to about
+  \$.40 per letter: \$.39 = .02 x (\$69,647 - \$22,474)/2,420.  When
+  averaged over all reminder letters, interest earnings from our
+  experiment will be \$.46 per letter: .46 = .02 x (\$615,222 -
+  \$227,856)/16,951.} The financial benefits from nudges in
+Philadelphia come from getting future delinquent taxpayers to pay
+their taxes.
 
-\begin{table}[htbp]
-\centering
-\caption{Six Month Impact of Collection ``Nudges''*} \label{lg_rev}
-\begin{tabular}{lcccccc}
-  \hline
-Treatment & Sample & Total Taxes & New & Revenue/ & New & New \% of Taxes \\ 
- & Size & Owed & Payers & Letters & Revenues & Paid \\
-  \hline
-Reminder & 2,420 & \$3.346 M & 31 & \$9.29 & \$22,474 & 0.700 \\ 
-  Lien & 2,432 & \$3.378 M & 91 & \$27.44 & \$66,739 & 2.000 \\ 
-  Sheriff & 2,419 & \$3.902 M & 89 & \$27.14 & \$65,659 & 1.700 \\ 
-  Neighborhood & 2,389 & \$4.658 M & -6 & -\$1.76 & -\$4,194 & -0.100 \\ 
-  Community & 2,441 & \$3.148 M & 21 & \$6.38 & \$15,564 & 0.500 \\ 
-  Peer & 2,417 & \$3.233 M & 33 & \$9.97 & \$24,091 & 0.700 \\ 
-  Duty & 2,433 & \$3.201 M & 51 & \$15.42 & \$37,524 & 1.200 \\ 
-   \hline
-Totals & 16,951 & \$24.866 M & 310 & - & \$227,856 & 0.900 \\ 
-   \hline
-\multicolumn{7}{p{1\textwidth}}{\scriptsize* Sample Size is the number of single property tax payers in the treatment group.  Total Taxes Owed is the total taxes owed by single property tax payers in the treatment group. New Payers equals the new payers after three months computed as the estimated increase in rate of compliance of those receiving the letter over those in the holdout sample as reported in Table 2; for example, for the reminder letter the number of new payers equals 31 = 0.013 x 2,420.  Revenue per letter for each treatment equals the median new revenue collected from those who received a treatment letter and made some payment (=\$735/letter) times the three month increase in compliance from each treatment letter; for example for the reminder letter the median estimated revenue per letter equals \$9.29 = 0.013 x \$735.  New revenues for each treatment equals the revenue/letter times the number of single owner properties receiving a treatment letter: for example, for the reminder letter the estimated total new revenues equals \$22,474 = \$9.29 x 2,420.  New \% of Taxes Paid equals New Revenues divided by Total Taxes Owed; for example, for the reminder letter 0.7 = \$22,474 / \$3,345,846.}
-\end{tabular}
-\end{table}
-
-\noindent ADD DISCUSSION OF TABLE \ref{lg_rev}.
+Though not possible to quantify from our results, tax nudges have a
+potentially important additional benefit, particularly in taxing
+jurisdictions with relatively low rates of taxpayer
+participation. Besley, Jensen, and Persson (2015) provide evidence
+from local taxpayers in Britain that once in a low participation
+equilibrium it will be very difficult, even with penalties and
+sanctions, to escape that equilibrium.  Castro and Scartascini (2015)
+provide evidence from Argentina that previously paying taxpayers
+reduce their rate of compliance when the rate of participation by
+their peers falls to near 70 percent.  Even if nudges do not bring in
+new money they are valuable if they succeed in holding a taxpaying
+community in the high compliance equilibrium against pressures to free
+ride; see \citeA{Wenzel-05}.  In Table \ref{lpm_hetero}, for example,
+we find that tardy taxpayers in the upper quartile of taxes owed
+respond favorably to the peer reminder stressing 9 of 10
+Philadelphians do pay their taxes.
 
 
 \section{Discussion: What Role for Nudges?}
 
-While the seven treatments are effective on the margin in increasing
+The seven treatments are effective on the margin in increasing
 compliance and in raising revenues, and the letters stressing economic
-sanctions particularly so, the final column of Table 7 makes clear
-that at least in Philadelphia our treatments will not solve the larger
-problem of unpaid City property taxes.  The contributions of each
-reminder letter towards total taxes owed range from a low of 1.5
-percent for the neighborhood letter to a maximum of 5.3 percent for
+sanctions particularly so. The final column of Table \ref{rev} makes
+clear that, at least in Philadelphia, our treatments will not solve the
+larger problem of unpaid City property taxes.  The contributions of
+each reminder letter towards total taxes owed range from a low of 1.0
+percent for the neighborhood letter to a maximum of 4.9 percent for
 the lien letter after the three months of our experiment.  The
-reminders together raised an additional \$616,000 in property tax
-revenues from the total of \$22,143 million owed in tardy payments, or
-2.8 percent.  Importantly, since our sample was very close to the full
-sample of all tardy taxpayers, these revenue estimates are very close
-to what the City might expect in new revenues were our experiment to
-become annual policy.  
+reminders together raised an additional \$615,222 in property tax
+revenues from the total of \$22.143 million owed in tardy payments, or
+2.5 percent.  Estimates provided by the six-months results in Table
+\ref{rev} show that only \$227,850 can be considered additional revenues for
+the tax year; \$387,366 of the \$615,222 paid at the three-month date are
+early payments that would have been received at the six-months date
+without our reminders.  Importantly, since our sample was close
+to the full sample of all tardy taxpayers, these revenue estimates are
+close to what the City might expect in new revenues were our
+experiment to become annual policy.
 
-Should we conclude from these very modest revenue gains that a nudge
-strategy should not become part of Philadelphia's fiscal policy?  We
-think not.  First, our work here was an experiment looking for an
-effective collection strategy, not an evaluation of an established
-policy.  The reminder/lien and reminder/sheriff letters were
-significantly more effective than the average reminder letter.  If
-those letters were to be adopted as part of the City's collection
+Should we, therefore, conclude from these modest revenue gains
+that a nudge strategy should not become part of Philadelphia's fiscal
+policy?  We think not.  First, our work here was an experiment looking
+for an effective collection strategy, not an evaluation of an
+established policy.  The reminder/lien and reminder/sheriff letters
+were significantly more effective than the average reminder letter.
+If those letters were to be adopted as part of the City's collection
 strategy for tardy taxpayers and applied alone to the entire sample of
 19,039 taxpayers, the city could expect to collect an additional
-\$1.288 million (= \$67.67/letter x 19,039 letters) within three
-months after mailing the reminders.  
+\$1.29 million (= \$67.90/letter x 19,039 letters) within three months
+after mailing the reminders of which \$522,430 (= \$27.44 x 19039
+letters) will be new money not available in 2016 tax year.
 
-Second, no one policy is likely
-to be the best and only means for collecting revenues.  Any collection
-policy will involve a range of collection strategies, ranging from
-voluntary compliance on each annual `tax day,` to mailed reminders as
-here, to detailed in person audits, to policing, trial, and
-impoundment of assets.  Each strategy will have its own costs and
-benefits.  All strategies that provide revenue benefits greater than
-collection costs should be included as part of the final collection
-policy (Keen and Slemrod, 2017).  Our reminder/lien and
-reminder/sheriff letters raising over \$65 in new revenues of each \$1
-of administrative costs seem to have earned their place in
-Philadelphia's collection strategy.
+Second, no single policy is likely to be the best and only mean for
+collecting revenues.  Any collection policy will involve a range of
+collection strategies, ranging from voluntary compliance on each
+annual `tax day,` to mailed reminders as here, to detailed in person
+audits, to policing, trial, and impoundment of assets.  Each strategy
+will have its own costs and benefits.  All strategies that provide
+revenue benefits greater than collection costs should be included as
+part of the final collection policy (Keen and Slemrod, 2017).  Our
+reminder/lien and reminder/sheriff letters raising over \$65 in new
+revenues of each \$1 of administrative costs seem to have earned their
+place in Philadelphia's collection strategy.
 
 Third, and perhaps most importantly for designing a cost-effective
 strategy to collect tardy taxes, our experiment revealed an important
-advantage to being patient.  After three months of our experiment, the
-holdout sample of tardy taxpayers receiving no letter increased their
-tax compliance by 51.4 percent in making at least some payment and by
-40.8 percent in making their full payment.  The average payment
-received after three months was \$637 per new taxpayer; see Table 2.
-These are revenues the City received without any expenditure of City
-administrative resources, just waiting for taxpayers to recognize on
-their own that their property tax payments are due.  Had the City
-adopted this `wait-and-see` strategy applied to all 19,039 of the
-tardy, single property owner taxpayers, then after three months 9,786
-tardy taxpayers would have made some payment.  With an average payment
-of \$637 per new taxpayer, City revenues would have increased by
-\$6.234 million, or approximately 28 percent of revenues owed by all
-tardy taxpayers.  Other than a small opportunity cost of waiting, this
-is “free” money and clearly the most efficient beginning strategy for
-the City for collecting tardy property taxes.  The efficient
-administrative package would combine the waiting policy with the most
-efficient reminder letter stressing economic sanctions, mailed to all
-tardy taxpayers.  Assuming those who pay without a nudge will not be
-annoyed by receiving the reminder letter (and thus less likely to pay)
-the City would receive payments of \$6.234 million from those who pay
-without the nudge and \$1.288 million from those who pay in response
-the nudge with economic sanctions.  This administrative package raises
-a total \$7.522 million, or 34 percent of all tardy revenues owed.
-The cost of the combined policy will be just the \$19,039 for the
-reminder letters.  After three months (say September), the City can
-then move to more aggressive strategies run perhaps by outside
-collection agencies.  Today the City uses such agencies beginning
-immediately in May after taxes become tardy.  The collection agencies
-are reimbursed at the rate of \$.06 for each dollar collected, for an
-implied City revenue to cost ratio of \$16.67, lower than any of our
-nudges including the simple reminder.\footnote{Currently the City
-  allocates 100 percent of tardy taxpayers to outside collection
-  agencies beginning in early May.  Adapting our efficient collection
-  strategy rather than allocating to outside agencies may save the
-  City approximately \$400,000 a year. We do not know the actual
-  collection strategy used by these firms but our results suggest they
-  are likely to be earning a significant profit when reimbursed at the
-  rate of \$.06 for every dollar collected.  Doing nothing as revealed
-  by our holdout sample will earn these agencies approximately \$6,234
+advantage for the City's tax administration to be patient.  After
+three months of our experiment, the holdout sample of tardy taxpayers
+receiving no letter increased their tax compliance by 51.4 percent in
+making at least some payment and by 40.8 percent in making their full
+payment.  The average payment received after three months was \$637
+per taxpayer; see Table 2.  These are revenues the City received
+without any expenditure of City administrative resources, just waiting
+for taxpayers to recognize on their own that their property tax
+payments are due.  Had the City adopted this `wait-and-see` strategy
+applied to all 19,039 of the tardy, single property owner taxpayers,
+then after three months 9,786 tardy taxpayers would have made some
+payment.  With an average payment of \$637 per taxpayer, City revenues
+would have increased by \$6.234 million, or approximately 28 percent
+of revenues owed by all tardy taxpayers.  Other than a small
+opportunity cost of waiting, this is ``free" money and clearly the
+most efficient beginning strategy for the City for collecting tardy
+property taxes.
+
+We conclude that the efficient administrative package would combine
+the waiting policy with the most efficient reminder letter stressing
+economic sanctions, mailed to all tardy taxpayers.  Assuming those who
+pay without a nudge will not be annoyed by receiving the reminder
+letter and thus less likely to pay, the City would receive payments of
+\$6.234 million from those who pay without the nudge and \$1.288
+million from those who pay in response to the nudge with economic
+sanctions.  This administrative package raises a total \$7.522
+million, or 34 percent of all tardy revenues owed.  The cost of the
+combined policy will be just a dollar per letter or \$19,039 for all
+of the reminder letters.\footnote{We do not know the actual collection
+  strategy used by these firms but our results suggest they are likely
+  to be earning a significant profit when reimbursed at the rate of
+  \$.06 for every dollar collected.  Doing nothing as revealed by our
+  holdout sample will earn these agencies approximately \$6,234
   million in three months.  Assuming they have discovered the high
   marginal returns of the sanction strategy as revealed here (\$65 per
-  \$1 invested) and they invest \$19,000 as we have here, the firms
+  \$1 invested) and they invest \$19,039 as we have here, the firms
   would then earn an additional \$1.235 million.  Total revenues
   collected would then be \$7.469 million earning the firms \$448,000
   when reimbursed at the rate of \$.06 for every dollar collected.
   Our efficient collection strategy raises the same revenues at a cost
   of \$19,000, saving the City \$429,000.}
 
-Finally, nudge strategies can have important effects on the aggregate
-rate of taxpayer participation, but the direction of the impact is not
-obvious and may depend upon the current level of participation.  The
-results of Hallsworth, et.  al.  (2017) and Dwenger, et.  al.  (2017)
-found announcing high rates of peer participation encouraged
-additional participation by delinquent taxpayers, but in contrast,
-Castro and Scartascini (2015) found announcing a relatively low rate
-of peer participation (70 percent) discouraged future participation by
-those who had been paying their taxes in the past.  Without a
-realistic threat of large penalties, paying ones taxes may be seen as
-a voluntary contribution decided in response to the equilibrium
-behaviors of other taxpayers, Such games can have both low and high
-participation equilibria \cite{Bergstrom-Blume-Varian-86}.  Nudge
-strategies that exogenously increase participation may be able to move
-the outcome from the low to the high participation equilibrium. See,
-for example \citeA{Wenzel-05} and Besley, et.  al (2015).  For cities
-in a low participation equilibrium the initial nudge might emphasize
-economic sanctions.  As participation increases, however, the reminder
-letter might place a greater emphasis on peer behavior or civic duty,
-perhaps with a soft reminder that compounding economic sanctions will
-apply after a future date.
-
 Our results provide strong evidence that economic sanctions can have a
-significant positive effect on the rate of taxpayer participation.
-The lien reminder added 9.2 percent (= 224/2429) new taxpayers above
-the holdout sample while the sheriff reminder letter added 8.8 percent
-(=213/2416) new taxpayers.  And while not quite statistically
-significant, the peer and civic duty reminders do encourage tax
-payments beyond that obtained with a simple reminder letter, both
-after three months and particularly so after six months.\footnote{The
-  six month results for the peer and civic duty reminders reported in
-  Table 6 are suggestive of the potential usefulness of the joint
-  peer/duty reminder coupled with the threat of latter sanctions.
-  This is exactly what had happened to taxpayers in peer and duty
-  subsamples who received the peer and duty letters in the first three
-  months of our experiment, and then the possible threat of sanction
-  by the collection agencies in the second three months, from
-  September to December. } The payment magnitudes are comparable to
-those for the lien and sheriff letters.  Further, those who are likely
-to be credit constrained respond favorably to peer and duty reminders,
-and at almost the same rate as they do to the sanction reminders, by
-entering tax payment agreements as shown in Table 6.\footnote{ A
-  result consistent with our pilot study's finding that ``very tardy"
-  taxpayers, also likely to be credit constrained, responded
-  positively to a peer/duty reminder.}
+significant positive effect on the rate of taxpayer compliance.  After
+three months, the lien letter added 9.2 percent (224/2434) taxpayers
+above the holdout sample while the sheriff reminder letter added (8.8
+percent (= 213/2419) new taxpayers after 3 months.  And while not
+quite statistically significant, the peer and civic duty reminders do
+encourage tax payments beyond that obtained with a simple reminder
+letter, both after three months and particularly so after six
+months. The payment magnitudes are comparable to those for the lien
+and sheriff letters.
+
+Perhaps the most practical consequence from our study has been to
+point out \$300,000 a year in unnecessary collection costs previously
+paid to city law firms.  Prior to our study, the City assigned 2/3's
+of its tardy taxpayers to law firms for collection of tardy taxpayers,
+or 12,700 of our (nearly complete) sample of 19,039 single owner tardy
+taxpayers.  Doing nothing as revealed by our holdout sample will earn
+these firms approximately \$250,000.  Of the 12,700 assigned taxpayers
+approximately 51 percent would have made some payment after three
+months without any intervention; see Table 2 for the holdout sample.
+Each of these 6,530 taxpayers makes an average payment of \$637; total
+taxes collected would then be \$4.158 million dollars, without effort!
+These collected revenues will earn a payment from City of \$250,000.
+If the law firms were then to adopt our sanction strategy with a
+revenue:cost ratio of \$65, and they invest \$1 on each of their
+12,700 assigned tardy taxpayers (the cost of the letter), they could
+expect to receive an additional \$.825 million in revenues and earn an
+additional \$49,500 in commissions. Total commissions paid will then
+be \$299,530.  Adopting our nudge strategy, the City can raise the
+same amount of three- months tax revenues, \$4.983 million, for \$12,700!
+
 
 \section{Conclusion}
 
 With the cooperation of the Department of Revenue of the City of
-Philadelphia, we developed and implemented a policy experiment in the
-use of written nudges to improve the collection of property tax
-revenues from citizens who had not paid their fiscal year 2016 taxes
-by the due date of March 31, 2015.  The experiment entailed the full
-sample of 21,500 ``tardy" taxpayers.  The results reported here are
-for the 19,039 taxpayers who own a single property, excluding those
-who own multiple properties; the results here generalize to the full
-sample.  The experiment reached six substantive conclusions: First, a
-simple reminder letter had a statistically significant effect on
-compliance when compared to our control group who received no
-reminder.  Second, the content of the reminder letter matters.  The
-two letters that stress the likely economic sanctions of continued
-tardy payment led to faster and higher levels compliance than the
-simple reminder.  Third, adding an intrinsic message to the reminder,
-one that stressed the value of public services, neighbors' compliance,
-or civic duty did not increase compliance over receiving only the
-simple reminder.  Fourth, most of the taxpayers who did respond with
-payments, paid their full tax obligation.  Fifth, reminders were very
-cost effective on the margin.  Each letter cost one dollar to send and
-returned on average \$37 in increased city tax revenues.  The two
-letters stressing economic sanctions were the most effective,
-returning \$65 to \$67 in extra revenues for each letter sent.  Sixth,
-reminders had no staying power.  Having received a 2016 reminder
-letter had no effect on the taxpayer’s likelihood of paying their 2017
-property taxes on time.
+Philadelphia, we developed and implemented a new tax policy
+experiment. We used written nudges designed to improve the collection of
+property tax revenues from citizens who had not paid their fiscal year
+2016 taxes by the due date of March 31, 2015.  The results reported
+here are for the 19,039 taxpayers who own a single property, excluding
+those who own multiple properties.  The experiment reached six
+substantive conclusions: First, a simple reminder letter had a
+statistically significant effect on compliance when compared to our
+control group who received no reminder.  Second, the content of the
+reminder letter matters.  The two letters that stress the likely
+economic sanctions of continued tardy payment led to faster and higher
+levels compliance than the simple reminder.  Third, adding an
+intrinsic message to the reminder, one that stressed the value of
+public services, neighbors' compliance, or civic duty did not increase
+compliance over receiving only the simple reminder.  Fourth, most of
+the taxpayers who did respond with payments, paid their full tax
+obligation.  Fifth, reminders were very cost effective on the margin.
+Each letter cost one dollar to send and returned on average \$37 in
+increased city tax revenues.  The two letters stressing economic
+sanctions were the most effective, returning \$65 to \$68 in extra
+revenues for each letter sent.  Sixth, reminders had no staying power.
+Having received a 2016 reminder letter had no effect on the taxpayer's
+likelihood of paying their 2017 property taxes on time.
 
 The results of our experiment suggested three policy conclusions for
-the design of an efficient tax collection strategy for Philadelphia
+the design of an efficient tax collection strategy for Philadelphia.
 First, appropriately designed reminder letters as nudges contribute
 positively to revenue collection and should be part of the City's
 collection strategy.  Simply reminding tardy taxpayers that their
 taxes are due is valuable; our average reminder letter cost \$1 to
 mail and generated on average \$37 in additional revenues.  As noted,
 the most effective reminders stress economic sanctions and raised \$65
-to \$67 per reminder letter.  Given these high marginal returns,
+to \$68 per reminder letter.  Given these high marginal returns,
 nudges should be included as part of the City's collection strategy.
 
 Second, while effective on the margin, reminder letters alone will not
 solve the problem of tardy tax collections in Philadelphia.  Our study
-had the full sample of tardy taxpayers, and our reminder letters alone
-succeeded in collecting only a small fraction of what was owed.  The
-total owed for fiscal year 2016 was \$22.143 million and the
-experiment using all our reminders raised only \$616,000 of new
-revenues.  Had we used only the most effective reminders -- the two
-stressing economic sanctions -- we would have doubled collected
-revenues from reminders to \$1.288 million in new revenues; still only
-6 percent of outstanding payments.
+considered the sample of tardy taxpayers that owned one property, and
+our reminder letters alone succeeded in collecting only a small
+fraction of what was owed.  The total owed for fiscal year 2016 was
+\$24.866 million and the experiment using all our reminders raised
+only \$615,222 of new revenues.  Had we used only the most effective
+reminders -- the two stressing economic sanctions -- we would have
+doubled collected revenues from reminders to \$1.288 million in new
+revenues; still only approximately 5 percent of outstanding payments.
 
 Third, and perhaps most interestingly, just being patient had high
 returns.  Our study included a sample of holdout taxpayers who
 received no reminder.  That group increased their rate of compliance
 by 51.4 percent from the start of our study to its three month
 conclusion date. The average payment from this sample receiving no
-reminder was \$637 per new taxpayer.  Total new City revenues from
+reminder was \$637 per taxpayer.  Total new City revenues from
 this group equaled \$6.234 million dollars, all raised at no cost to
 the City other than the small opportunity cost from delay.  Relying
 upon tardy taxpayers to recognize and pay their taxes on their own and
 then using the sanction reminder to leverage those who continue to
 forget or need a nudge would together raise \$7.522 million of the
-\$22.143 owed by all tardy taxpayers, or 34 percent.  The total cost
+\$24.866 owed by all tardy taxpayers, or 34 percent.  The total cost
 to the City of this collection strategy would be \$19,039 for the
 reminder letters.  After three months, a more aggressive but also more
 expensive collection strategy might be tried.
 
+There are limitation to our study, however. First, the large
+empirical literature on nudges and tax collection makes clear that
+successful strategies are context specific.  Collection strategies
+that work well for one tax and for one government may fail to do so
+for another tax and in another fiscal setting.  Our results are for
+Philadelphia taxpayers alone.  What we think does generalize, however,
+is the value of repeating studies such as ours for the design of tax
+administration strategies.  We feel that our seven reminder letters
+and the importance of having a holdout sample provide an effective
+methodology for use by other cities for understanding how best to
+collect their own tardy and delinquent property taxes.  Further, at an
+average cost of \$1 per reminder letter including mailing and office
+expenses, there is no reason not to implement a study such as ours on
+the full sample of tardy or delinquent taxpayers.
 
-It is useful to stress again here an important motivation for why we
-ran our study. As the large empirical literature on nudges and tax
-collection now makes very clear, successful strategies are context
-specific.  Collection strategies that work well for one tax and for
-one government may fail to do so for another tax and in another fiscal
-setting.  Our results are for Philadelphia taxpayers alone.  What we
-think does generalize, however, is the value of repeating studies such
-as ours for the design of tax administration strategies.  We feel that
-our seven reminder letters and the importance of having a holdout
-sample provide an effective methodology for use by other cities for
-understanding how best to collect their own tardy and delinquent
-property taxes.  Further, at an average cost of \$1 per reminder
-letter including mailing and office expenses, there is no reason not
-to implement a study such as ours on the full sample of tardy or
-delinquent taxpayers.
- 
+Second, that said the effectiveness of each letter is likely to depend
+on the exact wording of the message and the additional information
+that is provided in the letter.  For example, in our pilot study we
+found that a simple deterrence message that did not provide any
+specific or detailed information about enforcement was not effective
+in increasing compliance.  In contrast, in this version of our
+experiment reminder letters stressing sanctions did provide such
+information, and these reminders were our most effective intervention.
+
+Third, our experiment only allowed us to estimate the impact of
+reminder letters conditional upon taxpayers' information and
+preferences and cannot be used to evaluate the impact of more
+extensive interventions.  While our sanction reminder letters did
+refer to existing sanctions now in place and illustrated those
+sanctions for real properties in the taxpayer's neighborhood, our tax
+morale messages were less specific as to the benefits of paying taxes
+and thus may suffer by comparison.  For example, the tax morale
+messages did not follow a city-wide intervention advertising the value
+of neighborhood or city services, have a personal plea to ``join me"
+in paying city taxes, or stress the civic obligation we all have as
+citizens to pay our ÔøΩfair share.ÔøΩ These more extensive, but costly,
+tax morale interventions may be very effective.
+
+Fourth, our experiment does not allow us to determine with any
+precision why approximately 1/3 of tardy taxpayers in our sample did
+not pay their taxes by the end of the tax year.  They are now
+delinquent.  A liquidity constraint may be the problem, but the option
+to use the City's tax payment program to smooth payments available,
+yet no more than 3 to 4 percent of those who did pay used the plan.
+Interviewing these newly delinquent families would be valuable.
+
+Finally, it is useful to speculate as to who pays the final burden for
+our effective interventions.  General taxpayers pay for the initial
+cost of our reminders.  When enforcement is successful, the burden
+falls primarily on those tardy taxpayers who pay the fines and
+penalties.  Those fines and penalties presumably cover their
+enforcement costs and the costs associated with the delay in payment.
+If enforcement is not successful then the burden of non-payment falls
+on the taxpayers who do comply.  Assuming public services are
+maintained, then there is a redistribution from those who pay to those
+who do not.  This may be socially useful if the non-paying citizens
+are facing temporary economic hardship.  A final benefit-cost analysis
+will need to consider the distributive consequences of any enforcement
+strategy.
+
 Motivated by the results of our work here, Philadelphia's Department
 of Revenue now uses a reminder letter stressing the risk of a tax lien
 and subsequent sheriff's sale and has delayed by three months (to
-mid-July) the use of outside agencies for the collection of tardy
-taxes. 
+mid-July) the use of outside firms for the collection of tardy of
+taxes.
 
-%{\footnotesize \NoTitleCaseChange\citepunct{(}{and}{, }{; }{, }{)}{}{.} 
+%{\footnotesize \NoTitleCaseChange\citepunct{(}{and}{, }{; }{, }{)}{}{.}
 \newpage
 
 \bibliographystyle{theapa}
@@ -1240,49 +1543,6 @@ taxes.
 
 \begin{appendix}
 
-\section{Multiple Owner Sample}
-
-\setcounter{table}{0}
-\renewcommand{\thetable}{A\arabic{table}}
-
-UPDATE TABLE  \ref{balance2} TO INCLUDE HOLDOUT SAMPLE, AND NOT JUST THE 7 TREATMENT GROUPS. JUST AS WE DO IN TABLE 1.
-
-ALTERNATIVELY JUST DO BALANCE ANALYSIS USING THE SAMPLE THAT CONSISTS OF OWNERS OF MULTIPLE PROPERTIES, I.E. EXCLUDE THE SINGLE OWNERS FROM THE SAMPLE.
-
-IF WE LOSE BALANCE FOR THESE SAMPLES, WE ARE DONE. WE JUST REPORT THAT FINDING IN A FOOTNOTE. 
-
-IF NOT, REDO THE ANALYSIS FOR TABLES 2 AND 3 FOR MULTIPLE-OWNER SAMPLE.
-
-
-\begin{sidewaystable}[htbp]
-\centering
-\caption{Balance on Observables} \label{balance2}
-\begin{tabular}{lrrrrrrrc}
-\hline
-\multicolumn{9}{c}{Single Property Owners} \\
-  \hline
-Variable & Reminder & Lien & Sheriff & Neighborhood & Community & Peer & Duty & $p$-value \\ 
-   \hline
-Amount Due (June) & \$1,383 & \$1,389 & \$1,613 & \$1,950 & \$1,290 & \$1,338 & \$1,316 & 0.38 \\ 
-  Assessed Property Value & \$163,084 & \$147,573 & \$155,597 & \$206,214 & \$130,265 & \$130,936 & \$166,791 & 0.28 \\ 
-  \# Owners & 2,420 & 2,432 & 2,419 & 2,389 & 2,441 & 2,417 & 2,433 & 0.99 \\ 
-  \hline
-\multicolumn{9}{c}{Single and Multiple Property Owners} \\
-  \hline
-Variable & Reminder & Lien & Sheriff & Neighborhood & Community & Peer & Duty & $p$-value \\ 
-   \hline
-Amount Due (June) & \$1,847 & \$1,735 & \$1,887 & \$2,209 & \$1,954 & \$1,772 & \$1,700 & 0.78 \\ 
-  Assessed Property Value & \$195,029 & \$173,690 & \$178,556 & \$224,412 & \$220,963 & \$165,957 & \$191,199 & 0.76 \\ 
-  \% with Single Property Owner & 87.5 & 88.0 & 87.5 & 86.4 & 88.3 & 87.4 & 88.0 & 0.45 \\ 
-  \% Overlap with Holdout & 3.72 & 3.47 & 3.29 & 3.80 & 3.47 & 3.58 & 3.47 & 0.96 \\ 
-  \# Properties per Owner & 1.33 & 1.32 & 1.26 & 1.36 & 1.29 & 1.26 & 1.27 & 0.55 \\ 
-  \# Owners & 2,766 & 2,765 & 2,766 & 2,766 & 2,766 & 2,766 & 2,766 & 1 \\ 
-  \hline
-\multicolumn{9}{l}{\scriptsize{$p$-values in rows 1-5 are $F$-test $p$-values from regressing each variable on treatment dummies. A $\chi^2$ test was used for the count of owners.}} \\
-\end{tabular}
-\end{sidewaystable}
-
-\pagebreak
 
 \begin{figure}[htbp!]
 \begin{center}
@@ -1300,70 +1560,3 @@ Amount Due (June) & \$1,847 & \$1,735 & \$1,887 & \$2,209 & \$1,954 & \$1,772 & 
 
 
 \end{document}
-
-
-
-
-\begin{table}[htbp]
-\caption{Robustness Analysis: Relative to Reminder (All Owners)}
-\begin{center}
-\begin{tabular}{l c c c c }
-\hline
- & \multicolumn{2}{c}{Ever Paid} & \multicolumn{2}{c}{Paid in Full} \\
- & One Month & Three Months & One Month & Three Months \\
-Reminder     & $34.9$ & $56.4$ & $23.9$ & $41.8$ \\
-\hline
-Lien         & $4.9^{***}$  & $4.8^{***}$  & $3.4^{***}$  & $4.0^{***}$  \\
-             & $(1.3)$      & $(1.3)$      & $(1.2)$      & $(1.3)$      \\
-Sheriff      & $3.4^{***}$  & $4.5^{***}$  & $2.3^{**}$   & $3.6^{***}$  \\
-             & $(1.3)$      & $(1.3)$      & $(1.2)$      & $(1.3)$      \\
-Neighborhood & $-1.0$       & $-0.8$       & $-1.2$       & $-0.4$       \\
-             & $(1.3)$      & $(1.3)$      & $(1.2)$      & $(1.3)$      \\
-Community    & $-0.4$       & $-1.4$       & $-0.6$       & $-0.2$       \\
-             & $(1.3)$      & $(1.3)$      & $(1.2)$      & $(1.3)$      \\
-Peer         & $0.4$        & $-0.8$       & $0.5$        & $0.8$        \\
-             & $(1.3)$      & $(1.3)$      & $(1.2)$      & $(1.3)$      \\
-Duty         & $-1.2$       & $-0.2$       & $-1.0$       & $-0.8$       \\
-             & $(1.3)$      & $(1.3)$      & $(1.2)$      & $(1.3)$      \\
-\hline
-Num. obs.    & 19361        & 19361        & 19361        & 19361        \\
-\hline
-\multicolumn{5}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. Reminder values in levels; remaining figures relative to this.}}
-\end{tabular}
-\label{sh_lpm_mult}
-\end{center}
-\end{table}
-
-
-
-
-
-\begin{table}[htbp!]
-\caption{Six-Month Liquidity Linear Probability Model Estimates}\label{liquidversuscontrol}
-\begin{center}
-\begin{tabular}{l c c }
-\hline
- & \multicolumn{1}{c}{Payment Agreement} & \multicolumn{1}{c}{Water Delinquency} \\
-Reminder     & $1.3$ & $1.7$ \\
-\hline
-Lien         & $0.6$       & $-0.0$      \\
-             & $(0.4)$     & $(0.4)$     \\
-Sheriff      & $1.2^{***}$ & $0.0$       \\
-             & $(0.4)$     & $(0.4)$     \\
-Neighborhood & $0.1$       & $0.6$       \\
-             & $(0.4)$     & $(0.4)$     \\
-Community    & $-0.1$      & $0.4$       \\
-             & $(0.4)$     & $(0.4)$     \\
-Peer         & $0.4$       & $0.7^{*}$   \\
-             & $(0.4)$     & $(0.4)$     \\
-Duty         & $0.4$       & $0.2$       \\
-             & $(0.4)$     & $(0.4)$     \\
-\hline
-Num. obs.    & 16951       & 16951       \\
-\hline
-\multicolumn{3}{l}{\scriptsize{$^{***}p<0.01$, $^{**}p<0.05$, $^*p<0.1$. Reminder values in levels; remaining figures relative to this.}}
-\end{tabular}
-\end{center}
-\end{table}
-
-
