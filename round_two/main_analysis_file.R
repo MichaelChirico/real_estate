@@ -393,6 +393,17 @@ cat(tbl, sep = "\n", file = tex_file, append = TRUE)
 # TABLE 6: Revenue Implications ####
 ## use a format to be fed to sprintf with actual values, since some of
 ##   these exact numbers depend on the data specification
+
+## ******************** REPRODUCIBILITY NOTE ************************
+## * The numbers in this table don't match those submitted exactly; *
+## *   It's not entirely clear where they came from, perhaps from   *
+## *   some back-of-the-envelope stuff done by hand (the numbers    *
+## *   in the paper are not hugely different and could conceivably  *
+## *   be a simple result of rounding errors...                     *
+## * Also, we noticed only after submitting that it's a bit         *
+## *   inconsistent to have MEDIAN_POSITIVE_PAYMENT the same for    *
+## *   both estimates; we plan to fix this when possible.           *
+## ******************************************************************
 note_fmt = 
   paste('\\scriptsize* Sample Size is the number of single property',
         'tax payers in the treatment group.  Total Taxes Owed is the',

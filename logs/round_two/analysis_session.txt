@@ -86,14 +86,14 @@
       "Built": "R 3.5.2; ; 2019-02-03 15:45:18 UTC; unix"
     },
     "data.table": {
-      "Version": "1.12.0",
+      "Version": "1.12.1",
       "Depends": "R (>= 3.1.0)",
       "Imports": "methods",
       "Suggests": "bit64, curl, R.utils, knitr, xts, nanotime, zoo",
       "License": "MPL-2.0 | file LICENSE",
       "URL": "http://r-datatable.com",
-      "Packaged": "2019-01-12 04:09:37.913 UTC; mdowle",
-      "Built": "R 3.5.2; x86_64-pc-linux-gnu; 2019-02-03 15:30:11 UTC; unix"
+      "Packaged": {},
+      "Built": "R 3.5.2; x86_64-pc-linux-gnu; 2019-02-17 15:12:54 UTC; unix"
     },
     "pglm": {
       "Version": "0.2-1",
@@ -248,5 +248,5 @@
       "Built": "R 3.5.2; ; 2018-12-20 17:08:24 UTC; unix"
     }
   },
-  "write_package_time": "2019-02-06 15:02:48 UTC"
+  "write_package_time": "2019-03-25 14:48:19 UTC"
 }
